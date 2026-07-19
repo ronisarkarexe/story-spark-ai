@@ -73,7 +73,10 @@ const globalErrorHandler: ErrorRequestHandler = (
     success: false,
     message,
     errorMessages,
-    stack: config.env != "production" ? err.stack : undefined,
+    // Use optional chaining: some error objects may not have a stack trace
+    // (e.g. custom errors, errors from certain libraries in production).
+    // Without the null check, err.stack would be undefined and leak into the response.
+    stack: config.env !== "production" ? (err?.stack ?? undefined) : undefined,
   });
 };
 

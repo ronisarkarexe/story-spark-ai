@@ -1,5 +1,5 @@
 export const validateTokenPayload = (decodedData: Record<string, unknown>): void => {
-  if (!decodedData || typeof decodedData !== "object") {
+  if (!decodedData || typeof decodedData !== "object" || Array.isArray(decodedData)) {
     throw new Error("Token payload is not a valid object.");
   }
   const userId = decodedData.userId || decodedData._id || decodedData.sub;
@@ -31,13 +31,13 @@ export const validateTokenPayload = (decodedData: Record<string, unknown>): void
     throw new Error("Token is missing a valid numeric 'exp' claim.");
   }
   const currentTime = Math.floor(Date.now() / 1000);
-  if (decodedData.exp < currentTime) {
+  if (decodedData.exp >= 0 && decodedData.exp < currentTime) {
     throw new Error("Token has expired.");
   }
   if (typeof decodedData.iat !== "number" || isNaN(decodedData.iat)) {
     throw new Error("Token is missing a valid numeric 'iat' claim.");
   }
-  if (decodedData.iat >= decodedData.exp) {
+  if (decodedData.exp >= 0 && decodedData.iat >= decodedData.exp) {
     throw new Error("Token 'iat' must be before 'exp'.");
   }
   if (decodedData.name !== undefined && typeof decodedData.name !== "string") {

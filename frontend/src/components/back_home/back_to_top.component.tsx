@@ -3,10 +3,15 @@ import { ChevronUp } from "lucide-react";
 
 const BackToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isNearBottom, setIsNearBottom] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsVisible(window.scrollY > 300);
+      setIsNearBottom(
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 200
+      );
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -15,10 +20,6 @@ const BackToTop = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  const isNearBottom =
-  window.innerHeight + window.scrollY >=
-  document.documentElement.scrollHeight - 200;
 
   if (!isVisible || isNearBottom) return null;
 
