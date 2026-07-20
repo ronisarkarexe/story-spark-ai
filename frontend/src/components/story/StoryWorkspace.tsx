@@ -34,7 +34,7 @@ import StoryFactSheet from "../fact-sheet/StoryFactSheet";
 import StorySceneNavigator from "../scene-navigator/StorySceneNavigator";
 import StoryComplexityAnalyzer from "../complexity/StoryComplexityAnalyzer";
 import StorySessionRecovery from "../recovery/StorySessionRecovery";
-
+import StoryComparisonDashboard from "../comparison/StoryComparisonDashboard";
 
 import {
   getSafeFileName,
@@ -428,6 +428,18 @@ const StoryWorkspace = () => {
   onRestore={(draft) => {
     console.log("Restore draft:", draft);
   }}
+/>
+<StoryComparisonDashboard
+  storyA={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+  storyB={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
 />
 
   <StoryViewer
