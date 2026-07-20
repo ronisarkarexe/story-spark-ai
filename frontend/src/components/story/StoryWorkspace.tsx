@@ -35,6 +35,7 @@ import StorySceneNavigator from "../scene-navigator/StorySceneNavigator";
 import StoryComplexityAnalyzer from "../complexity/StoryComplexityAnalyzer";
 import StorySessionRecovery from "../recovery/StorySessionRecovery";
 import StoryComparisonDashboard from "../comparison/StoryComparisonDashboard";
+import StoryTimelineVisualization from "../timeline/StoryTimelineVisualization";
 
 import {
   getSafeFileName,
@@ -436,6 +437,14 @@ const StoryWorkspace = () => {
       .join("\n\n") || ""
   }
   storyB={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryTimelineVisualization
+  story={
     currentStory.chapters
       ?.map((chapter) => chapter.content)
       .join("\n\n") || ""
