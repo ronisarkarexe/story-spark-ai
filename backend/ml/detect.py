@@ -418,8 +418,8 @@ def detect(session: list) -> dict[str, Any]:
 def _get_int(prompt: str) -> int:
     while True:
         try:
-                return int(input(prompt))
-            except ValueError:
+            return int(input(prompt))
+        except ValueError:
                 print("⚠ Please enter a whole number.")
 
 

@@ -79,7 +79,16 @@ const StoryInspirationComponent: React.FC = () => {
 
           <h1 className="text-5xl md:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] mb-8">
             <span className="block text-slate-900 dark:text-white">Story</span>
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-600 dark:from-indigo-300 dark:via-blue-300 dark:to-purple-300">
+            <span
+  className="block
+  text-indigo-700
+  dark:text-transparent
+  dark:bg-clip-text
+  dark:bg-gradient-to-r
+  dark:from-indigo-300
+  dark:via-blue-300
+  dark:to-purple-300"
+>
               Inspiration Hub
             </span>
           </h1>
@@ -150,8 +159,18 @@ const StoryInspirationComponent: React.FC = () => {
               </div>
             </div>
 
-            <div className="relative flex items-center gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 px-6 py-5 shadow-lg focus-within:border-indigo-500/40 transition-all duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div
+              className="
+    relative flex items-center gap-4
+    rounded-3xl border border-slate-200
+    dark:border-white/10
+    bg-white dark:bg-slate-900/60
+    px-6 py-5 shadow-lg
+    focus-within:ring-2
+    focus-within:ring-indigo-500/20
+    transition-all duration-200
+  "
+            >            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <i className="fas fa-search" />
               </div>
               <input
@@ -159,7 +178,20 @@ const StoryInspirationComponent: React.FC = () => {
                 placeholder="Search titles, themes, genres, authors..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent outline-none text-lg text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="
+    w-full
+    h-12
+    bg-transparent
+    text-lg
+    text-slate-800
+    dark:text-white
+    placeholder:text-slate-400
+    dark:placeholder:text-slate-500
+    outline-none
+    border-none
+    focus:outline-none
+    focus:ring-0
+  "
               />
               {searchQuery.length > 0 && (
                 <button onClick={() => setSearchQuery("")} className="w-11 h-11 rounded-2xl bg-red-50 dark:bg-red-500/10 hover:scale-105 transition-all duration-300 text-red-500">
@@ -181,11 +213,10 @@ const StoryInspirationComponent: React.FC = () => {
                   <button
                     key={genre}
                     onClick={() => setSelectedGenre(genre)}
-                    className={`relative overflow-hidden px-6 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-300 border backdrop-blur-xl ${
-                      active
+                    className={`relative overflow-hidden px-6 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-300 border backdrop-blur-xl ${active
                         ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white border-transparent shadow-xl shadow-indigo-500/25 scale-105"
                         : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-indigo-400/40 hover:text-indigo-600 dark:hover:text-indigo-300"
-                    }`}
+                      }`}
                   >
                     {genre}
                   </button>
@@ -196,29 +227,31 @@ const StoryInspirationComponent: React.FC = () => {
         </motion.section>
 
         {/* Stories Grid */}
-        {filteredStories.length > 0 ? (
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredStories.map((story) => (
-              <StoryInspirationCard key={story.id} story={story} />
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto rounded-[2.5rem] border border-white/60 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-2xl p-16 text-center shadow-2xl">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/25">
-              <i className="fas fa-search-minus text-3xl" />
-            </div>
-            <h3 className="mt-8 text-3xl font-black text-slate-900 dark:text-white">No Inspiration Found</h3>
-            <p className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
-              Try adjusting your search keywords or explore different genres to uncover more creative ideas.
-            </p>
-            <button
-              onClick={() => { setSearchQuery(""); setSelectedGenre("All"); }}
-              className="mt-10 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold hover:scale-[1.03] transition-all duration-300 shadow-xl shadow-indigo-500/20"
-            >
-              Reset Filters
-            </button>
-          </motion.div>
-        )}
+        <div className="w-full min-h-[50vh] transition-all duration-300">
+          {filteredStories.length > 0 ? (
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredStories.map((story) => (
+                <StoryInspirationCard key={story.id} story={story} />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto rounded-[2.5rem] border border-white/60 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-2xl p-16 text-center shadow-2xl">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/25">
+                <i className="fas fa-search-minus text-3xl" />
+              </div>
+              <h3 className="mt-8 text-3xl font-black text-slate-900 dark:text-white">No Inspiration Found</h3>
+              <p className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+                Try adjusting your search keywords or explore different genres to uncover more creative ideas.
+              </p>
+              <button
+                onClick={() => { setSearchQuery(""); setSelectedGenre("All"); }}
+                className="mt-10 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold hover:scale-[1.03] transition-all duration-300 shadow-xl shadow-indigo-500/20"
+              >
+                Reset Filters
+              </button>
+            </motion.div>
+          )}
+        </div>
 
         {/* How to Use guidance section */}
         <motion.section
