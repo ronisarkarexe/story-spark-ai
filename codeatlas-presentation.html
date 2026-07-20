@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeAtlas - Hackathon Presentation Deck</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* -------------------------------------------------------------
+       1. GLOBAL THEME AND CONSTANTS
+       ------------------------------------------------------------- */
+    :root {
+      --bg-dark: #03060f;
+      --card-bg: rgba(10, 15, 30, 0.65);
+      --border-cyan: rgba(0, 229, 255, 0.25);
+      --border-purple: rgba(157, 0, 255, 0.2);
+      --border-white: rgba(255, 255, 255, 0.05);
+      --text-main: #f1f5f9;
+      --text-muted: #64748b;
+      --neon-cyan: #00e5ff;
+      --neon-purple: #9d00ff;
+      --neon-red: #ff3366;
+      --font-sans: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Ambient Glow backdrops */
+    .glow-bg {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.15;
+      filter: blur(80px);
+    }
+    .glow-purple {
+      background: radial-gradient(circle, var(--neon-purple) 0%, transparent 70%);
+      top: -10%;
+      left: 10%;
+    }
+    .glow-cyan {
+      background: radial-gradient(circle, var(--neon-cyan) 0%, transparent 70%);
+      bottom: -10%;
+      right: 10%;
+    }
+
+    /* Tech scanline screen effect */
+    body::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
+      background-size: 100% 4px;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    /* -------------------------------------------------------------
+       2. HEADER AND FOOTER
+       ------------------------------------------------------------- */
+    header {
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      border-bottom: 1px solid var(--border-white);
+      background: rgba(3, 6, 15, 0.7);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand-logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--neon-cyan);
+    }
+
+    .brand-title {
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #00e5ff 0%, #fff 40%, #9d00ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--neon-purple);
+      border: 1px solid rgba(157, 0, 255, 0.2);
+      background: rgba(157, 0, 255, 0.05);
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    /* -------------------------------------------------------------
+       3. SLIDE SLIDESHOW CONTAINER
+       ------------------------------------------------------------- */
+    .slide-deck {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 40px;
+      z-index: 5;
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transform: scale(0.96) translateY(20px);
+      pointer-events: none;
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    .slide-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-cyan);
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(0, 229, 255, 0.03);
+      backdrop-filter: blur(20px);
+      height: 100%;
+      max-height: 580px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Card accent line */
+    .slide-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+    }
+
+    /* -------------------------------------------------------------
+       4. TYPOGRAPHY & CONTENTS
+       ------------------------------------------------------------- */
+    .slide-number {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--neon-cyan);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .slide-title {
+      font-size: 2.8rem;
+      font-weight: 800;
+      margin-top: 8px;
+      line-height: 1.2;
+      background: linear-gradient(to right, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-body {
+      flex: 1;
+      margin: 24px 0;
+      display: flex;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .slide-desc {
+      flex: 1;
+      font-size: 1.25rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .slide-desc ul {
+      margin-top: 15px;
+      list-style: none;
+    }
+
+    .slide-desc li {
+      margin-bottom: 12px;
+      padding-left: 24px;
+      position: relative;
+      font-size: 1.1rem;
+    }
+
+    .slide-desc li::before {
+      content: '⚡';
+      position: absolute;
+      left: 0;
+      color: var(--neon-cyan);
+    }
+
+    .slide-visual {
+      flex: 1;
+      height: 100%;
+      min-height: 280px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border-white);
+      border-radius: 16px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Title Slide Specifics */
+    .title-slide-wrapper {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 20px;
+    }
+
+    .hero-title {
+      font-size: 4.8rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #fff 20%, var(--neon-cyan) 60%, var(--neon-purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 20px rgba(0,229,255,0.15));
+    }
+
+    .hero-subtitle {
+      font-size: 1.4rem;
+      color: #94a3b8;
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+    }
+
+    /* -------------------------------------------------------------
+       5. LIVE PRESENTATION COMPONENT (EMBEDDED CANVAS)
+       ------------------------------------------------------------- */
+    #embedded-canvas {
+      width: 100%;
+      height: 100%;
+      background: #040814;
+      cursor: grab;
+    }
+
+    .embedded-hud {
+      position: absolute;
+      top: 15px; left: 15px;
+      padding: 10px 14px;
+      background: rgba(3,7,12,0.8);
+      border: 1px solid var(--border-cyan);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    /* -------------------------------------------------------------
+       6. NAVIGATION CONTROLS & SUBTITLES
+       ------------------------------------------------------------- */
+    .control-center {
+      padding: 24px 40px;
+      background: rgba(3, 6, 15, 0.85);
+      border-top: 1px solid var(--border-white);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Narration Subtitles Caption Panel */
+    .subtitle-box-class {
+      min-height: 48px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-white);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      color: #38bdf8;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .controls-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      background: rgba(255,255,255,0.03);
+      color: var(--text-main);
+      border: 1px solid var(--border-white);
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+      color: #000;
+      border: none;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+    }
+
+    .progress-bar-container {
+      width: 250px;
+      height: 4px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--neon-cyan);
+      transition: width 0.3s ease;
+    }
+
+    /* -------------------------------------------------------------
+       7. GRAPHIC ILLUSTRATIONS
+       ------------------------------------------------------------- */
+    .problem-ill {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 80%;
+    }
+    .ill-line {
+      height: 8px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ill-line::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; height: 100%; width: 30%;
+      background: var(--neon-red);
+      animation: scan-err 2s infinite ease-in-out;
+    }
+    @keyframes scan-err {
+      0%, 100% { left: 0%; width: 20%; }
+      50% { left: 80%; width: 10%; background: var(--neon-purple); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Ambient Gradients -->
+  <div class="glow-bg glow-purple"></div>
+  <div class="glow-bg glow-cyan"></div>
+
+  <!-- Header Section -->
+  <header>
+    <div class="brand-logo-group">
+      <div class="brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+        </svg>
+      </div>
+      <span class="brand-title">CodeAtlas</span>
+    </div>
+    <div class="tagline">HACKATHON DECK</div>
+  </header>
+
+  <!-- Slide Deck Showcase Area -->
+  <main class="slide-deck">
+
+    <!-- Slide 1: Welcome -->
+    <section class="slide active" id="slide-0">
+      <div class="slide-card" style="justify-content: center;">
+        <div class="title-slide-wrapper">
+          <div class="hero-subtitle">REDEFINING CODE TOPOLOGY</div>
+          <h1 class="hero-title">CodeAtlas</h1>
+          <p style="font-size:1.3rem; color: var(--text-muted); max-width: 600px; line-height: 1.6;">
+            A physics-driven code architectural map and AI vulnerability radar. Secure, compile, and balance code maps in real-time.
+          </p>
+          <div style="font-family: var(--font-mono); font-size: 11px; margin-top:20px; color: var(--neon-cyan);">
+            [ PRESS SPACEBAR OR CLICK NEXT TO PROCEED ]
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 2: The Problem -->
+    <section class="slide" id="slide-1">
+      <div class="slide-card">
+        <span class="slide-number">Slide 02 // Challenge</span>
+        <h2 class="slide-title">The Code Complexity Wall</h2>
+        <div class="slide-body">
+          <div class="slide-desc">
+            <p>As applications scale, software codebases turn into complex webs of microservices, models, and dependencies.</p>
+            <ul>
+              <li><strong>Invisible Dependencies:</strong> Static references hide structure, making upgrades risky.</li>
+              <li><strong>Silent Vulnerabilities:</strong> Flaws like SQL injections go unnoticed inside deep structures.</li>
+              <li><strong>Text-Based Linters Fail:</strong> Raw code lines hide the system's true layout.</li>
+            </ul>
+          </div>
+          <div class="slide-visual">
+            <div class="problem-ill">
+              <div style="font-family:var(--font-mono); font-size:11px; color:var(--neon-red);">SCANNING CONFLICT ARCHITECTURE...</div>
+              <div class="ill-line"></div>
+              <div class="ill-line" style="animation-delay: 0.5s;"></div>
+              <div class="ill-line" style="animation-delay: 1s;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: The Solution -->
+    <section class="slide" id="slide-2">
+      <div class="slide-card">
+        <span class="slide-number">Slide 03 // Solution</span>
+        <h2 class="slide-title">Visual Code Topology</h2>
+        <div class="slide-body">
+          <div class="slide-desc">
+            <p><strong>CodeAtlas</strong> turns raw codebases into living, visual 2D physics-based maps.</p>
+            <ul>
+              <li><strong>AI-Driven Dependency Parsing:</strong> Automatically compiles modules into a graph.</li>
+              <li><strong>Vulnerability Radar:</strong> Highlights loop threats and injection flaws immediately.</li>
+              <li><strong>Interactive Sensory Feedback:</strong> Custom audio synthetics make navigation intuitive.</li>
+            </ul>
+          </div>
+          <div class="slide-visual" style="border-color: var(--neon-cyan);">
+            <div style="text-align: center; padding: 20px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:var(--neon-cyan); margin-bottom:12px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94-3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+              </svg>
+              <div style="font-family:var(--font-mono); font-size:11px; color:#fff; letter-spacing:1px;">TOPOLOGY ENGINE PRIMED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Interactive Graph Demo -->
+    <section class="slide" id="slide-3">
+      <div class="slide-card">
+        <span class="slide-number">Slide 04 // Interactive Simulation</span>
+        <h2 class="slide-title">Interactive Live Demo</h2>
+        <div class="slide-body">
+          <div class="slide-desc" style="max-width: 320px; flex: none;">
+            <p>Interact with the live simulator on the right:</p>
+            <ul>
+              <li><strong>Drag Nodes</strong> to check link gravity.</li>
+              <li><strong>Red Nodes</strong> indicate security risks.</li>
+              <li><strong>Hover or Click</strong> to inspect connections.</li>
+            </ul>
+          </div>
+          <div class="slide-visual" style="padding: 0;">
+            <div class="embedded-hud">
+              <div>ENGINE: ACTIVE</div>
+              <div>HEALTH: 68%</div>
+            </div>
+            <canvas id="embedded-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Tech Stack & Summary -->
+    <section class="slide" id="slide-4">
+      <div class="slide-card">
+        <span class="slide-number">Slide 05 // Tech Architecture</span>
+        <h2 class="slide-title">Lightweight, High Impact</h2>
+        <div class="slide-body">
+          <div class="slide-desc">
+            <p>CodeAtlas provides enterprise-grade scanning with zero deployment overhead:</p>
+            <ul>
+              <li><strong>HTML5 Canvas Physics:</strong> Custom vector mechanics running at 60 FPS.</li>
+              <li><strong>Web Audio Synthesis:</strong> Native tone generation for intuitive UX feedback.</li>
+              <li><strong>Real-Time Security Mapping:</strong> Bridges system design and vulnerability auditing.</li>
+            </ul>
+          </div>
+          <div class="slide-visual">
+            <div style="text-align: center; font-family: var(--font-mono); font-size: 12px; display:flex; flex-direction:column; gap:10px;">
+              <span style="color:var(--neon-cyan);">HTML5 CANVAS</span>
+              <span style="color:var(--neon-purple);">WEB AUDIO API</span>
+              <span style="color:#10b981;">GEMINI AUDIT CORES</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Controls and Caption Area -->
+  <footer class="control-center">
+    <!-- Subtitle Panel -->
+    <div class="subtitle-box-class" id="subtitle-box">
+      Click "Start Presentation" to trigger auto-play voice narration.
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="controls-wrapper">
+      <div class="btn-group">
+        <button class="btn btn-primary" id="btn-play-voice" onclick="toggleSpeech()">
+          🔊 START PRESENTATION
+        </button>
+        <button class="btn" id="btn-mute" onclick="toggleMute()" style="display:none;">
+          🔇 MUTE VOICE
+        </button>
+      </div>
+
+      <div class="btn-group">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="deck-progress"></div>
+        </div>
+        <button class="btn" onclick="prevSlide()">◀ BACK</button>
+        <button class="btn btn-primary" onclick="nextSlide()">NEXT ▶</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- -------------------------------------------------------------
+       8. PRESENTATION LOGIC, SPEECH SYNTHESIS, AND EMBEDDED PHYSICS
+       ------------------------------------------------------------- -->
+  <script>
+    let currentSlide = 0;
+    const totalSlides = 5;
+    let isMuted = false;
+    let synth = window.speechSynthesis;
+    let currentUtterance = null;
+    let autoPlayTimer = null;
+
+    // Pitch Script Narrations
+    const narrationScript = [
+      "Welcome, judges. Today, we are excited to present CodeAtlas, a project designed to redefine code topology and help developers visualize, map, and secure their systems at first glance.",
+      "The problem is clear. As software codebases scale, they turn into massive webs of hidden dependencies. Critical security vulnerabilities like SQL injections and architectural circular loops hide deep inside lines of code, slipping past traditional text-based linters.",
+      "That is why we built CodeAtlas. We turn raw codebases into living, visual 2D physics-based maps, integrating AI-driven dependency parsing, vulnerability radars, and interactive sensory audio feedback directly inside the developer dashboard.",
+      "Let's look at this live simulation. On the right, you can interact with our active codebase topology map. You can drag nodes to check connections. Our vulnerability radar automatically isolates threats in red and warns you of underlying vulnerabilities like SQL Injection and Circular import loops.",
+      "Built with a lightweight stack consisting of HTML5 canvas physics, responsive Web Audio synthesis, and static semantic parsing, CodeAtlas bridges system engineering and security auditing. Thank you for your time, and we are ready for your questions."
+    ];
+
+    function updateDeckUI() {
+      // Toggle active slide
+      for (let i = 0; i < totalSlides; i++) {
+        let slide = document.getElementById(`slide-${i}`);
+        if (i === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      }
+
+      // Update progress bar
+      let fillPct = ((currentSlide) / (totalSlides - 1)) * 100;
+      document.getElementById('deck-progress').style.width = `${fillPct}%`;
+
+      // Speak narration
+      speakCurrentSlide();
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateDeckUI();
+      } else {
+        // Wrap around or stop
+        stopSpeech();
+        document.getElementById('subtitle-box').innerText = "Presentation completed. Thank you!";
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateDeckUI();
+      }
+    }
+
+    // Keyboard controls support
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowRight') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+      }
+    });
+
+    // Speech Synthesis Narrator functions
+    function speakCurrentSlide() {
+      stopSpeech();
+      const textToSpeak = narrationScript[currentSlide];
+      document.getElementById('subtitle-box').innerText = textToSpeak;
+
+      if (!synth || isMuted) return;
+
+      currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
+      
+      // Attempt to select a professional English voice
+      let voices = synth.getVoices();
+      let selectedVoice = voices.find(voice => voice.lang.includes('en-US') || voice.lang.includes('en-GB'));
+      if (selectedVoice) {
+        currentUtterance.voice = selectedVoice;
+      }
+      currentUtterance.rate = 1.05; // Slightly faster pitch pacing
+      
+      currentUtterance.onend = () => {
+        // Automatically go to next slide after speaking finishes (with 1.5s delay)
+        autoPlayTimer = setTimeout(() => {
+          nextSlide();
+        }, 2000);
+      };
+
+      synth.speak(currentUtterance);
+    }
+
+    function toggleSpeech() {
+      let btn = document.getElementById('btn-play-voice');
+      let muteBtn = document.getElementById('btn-mute');
+
+      if (btn.innerText.includes("START")) {
+        btn.innerText = "⏸ PAUSE NARRATOR";
+        muteBtn.style.display = 'block';
+        currentSlide = 0;
+        updateDeckUI();
+      } else if (btn.innerText.includes("PAUSE")) {
+        btn.innerText = "▶ RESUME NARRATOR";
+        stopSpeech();
+      } else {
+        btn.innerText = "⏸ PAUSE NARRATOR";
+        speakCurrentSlide();
+      }
+    }
+
+    function toggleMute() {
+      let muteBtn = document.getElementById('btn-mute');
+      if (isMuted) {
+        isMuted = false;
+        muteBtn.innerText = "🔇 MUTE VOICE";
+        speakCurrentSlide();
+      } else {
+        isMuted = true;
+        muteBtn.innerText = "🔊 UNMUTE VOICE";
+        stopSpeech();
+      }
+    }
+
+    function stopSpeech() {
+      if (synth) synth.cancel();
+      if (autoPlayTimer) clearTimeout(autoPlayTimer);
+    }
+
+    // Load voices dynamically (Chrome fix)
+    if (synth && synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = () => {
+        // Voices loaded
+      };
+    }
+
+    // -------------------------------------------------------------
+    // EMBEDDED PHYSCIS GRAPH RUNNER FOR SLIDE 4
+    // -------------------------------------------------------------
+    const canvas = document.getElementById('embedded-canvas');
+    const ctx = canvas.getContext('2d');
+    let nodes = [
+      { id: "gateway", name: "gateway.ts", vulnerable: false, x: 100, y: 100, vx: 0, vy: 0 },
+      { id: "auth", name: "auth-service.js", vulnerable: true, x: 200, y: 80, vx: 0, vy: 0 },
+      { id: "db", name: "user-db.js", vulnerable: true, x: 220, y: 180, vx: 0, vy: 0 },
+      { id: "crypto", name: "crypto-vault.cpp", vulnerable: true, x: 80, y: 200, vx: 0, vy: 0 }
+    ];
+    let links = [
+      { source: "gateway", target: "auth" },
+      { source: "auth", target: "db" },
+      { source: "db", target: "auth" },
+      { source: "gateway", target: "crypto" }
+    ];
+
+    let draggedNode = null;
+
+    function resizeEmbeddedCanvas() {
+      canvas.width = canvas.parentElement.offsetWidth || 400;
+      canvas.height = canvas.parentElement.offsetHeight || 280;
+    }
+    window.addEventListener('resize', resizeEmbeddedCanvas);
+    resizeEmbeddedCanvas();
+
+    function updateGraphPhysics() {
+      let cx = canvas.width / 2;
+      let cy = canvas.height / 2;
+
+      nodes.forEach(n => {
+        // Pull to center
+        n.vx += (cx - n.x) * 0.0005;
+        n.vy += (cy - n.y) * 0.0005;
+        n.vx += (Math.random() - 0.5) * 0.02;
+        n.vy += (Math.random() - 0.5) * 0.02;
+      });
+
+      // Repulsion
+      for(let i=0; i<nodes.length; i++) {
+        for(let j=i+1; j<nodes.length; j++) {
+          let dx = nodes[j].x - nodes[i].x;
+          let dy = nodes[j].y - nodes[i].y;
+          let d = Math.sqrt(dx*dx + dy*dy) || 1;
+          if (d < 80) {
+            let f = (80 - d) * 0.005;
+            nodes[i].vx -= (dx/d)*f;
+            nodes[i].vy -= (dy/d)*f;
+            nodes[j].vx += (dx/d)*f;
+            nodes[j].vy += (dy/d)*f;
+          }
+        }
+      }
+
+      // Link spring pull
+      links.forEach(l => {
+        let s = nodes.find(n => n.id === l.source);
+        let t = nodes.find(n => n.id === l.target);
+        if (s && t) {
+          let dx = t.x - s.x;
+          let dy = t.y - s.y;
+          let d = Math.sqrt(dx*dx + dy*dy) || 1;
+          let f = (d - 100) * 0.0008;
+          s.vx += (dx/d)*f;
+          s.vy += (dy/d)*f;
+          t.vx -= (dx/d)*f;
+          t.vy -= (dy/d)*f;
+        }
+      });
+
+      // Move nodes
+      nodes.forEach(n => {
+        if (n !== draggedNode) {
+          n.x += n.vx;
+          n.y += n.vy;
+          n.vx *= 0.92;
+          n.vy *= 0.92;
+        }
+        n.x = Math.max(20, Math.min(canvas.width - 20, n.x));
+        n.y = Math.max(20, Math.min(canvas.height - 20, n.y));
+      });
+
+      // Render Frame
+      ctx.clearRect(0,0, canvas.width, canvas.height);
+
+      // Links
+      links.forEach(l => {
+        let s = nodes.find(n => n.id === l.source);
+        let t = nodes.find(n => n.id === l.target);
+        if(s && t) {
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(t.x, t.y);
+          ctx.strokeStyle = s.vulnerable || t.vulnerable ? 'rgba(255, 51, 102, 0.2)' : 'rgba(0, 229, 255, 0.15)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+      });
+
+      // Nodes
+      nodes.forEach(n => {
+        let col = n.vulnerable ? '#ff3366' : '#00e5ff';
+        
+        if (n.vulnerable) {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, 14 + Math.sin(Date.now()*0.005)*3, 0, Math.PI*2);
+          ctx.fillStyle = 'rgba(255,51,102,0.06)';
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 8, 0, Math.PI*2);
+        ctx.fillStyle = '#05070a';
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.name, n.x, n.y + 18);
+      });
+
+      requestAnimationFrame(updateGraphPhysics);
+    }
+
+    // Mouse listener inside canvas
+    canvas.addEventListener('mousedown', (e) => {
+      let rect = canvas.getBoundingClientRect();
+      let clickX = e.clientX - rect.left;
+      let clickY = e.clientY - rect.top;
+
+      let match = nodes.find(node => {
+        let dx = node.x - clickX;
+        let dy = node.y - clickY;
+        return Math.sqrt(dx*dx + dy*dy) < 12;
+      });
+
+      if (match) {
+        draggedNode = match;
+        canvas.style.cursor = 'grabbing';
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (draggedNode) {
+        let rect = canvas.getBoundingClientRect();
+        draggedNode.x = e.clientX - rect.left;
+        draggedNode.y = e.clientY - rect.top;
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      draggedNode = null;
+      canvas.style.cursor = 'grab';
+    });
+
+    // Start physics loop on load
+    updateGraphPhysics();
+
+  </script>
+</body>
+</html>

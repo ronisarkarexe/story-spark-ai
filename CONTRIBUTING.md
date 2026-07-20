@@ -158,9 +158,22 @@ git commit -m "feat: description of your change"
 git push origin feat/your-feature-name
 ```
 
+## 7. Updating the Changelog
+
+When submitting a Pull Request that includes user-facing changes, please update the `CHANGELOG.md` file:
+
+- **Add** new features, enhancements, or capabilities
+- **Changed** modifications to existing functionality
+- **Deprecated** features that will be removed in future versions
+- **Removed** features or functionality that have been deleted
+- **Fixed** bug fixes and corrections
+- **Security** security-related fixes or improvements
+
+Add your changes to the `[Unreleased]` section under the appropriate heading. Keep entries concise and focused on what users or developers need to know.
+
 ---
 
-## 7. Common Troubleshooting
+## 8. Common Troubleshooting
 
 ### `npm install` fails
 - Make sure you are using Node.js v18+: `node -v`
@@ -183,7 +196,7 @@ git push origin feat/your-feature-name
 
 ---
 
-## Code of Conduct
+## 9. Code of Conduct
 
 Please read and follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
 

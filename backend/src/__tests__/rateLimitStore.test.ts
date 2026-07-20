@@ -56,7 +56,10 @@ describe("consumeRateLimit", () => {
       blockTimeMs: 15 * 60 * 1000,
     });
 
-    expect(result).toEqual({ allowed: false, retryAfterSec: 60 });
+    expect(result.allowed).toBe(false);
+    expect(result.retryAfterSec).toBe(60);
+    expect(result.remaining).toBe(0);
+    expect(typeof result.resetAt).toBe("number");
     expect(mockLoggerError).toHaveBeenCalledWith(
       "Rate limit store error for login_127.0.0.1: database unavailable"
     );

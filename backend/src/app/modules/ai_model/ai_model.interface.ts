@@ -11,6 +11,7 @@ export interface IAIModel {
   language?: string;
   tone?: string;
   genre?: string;
+  targetAudience?: string;
   characters?: ICharacter[];
 }
 
