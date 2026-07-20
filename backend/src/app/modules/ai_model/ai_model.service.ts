@@ -5,7 +5,6 @@ import {
   GenerationTimeoutError,
   raceGenerationWithTimeout,
 } from "../../../utils/generation_timeout";
-import { timeoutLimit } from "../../../utils/timeout_limit";
 import {
   IAIModel,
   IAlternateEndingPayload,
@@ -43,6 +42,7 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   language: payload.language ?? "English",
   tone: payload.tone ?? undefined,
   genre: payload.genre ?? undefined,
+  targetAudience: payload.targetAudience ?? undefined,
   characters: payload.characters ?? undefined,
 });
 
@@ -65,7 +65,7 @@ const mapGenerationError = (error: unknown, message: string): never => {
 // Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
 // Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
 const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal?: AbortSignal) => {
-  const { prompt, wordLength, numStories, language, tone, genre, characters } =
+  const { prompt, wordLength, numStories, language, tone, genre, targetAudience, characters } =
     normalizeStoryPayload(payload);
 
   try {
@@ -79,6 +79,7 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal
           signal,
           tone,
           genre,
+          targetAudience,
           characters,
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
@@ -92,7 +93,7 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
-  const { prompt, wordLength, numStories, language, tone, genre, characters } =
+  const { prompt, wordLength, numStories, language, tone, genre, targetAudience, characters } =
     normalizeStoryPayload(payload);
 
   try {
@@ -106,6 +107,7 @@ const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
           signal,
           tone,
           genre,
+          targetAudience,
           characters,
         ),
       FREE_GENERATION_TIMEOUT_MS,
@@ -323,17 +325,15 @@ Story:
 ${story}
 `;
 
-    const result = await Promise.race([
-      timeoutLimit(30000),
-      generateWithGeminiStories(characterPrompt, 300, 1),
-    ]);
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateWithGeminiStories(characterPrompt, 300, 1, "English", signal),
+      30000,
+    );
 
     return result;
   } catch (error) {
-    throw new ApiError(
-      httpStatus.GATEWAY_TIMEOUT,
-      "Failed to generate character profiles!"
-    );
+    if (error instanceof GenerationTimeoutError || error instanceof ApiError) throw error;
+    mapGenerationError(error, "Failed to generate character profiles!");
   }
 };
 

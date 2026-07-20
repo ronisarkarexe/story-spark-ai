@@ -24,7 +24,7 @@ export interface IPost extends IPostPayload {
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
-  bookmarksCount: number;  
+  bookmarksCount: number;
   averageRating: number;
   totalRatings: number;
   isPublished: boolean;
@@ -38,9 +38,24 @@ export interface IPost extends IPostPayload {
   comments?: Types.ObjectId[];
   reactions?: Types.ObjectId[];
   bookmarks?: Types.ObjectId[];
+  parentStoryId?: Types.ObjectId;
+  rootStoryId?: Types.ObjectId;
 }
 
-export type PostModel = Model<IPost, object>;
+export interface IEngagementStats {
+  likesCount: number;
+  commentsCount: number;
+  bookmarksCount: number;
+  viewsCount: number;
+  averageRating: number;
+  totalRatings: number;
+}
+
+export type PostModel = Model<IPost, object> & {
+  getEngagementStats(
+    postId: string | Types.ObjectId
+  ): Promise<IEngagementStats | null>;
+};
 
 export interface IPostSearchFields {
   searchTerm?: string;
