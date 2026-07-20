@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
+import { startOrderReconciliationJob } from "./jobs/reconcilePendingOrders.job";
 
 // Override DNS resolvers only when explicitly configured, default to the platform environment
 if (config.dns_servers?.length) {
@@ -65,6 +66,10 @@ async function main() {
     logger.error("Critical error during application startup:", startupError);
     process.exit(1);
   }
+
+  // Recovers orders left in "paid_pending_entitlement" by a crash between
+  // the Order write and the User write in verifyPayment. See issue #4876.
+  startOrderReconciliationJob();
 
   const httpServer = http.createServer(app);
   const defaultCorsOrigins = 
