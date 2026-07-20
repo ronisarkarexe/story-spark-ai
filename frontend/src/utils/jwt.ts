@@ -17,7 +17,7 @@ export interface CustomJwtPayload extends JwtPayload {
 export const isJwtTokenFormat = (token: string): boolean => {
   if (!token || typeof token !== "string") return false;
   const parts = token.split(".");
-  return parts.length === 3;
+  return parts.length === 3 && parts.every((part) => part.length > 0);
 };
 
 /**
