@@ -142,6 +142,10 @@ async function main() {
     process.exit(1);
   }
 
+  // Recovers orders left in "paid_pending_entitlement" by a crash between
+  // the Order write and the User write in verifyPayment. See issue #4876.
+  startOrderReconciliationJob();
+
   const httpServer = http.createServer(app);
   // defaultCorsOrigins is imported from app.ts for consistency
 
