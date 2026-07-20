@@ -61,6 +61,9 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     isApplyForWriter: { type: Boolean, default: false },
     tokenVersion: { type: Number, default: 0 },
+    pendingEmail: { type: String, default: null },
+    pendingEmailToken: { type: String, default: null },
+    pendingEmailTokenExpires: { type: Date, default: null },
     gamification: {
       xp: { type: Number, default: 0 },
       level: { type: Number, default: 1 },
@@ -101,6 +104,7 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
 
 UserSchema.pre("save", async function (next) {
   const user = this;
+main
   if (!user.isModified("password")) {
     return next();
   }
@@ -108,9 +112,7 @@ UserSchema.pre("save", async function (next) {
     this.passwordChangedAt = new Date(Date.now() - 1000);
   }
 
-  // Only hash password if it exists, is not empty, and has been modified (for password-based auth)
-  // Skip for Google OAuth users who don't have passwords
-  if (user.isModified("password") && user.password && user.password.trim() !== "") {
+main
     user.password = await bcrypt.hash(
       user.password,
       Number(config.bcrypt_salt_rounds)

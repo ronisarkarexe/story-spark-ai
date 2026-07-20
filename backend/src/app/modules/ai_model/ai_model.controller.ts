@@ -13,6 +13,8 @@ import {
   runWithQuotaCleanup,
 } from "./quota.lifecycle";
 import { generateWithGeminiStoriesStream } from "./ai_model.utils";
+import { UsageRecord } from "./usageRecord.model";
+import { PLAN_QUOTAS } from "../../../config/quota.config";
 
 const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
   const prompt = req.body;
@@ -381,6 +383,50 @@ const generateCharacterProfile = catchAsync(
   }
 );
 
+const getUsageMe = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User not authenticated");
+  }
+
+  const plan = user.subscriptionType || "free";
+  const limitsForPlan = PLAN_QUOTAS[plan as keyof typeof PLAN_QUOTAS] || PLAN_QUOTAS.free;
+
+  const now = new Date();
+  const billingPeriodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  // Fetch the usage records for this user for the current month
+  const records = await UsageRecord.find({
+    userId: user._id,
+    billingPeriodStart,
+  });
+
+  const generateRecord = records.find((r) => r.action === "story_generate");
+  const continueRecord = records.find((r) => r.action === "story_continue");
+
+  const resetsAt = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Usage retrieved successfully",
+    data: {
+      plan,
+      usage: {
+        story_generate: {
+          used: generateRecord ? generateRecord.count : 0,
+          limit: limitsForPlan.story_generate,
+        },
+        story_continue: {
+          used: continueRecord ? continueRecord.count : 0,
+          limit: limitsForPlan.story_continue,
+        },
+      },
+      resetsAt,
+    },
+  });
+});
+
 export const AiModelController = {
   aiModelGenerate,
   aiFreeModelGenerate,
@@ -396,4 +442,5 @@ export const AiModelController = {
   aiFreeStoryContinuation,
   aiModelChat,
   aiFreeModelChat,
+  getUsageMe,
 };

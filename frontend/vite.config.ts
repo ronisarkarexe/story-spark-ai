@@ -1,8 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vite";
-
 import { defineConfig } from "vitest/config";
-
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -39,26 +36,10 @@ export default defineConfig({
       }
     })
   ],
-
-/// <reference types="vitest" />
-
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
   test: {
     globals: true,
     environment: "jsdom",
   },
-
-
-    globals: true,
-    environment: "jsdom",
-  },
-
-  environment: "jsdom",
-  globals: true,
-},
-
-
   server: {
     port: 4001,
     headers: {
@@ -76,7 +57,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            // Group core React / Redux packages on critical path
             if (
               id.includes("react/") ||
               id.includes("react-dom/") ||
@@ -99,7 +79,6 @@ export default defineConfig({
             if (id.includes("font-awesome") || id.includes("fortawesome")) {
               return "vendor-font-awesome";
             }
-            // Group charts and d3 together (loaded lazily)
             if (
               id.includes("recharts") ||
               id.includes("chart.js") ||
@@ -107,11 +86,9 @@ export default defineConfig({
             ) {
               return "vendor-charts-d3";
             }
-            // Group docx library (loaded lazily)
             if (id.includes("docx")) {
               return "vendor-docx";
             }
-            // Allow other small modules to be split naturally
           }
         },
       },

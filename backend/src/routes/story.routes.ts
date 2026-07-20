@@ -6,6 +6,7 @@ import { ReviewValidator } from "../app/modules/review/review.validation";
 import validateRequest from "../app/middleware/validate.request";
 import auth from "../app/middleware/auth.middleware";
 import checkRequestLimit from "../app/middleware/check.request.limit";
+import { enforceQuota } from "../app/middleware/enforceQuota.middleware";
 import storyGenerationRateLimiter from "../app/middleware/story.rate-limiter";
 import { ENUM_USER_ROLE } from "../enums/user";
 import catchAsync from "../shared/catch_async";
@@ -52,7 +53,7 @@ router.post(
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
   storyGenerationRateLimiter,
-  checkRequestLimit(),
+  enforceQuota("story_continue"),
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
@@ -95,7 +96,7 @@ router.post(
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
   storyGenerationRateLimiter,
-  checkRequestLimit(),
+  enforceQuota("story_continue"),
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
@@ -147,12 +148,18 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  // NEW — must run before checkRequestLimit() so a duplicate/retried request
+  // never reserves quota or reaches generateStory() a second time.
+  idempotencyMiddleware(),
+  storyGenerationRateLimiter,
+  enforceQuota("story_generate"),
   generateLimiter,
   checkRequestLimit(),
   validateRequest(AIModelValidator.aiStoryGenerate),
   catchAsync(async (req: Request, res: Response) => {
     const { prompt, provider, options } = req.body;
     const guard = res.locals.quotaRefundGuard;
+    const idempotencyKey = res.locals.idempotencyKey as string | undefined;
 
     if (!guard) {
       throw new Error(
@@ -165,15 +172,30 @@ router.post(
     const controller = new AbortController();
     req.on("close", () => controller.abort());
 
-    await runWithQuotaCleanup(guard, async () => {
-      const result = await generateStory(prompt, provider, options);
-      sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: "Story generated successfully in structured format!",
-        data: result,
+    try {
+      await runWithQuotaCleanup(guard, async () => {
+        const result = await generateStory(prompt, provider, options);
+        const responseBody = {
+          success: true,
+          message: "Story generated successfully in structured format!",
+          data: result,
+        };
+
+        // Cache the response against this Idempotency-Key so a retried
+        // request replays it instead of calling the AI provider again.
+        await completeIdempotentRequest(idempotencyKey, httpStatus.OK, responseBody);
+
+        sendResponse(res, {
+          statusCode: httpStatus.OK,
+          ...responseBody,
+        });
       });
-    });
+    } catch (err) {
+      // Release the key on failure so a legitimate retry isn't stuck
+      // behind a stale "in_progress" record.
+      await releaseIdempotentRequest(idempotencyKey);
+      throw err;
+    }
   })
 );
 

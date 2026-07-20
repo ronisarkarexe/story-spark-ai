@@ -56,6 +56,10 @@ const extractTokenFromRequest = (req: Request): string => {
   }
 
   const cookieToken =
+    req.cookies?.accessToken || req.cookies?.token;
+
+  return bearerToken || cookieToken || "";
+
     req.cookies?.accessToken ||
     req.cookies?.token;
 
@@ -175,6 +179,11 @@ const auth =
       } catch (err) {
         next(err);
       }
-    };
+      req.user = user;
+      return next();
+    } catch (err) {
+      return next(err);
+    }
+  };
 
 export default auth;
