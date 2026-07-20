@@ -25,11 +25,21 @@ import {
   TranslationResponseSchema,
   StoryboardResponseSchema,
 } from "../ai";
+import { sanitizeJsonText } from "../../../utils/promptSecurity";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
 const MISSING_GEMINI_API_KEY_MESSAGE =
   "Gemini API key is not configured. Set GEMINI_API_KEY before using Gemini generation features.";
+
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -127,10 +137,27 @@ const buildToneInstruction = (tone?: string): string => {
   return `Tone & Style Directive: ${instruction}\n\n`;
 };
 
+const buildAudienceInstruction = (targetAudience?: string): string => {
+  if (!targetAudience) return "";
+  return `Target Audience Directive: Write the story specifically tailored for a ${targetAudience}. Adjust the complexity of the vocabulary, sentence structure, and thematic depth appropriately for this demographic.\n\n`;
+};
+
 const throwIfAborted = (signal?: AbortSignal): void => {
   if (signal?.aborted) {
     throw new GenerationAbortedError();
   }
+};
+
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) {
+    return trimmed;
+  }
+
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
 };
 
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
@@ -205,6 +232,7 @@ export async function generateWithGeminiStories(
   signal?: AbortSignal,
   tone?: string, // NEW: optional tone parameter
   genre?: string, // NEW: optional genre parameter
+  targetAudience?: string,
   characters?: ICharacter[],
 ): Promise<Story[]> {
   throwIfAborted(signal);
@@ -214,6 +242,7 @@ export async function generateWithGeminiStories(
   try {
     const genreInstruction = buildGenreInstruction(genre);
     const toneInstruction = buildToneInstruction(tone);
+    const audienceInstruction = buildAudienceInstruction(targetAudience);
     const charactersInstruction = buildCharactersInstruction(characters);
 
     const response = await executeWithRetryAndFallback(async (activeModel) => {
@@ -225,10 +254,11 @@ export async function generateWithGeminiStories(
 
       const toneInstruction = buildToneInstruction(tone);
       const genreInstruction = buildGenreInstruction(genre);
+      const audienceInstruction = buildAudienceInstruction(targetAudience);
       const charactersInstruction = buildCharactersInstruction(characters);
 
       return chatSession.sendMessage(
-        `${buildGenreInstruction(genre)}${buildToneInstruction(tone)}${buildCharactersInstruction(characters)}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+        `${genreInstruction}${toneInstruction}${audienceInstruction}${charactersInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
         First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
         Then, generate ${numStories} different short stories based on this ENHANCED prompt.
         The stories MUST be written entirely in the ${language} language.
@@ -751,7 +781,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,

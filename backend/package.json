@@ -18,6 +18,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",
     "@google/generative-ai": "^0.23.0",
+    "@jest/globals": "^29.7.0",
     "bcryptjs": "^3.0.3",
     "compromise": "^14.15.1",
     "cookie-parser": "^1.4.7",
@@ -38,16 +39,16 @@
     "openai": "^4.104.0",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.3",
-    "y-websocket": "^2.0.1",
-    "yjs": "^13.6.10",
     "tiktoken": "^1.0.22",
     "tsx": "^4.22.4",
     "uuid": "^11.1.0",
     "winston": "^3.19.0",
-    "@jest/globals": "^29.7.0",
+    "y-websocket": "^2.0.1",
+    "yjs": "^13.6.10",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.8",
@@ -66,7 +67,6 @@
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "@jest/globals": "^29.7.0",
     "typescript": "^5.7.2"
   }
 }

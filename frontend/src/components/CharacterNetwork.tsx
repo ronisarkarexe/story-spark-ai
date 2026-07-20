@@ -30,6 +30,7 @@ const edgeTypes: EdgeTypes = {
 
 interface CharacterNetworkProps {
   storyId: string;
+  storyContent: string;
 }
 
 interface Character {
@@ -64,7 +65,7 @@ type RelationshipEdgeData = {
 type CharacterFlowNode = Node<CharacterNodeData, "character">;
 type CharacterFlowEdge = Edge<RelationshipEdgeData, "relationship">;
 
-const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
+const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
   const { data: networkData, isLoading, isFetching, error, refetch } = useGetCharacterNetworkQuery(storyId);
 
   // Filter States
@@ -97,10 +98,10 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
     setMinStrength(1);
   }, []);
 
-  // Sync / Refetch when story content changes
+  // Sync / Refetch when the story changes OR when its content is edited
   useEffect(() => {
     refetch();
-  }, [storyId, refetch]);
+  }, [storyId, storyContent, refetch]);
 
   // Nodes & Edges computing based on active filters
   const rawCharacters = useMemo(() => networkData?.characters || [], [networkData]);

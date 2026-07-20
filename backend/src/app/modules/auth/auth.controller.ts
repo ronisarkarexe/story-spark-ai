@@ -6,7 +6,6 @@ import sendResponse from "../../../shared/send_response";
 import { IUser } from "../user/user.interface";
 import catchAsync from "../../../shared/catch_async";
 import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../../utils/cookie.util";
-import { TokenBlacklist } from "./tokenBlacklist.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 
 const login = catchAsync(async (req: Request, res: Response) => {
@@ -66,16 +65,6 @@ const logout = catchAsync(async (req: Request, res: Response) => {
     activeToken = req.cookies?.accessToken || req.cookies?.token || "";
   }
 
-  if (activeToken) {
-    try {
-      await TokenBlacklist.create({
-        token: activeToken,
-      });
-    } catch (err) {
-      console.error("Error blacklisting token on logout:", err);
-    }
-  }
-
   const refreshToken = req.cookies?.refreshToken as string | undefined;
   if (refreshToken) {
     await AuthService.logout(refreshToken);
@@ -106,13 +95,15 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
   const { oldPassword, newPassword } = req.body;
 
-  await AuthService.changePassword(user, { oldPassword, newPassword });
+  const { accessToken, refreshToken } = await AuthService.changePassword(user, { oldPassword, newPassword });
 
-   sendResponse(res, {
+  setRefreshTokenCookie(res, refreshToken);
+
+  sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Password changed successfully. All previous sessions have been invalidated.",
-    data: null,
+    data: { accessToken },
   });
 });
 
@@ -158,6 +149,18 @@ const sendOtp = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const verifyEmailChange = catchAsync(async (req: Request, res: Response) => {
+  const { token, email } = req.body;
+  const result = await AuthService.verifyEmailChange({ token, email });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Email changed successfully!",
+    data: result,
+  });
+});
+
 export const AuthController = {
   login,
   register,
@@ -168,4 +171,5 @@ export const AuthController = {
   forgotPassword,
   resetPassword,
   sendOtp,
+  verifyEmailChange,
 };

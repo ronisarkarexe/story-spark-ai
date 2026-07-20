@@ -4,6 +4,7 @@ export interface CustomJwtPayload extends JwtPayload {
   email?: string | undefined;
   userId?: string | undefined;
   _id?: string | undefined;
+  sub?: string | undefined;
   name?: string | undefined;
   postsCount?: number | undefined;
   role?: string | undefined;
@@ -16,7 +17,7 @@ export interface CustomJwtPayload extends JwtPayload {
 export const isJwtTokenFormat = (token: string): boolean => {
   if (!token || typeof token !== "string") return false;
   const parts = token.split(".");
-  return parts.length === 3;
+  return parts.length === 3 && parts.every((part) => part.length > 0);
 };
 
 /**
@@ -41,9 +42,9 @@ export const decodedToken = (token: string): CustomJwtPayload => {
 
 
   // 1. Validate required userId or _id claim
-  const idToUse = decoded.userId || decoded._id;
+  const idToUse = decoded.userId || decoded._id || decoded.sub;
   if (typeof idToUse !== "string" || idToUse.trim() === "") {
-    throw new Error("Token is missing a valid 'userId' or '_id' claim.");
+    throw new Error("Token is missing a valid 'userId', '_id', or 'sub' claim.");
 
   }
 
