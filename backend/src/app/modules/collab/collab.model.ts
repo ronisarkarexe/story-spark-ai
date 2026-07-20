@@ -17,15 +17,26 @@ const StoryChunkSchema = new Schema({
   timestamp: { type: Date, default: Date.now },
 });
 
+const ChatMessageSchema = new Schema({
+  senderId: { type: String, required: true },
+  senderName: { type: String, required: true },
+  senderColor: { type: String, required: true },
+  content: { type: String, required: true },
+  type: { type: String, enum: ["message", "system"], default: "message" },
+  timestamp: { type: Date, default: Date.now },
+});
+
 const CollabRoomSchema = new Schema<ICollabRoom>(
   {
     roomId: { type: String, required: true, unique: true },
     createdBy: { type: String, required: true },
     participants: { type: [ParticipantSchema], default: [] },
     story: { type: [StoryChunkSchema], default: [] },
+    chatMessages: { type: [ChatMessageSchema], default: [] },
     expiresAt: { type: Date, required: true },
     collabState: { type: Buffer },
     isAiGenerating: { type: Boolean, required: true, default: false },
+    isPublic: { type: Boolean, required: true, default: true },
   },
   {
     timestamps: true,

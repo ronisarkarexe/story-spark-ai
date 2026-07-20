@@ -18,6 +18,13 @@ type Inputs = {
   password: string;
 };
 
+type LoginError = {
+  data?: {
+    message?: string;
+  };
+  message?: string;
+};
+
 const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
@@ -44,8 +51,13 @@ const LoginComponent = () => {
         const from = location.state?.from || "/dashboard";
         navigate(from, { replace: true });
       }
-    } catch {
-      toast.error("Login failed. Please check your credentials.");
+    } catch (error: unknown) {
+      const loginError = error as LoginError;
+
+      toast.error(
+        loginError.data?.message ||
+        loginError.message ||
+        "Login failed. Please try again.")
     } finally {
       setIsBusy(false);
     }
@@ -65,7 +77,11 @@ const LoginComponent = () => {
         toast.success("User logged in successfully with Google!");
         login(res.data.accessToken);
         const from = location.state?.from || "/dashboard";
-        navigate(from, { replace: true });
+        try {
+          navigate(from, { replace: true });
+        } catch {
+          window.location.href = from;
+        }
       }
     } catch {
       toast.error("Failed to login with Google. Please try again.");
@@ -79,7 +95,7 @@ const LoginComponent = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
+    <div className="min-h-screen min-h-dvh w-full bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -94,7 +110,7 @@ const LoginComponent = () => {
         className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"
       />
 
-      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
+      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center justify-items-center lg:justify-items-stretch relative z-10 box-border">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -150,10 +166,10 @@ const LoginComponent = () => {
           </div>
         </motion.div>
 
-                <div className="flex justify-center w-full box-border">
-          <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
+                <div className="flex justify-center w-full min-w-0 box-border">
+          <div className="w-full max-w-md overflow-hidden bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
             <button
-              onClick={() => (window.location.href = "/")}
+              onClick={() => navigate("/")}
               className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
             >
               ← Back to Home
@@ -180,7 +196,13 @@ const LoginComponent = () => {
                 required
                 icon="fi fi-rr-envelope"
                 register={register}
-                validation={{ required: "Email is required" }}
+                validation={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^\S+@\S+\.\S+$/,
+                    message: "Enter a valid email address",
+                  },
+                }}
                 error={errors.email}
                 autoComplete="email"
               />
@@ -194,7 +216,13 @@ const LoginComponent = () => {
                   required
                   icon="fi fi-rr-lock"
                   register={register}
-                  validation={{ required: "Password is required" }}
+                  validation={{
+                    required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                  }}
                   error={errors.password}
                   autoComplete="current-password"
                 />
@@ -202,7 +230,7 @@ const LoginComponent = () => {
                 <div className="flex justify-end pt-2">
                   <Link
                     to="/forgot-password"
-                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors focus:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm"
                   >
                     Forgot Password?
                   </Link>
@@ -210,7 +238,12 @@ const LoginComponent = () => {
               </div>
 
               <div className="pt-2">
-                <SSButton text="Sign In" type="submit" isLoading={isBusy} />
+                <SSButton
+                  text="Sign In"
+                  type="submit"
+                  isLoading={isBusy}
+                  disabled={isBusy}
+                />
               </div>
             </form>
 
@@ -225,12 +258,16 @@ const LoginComponent = () => {
               </div>
             </div>
 
-            <div className="flex justify-center w-full  max-w-full overflow-x-hidden">
-              <GoogleLogin
-                onSuccess={handleGoogleLoginSuccess}
-                onError={handleGoogleLoginError}
-              />
-            </div>
+              <div
+                className={`flex justify-center w-full max-w-full overflow-x-hidden ${
+                  isBusy ? "pointer-events-none opacity-50" : ""
+                }`}
+              >
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={handleGoogleLoginError}
+                />
+              </div>
 
             <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
               Don&apos;t have an account?{" "}

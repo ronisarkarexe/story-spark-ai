@@ -18,6 +18,10 @@ import { GamificationService } from "../gamification/gamification.service";
 import { USER_STATUS } from "../../../enums/user_status";
 import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 
+const loginAttempts = new Map<string, { count: number; firstAttempt: number }>();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
 const googleClient = new OAuth2Client(config.google_client_id);
 
 const validateUserStatus = (status?: string) => {
@@ -54,6 +58,7 @@ const normalizeString = (value: unknown, fieldName: string) => {
 // Token claims; tokenVersion enables global session revocation.
 const buildClaims = (user: any) => ({
   _id: user._id,
+  userId: user._id,
   email: user.email,
   role: user.role,
   subscriptionType: user.subscriptionType,
@@ -101,10 +106,36 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Please use Google login for this account!");
   }
 
+  // Per-email brute-force protection
+  const now = Date.now();
+  const record = loginAttempts.get(email);
+  if (record) {
+    if (record.count >= MAX_LOGIN_ATTEMPTS && now - record.firstAttempt < LOGIN_WINDOW_MS) {
+      const retryAfterSec = Math.ceil((record.firstAttempt + LOGIN_WINDOW_MS - now) / 1000);
+      throw new ApiError(httpStatus.TOO_MANY_REQUESTS, `Too many login attempts. Please try again after ${Math.ceil(retryAfterSec / 60)} minutes.`, "", { "Retry-After": String(retryAfterSec) });
+    }
+    if (now - record.firstAttempt >= LOGIN_WINDOW_MS) {
+      loginAttempts.delete(email);
+    }
+  }
+
   const match = await bcrypt.compare(password, isExistUser.password);
   if (!match) {
+    const record = loginAttempts.get(email) ?? { count: 0, firstAttempt: now };
+    record.count += 1;
+    if (record.count === 1) record.firstAttempt = now;
+    if (record.count >= MAX_LOGIN_ATTEMPTS) {
+      const retryAfterMs = LOGIN_WINDOW_MS - (now - record.firstAttempt);
+      const retryAfterSec = Math.ceil(retryAfterMs / 1000);
+      loginAttempts.set(email, record);
+      throw new ApiError(httpStatus.TOO_MANY_REQUESTS, `Too many login attempts. Please try again after ${Math.ceil(retryAfterSec / 60)} minutes.`, "", { "Retry-After": String(retryAfterSec) });
+    }
+    loginAttempts.set(email, record);
     throw new ApiError(httpStatus.UNAUTHORIZED, "Password is not valid!");
   }
+
+  // Reset counter on successful login
+  loginAttempts.delete(email);
 
   const accessToken = issueAccessToken(isExistUser, rememberMe ? "30d" : "15m");
   const refreshToken = await issueRefreshToken(isExistUser);
@@ -364,13 +395,13 @@ const changePassword = async (userPayload: any, payload: any) => {
   }
 
   user.password = newPassword;
-
-  if (user.tokenVersion !== undefined) {
-    user.tokenVersion += 1;
-  } else {
-    user.tokenVersion = 1;
-  }
+  user.tokenVersion = (user.tokenVersion ?? 0) + 1;
   await user.save();
+
+  const accessToken = issueAccessToken(user);
+  const refreshToken = await issueRefreshToken(user);
+
+  return { accessToken, refreshToken };
 };
 const forgotPassword = async (email: string) => {
   const safeEmail = normalizeEmail(email);
@@ -468,6 +499,31 @@ const resetPassword = async (payload: {
   };
 };
 
+const verifyEmailChange = async (payload: { token: string; email: string }) => {
+  const { token, email } = payload;
+  const normalizedEmail = normalizeEmail(email);
+
+  const user = await User.findOne()
+    .where("pendingEmail")
+    .equals(normalizedEmail)
+    .where("pendingEmailToken")
+    .equals(token)
+    .where("pendingEmailTokenExpires")
+    .gt(new Date());
+
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid or expired verification token.");
+  }
+
+  user.email = normalizedEmail;
+  user.pendingEmail = undefined;
+  user.pendingEmailToken = undefined;
+  user.pendingEmailTokenExpires = undefined;
+  await user.save();
+
+  return { email: user.email };
+};
+
 export const AuthService = {
   login,
   register,
@@ -477,4 +533,5 @@ export const AuthService = {
   changePassword,
   forgotPassword,
   resetPassword,
+  verifyEmailChange,
 };
