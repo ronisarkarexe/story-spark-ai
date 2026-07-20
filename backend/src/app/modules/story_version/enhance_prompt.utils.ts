@@ -5,16 +5,25 @@ import {
   OPENAI_MODEL,
   getOpenAIClient,
   getAnthropicClient,
+  getGeminiClient,
 } from "../../../services/ai.service";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
+export const enhancePrompt = (prompt: string, context?: string): string => {
+  // Use the following story context if available
+  const compressedContext = context ? context : "No previous context";
+
+  const metaPrompt = `You are a creative writing assistant. Rewrite the following story prompt to be more vivid, specific, and engaging. Add a character name, setting details, and a central conflict. Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
+
+Context: ${compressedContext}
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export const enhancePromptWithGemini = async (
   prompt: string,
   signal?: AbortSignal,
   compressedContext?: string
 ): Promise<string> => {
-  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+  const model = getGeminiClient().getGenerativeModel({ model: GEMINI_MODEL });
 
   const safePrompt = prompt
     .replace(/\\/g, "\\\\")
@@ -104,7 +113,7 @@ Prompt: ${prompt}`;
     { signal }
   );
 
-  const textBlock = response.content.find((block) => block.type === "text");
+  const textBlock = response.content.find((block: { type: string }) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text.trim() : "";
 
   if (!text) {
