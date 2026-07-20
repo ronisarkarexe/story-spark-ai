@@ -1,14 +1,25 @@
-import { Server, Socket } from 'socket.io';
+import { Server, Socket, Namespace } from 'socket.io';
 import * as Y from 'yjs';
-import { debounce } from 'lodash';
 import { CollabService } from './collab.service';
+
+function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
 
 /**
  * Yjs gateway that syncs a Yjs document over a Socket.io namespace
  * and persists the document state to MongoDB.
  */
 export class YjsGateway {
-  private readonly io: Server;
+  private readonly io: Namespace;
   private readonly docs: Map<string, Y.Doc> = new Map();
   private readonly debouncedSaves: Map<string, () => void> = new Map();
   private readonly saveDelay = 2000; // ms

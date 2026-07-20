@@ -225,7 +225,10 @@ const getWordCloud = async (token: ITokenPayload | null) => {
     .map(([text, value]) => ({ text, value }));
 };
 
-const getProductiveHours = async (token: ITokenPayload) => {
+const getProductiveHours = async (token: ITokenPayload | null) => {
+  if(!token?._id){
+    return []
+  }
   const userObjectId = new Types.ObjectId(token._id);
 
   return runMeasuredAnalytics("productive-hours", async () => {
@@ -271,7 +274,10 @@ const getProductiveHours = async (token: ITokenPayload) => {
   });
 };
 
-const getEmotionDistribution = async (token: ITokenPayload) => {
+const getEmotionDistribution = async (token: ITokenPayload | null) => {
+  if (!token?._id) {
+    return [];
+  } 
   const userObjectId = new Types.ObjectId(token._id);
 
   const result = await Post.aggregate([
@@ -284,7 +290,10 @@ const getEmotionDistribution = async (token: ITokenPayload) => {
   return result.map((r) => ({ emotion: r._id, count: r.count }));
 };
 
-const getMoodTimeline = async (token: ITokenPayload) => {
+const getMoodTimeline = async (token: ITokenPayload | null) => {
+    if (!token?._id) {
+    return [];
+  } 
   const userObjectId = new Types.ObjectId(token._id);
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);

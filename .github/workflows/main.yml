@@ -39,6 +39,26 @@ jobs:
         with:
           node-version: '20'
           cache: pnpm
+      - name: Validate package.json files
+        shell: bash
+        run: |
+          set -e
+          FILES=("package.json" "frontend/package.json" "backend/package.json")
+          for f in "${FILES[@]}"; do
+            if [ -f "$f" ]; then
+              echo "Checking $f..."
+              node -e '
+                const fs = require("fs");
+                const file = process.argv[1];
+                try{
+                  JSON.parse(fs.readFileSync(process.argv[1],'utf8'));
+                  console.log(`${file} OK`);
+                } catch(e){
+                  console.error(`Invalid JSON in ${file}: ${e.message}`);
+                  process.exit(1);
+                }' "$f"
+            fi
+          done
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
       - name: Work around npm optional dependency bug (Rollup Linux binary)
@@ -47,7 +67,12 @@ jobs:
         run: pnpm --filter story-spark-ai-frontend add lightningcss-linux-x64-gnu
       - name: Build
         if: github.event_name != 'pull_request' || steps.changes.outputs.backend == 'true'
-        run: pnpm run build
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ steps.changes.outputs.frontend }}" != "true" ]; then
+            pnpm run build:backend
+          else
+            pnpm run build
+          fi
       - name: Validate changed frontend files
         if: github.event_name == 'pull_request' && steps.changes.outputs.frontend == 'true' && steps.changes.outputs.backend != 'true'
         shell: bash

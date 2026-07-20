@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -70,6 +71,7 @@ export default function AIWritingAssistant() {
   const [charIdx, setCharIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [visible, setVisible] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setVisible(true);
@@ -208,7 +210,7 @@ export default function AIWritingAssistant() {
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
           <button
-            onClick={() => window.location.href = "/stories"}
+            onClick={() => navigate("/stories")}
             style={{
               background: "linear-gradient(135deg, #7C5DFA 0%, #4F8EF7 100%)",
               border: "none",
@@ -224,8 +226,7 @@ export default function AIWritingAssistant() {
             Start Writing →
           </button>
           <button
-            onClick={() => window.location.href = "/story-inspiration"}
-
+            onClick={() => navigate("/story-inspiration")}
             style={{
               background: "transparent",
               border: "1px solid rgba(255,255,255,0.14)",
@@ -333,7 +334,7 @@ export default function AIWritingAssistant() {
           Join thousands of writers already using StorySpark to push past limits and find their story.
         </p>
         <button
-          onClick={() => window.location.href = "/stories"}
+          onClick={() => navigate("/stories")}
           style={{
             background: "linear-gradient(135deg, #7C5DFA 0%, #4F8EF7 100%)",
             border: "none",

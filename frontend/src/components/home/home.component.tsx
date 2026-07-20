@@ -1,4 +1,3 @@
-
 import CommunitySpotlightComponent from "./community_spotlight/community_spotlight.component";
 import FeatureComponent from "./feature/feature.component";
 import LatestPostsComponent from "./latest_posts/latest_posts.component";
