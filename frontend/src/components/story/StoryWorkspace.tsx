@@ -26,6 +26,7 @@ import StoryStylePresets from "../style/StoryStylePresets";
 import StoryPerspectiveSwitcher from "../perspective/StoryPerspectiveSwitcher";
 import StoryTonePresets from "../tone/StoryTonePresets";
 import StoryChapterGenerator from "../chapter-generator/StoryChapterGenerator";
+import PromptLibrary from "../prompts/PromptLibrary";
 import StoryAudienceSelector from "../audience/StoryAudienceSelector";
 
 
@@ -370,6 +371,12 @@ const StoryWorkspace = () => {
       ?.map((chapter) => chapter.content)
       .join("\n\n") || ""
   }
+/>
+
+<PromptLibrary
+  onInsertPrompt={(prompt) => {
+    console.log("Selected Prompt:", prompt);
+  }}
 />
 
   <StoryViewer
