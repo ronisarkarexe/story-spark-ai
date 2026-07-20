@@ -1,15 +1,19 @@
+import { aiCircuitBreaker } from "../app/modules/ai_model/circuit_breaker";
+
 export class GenerationTimeoutError extends Error {
   constructor(message = "Generation timed out") {
     super(message);
     this.name = "GenerationTimeoutError";
   }
 }
+
 export class GenerationAbortedError extends Error {
   constructor(message = "Generation aborted") {
     super(message);
     this.name = "GenerationAbortedError";
   }
 }
+
 /**
  * Races generation against a timeout; aborts via AbortSignal when time expires or after completion.
  */
@@ -18,6 +22,9 @@ export const raceGenerationWithTimeout = async <T>(
   timeLimitMs: number,
   externalSignal?: AbortSignal
 ): Promise<T> => {
+  // Fail fast if the AI provider circuit is currently open.
+  aiCircuitBreaker.check();
+
   const controller = new AbortController();
   let timedOut = false;
 
@@ -52,6 +59,8 @@ export const raceGenerationWithTimeout = async <T>(
         if (externalSignal && abortHandler) {
           externalSignal.removeEventListener("abort", abortHandler);
         }
+        // Successful AI provider response — reset the circuit breaker.
+        aiCircuitBreaker.recordSuccess();
         resolve(result);
       })
       .catch((error) => {
@@ -59,8 +68,14 @@ export const raceGenerationWithTimeout = async <T>(
         if (externalSignal && abortHandler) {
           externalSignal.removeEventListener("abort", abortHandler);
         }
-        if (timedOut) {
-          reject(new GenerationTimeoutError());
+        // recordFailure() re-throws by design; it only increments the
+        // breaker's counter for real provider errors (status 429/5xx),
+        // so timeouts/aborts (no status) pass through without tripping it.
+        try {
+          aiCircuitBreaker.recordFailure(error);
+        } catch {
+          // side effect already applied above; rejection handled below
+        }
         // Check aborted BEFORE calling abort() so we can distinguish
         // a genuine timeout (already aborted by setTimeout) from a real
         // operation error (e.g. network failure, API error).
@@ -73,8 +88,7 @@ export const raceGenerationWithTimeout = async <T>(
           controller.abort();
           reject(error);
         }
+        reject(error);
       });
   });
 };
-
-

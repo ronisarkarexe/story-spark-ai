@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { socketIo } from "./socket.oi";
-import { isLoggedIn } from "../services/auth.service";
-import { AUTH_KEY } from "../constants/storage-key";
+import { connectSocket, disconnectSocket } from "./socket.oi";
+import { isLoggedIn, authChangeEventName } from "../services/auth.service";
 
 /**
  * SocketContext provides a stable reference to the singleton Socket.IO client.
@@ -18,35 +17,33 @@ export const useSocket = (): Socket | null => useContext(SocketContext);
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const isConnected = useRef(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const authed = isLoggedIn();
-    if (!authed) {
-      // If the user is not authenticated, ensure the socket is disconnected
-      if (isConnected.current) {
-        socketIo.disconnect();
-        isConnected.current = false;
+    const syncSocketWithAuth = () => {
+      if (!isLoggedIn()) {
+        disconnectSocket();
+        setSocket(null);
+        return;
       }
-      return;
-    }
+      const s = connectSocket();
+      setSocket(s);
+    };
 
-    // Always refresh the auth token before connecting so we never send
-    // the stale token that was captured at module-load time.
-    socketIo.auth = { token: localStorage.getItem(AUTH_KEY) || "" };
+    // Initial connection state on mount
+    syncSocketWithAuth();
 
-    if (!socketIo.connected) {
-      socketIo.connect();
-      isConnected.current = true;
-    }
+    // Re-sync whenever login/logout happens elsewhere in the app
+    window.addEventListener(authChangeEventName, syncSocketWithAuth);
 
     return () => {
-      socketIo.disconnect();
-      isConnected.current = false;
+      window.removeEventListener(authChangeEventName, syncSocketWithAuth);
+      disconnectSocket();
+      setSocket(null);
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={socketIo}>{children}</SocketContext.Provider>
+    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   );
 };

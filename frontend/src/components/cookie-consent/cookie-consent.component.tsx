@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../theme/theme.context";
 
@@ -38,190 +38,184 @@ const saveCookiePreferences = (preferences: CookiePreferences) => {
 };
 
 type CookieConsentBannerProps = {
+  // Kept for backward compatibility with RootLayout, which previously reserved
+  // bottom padding for the old fixed banner. The modal no longer pushes layout,
+  // so this is always called with 0.
   onLayoutChange?: (height: number) => void;
 };
 
+type ToggleSwitchProps = {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+  isDark: boolean;
+};
+
+const ToggleSwitch: FC<ToggleSwitchProps> = ({ checked, onChange, label, isDark }) => {
+  const trackClasses = checked
+    ? "bg-gradient-to-r from-blue-600 to-indigo-600"
+    : isDark
+      ? "bg-slate-700"
+      : "bg-slate-300";
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 cursor-pointer ${trackClasses}`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+};
+
 const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) => {
-  const bannerRef = useRef<HTMLDivElement>(null);
   const [preferences, setPreferences] = useState<CookiePreferences | null>(null);
-  const [showBanner, setShowBanner] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const { isDark } = useTheme();
 
   useEffect(() => {
     const storedPreferences = loadCookiePreferences();
     setPreferences(storedPreferences);
-    setShowBanner(!storedPreferences.saved);
-  }, []);
+    setShowModal(!storedPreferences.saved);
+    onLayoutChange?.(0);
+  }, [onLayoutChange]);
 
   useEffect(() => {
-    if (!showBanner) {
-      onLayoutChange?.(0);
-      return;
-    }
-
-    const updateLayout = () => {
-      const banner = bannerRef.current;
-      if (!banner) return;
-      onLayoutChange?.(banner.getBoundingClientRect().height);
-    };
-
-    updateLayout();
-    const observer = new ResizeObserver(updateLayout);
-    if (bannerRef.current) {
-      observer.observe(bannerRef.current);
-    }
-    window.addEventListener("resize", updateLayout);
-
+    if (!showModal) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateLayout);
+      document.body.style.overflow = previousOverflow;
     };
-  }, [onLayoutChange, showBanner]);
+  }, [showModal]);
 
-  if (!preferences || !showBanner) {
+  if (!preferences || !showModal) {
     return null;
   }
 
-  const handleSave = () => {
-    const updated = { ...preferences, saved: true };
+  const commit = (updated: CookiePreferences) => {
     setPreferences(updated);
-    setShowBanner(false);
+    setShowModal(false);
     saveCookiePreferences(updated);
   };
 
-  const handleAcceptAll = () => {
-    const updated = { saved: true, functional: true, analytics: true };
-    setPreferences(updated);
-    setShowBanner(false);
-    saveCookiePreferences(updated);
-  };
+  const handleAcceptAll = () => commit({ saved: true, functional: true, analytics: true });
+  const handleEssentialOnly = () => commit({ saved: true, functional: false, analytics: false });
+  const handleSavePreferences = () => commit({ ...preferences, saved: true });
 
-  const handleRejectNonEssential = () => {
-    const updated = { saved: true, functional: false, analytics: false };
-    setPreferences(updated);
-    setShowBanner(false);
-    saveCookiePreferences(updated);
-  };
+  const overlayClasses = "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4";
 
-  const bannerClasses = isDark
-    ? "fixed inset-x-0 bottom-0 z-50 bg-slate-950/95 border-t border-slate-200/10 dark:border-white/10 py-6 shadow-2xl backdrop-blur-xl text-white transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar"
-    : "fixed inset-x-0 bottom-0 z-50 bg-white/95 border-t border-slate-200 py-6 shadow-2xl backdrop-blur-xl text-slate-900 transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar";
-
-  const panelClasses = isDark
-    ? "rounded-2xl border border-slate-200/10 dark:border-white/5 bg-slate-900/40 p-4 sm:p-5"
-    : "rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5";
-
-  const cardClasses = isDark
-    ? "rounded-xl border border-slate-200/10 dark:border-white/5 bg-slate-950/60 p-4 flex flex-col justify-between gap-4"
-    : "rounded-xl border border-slate-200 bg-white p-4 flex flex-col justify-between gap-4";
+  const modalClasses = isDark
+    ? "w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-2xl sm:p-8"
+    : "w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl sm:p-8";
 
   const primaryText = isDark ? "text-white" : "text-slate-900";
   const secondaryText = isDark ? "text-slate-300" : "text-slate-600";
   const mutedText = isDark ? "text-slate-400" : "text-slate-500";
-  const subtleLabel = isDark
-    ? "font-semibold uppercase tracking-wider text-[10px] bg-slate-800 px-2 py-0.5 rounded-md text-slate-400 group-hover:text-white transition-colors"
-    : "font-semibold uppercase tracking-wider text-[10px] bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 group-hover:text-slate-900 transition-colors";
-  const checkboxClasses = isDark
-    ? "h-4 w-4 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500/30 transition-colors cursor-pointer"
-    : "h-4 w-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500/30 transition-colors cursor-pointer";
-  const actionButtonClasses = isDark
-    ? "w-full rounded-xl border border-slate-200/10 dark:border-white/10 bg-slate-900 px-5 py-3 text-xs font-bold text-white transition-all duration-150 hover:bg-slate-800 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
-    : "w-full rounded-xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-900 transition-all duration-150 hover:bg-slate-100 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider";
+  const rowBorder = isDark ? "border-white/10" : "border-slate-200";
+
+  const categories: Array<{
+    key: "functional" | "analytics";
+    title: string;
+    description: string;
+  }> = [
+    {
+      key: "functional",
+      title: "Functional cookies",
+      description: "Remember your preferences for smoother navigation.",
+    },
+    {
+      key: "analytics",
+      title: "Analytics cookies",
+      description: "Help us understand usage and improve StorySpark AI.",
+    },
+  ];
 
   return (
-    <div ref={bannerRef} className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-h-[82vh] max-w-5xl flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-700 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5 xl:flex-row xl:items-start xl:justify-between xl:gap-6">
-        <div className="max-w-3xl space-y-3">
-          <p className="text-xs uppercase tracking-[0.26em] text-slate-400">Cookie Preferences</p>
-          <h2 className="text-xl font-semibold text-white sm:text-2xl">Manage your cookie settings</h2>
-          <p className="text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-    <div className="fixed inset-x-0 bottom-0 z-50 bg-slate-950/95 border-t border-slate-200/10 dark:border-white/10 py-6 shadow-2xl backdrop-blur-xl text-white transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar">
-    <div className={bannerClasses}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:px-8 xl:flex-row xl:items-start xl:justify-between xl:gap-8">
-        <div className="max-w-3xl space-y-4">
-          <div className="space-y-1.5">
-            <p className={`text-xs font-bold uppercase tracking-[0.24em] ${mutedText}`}>Cookie Preferences</p>
-            <h2 className={`text-xl sm:text-2xl font-bold tracking-tight ${primaryText}`}>Manage your cookie settings</h2>
-          </div>
-          
-          <p className={`text-sm sm:text-base leading-relaxed ${secondaryText}`}>
-            StorySpark AI uses cookies to keep the experience secure and smooth. Select which cookie categories you want to allow, or accept all for the best experience.
-            <Link to="/cookie-policy" className="ml-1.5 text-blue-600 dark:text-blue-400 underline font-medium hover:text-blue-500 dark:hover:text-blue-300 transition-colors">Learn more</Link>.
-          </p>
+    <div className={overlayClasses} role="dialog" aria-modal="true" aria-labelledby="cookie-consent-title" aria-describedby="cookie-consent-description">
+      <div className={modalClasses}>
+        <p className={`text-xs font-bold uppercase tracking-[0.24em] ${mutedText}`}>Cookie preferences</p>
+        <h2 id="cookie-consent-title" className={`mt-1.5 text-xl font-bold tracking-tight sm:text-2xl ${primaryText}`}>
+          Manage your cookie settings
+        </h2>
+        <p id="cookie-consent-description" className={`mt-2.5 text-sm leading-relaxed sm:text-base ${secondaryText}`}>
+          StorySpark AI uses cookies to keep the experience secure and smooth. Select which cookie
+          categories you want to allow, or accept all for the best experience.{" "}
+          <Link
+            to="/cookie-policy"
+            className="font-medium text-blue-600 underline transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            Learn more
+          </Link>
+          .
+        </p>
 
-          <div className={panelClasses}>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className={cardClasses}>
-                <div className="space-y-1">
-                  <p className={`font-bold text-sm ${primaryText}`}>Essential Cookies</p>
-                  <p className={`text-xs leading-normal ${mutedText}`}>Always active for secure login and basic app functionality.</p>
-                </div>
-                <div className="flex justify-start">
-                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 border border-emerald-500/20">Required</span>
-                </div>
-              </div>
-
-              <div className={cardClasses}>
-                <div className="space-y-1">
-                  <p className={`font-bold text-sm ${primaryText}`}>Functional Cookies</p>
-                  <p className={`text-xs leading-normal ${mutedText}`}>Enable saved preferences and smoother navigation features.</p>
-                </div>
-                <div className="flex justify-start">
-                  <label className={`inline-flex items-center gap-2.5 text-xs cursor-pointer select-none group ${secondaryText}`}>
-                    <input
-                      type="checkbox"
-                      checked={preferences.functional}
-                      onChange={(event) => setPreferences({ ...preferences, functional: event.target.checked })}
-                      className={checkboxClasses}
-                    />
-                    <span className={subtleLabel}>
-                      {preferences.functional ? "Active" : "Disabled"}
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <div className={`${cardClasses} sm:col-span-2 flex-col sm:flex-row sm:items-center sm:justify-between gap-4`}>
-                <div className="space-y-1 max-w-xl">
-                  <p className={`font-bold text-sm ${primaryText}`}>Analytics Cookies</p>
-                  <p className={`text-xs leading-normal ${mutedText}`}>Help us understand interface engagement data to continuously refine the StorySpark AI ecosystem module suite paths.</p>
-                </div>
-                <div className="flex justify-start shrink-0">
-                  <label className={`inline-flex items-center gap-2.5 text-xs cursor-pointer select-none group ${secondaryText}`}>
-                    <input
-                      type="checkbox"
-                      checked={preferences.analytics}
-                      onChange={(event) => setPreferences({ ...preferences, analytics: event.target.checked })}
-                      className={checkboxClasses}
-                    />
-                    <span className={subtleLabel}>
-                      {preferences.analytics ? "Active" : "Disabled"}
-                    </span>
-                  </label>
-                </div>
-              </div>
+        <div className="mt-6">
+          <div className={`flex items-center justify-between border-t py-3.5 ${rowBorder}`}>
+            <div className="pr-4">
+              <p className={`text-sm font-bold ${primaryText}`}>Essential cookies</p>
+              <p className={`mt-0.5 text-xs leading-normal ${mutedText}`}>
+                Always active for secure login and basic app functionality.
+              </p>
             </div>
+            <span className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-500">
+              Required
+            </span>
           </div>
+
+          {categories.map((category) => (
+            <div
+              key={category.key}
+              className={`flex items-center justify-between border-t py-3.5 ${rowBorder}`}
+            >
+              <div className="pr-4">
+                <p className={`text-sm font-bold ${primaryText}`}>{category.title}</p>
+                <p className={`mt-0.5 text-xs leading-normal ${mutedText}`}>{category.description}</p>
+              </div>
+              <ToggleSwitch
+                checked={preferences[category.key]}
+                onChange={(checked) => setPreferences({ ...preferences, [category.key]: checked })}
+                label={`Toggle ${category.title.toLowerCase()}`}
+                isDark={isDark}
+              />
+            </div>
+          ))}
+          <div className={`border-t ${rowBorder}`} />
         </div>
 
-        <div className="flex flex-col gap-2.5 xl:w-[280px] shrink-0 xl:pt-11 w-full">
+        <div className="mt-6 flex flex-col gap-2.5">
           <button
+            type="button"
             onClick={handleAcceptAll}
-            className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-blue-600/10 transition-all duration-150 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
+            className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all duration-150 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98]"
           >
             Accept all cookies
           </button>
           <button
-            onClick={handleSave}
-            className={actionButtonClasses}
+            type="button"
+            onClick={handleEssentialOnly}
+            className={
+              isDark
+                ? "w-full cursor-pointer rounded-xl border border-white/10 bg-transparent px-5 py-2.5 text-xs font-bold text-slate-200 transition-all duration-150 hover:bg-white/5 active:scale-[0.98]"
+                : "w-full cursor-pointer rounded-xl border border-slate-200 bg-transparent px-5 py-2.5 text-xs font-bold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.98]"
+            }
           >
-            Save preferences
+            Essential cookies only
           </button>
           <button
-            onClick={handleRejectNonEssential}
-            className={isDark ? "w-full rounded-xl border border-slate-200/10 dark:border-white/10 bg-slate-950 px-5 py-3 text-xs font-bold text-slate-400 transition-all duration-150 hover:text-white hover:bg-slate-900 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider" : "w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-xs font-bold text-slate-600 transition-all duration-150 hover:text-slate-900 hover:bg-slate-100 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"}
+            type="button"
+            onClick={handleSavePreferences}
+            className={`mt-0.5 cursor-pointer text-center text-xs font-semibold underline-offset-2 transition-colors hover:underline ${mutedText}`}
           >
-            Reject non-essential
+            Save preferences
           </button>
         </div>
       </div>

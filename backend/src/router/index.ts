@@ -11,7 +11,6 @@ import { ReviewRouter } from "../app/modules/review/review.router";
 import { ReactionRouter } from "../app/modules/reaction/reaction.router";
 import { ContactRoutes } from "../app/modules/contact/contact.route";
 import { StoriesRouter } from "../routes/stories";
-import storyRoutes from "../routes/story.routes";
 import { ReportRouter } from "../app/modules/report/report.router";
 import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
 import paymentRouter from "../router/payment.route";
@@ -26,7 +25,13 @@ import { StoryVisualizerRouter } from "../app/modules/story_visualizer/story_vis
 import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
 import { EngagementRouter } from "../app/modules/engagement/engagement.router";
 import { ChatRouter } from "../app/modules/chat/chat.router";
+import { SearchRouter } from "../app/modules/search/search.router";
 
+import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
+import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.router";
+import { UsageRouter } from "../app/modules/ai_model/usage.router";
+import { CollectionRouter } from "../app/modules/collection/collection.router";
+import { StoryBranchingRouter } from "../app/modules/story_branching/story_branching.router";
 const router = express.Router();
 
 const modules = [
@@ -91,16 +96,19 @@ const modules = [
     router: StoryVersionRouter,
   },
   {
+    // NEW — same "/story" prefix, different sub-paths (/generate, /continue,
+    // /continuations). Express tries routers in array order, so this is safe
+    // to add right after StoryVersionRouter above.
+    path: "/story",
+    router: StoryRouter,
+  },
+  {
     path: "/analytics",
     router: AnalyticsRouter,
   },
   {
     path: "/stories",
     router: StoriesRouter,
-  },
-  {
-    path: "/story-continuation",
-    router: storyRoutes,
   },
   {
     path: "/story-inspiration",
@@ -137,6 +145,34 @@ const modules = [
   {
     path: "/chat",
     router: ChatRouter,
+  },
+  {
+    path: "/story-visualizer",
+    router: StoryVisualizerRouter,
+  },
+  {
+    path: "/story-consistency",
+    router: StoryConsistencyRouter,
+  },
+  {
+    path: "/search",
+    router: SearchRouter,
+  },
+  {
+    path: "/story-rating",
+    router: StoryRatingRouter,
+  },
+  {
+    path: "/usage",
+    router: UsageRouter,
+  },
+  {
+    path: "/collections",
+    router: CollectionRouter,
+  },
+  {
+    path: "/story-branches",
+    router: StoryBranchingRouter,
   },
 ];
 

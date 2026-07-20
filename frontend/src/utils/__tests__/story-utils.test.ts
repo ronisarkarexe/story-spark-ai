@@ -21,6 +21,18 @@ describe("story-utils", () => {
     it("should handle multiple spaces between words", () => {
       expect(getWordCount("This  is   a test.")).toBe(4);
     });
+
+    it("should count words with punctuation and contractions", () => {
+      expect(getWordCount("Don't stop, it's working.")).toBe(4);
+    });
+
+    it("should ignore trailing line breaks and mixed whitespace", () => {
+      expect(getWordCount("Hello\nworld\t\tfrom\r\nfrontend   ")).toBe(4);
+    });
+
+    it("should return 0 for whitespace-only unicode separators", () => {
+      expect(getWordCount("\u00a0\u00a0\t\n")).toBe(0);
+    });
   });
 
   describe("calculateReadingTime", () => {
@@ -47,7 +59,7 @@ describe("story-utils", () => {
   describe("formatReadingStats", () => {
     it("should format stats correctly", () => {
       const content = "This is a five word story.";
-      expect(formatReadingStats(content)).toBe("1 min read • 6 words"); // "This", "is", "a", "five", "word", "story."
+      expect(formatReadingStats(content)).toBe("1 min read - 6 words"); // "This", "is", "a", "five", "word", "story."
     });
   });
 });

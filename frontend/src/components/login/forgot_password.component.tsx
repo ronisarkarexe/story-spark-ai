@@ -61,6 +61,9 @@ const ForgotPasswordComponent = () => {
   const [expiredAt, setExpiredAt] = useState<number>(0);
 
   const password = watch("password") || "";
+  const confirmPassword = watch("confirmPassword") || "";
+  const passwordsMatch =
+    password.length > 0 && password === confirmPassword;
 
   const getApiErrorMessage = (error: unknown, fallback: string): string => {
     if (!error || typeof error !== "object") return fallback;
@@ -110,7 +113,7 @@ const ForgotPasswordComponent = () => {
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
-      setCooldown((prev) => prev - 1);
+      setCooldown((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(timer);
   }, [cooldown]);
@@ -135,8 +138,6 @@ const ForgotPasswordComponent = () => {
           "Failed to request OTP. Please ensure email is registered.",
         ),
       );
-      console.log("error: ", error);
-    } finally {
       setIsBusy(false);
     }
   };
@@ -165,6 +166,7 @@ const ForgotPasswordComponent = () => {
       } else {
         throw new Error("Verification token missing in response");
       }
+      setIsBusy(false);
     } catch (error: unknown) {
       toast.error(
         getApiErrorMessage(
@@ -172,8 +174,6 @@ const ForgotPasswordComponent = () => {
           "OTP verification failed. Please check the code and try again.",
         ),
       );
-      console.log("error: ", error);
-    } finally {
       setIsBusy(false);
     }
   };
@@ -210,10 +210,19 @@ const ForgotPasswordComponent = () => {
       toast.error(
         getApiErrorMessage(error, "Password reset failed. Please restart the process."),
       );
-      console.log("error: ", error);
     } finally {
       setIsBusy(false);
     }
+  };
+
+  const handleBackToStep1 = () => {
+    setStep(1);
+    setOtpSent(false);
+    setTimeout(() => {
+      if (emailAddress) {
+        setValue("email", emailAddress);
+      }
+    }, 0);
   };
 
   const handleResendOtp = async () => {
@@ -230,7 +239,6 @@ const ForgotPasswordComponent = () => {
       }
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, "Failed to resend OTP. Please try again."));
-      console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
     }
@@ -273,23 +281,51 @@ const ForgotPasswordComponent = () => {
           )}
 
           {step === 2 && (
-            <form className="space-y-4" onSubmit={handleSubmit(handleVerifyOtp)}>
+            <form className="space-y-4 w-full min-w-0 box-border" onSubmit={handleSubmit(handleVerifyOtp)}>
+              <div className="text-center text-sm text-slate-400 dark:text-gray-300 select-none">
+                OTP sent to <span className="font-semibold text-indigo-400">{emailAddress}</span>
+                <button
+                  type="button"
+                  onClick={handleBackToStep1}
+                  disabled={isBusy}
+                  className="ml-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 hover:underline transition-colors focus:outline-none cursor-pointer"
+                >
+                  Change
+                </button>
+              </div>
+
               <SSInput
                 label="OTP"
                 name="otp"
                 placeholder="Enter the 6-digit OTP"
+                autoFocus={true}
                 required={true}
                 icon="fas fa-key"
                 register={register}
+                validation={{
+                  required: "Please enter OTP",
+                  minLength: { value: 6, message: "OTP must be 6 digits" },
+                  maxLength: { value: 6, message: "OTP must be 6 digits" },
+                  pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
+                }}
+                error={errors.otp}
               />
               <SSButton text="Verify OTP" type="submit" isLoading={isBusy} />
 
-              <div className="text-center mt-2">
+              <div className="flex justify-between items-center mt-2 px-1 select-none w-full">
+                <button
+                  type="button"
+                  onClick={handleBackToStep1}
+                  disabled={isBusy}
+                  className="text-sm font-semibold text-gray-400 hover:text-gray-300 transition-colors duration-200 focus:outline-none cursor-pointer"
+                >
+                  ← Go Back
+                </button>
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={cooldown > 0 || isBusy}
-                  className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed"
+                  className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
                 >
                   {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
                 </button>
@@ -355,9 +391,31 @@ const ForgotPasswordComponent = () => {
                 required={true}
                 icon="fas fa-eye"
                 register={register}
+                
               />
-
-              <SSButton text="Reset Password" type="submit" isLoading={isBusy} />
+                  {confirmPassword.length > 0 && (
+                    <p
+                      className={`text-xs font-semibold ${
+                        passwordsMatch
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {passwordsMatch
+                        ? "✅ Passwords match"
+                        : "❌ Passwords do not match"}
+                    </p>
+                  )}
+              <SSButton text="Reset Password" type="submit" isLoading={isBusy}
+                disabled={
+                    !passwordChecks.length ||
+                    !passwordChecks.uppercase ||
+                    !passwordChecks.lowercase ||
+                    !passwordChecks.number ||
+                    !passwordChecks.special ||
+                    !passwordsMatch
+                }
+              />
             </form>
           )}
 

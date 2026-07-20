@@ -11,18 +11,47 @@ export interface IExportStory {
   language?: string;
 }
 
+export interface IExportOptions {
+  fontSize?: 'small' | 'medium' | 'large';
+}
+
 /**
  * Asynchronous asset pipeline to fetch images from cloud storage
  * with a canvas CORS fallback.
  */
 export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
+  const CACHE_NAME = "story-spark-ai-image-cache";
+
+  if ("caches" in window) {
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const cachedResponse = await cache.match(url);
+      if (cachedResponse) {
+        return await cachedResponse.blob();
+      }
+    } catch (e) {
+      console.warn("[ExportService] Failed to match image in Cache Storage:", e);
+    }
+  }
+
   try {
     // Try standard fetch first
     const response = await fetch(url, { mode: "cors" });
     if (!response.ok) {
       throw new Error(`Direct fetch failed with status ${response.status}`);
     }
-    return await response.blob();
+    const blob = await response.blob();
+
+    if ("caches" in window) {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(url, response.clone());
+      } catch (cacheError) {
+        console.warn("[ExportService] Failed to cache image:", cacheError);
+      }
+    }
+
+    return blob;
   } catch (error) {
     console.warn("Direct image fetch failed (CORS or network). Trying HTML Canvas fallback...", error);
     
@@ -43,6 +72,11 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
           ctx.drawImage(img, 0, 0);
           canvas.toBlob((blob) => {
             if (blob) {
+              if ("caches" in window) {
+                caches.open(CACHE_NAME).then((cache) => {
+                  cache.put(url, new Response(blob));
+                }).catch(() => {});
+              }
               resolve(blob);
             } else {
               reject(new Error("Canvas toBlob yielded null blob"));
@@ -77,7 +111,8 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
  */
 export const exportStoryToPDF = async (
   story: IExportStory,
-  base64Image: string | null
+  base64Image: string | null,
+  options?: IExportOptions
 ): Promise<void> => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   
@@ -198,7 +233,9 @@ export const exportStoryToPDF = async (
 
   // Story Text rendering
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
+  const fontSizeMap = { small: 9, medium: 11, large: 13 };
+  const contentFontSize = options?.fontSize ? fontSizeMap[options.fontSize] : 11;
+  doc.setFontSize(contentFontSize);
   doc.setTextColor(51, 65, 85); // slate-700
   
   const paragraphs = story.content.split(/\n+/);
@@ -255,7 +292,8 @@ export const exportStoryToPDF = async (
  */
 export const exportStoryToEPUB = async (
   story: IExportStory,
-  imageBlob: Blob | null
+  imageBlob: Blob | null,
+  options?: IExportOptions
 ): Promise<void> => {
   const zip = new JSZip();
   const uuid = story.uuid || Math.random().toString(36).substring(2, 15);
@@ -286,6 +324,7 @@ export const exportStoryToEPUB = async (
   margin: 20px;
   color: #111111;
   background-color: #ffffff;
+  font-size: ${options?.fontSize === 'small' ? '0.9em' : options?.fontSize === 'large' ? '1.2em' : '1em'};
 }
 h1, h2 {
   text-align: center;

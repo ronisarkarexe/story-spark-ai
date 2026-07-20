@@ -30,10 +30,43 @@ const edgeTypes: EdgeTypes = {
 
 interface CharacterNetworkProps {
   storyId: string;
+  storyContent: string;
 }
 
-const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
-  const { data: networkData, isLoading, error, refetch } = useGetCharacterNetworkQuery(storyId);
+interface Character {
+  id: string;
+  name: string;
+  appearanceCount: number;
+  importanceScore: number;
+}
+
+interface Relationship {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  strength: number;
+  interactionCount: number;
+}
+
+type CharacterNodeData = {
+  name: string;
+  appearanceCount: number;
+  importanceScore: number;
+  isSelected: boolean;
+};
+
+type RelationshipEdgeData = {
+  type: string;
+  strength: number;
+  interactionCount: number;
+};
+
+type CharacterFlowNode = Node<CharacterNodeData, "character">;
+type CharacterFlowEdge = Edge<RelationshipEdgeData, "relationship">;
+
+const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
+  const { data: networkData, isLoading, isFetching, error, refetch } = useGetCharacterNetworkQuery(storyId);
 
   // Filter States
   const [search, setSearch] = useState("");
@@ -47,6 +80,17 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+  // Reset all local state when the story changes to prevent stale data flash
+  useEffect(() => {
+    setSearch("");
+    setSelectedTypes([]);
+    setMinStrength(1);
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+    setNodes([]);
+    setEdges([]);
+  }, [storyId, setNodes, setEdges]);
+
   // Clear filters
   const handleClearFilters = useCallback(() => {
     setSearch("");
@@ -54,10 +98,10 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
     setMinStrength(1);
   }, []);
 
-  // Sync / Refetch when story content changes
+  // Sync / Refetch when the story changes OR when its content is edited
   useEffect(() => {
     refetch();
-  }, [storyId, refetch]);
+  }, [storyId, storyContent, refetch]);
 
   // Nodes & Edges computing based on active filters
   const rawCharacters = useMemo(() => networkData?.characters || [], [networkData]);
@@ -78,39 +122,46 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
   const filteredData = useMemo(() => {
     const searchLower = search.toLowerCase().trim();
 
-    // 1. Filter characters by search name
+    // 1. Find characters matching search.
+    // If search is empty, allow all characters for relationship filtering.
     const matchedChars = rawCharacters.filter((char) =>
-      char.name.toLowerCase().includes(searchLower)
+      searchLower ? char.name.toLowerCase().includes(searchLower) : true
     );
+
     const matchedCharIds = new Set(matchedChars.map((c) => c.id));
 
     // 2. Filter relationships
     const filteredRelationships = rawRelationships.filter((rel) => {
-      // Connects visible characters
-      const matchesChars = matchedCharIds.has(rel.source) && matchedCharIds.has(rel.target);
+      // When searching, keep relationships connected to searched characters.
+      // When not searching, allow all relationships.
+      const matchesChars =
+        !searchLower ||
+        matchedCharIds.has(rel.source) ||
+        matchedCharIds.has(rel.target);
+
       // Matches type if any selected
       const matchesType = selectedTypes.length === 0 || selectedTypes.includes(rel.type);
+
       // Matches min strength
       const matchesStrength = rel.strength >= minStrength;
 
       return matchesChars && matchesType && matchesStrength;
     });
 
-    // 3. To prevent lonely nodes when searching (unless searched directly), we keep characters that have at least one visible relationship,
-    // or if search query is active we keep matching nodes.
+    // 3. Keep characters that have at least one visible relationship.
+    // If search query is active, also keep directly matched characters.
     const activeCharIds = new Set<string>();
+
     filteredRelationships.forEach((rel) => {
       activeCharIds.add(rel.source);
       activeCharIds.add(rel.target);
     });
 
-    // Final list of characters to display: matched by search, or participating in active relationships
-    const finalCharacters = rawCharacters.filter((char) => {
-      if (searchLower) {
-        return char.name.toLowerCase().includes(searchLower);
-      }
-      return activeCharIds.has(char.id) || matchedCharIds.has(char.id);
-    });
+    if (searchLower) {
+      matchedCharIds.forEach((id) => activeCharIds.add(id));
+    }
+
+    const finalCharacters = rawCharacters.filter((char) => activeCharIds.has(char.id));
 
     return {
       characters: finalCharacters,
@@ -200,7 +251,7 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
     setSelectedEdgeId(null);
   }, []);
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="flex flex-col flex-1 items-center justify-center bg-[#101319] text-indigo-300 py-20">
         <i className="fas fa-spinner fa-spin text-3xl mb-3"></i>
@@ -269,4 +320,3 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
 };
 
 export default CharacterNetwork;
-

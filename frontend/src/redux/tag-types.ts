@@ -8,6 +8,9 @@ export enum tagTypes {
   bookmark = "bookmark",
   WriterApplication = "WriterApplication",
   StoryVersion = "StoryVersion",
+  prompt = "prompt",
+  collection = "collection",
+  character = "character",
 }
 
 export const tagTypesList: string[] = [
@@ -20,4 +23,7 @@ export const tagTypesList: string[] = [
   tagTypes.bookmark,
   tagTypes.WriterApplication,
   tagTypes.StoryVersion,
+  tagTypes.prompt,
+  tagTypes.collection,
+  tagTypes.character,
 ];

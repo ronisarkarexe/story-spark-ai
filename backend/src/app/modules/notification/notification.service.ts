@@ -1,4 +1,5 @@
 import httpStatus from "http-status";
+import { Types } from "mongoose";
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
@@ -16,6 +17,10 @@ const createNotification = async (payload: INotification) => {
 };
 
 const resolveUserId = async (token: ITokenPayload) => {
+  if (token._id) {
+    return token._id;
+  }
+
   if (token.userId) {
     return token.userId;
   }
@@ -51,8 +56,8 @@ const getUserNotifications = async (
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
-    }
+      totalPages: Math.ceil(total / limit),
+    },
   };
 };
 
@@ -60,6 +65,10 @@ const markNotificationAsRead = async (
   notificationId: string,
   token: ITokenPayload
 ) => {
+  if (!Types.ObjectId.isValid(notificationId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid notification ID");
+  }
+
   const userId = await resolveUserId(token);
   const notification = await Notification.findOneAndUpdate(
     { _id: notificationId, userId },
@@ -78,9 +87,19 @@ const markNotificationAsRead = async (
 
 const markAllNotificationsAsRead = async (token: ITokenPayload) => {
   const userId = await resolveUserId(token);
-  await Notification.updateMany({ userId, isRead: false }, { isRead: true });
-  emitNotificationStateToUser(userId, "notification:all-read", {});
-  return { message: "All notifications marked as read!" };
+
+  // Single atomic updateMany — far cheaper than N individual updates
+  const result = await Notification.updateMany(
+    { userId, isRead: false },
+    { $set: { isRead: true } }
+  );
+
+  // Notify all connected tabs/sessions so the badge clears instantly everywhere
+  emitNotificationStateToUser(userId, "notification:all-read", {
+    modifiedCount: result.modifiedCount,
+  });
+
+  return { success: true, modifiedCount: result.modifiedCount };
 };
 
 const deleteAllNotifications = async (token: ITokenPayload) => {
