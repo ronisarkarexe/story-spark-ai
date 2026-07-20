@@ -84,7 +84,8 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid numeric 'exp' claim.");
   }
 
-  if (decoded.exp <= Math.floor(Date.now() / 1000)) {
+  const CLOCK_SKEW_TOLERANCE_SECONDS = 60;
+  if (decoded.exp <= Math.floor(Date.now() / 1000) - CLOCK_SKEW_TOLERANCE_SECONDS) {
     throw new Error("Token has expired.");
   }
 
