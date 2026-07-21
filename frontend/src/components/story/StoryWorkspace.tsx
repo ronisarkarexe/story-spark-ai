@@ -40,6 +40,7 @@ import StoryTimelineVisualization from "../timeline/StoryTimelineVisualization";
 import StoryRelationshipGraph from "../relationship-graph/StoryRelationshipGraph";
 import StoryPlotTwistGenerator from "../plot-twist/StoryPlotTwistGenerator";
 import StoryReadingAnalytics from "../analytics/StoryReadingAnalytics";
+
 import StoryRevisionHistory from "../revision-history/StoryRevisionHistory";
 import { createRevision } from "../../utils/storyRevisionHistory";
 import StoryEndingAnalyzer from "../ending-analyzer/StoryEndingAnalyzer";
@@ -48,6 +49,7 @@ import StoryNamingAssistant from "../naming-assistant/StoryNamingAssistant";
 import StoryPublishingReadiness from "../publishing-readiness/StoryPublishingReadiness";
 import StoryTagGenerator from "../story-tags/StoryTagGenerator";
 import StoryReadingInfo from "../reading-info/StoryReadingInfo";
+
 import {
   getSafeFileName,
   downloadBlob,
@@ -529,6 +531,7 @@ const StoryWorkspace = () => {
   }}
 />
 
+
 <StoryPublishingReadiness
   story={
     currentStory.chapters
@@ -552,6 +555,7 @@ const StoryWorkspace = () => {
       .join("\n\n") || ""
   }
 />
+
 
   <StoryViewer
     chapters={currentStory.chapters}
