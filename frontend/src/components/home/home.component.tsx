@@ -10,7 +10,6 @@ import WriterFeedbackComponent from "./writer_feedback/writer_feedback.component
 import StartWritingComponent from "./start_writing/start_writing.component";
 import PersonalizedRecommendationsComponent from "./personalized_recommendations/personalized_recommendations.component";
 import { isLoggedIn } from "../../services/auth.service";
-import BackToTop from "../ScrollToTopButton";
 import StoryInspirationHomeCard from "./story_inspiration_card/StoryInspirationHomeCard";
 import PictureCarouselComponent from "./picture_carousel/picture_carousel.component";
 
@@ -62,7 +61,6 @@ const HomeComponent = () => {
           </div>
         </aside>
       </div>
-      <BackToTop />
     </div>
   );
 };

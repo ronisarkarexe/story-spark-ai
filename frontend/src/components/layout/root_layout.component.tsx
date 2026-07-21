@@ -4,6 +4,7 @@ import NavListComponent from "../hero/nav_list.component";
 import CookieConsentBanner from "../cookie-consent/cookie-consent.component";
 import FooterComponent from "../footer/footer.component";
 import ChatComponent from "../chat/Chat";
+import ScrollToTopButton from "../ScrollToTopButton";
 
 interface RootLayoutProps {
   children: ReactNode;
@@ -34,7 +35,12 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 
       <div className="flex-grow min-h-0">{children}</div>
       {!hideFooter && <FooterComponent />}
-      {!isAuthPage && <ChatComponent />}
+      {!isAuthPage && (
+        <>
+          <ScrollToTopButton />
+          <ChatComponent />
+        </>
+      )}
     </div>
   );
 };
