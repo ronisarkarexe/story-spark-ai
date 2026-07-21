@@ -262,7 +262,7 @@ const SignUpComponent = () => {
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto overflow-hidden">
+      <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto overflow-x-hidden max-w-full">
 
         {/* Title */}
         <div className="mb-6 text-center">
@@ -272,9 +272,9 @@ const SignUpComponent = () => {
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+        <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 box-border">
           <button
-            onClick={() => (window.location.href = "/")}
+            onClick={() => navigate("/")}
             className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
           >
             ← Back to Home
@@ -302,20 +302,19 @@ const SignUpComponent = () => {
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
-          {/* Card */}
-          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-            {!showOtpField && (
-              <div className="relative mb-6 w-full box-border">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
-                    SIGN UP WITH EMAIL
-                  </span>
-                </div>
+
+          {!showOtpField && (
+            <div className="relative mb-6 w-full box-border">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
               </div>
-            )}
+              <div className="relative flex justify-center text-xs">
+                <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
+                  SIGN UP WITH EMAIL
+                </span>
+              </div>
+            </div>
+          )}
 
             {!showOtpField ? (
               <form className="flex flex-col w-full min-w-0 gap-5 box-border" onSubmit={handleSubmit(onSubmit)}>
@@ -388,7 +387,7 @@ const SignUpComponent = () => {
                         const met = passwordChecks[key];
                         return (
                           <li key={key} className={`flex items-center gap-1.5 ${met ? "text-green-500" : "text-slate-400"}`}>
-                            <span>{met ? "✓" : "○"}</span>
+                            <span>{met ? "✅" : "❌"}</span>
                             <span>{label}</span>
                           </li>
                         );
@@ -408,7 +407,7 @@ const SignUpComponent = () => {
                     register={register}
                     autoComplete="new-password"
                     validation={{
-                      validate: (value) => {
+                      validate: (value: any) => {
                         if (showOtpField) return true;
                         if (!value) return "Confirm password is required";
                         if (value !== password) return "Passwords do not match!";
@@ -485,12 +484,13 @@ const SignUpComponent = () => {
                     </span>
                   </div>
                 </div>
-
-                <div className="flex justify-center w-full box-border overflow-hidden">
-                  <GoogleLogin
-                    onSuccess={handleGoogleLoginSuccess}
-                    onError={handleGoogleLoginError}
-                  />
+                <div className="flex justify-center w-full box-border">
+                  <div className="w-full max-w-full overflow-hidden">
+                    <GoogleLogin
+                      onSuccess={handleGoogleLoginSuccess}
+                      onError={handleGoogleLoginError}
+                    />
+                  </div>
                 </div>
 
                 <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -501,7 +501,6 @@ const SignUpComponent = () => {
                 </p>
               </div>
             )}
-          </div>
         </div>
       </div>
 

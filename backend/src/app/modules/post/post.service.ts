@@ -1,5 +1,6 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
+import logger from "../../../utils/logger.util";
 import { User } from "../user/user.model";
 import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
@@ -93,11 +94,9 @@ const getCursorCondition = (
 };
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
-  const { email, role } = token;
-  const user = await User.findOne({
-    email: email,
-    role: role,
-  });
+  const { _id } = token;
+
+  const user = await User.findById(_id).select("_id role postsCount");
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
@@ -249,7 +248,7 @@ const getPublishedPostsByAuthor = async (
   filters: Pick<IPostSearchFields, "searchTerm">,
   pagination: IPaginationOptions
 ): Promise<IGenericResponse<IPost[]>> => {
-  const { page, limit, skip, sortBy, orderBy } = paginationHelper(pagination);
+  const { page, limit, cursor, sortBy, orderBy } = paginationHelper(pagination);
   const user = await User.findOne({ email: token.email, role: token.role });
 
   if (!user) {
@@ -278,6 +277,8 @@ const getPublishedPostsByAuthor = async (
     }
   }
 
+  const countCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+
   const sortCondition: { [key: string]: SortOrder } = {};
   if (sortBy && orderBy) {
     sortCondition[sortBy] = orderBy === "asc" ? 1 : -1;
@@ -285,24 +286,32 @@ const getPublishedPostsByAuthor = async (
     sortCondition.publishedAt = -1;
     sortCondition.createdAt = -1;
   }
+  sortCondition._id = orderBy === "asc" ? 1 : -1;
 
-  const whereCondition = { $and: andCondition };
+  const cursorCondition = getCursorCondition(sortBy, orderBy, cursor);
+  if (cursorCondition) {
+    andCondition.push(cursorCondition);
+  }
+
+  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
   const result = await Post.find(whereCondition)
     .sort(sortCondition)
-    .skip(skip)
     .limit(limit)
     .populate("author", "name createdAt")
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "_id" },
     });
-  const total = await Post.countDocuments(whereCondition);
+  const total = await Post.countDocuments(countCondition);
+  const nextCursor = result.length === limit ? encodeCursor(result[result.length - 1], sortBy) : undefined;
 
   return {
     meta: {
       page,
       limit,
       total,
+      nextCursor,
+      hasMore: Boolean(nextCursor),
     },
     data: result,
   };
@@ -438,7 +447,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (isBookmarked) {
     await Post.updateOne(
       { _id: postId },
-      { $pull: { bookmarks: user._id } }
+      { $pull: { bookmarks: user._id }, $inc: { bookmarksCount: -1 } }
     );
 
     return {
@@ -449,7 +458,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
 
   await Post.updateOne(
     { _id: postId },
-    { $addToSet: { bookmarks: user._id } }
+    { $addToSet: { bookmarks: user._id }, $inc: { bookmarksCount: 1 } }
   );
 
   return {
@@ -558,9 +567,13 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const originalPost = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  const originalPost = await Post.findOne({
+    _id: postId,
+    isDeleted: { $ne: true },
+    $or: [{ isPublished: true }, { author: user._id }],
+  });
   if (!originalPost) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
+    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found or access denied!");
   }
 
   verifyPostAccess(originalPost, user);
@@ -599,9 +612,13 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const originalPost = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  const originalPost = await Post.findOne({
+    _id: postId,
+    isDeleted: { $ne: true },
+    $or: [{ isPublished: true }, { author: user._id }],
+  });
   if (!originalPost) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
+    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found or access denied!");
   }
 
   verifyPostAccess(originalPost, user);
@@ -667,6 +684,73 @@ const getGenres = async (): Promise<string[]> => {
   return genres.sort();
 };
 
+const bulkDeletePosts = async (ids: string[], token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  if (ids.length > 50) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Maximum 50 story IDs allowed.");
+  }
+
+  const validIds: string[] = [];
+  const failedIds: string[] = [];
+
+  for (const id of ids) {
+    if (Types.ObjectId.isValid(id)) {
+      validIds.push(id);
+    } else {
+      failedIds.push(id);
+    }
+  }
+
+  const existingPosts = await Post.find({
+    _id: { $in: validIds },
+    isDeleted: { $ne: true },
+  });
+
+  const existingPostIds = existingPosts.map((p) => p._id.toString());
+  for (const id of validIds) {
+    if (!existingPostIds.includes(id)) {
+      failedIds.push(id);
+    }
+  }
+
+  const existingIds = existingPosts.map((p) => p._id);
+  const adminId = user._id;
+
+  if (existingIds.length > 0) {
+    await Post.updateMany(
+      { _id: { $in: existingIds } },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: adminId,
+        },
+      }
+    );
+
+    for (const post of existingPosts) {
+      if (post.isPublished) {
+        await User.findByIdAndUpdate(
+          post.author,
+          { $inc: { postsCount: -1 } }
+        );
+      }
+      await Bookmark.deleteMany({ storyId: post._id });
+      await Comment.deleteMany({ postId: post._id });
+    }
+  }
+
+  logger.info(`Admin #${adminId} deleted ${existingIds.length} stories.`);
+
+  return {
+    deleted: existingIds.length,
+    failed: failedIds,
+  };
+};
 
 export const PostService = {
   createPost,
@@ -684,5 +768,6 @@ export const PostService = {
   translateStory,
   forkStory,
   getGenres,
+  bulkDeletePosts,
 };
 

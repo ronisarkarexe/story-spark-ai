@@ -6,6 +6,7 @@ import {
   removeFromLocalStorage,
   setToLocalStorage,
 } from "../utils/local-storage";
+import { validateTokenPayload } from "../utils/auth-validator";
 
 const AUTH_CHANGE_EVENT = "story-spark-auth-change";
 
@@ -32,6 +33,7 @@ interface RawJwtPayload {
   email?: string;
   userId?: string;
   _id?: string;
+  sub?: string;
   name?: string;
   postsCount?: number;
   role?: string;
@@ -45,14 +47,14 @@ interface RawJwtPayload {
 // Uses optional chaining + fallbacks to safely handle any missing fields
 const buildUserInfo = (decodedData: RawJwtPayload): AuthUserInfo => ({
   email: decodedData?.email || "",
-  userId: decodedData?.userId || decodedData?._id || "",
+  userId: decodedData?.userId || decodedData?._id || decodedData?.sub || "",
   name: decodedData?.name || "",
   postsCount: decodedData?.postsCount || 0,
   role: decodedData?.role || "guest",
   subscriptionType: decodedData?.subscriptionType || "free",
   exp: decodedData?.exp || 0,
   iat: decodedData?.iat || 0,
-  avatar: decodedData?.avatar || "",
+  avatar: decodedData?.avatar || undefined,
 });
 
 export const getValidDecodedToken = () => {
@@ -61,24 +63,16 @@ export const getValidDecodedToken = () => {
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
+      // decodedToken always throws on failure — it never returns null.
+      // If it throws, the catch block below handles cleanup and logging.
 
-      if (!decodedData) {
-        removeFromLocalStorage(AUTH_KEY);
-        return null;
-      }
-
-      if (
-        typeof decodedData.exp === "number" &&
-        decodedData.exp <= Math.floor(Date.now() / 1000)
-      ) {
-        removeFromLocalStorage(AUTH_KEY);
-        return null;
-      }
+      validateTokenPayload(decodedData as Record<string, unknown>);
 
       return buildUserInfo({
         email: decodedData.email ?? "",
         role: decodedData.role ?? "",
-        userId: decodedData.userId ?? decodedData._id ?? "",
+        userId: decodedData.userId ?? decodedData._id ?? decodedData.sub ?? "",
+        sub: decodedData.sub,
         name: decodedData.name ?? "",
         postsCount: decodedData.postsCount ?? 0,
         subscriptionType: decodedData.subscriptionType ?? "free",
@@ -95,6 +89,14 @@ export const getValidDecodedToken = () => {
 };
 
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
+  try {
+    const decodedData = decodedToken(accessToken);
+    validateTokenPayload(decodedData as Record<string, unknown>);
+  } catch (error) {
+    console.error("Refusing to store invalid access token:", error);
+    throw new Error("Received an invalid access token. Please try logging in again.");
+  }
+
   const result = setToLocalStorage(AUTH_KEY, accessToken);
   emitAuthChange();
   return result;
@@ -105,7 +107,7 @@ export const getUserInfo = (): AuthUserInfo | null => {
 };
 
 export const isLoggedIn = () => {
-  return !!getValidDecodedToken();
+  return getUserInfo() !== null;
 };
 
 export const removeUserInfo = () => {
