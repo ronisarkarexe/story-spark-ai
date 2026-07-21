@@ -35,11 +35,12 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
   const token = await getToken(req);
   const result = await UserService.updateUser(token, req.body);
   if (result && "pendingEmail" in result) {
+    const resPayload = result as { pendingEmail: string; message: string };
     sendResponse(res, {
       statusCode: httpStatus.ACCEPTED,
       success: true,
-      message: result.message,
-      data: { pendingEmail: result.pendingEmail },
+      message: resPayload.message,
+      data: { pendingEmail: resPayload.pendingEmail },
     });
     return;
   }

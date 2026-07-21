@@ -29,6 +29,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      # Add this to guarantee backend dev deps are present
+      - name: Ensure backend devDependencies are installed
+        run: pnpm --filter story-spark-ai-backend install --prod=false
+
       - name: TypeScript check (backend)
         run: pnpm --filter story-spark-ai-backend exec tsc --noEmit --project tsconfig.json
 

@@ -67,7 +67,7 @@ const updateCollection = catchAsync(async (req: Request, res: Response) => {
 
 const getCollectionById = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
-  const token = getOptionalToken(req); // Cleaned up DRY logic
+  const token = await getOptionalToken(req) as any; // Cleaned up DRY logic
   
   const result = await CollectionService.getCollectionById(id, token);
   
@@ -81,7 +81,7 @@ const getCollectionById = catchAsync(async (req: Request, res: Response) => {
 
 const getUserCollections = catchAsync(async (req: Request, res: Response) => {
   const userId = routeParam(req.params.userId);
-  const token = getOptionalToken(req); // Cleaned up DRY logic
+  const token = await getOptionalToken(req) as any; // Cleaned up DRY logic
   
   const result = await CollectionService.getUserCollections(userId, token);
   

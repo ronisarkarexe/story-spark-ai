@@ -26,7 +26,6 @@ import {
   TranslationResponseSchema,
   StoryboardResponseSchema,
 } from "../ai";
-import { sanitizeJsonText } from "../../../utils/promptSecurity";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -149,17 +148,7 @@ const throwIfAborted = (signal?: AbortSignal): void => {
   }
 };
 
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) {
-    return trimmed;
-  }
 
-  return trimmed
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-};
 
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
   if (!characters || characters.length === 0) return "";
@@ -815,6 +804,7 @@ Rules:
       `AI storyboard generation failed: ${errorMsg}`,
     );
   }
+}
 
 export async function chatWithGemini(
   message: string,

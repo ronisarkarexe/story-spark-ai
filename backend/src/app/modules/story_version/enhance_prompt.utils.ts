@@ -16,6 +16,10 @@ export const enhancePrompt = (prompt: string, context?: string): string => {
 
 Context: ${compressedContext}
 
+Prompt: ${prompt}`;
+  return metaPrompt;
+};
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export const enhancePromptWithGemini = async (

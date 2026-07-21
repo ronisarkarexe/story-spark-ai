@@ -96,7 +96,7 @@ async function generateWithAnthropic(systemPrompt: string, userPrompt: string): 
     { timeout: 60000 }
   ));
 
-  const textBlock = response.content.find((block) => block.type === "text");
+  const textBlock = response.content.find((block: { type: string; text?: string }) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text : "";
   if (!text) throw new Error("Anthropic returned an empty response");
   return text;

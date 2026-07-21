@@ -51,75 +51,10 @@ import { useNavigate, useLocation } from "react-router-dom";
     }),
   };
 
-return (
-  <header className="sticky top-0 z-50 w-full">
-    <div className="absolute inset-0 border-b border-slate-200/70 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
-    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-md dark:border-white/10 dark:bg-[#0B1120]/80">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link to="/" className="text-lg font-bold text-slate-800 dark:text-white">StorySparkAI</Link>
-        
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-2 lg:flex">
-          <NavLink to="/" end className={linkClass}>Home</NavLink>
-          <NavLink to="/explore" className={linkClass}>Explore</NavLink>
-          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
-          <NavLink to="/chat" className={linkClass}>AI Chat</NavLink>
-          {loggedIn && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
-        </nav>
-        
-        {/* Actions (Theme, Auth Buttons, Mobile Toggle) */}
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          
-          {loggedIn ? (
-            <button onClick={handleLogout} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Logout
-            </button>
-          ) : (
-            <>
-              <Link to="/login" className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Login
-              </Link>
-              <Link to="/signup" className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400">
-                Sign Up
-              </Link>
-            </>
-          )}
-          
-          <button className="rounded-md px-2 py-1 text-slate-700 lg:hidden dark:text-slate-200" onClick={() => setMenuOpen((v) => !v)}>
-            <i className="fa-solid fa-bars" />
-          </button>
-        </div>
-      </div>
-      
-      {/* Mobile Navigation Drawer */}
-      {menuOpen && (
-        <div className="flex flex-col space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
-          <NavLink to="/" end className={linkClass}>Home</NavLink>
-          <NavLink to="/explore" className={linkClass}>Explore</NavLink>
-          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
-          {loggedIn && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
-          
-          <hr className="my-2 border-slate-200/70 dark:border-white/10" />
-          
-          {loggedIn ? (
-            <button onClick={handleLogout} className="text-left rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Logout
-            </button>
-          ) : (
-            <>
-              <Link to="/login" className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Login
-              </Link>
-              <Link to="/signup" className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400 text-center">
-                Sign Up
-              </Link>
-            </>
-          )}
-        </div>
+
     <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, x: -20 }}

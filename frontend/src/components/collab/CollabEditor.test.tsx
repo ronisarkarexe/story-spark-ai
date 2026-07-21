@@ -1,4 +1,7 @@
+import '@testing-library/jest-dom';
 import { render, screen, act } from '@testing-library/react';
+import EventEmitter from 'events';
+import type { Mock } from 'vitest';
 import { vi } from 'vitest';
 import CollabEditor from './CollabEditor';
 import * as Y from 'yjs';
@@ -6,10 +9,9 @@ import { io } from 'socket.io-client';
 
 // Mock socket.io-client
 vi.mock('socket.io-client', () => {
-  const EventEmitter = require('events');
   class MockSocket extends EventEmitter {
-    emit(event: string, ...args: any[]) {
-      this.emit(event, ...args); // echo for test simplicity
+    emit(eventName: string | symbol, ...args: unknown[]): boolean {
+      return super.emit(eventName, ...args); // echo for test simplicity
     }
     disconnect() {}
   }
@@ -66,7 +68,7 @@ describe('CollabEditor', () => {
     const ytext = ydoc.getText('quill');
     ytext.insert(0, 'Hello world');
     const update = Y.encodeStateAsUpdate(ydoc);
-    const socket = (io as any).mock.results[0].value;
+    const socket = (io as Mock).mock.results[0].value;
     act(() => socket.emit('update', update));
     // Quill should now contain the text
     const editor = container.querySelector('.ql-editor');
@@ -82,11 +84,10 @@ describe('CollabEditor', () => {
         userColor={userColor}
       />,
     );
-    const socket = (io as any).mock.results[0].value;
+    const socket = (io as Mock).mock.results[0].value;
     const emitSpy = vi.spyOn(socket, 'emit');
     // Simulate selection change on the Quill instance
     // Since Quill instance is internal, we trigger the handler directly via the awareness ref
-    const awareness = (require('y-protocols/awareness').Awareness as any).prototype;
     // Not easily accessible – instead we verify that socket.emit was called at least once for awareness
     await act(async () => {});
     expect(emitSpy).toHaveBeenCalled();

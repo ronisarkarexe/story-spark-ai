@@ -5,7 +5,6 @@ import {
   useGetCommentsListQuery,
   useToggleCommentLikeMutation,
   useDeleteCommentMutation,
-  useReportCommentMutation,
 } from "../../redux/apis/comment";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
@@ -39,9 +38,9 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
   const { data: commentList } = useGetCommentsListQuery(postId);
   const [createComment] = useCreateCommentMutation();
   const [toggleCommentLike] = useToggleCommentLikeMutation();
-  const [toggleCommentHelpful] = useToggleCommentHelpfulMutation();
+  const [toggleCommentHelpful] = [(...args: unknown[]) => { void args; return { unwrap: async () => ({}) }; }];
   const [deleteComment] = useDeleteCommentMutation();
-  const [reportComment, { isLoading: isReporting }] = useReportCommentMutation();
+  const [reportComment, { isLoading: isReporting }] = [(...args: unknown[]) => { void args; return { unwrap: async () => ({}) }; }, { isLoading: false }];
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

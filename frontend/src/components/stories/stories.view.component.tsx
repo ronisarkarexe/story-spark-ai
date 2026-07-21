@@ -4,16 +4,10 @@ import {
   ITopicData,
   topicsData,
   CharacterProfile,
-  getWordCount,
-  SELECTED_TOPIC_CLASSES,
 } from "./stories.utils";
-import { calculateReadingTime } from "../../utils/reading-time";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { formatReadingStats } from "../../utils/story-utils";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import toast, { Toaster } from "react-hot-toast";
 import StoryTranslator from "../translate/StoryTranslator";
@@ -250,8 +244,9 @@ const handleGenerateCharacterProfile = async () => {
         setStories([]);
         setSelectedStory(null);
       }
-    } catch (error) {
-      const message = error?.data?.message || error?.message || "Something went wrong. Please try again.";
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>;
+      const message = (err?.data as { message?: string })?.message || (err?.message as string) || "Something went wrong. Please try again.";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -603,7 +598,7 @@ if (!stories || stories.length === 0) {
         <ExportStoryModal
           isOpen={showExportModal}
           onClose={() => setShowExportModal(false)}
-          story={selectedStory as any}
+          story={selectedStory as unknown as IStories}
         />
       )}
     </div>

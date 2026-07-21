@@ -124,7 +124,6 @@ const StoryWorkspace = () => {
   authorName,
   dateStr: formattedDate,
   chapters: currentStory.chapters || [],
-  theme: selectedTheme,
 });
 
       toast.success("PDF downloaded!");
@@ -156,7 +155,6 @@ const StoryWorkspace = () => {
   authorName,
   dateStr: formattedDate,
   chapters: currentStory.chapters || [],
-  theme: selectedTheme,
 });
 
       downloadBlob(blob, getSafeFileName(title, "docx"));
@@ -180,6 +178,7 @@ const StoryWorkspace = () => {
       <Toaster position="top-right" reverseOrder={false} />
       <ChapterSidebar
         chapters={currentStory.chapters}
+        maxChapterWords={1000}
       />
 
       <div className="flex flex-col flex-1">
@@ -277,9 +276,7 @@ const StoryWorkspace = () => {
   }
 />
 
-<StoryBranchingEditor
-  storyTitle={currentStory.title}
-/>
+<StoryBranchingEditor />
 <PlotHoleDetector
   story={
     currentStory.chapters
@@ -330,13 +327,6 @@ const StoryWorkspace = () => {
   }
 />
 
-<VocabularyAnalyzer
-  story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
-  }
-/>
 
 <GenreWeightControls />
 <StoryStylePresets />
@@ -429,7 +419,7 @@ const StoryWorkspace = () => {
   </div>
 </>
         ) : (
-          <CharacterNetwork storyId={currentStory.id} />
+          <CharacterNetwork storyId={currentStory.id} storyContent={currentStory.chapters?.map(c => c.content).join("\\n\\n") || ""} />
         )}
       </div>
     </div>

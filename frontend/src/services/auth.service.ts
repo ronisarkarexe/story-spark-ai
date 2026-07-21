@@ -1,6 +1,6 @@
 import { AUTH_KEY } from "../constants/storage-key";
 import { AccessToken } from "../models/login";
-import { decodedToken } from "../utils/jwt";
+import { decodeToken } from "../utils/jwt";
 import {
   getFromLocalStorage,
   removeFromLocalStorage,
@@ -62,7 +62,7 @@ export const getValidDecodedToken = () => {
 
   if (authToken) {
     try {
-      const decodedData = decodedToken(authToken);
+      const decodedData = decodeToken(authToken);
 
       if (!decodedData) {
         removeFromLocalStorage(AUTH_KEY);

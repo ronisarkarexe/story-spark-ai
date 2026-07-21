@@ -50,10 +50,10 @@ jobs:
               node -e '
                 const fs = require("fs");
                 const file = process.argv[1];
-                try{
-                  JSON.parse(fs.readFileSync(process.argv[1],'utf8'));
+                try {
+                  JSON.parse(fs.readFileSync(file, "utf8"));
                   console.log(`${file} OK`);
-                } catch(e){
+                } catch (e) {
                   console.error(`Invalid JSON in ${file}: ${e.message}`);
                   process.exit(1);
                 }' "$f"

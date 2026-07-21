@@ -6,9 +6,14 @@ import { QuillBinding } from 'y-quill';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { Awareness } from 'y-protocols/awareness';
 import { io, Socket } from 'socket.io-client';
-import { Awareness } from 'y-protocols/awareness';
 import { resolveSocketUrl } from '../../helpers/socket-url';
-import { Awareness } from 'y-protocols/awareness';
+
+export interface AwarenessUpdateEvent {
+  added: number[];
+  updated: number[];
+  removed: number[];
+}
+
 
 interface CollabEditorProps {
   storyId: string;
@@ -21,8 +26,8 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
   const quillRef = useRef<HTMLDivElement>(null);
   const ydocRef = useRef<Y.Doc | null>(null);
   const socketRef = useRef<Socket | null>(null);
-  const awarenessRef = useRef<any>(null);
-  const quillCursorsRef = useRef<any>(null);
+  const awarenessRef = useRef<Awareness | null>(null);
+  const quillCursorsRef = useRef<{ cursors?: Record<string, unknown>; createCursor: (id: string, name: string, color: string) => void; moveCursor: (id: string, cursor: unknown) => void; } | null>(null);
 
   useEffect(() => {
     if (!quillRef.current) return;
@@ -51,7 +56,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     });
     const cursors = quill.getModule('cursors');
     // Store cursors manager reference
-    (quillCursorsRef as any).current = cursors;
+    quillCursorsRef.current = cursors as typeof quillCursorsRef.current;
 
     // Bind Yjs text to Quill
     const binding = new QuillBinding(ytext, quill);
@@ -66,7 +71,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     });
 
     // Handle local cursor changes and broadcast via awareness
-    const handleSelectionChange = (range: any) => {
+    const handleSelectionChange = (range: { index: number; length: number } | null) => {
       if (!range) {
         awareness.setLocalStateField('cursor', null);
         return;
@@ -81,17 +86,17 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     // Render remote cursors from awareness updates
     const renderRemoteCursors = () => {
       const states = awareness.getStates();
-      states.forEach((state: any, clientId: number) => {
+      states.forEach((state: { user?: { name: string; color: string; userId: string }; cursor?: unknown }, clientId: number) => {
         if (clientId === awareness.clientID) return;
         const user = state.user;
         const cursor = state.cursor;
         if (user && cursor) {
           const cursorId = clientId.toString();
-          const existing = (quillCursorsRef as any).current?.cursors?.[cursorId];
+          const existing = quillCursorsRef.current?.cursors?.[cursorId];
           if (!existing) {
-            (quillCursorsRef as any).current?.createCursor(cursorId, user.name, user.color);
+            quillCursorsRef.current?.createCursor(cursorId, user.name, user.color);
           }
-          (quillCursorsRef as any).current?.moveCursor(cursorId, cursor);
+          quillCursorsRef.current?.moveCursor(cursorId, cursor);
         }
       });
     };
@@ -138,12 +143,12 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       const sendAwareness = (awarenessUpdate: Uint8Array) => {
         socket!.emit('awareness', awarenessUpdate);
       };
-      awareness.on('update', ({ added, updated, removed }: any) => {
-        const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
+      awareness.on('update', ({ added, updated, removed }: AwarenessUpdateEvent) => {
+        const awUpdate = (awareness as unknown as { encodeUpdate: (clients: number[]) => Uint8Array }).encodeUpdate(added.concat(updated).concat(removed));
         sendAwareness(awUpdate);
       });
       socket.on('awareness', (aw: Uint8Array) => {
-        awareness.applyUpdate(aw);
+        (awareness as unknown as { applyUpdate: (update: Uint8Array) => void }).applyUpdate(aw);
       });
     } else {
       console.warn(
@@ -153,8 +158,8 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     }
 
     return () => {
-      ydoc.off('update', sendUpdate);
-      socket.disconnect();
+      if (sendUpdate) { ydoc.off('update', sendUpdate); }
+      socket?.disconnect();
       awareness.off('update', renderRemoteCursors);
       awareness.destroy();
       binding.destroy();

@@ -509,7 +509,7 @@ const verifyEmailChange = async (payload: { token: string; email: string }) => {
     .where("pendingEmailToken")
     .equals(token)
     .where("pendingEmailTokenExpires")
-    .gt(new Date());
+    .gt(Date.now());
 
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid or expired verification token.");

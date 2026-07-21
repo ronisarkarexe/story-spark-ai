@@ -17,6 +17,7 @@ import piiScrubberMiddleware from "../app/middleware/pii_scrubber";
 import { generateStory } from "../services/ai.service";
 import { runWithQuotaCleanup } from "../app/modules/ai_model/quota.lifecycle";
 import rateLimit from "express-rate-limit";
+import idempotencyMiddleware, { completeIdempotentRequest, releaseIdempotentRequest } from "../app/middleware/idempotency.middleware";
 
 const router = express.Router();
 
