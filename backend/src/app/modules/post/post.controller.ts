@@ -111,7 +111,7 @@ const getPostsByTag = catchAsync(async (req: Request, res: Response) => {
   const tag = routeParam(req.params.tag);
   const excludeId = req.query.excludeId as string | undefined;
   const limit = req.query.limit ? Math.min(Number(req.query.limit), 50) : 10;
-  const result = await PostService.getPostsByTag(tag, excludeId);
+  const result = await PostService.getPostsByTag(tag, excludeId, limit);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
