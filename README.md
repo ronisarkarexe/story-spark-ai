@@ -32,26 +32,17 @@
 - [Feature Documentation 📄](#feature-documentation-)
 - [Known Behavior & UX Notes](#known-behavior--ux-notes-)
 - [Local Development](#local-development-monorepo)
+- [Deployment (Vercel)](#deploying-on-vercel)
 - [Environment Variables](#environment-variables)
 - [Minimal Working Example (Story Generation API)](#minimal-working-example-story-generation-api)
 - [API Reference 📡](#api-reference-)
 - [Troubleshooting 🛠️](#troubleshooting-️)
+- [Architecture](#architecture)
 - [Contributing 👨‍💻](#contributing-)
 - [Contributors 🤝](#contributors-)
 - [Maintainers](#maintainers)
 - [License 📜](#license-)
 - [Support 🙏](#support-)
-
----
-
-## 🧭 Quick Navigation
-
-Jump straight to the most commonly needed setup and deployment sections:
-
-- [Local Development](#local-development-monorepo)
-- [Environment Variables](#environment-variables)
-- [Deployment (Vercel)](#deploying-on-vercel)
-- [Troubleshooting](#troubleshooting-️)
 
 ---
 
