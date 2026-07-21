@@ -4,6 +4,7 @@ import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import { getRequestLimit, getWordCount, prompts, STORY_TEMPLATES } from "./stories.utils";
+import CharacterPortrait from "../character-portrait/CharacterPortrait";
 import {
   useGenerateFreeModelMutation,
   useGenerateModelMutation,
@@ -624,6 +625,11 @@ const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 const { data: rosterData } = useGetCharactersQuery(undefined, { skip: !login });
 const rosterCharacters = rosterData?.data || [];
 const [saveCharacter, { isLoading: isSavingCharacter }] = useSaveCharacterMutation();
+const [selectedRosterCharacterId, setSelectedRosterCharacterId] =
+  useState<string>("");
+const selectedRosterCharacter = rosterCharacters.find(
+  (character) => character._id === selectedRosterCharacterId
+);
 
 const handleSaveToRoster = async (char: ICharacter) => {
   try {
@@ -638,13 +644,31 @@ const handleSaveToRoster = async (char: ICharacter) => {
   }
 };
 
-const handleLoadFromRoster = (charId: string, rosterCharId: string) => {
-  const rosterChar = rosterCharacters.find((c: any) => c._id === rosterCharId);
+const handleLoadFromRoster = (
+  charId: string,
+  rosterCharId: string
+) => {
+  const rosterChar = rosterCharacters.find(
+    (character) => character._id === rosterCharId
+  );
+
   if (!rosterChar) return;
-  // Use a direct DOM update or form update depending on how characters are managed,
-  // Assuming setCharacters is available globally or we simulate the change:
-  if (typeof setCharacters === 'function') {
-    setCharacters((prev: ICharacter[]) => prev.map(c => c.id === charId ? { ...c, name: rosterChar.name, role: rosterChar.role || "", personality: rosterChar.personality } : c));
+
+  setSelectedRosterCharacterId(rosterCharId);
+
+  if (typeof setCharacters === "function") {
+    setCharacters((prev: ICharacter[]) =>
+      prev.map((character) =>
+        character.id === charId
+          ? {
+              ...character,
+              name: rosterChar.name,
+              role: rosterChar.role || "",
+              personality: rosterChar.personality,
+            }
+          : character
+      )
+    );
   }
 };
 const dropdownRef = useRef<HTMLDivElement>(null);
@@ -2065,12 +2089,28 @@ onKeyDown={(e) => {
                 </div>
 
                   <div className="space-y-2 select-none">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Cast of Characters</h2>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                      Cast of Characters
+                    </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Define custom characters to ensure Gemini maintains character roles, personality traits, and dynamic relationships consistently throughout the story.
                     </p>
                   </div>
 
+                  {login && selectedRosterCharacter && (
+                    <div className="mt-4 mb-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                      <div className="mb-3">
+                        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                          Character Portrait
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Generate an AI portrait from the saved character&apos;s profile.
+                        </p>
+                      </div>
+
+                      <CharacterPortrait character={selectedRosterCharacter} />
+                    </div>
+                  )}
 
                     <div className="flex items-center justify-between mt-1 px-1">
                       {isOverLimit ? (
@@ -2112,15 +2152,25 @@ onKeyDown={(e) => {
                             <div className="flex gap-2">
                               {login && (
                                 <>
-                                  <select 
+                                  <select
                                     className="text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2"
                                     onChange={(e) => {
-                                      if (e.target.value) handleLoadFromRoster(char.id, e.target.value);
+                                      const rosterCharId = e.target.value;
+
+                                      if (rosterCharId) {
+                                        handleLoadFromRoster(char.id, rosterCharId);
+                                      }
                                     }}
                                   >
                                     <option value="">Load from Roster...</option>
-                                    {rosterCharacters.map((rc: any) => (
-                                      <option key={rc._id} value={rc._id}>{rc.name} ({rc.role})</option>
+
+                                    {rosterCharacters.map((rosterCharacter) => (
+                                      <option
+                                        key={rosterCharacter._id}
+                                        value={rosterCharacter._id}
+                                      >
+                                        {rosterCharacter.name} ({rosterCharacter.role || "Character"})
+                                      </option>
                                     ))}
                                   </select>
                                   <button
@@ -2168,15 +2218,25 @@ onKeyDown={(e) => {
                           <div className="flex gap-2">
                             {login && (
                               <>
-                                <select 
+                                <select
                                   className="text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2"
                                   onChange={(e) => {
-                                    if (e.target.value) handleLoadFromRoster(char.id, e.target.value);
+                                    const rosterCharId = e.target.value;
+
+                                    if (rosterCharId) {
+                                      handleLoadFromRoster(char.id, rosterCharId);
+                                    }
                                   }}
                                 >
                                   <option value="">Load from Roster...</option>
-                                  {rosterCharacters.map((rc: any) => (
-                                    <option key={rc._id} value={rc._id}>{rc.name} ({rc.role})</option>
+
+                                  {rosterCharacters.map((rosterCharacter) => (
+                                    <option
+                                      key={rosterCharacter._id}
+                                      value={rosterCharacter._id}
+                                    >
+                                      {rosterCharacter.name} ({rosterCharacter.role || "Character"})
+                                    </option>
                                   ))}
                                 </select>
                                 <button

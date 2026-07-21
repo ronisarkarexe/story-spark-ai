@@ -8,7 +8,6 @@ const ScrollToTopButton = () => {
     let ticking = false;
 
     const handleScroll = () => {
-      // Only execute if a frame isn't already waiting to be painted
       if (!ticking) {
         window.requestAnimationFrame(() => {
           setIsVisible(window.scrollY > 200);

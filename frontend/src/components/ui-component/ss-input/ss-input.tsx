@@ -67,23 +67,17 @@ const SSInput = <T extends FieldValues>({
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           {...register(name, validation)}
-        className={`w-full box-border max-w-full h-11 block rounded-xl border bg-transparent text-sm transition-all duration-200 ${
-          icon ? "pl-10" : "px-4"
-        } ${type === "password" ? "pr-10" : "pr-4"} ${
-          error
-            ? "border-rose-500 focus:ring-rose-500/20 focus:border-rose-500 text-rose-900 dark:text-rose-400 placeholder-rose-300 focus:outline-none"
-            : "border-slate-200 dark:border-slate-700 text-gray-900 dark:text-gray-200 focus:border-blue-500 focus:ring-blue-500/20 placeholder-slate-400 dark:placeholder-slate-500"
-        }`}
-        style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}git add 
-
-
-
+          className={`w-full box-border max-w-full min-w-0 h-11 block rounded-xl border bg-transparent text-sm transition-all duration-200 ${
+            icon ? "pl-10" : "px-4"
+          } ${isPasswordType ? "pr-10" : "pr-4"} ${
+            error
+              ? "border-rose-500 focus:ring-2 focus:ring-inset focus:ring-rose-500/30 focus:border-rose-500 text-rose-900 dark:text-rose-400 placeholder-rose-300 focus:outline-none"
+              : "border-slate-200 dark:border-slate-700 text-gray-900 dark:text-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-inset focus:ring-blue-500/30 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
+          }`}
+          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
+        />
 
         {/* Right Password Eye Toggle */}
-
-        {type === "password" && (
-
-
         {isPasswordType && (
           <button
             type="button"

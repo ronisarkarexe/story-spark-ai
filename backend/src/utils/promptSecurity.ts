@@ -68,18 +68,6 @@ const normalizeInput = (input: string): string => {
     .trim();
 };
 
-/**
- * Strip markdown code fences (e.g. ```json ... ```) from raw AI text
- * before attempting JSON.parse.
- */
-export const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  return trimmed
-    .replace(/^```(?:json|javascript|ts|typescript)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-};
-
 export const validateAndFormatPrompt = (userPrompt: string): string => {
   if (!userPrompt || typeof userPrompt !== "string") {
     throw new Error("Security Violation: Invalid prompt input.");

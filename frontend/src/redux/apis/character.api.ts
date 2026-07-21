@@ -11,8 +11,15 @@ export interface SaveCharacterParams {
 export interface CharacterResponse extends SaveCharacterParams {
   _id: string;
   userId: string;
+  portraitUrl?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface CharacterApiResponse {
+  success: boolean;
+  message?: string;
+  data: CharacterResponse;
 }
 
 const characterApi = baseApi.injectEndpoints({
@@ -32,6 +39,13 @@ const characterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.character],
     }),
+    generateCharacterPortrait: build.mutation<CharacterApiResponse, string>({
+      query: (id) => ({
+        url: `/${CHARACTER_URL}/${id}/generate-portrait`,
+        method: "POST",
+      }),
+      invalidatesTags: [tagTypes.character],
+    }),
     deleteCharacter: build.mutation<{ success: boolean; message: string }, string>({
       query: (id) => ({
         url: `/${CHARACTER_URL}/${id}`,
@@ -45,5 +59,6 @@ const characterApi = baseApi.injectEndpoints({
 export const {
   useGetCharactersQuery,
   useSaveCharacterMutation,
+  useGenerateCharacterPortraitMutation,
   useDeleteCharacterMutation,
 } = characterApi;

@@ -4,12 +4,11 @@ import toast, { Toaster } from "react-hot-toast";
 
 import { RootState } from "../../redux/store";
 import { getUserInfo } from "../../services/auth.service";
+
 import ChapterSidebar from "./ChapterSidebar";
-import DocumentStatsPanel from "./DocumentStatsPanel";
 import StoryViewer from "./StoryViewer";
 import ContinueStoryButton from "./ContinueStoryButton";
 import CharacterNetwork from "../CharacterNetwork";
-import { useDocumentStats } from "../../hooks/useDocumentStats";
 import StoryCoverGenerator from "../cover-generator/StoryCoverGenerator";
 import StoryChecklist from "../checklist/StoryChecklist";
 import StoryRewritePanel from "../rewrite/StoryRewritePanel";
@@ -25,8 +24,31 @@ import GenreWeightControls from "../genre/GenreWeightControls";
 import StoryStylePresets from "../style/StoryStylePresets";
 import StoryPerspectiveSwitcher from "../perspective/StoryPerspectiveSwitcher";
 import StoryTonePresets from "../tone/StoryTonePresets";
+import StoryChapterGenerator from "../chapter-generator/StoryChapterGenerator";
+import PromptLibrary from "../prompts/PromptLibrary";
+import StoryTitleRating from "../title-rating/StoryTitleRating";
+import StoryRevisionChecklist from "../revision/StoryRevisionChecklist";
 import StoryAudienceSelector from "../audience/StoryAudienceSelector";
+import StoryKeywordExtractor from "../keywords/StoryKeywordExtractor";
+import StoryFactSheet from "../fact-sheet/StoryFactSheet";
+import CharacterConsistencyChecker from "../character-consistency/CharacterConsistencyChecker";
+import StorySceneNavigator from "../scene-navigator/StorySceneNavigator";
+import StoryComplexityAnalyzer from "../complexity/StoryComplexityAnalyzer";
+import StorySessionRecovery from "../recovery/StorySessionRecovery";
+import StoryComparisonDashboard from "../comparison/StoryComparisonDashboard";
+import StoryTimelineVisualization from "../timeline/StoryTimelineVisualization";
+import StoryRelationshipGraph from "../relationship-graph/StoryRelationshipGraph";
+import StoryPlotTwistGenerator from "../plot-twist/StoryPlotTwistGenerator";
+import StoryReadingAnalytics from "../analytics/StoryReadingAnalytics";
 
+import StoryRevisionHistory from "../revision-history/StoryRevisionHistory";
+import { createRevision } from "../../utils/storyRevisionHistory";
+import StoryEndingAnalyzer from "../ending-analyzer/StoryEndingAnalyzer";
+import WritingChallengeGenerator from "../writing-challenges/WritingChallengeGenerator";
+import StoryNamingAssistant from "../naming-assistant/StoryNamingAssistant";
+import StoryPublishingReadiness from "../publishing-readiness/StoryPublishingReadiness";
+import StoryTagGenerator from "../story-tags/StoryTagGenerator";
+import StoryReadingInfo from "../reading-info/StoryReadingInfo";
 
 import {
   getSafeFileName,
@@ -40,9 +62,6 @@ const StoryWorkspace = () => {
     (state: RootState) => state.story.currentStory
   );
   const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
-  const { docStats, chapterAvgWords, maxChapterWords } = useDocumentStats(
-    currentStory?.chapters
-  );
 
   const [selectedTheme, setSelectedTheme] = useState<
   "Classic" | "Novel" | "Minimal" | "Dark"
@@ -174,13 +193,9 @@ const StoryWorkspace = () => {
   return (
     <div className="flex bg-black h-screen">
       <Toaster position="top-right" reverseOrder={false} />
-      <div className="flex flex-col h-screen border-r border-zinc-800">
-        <DocumentStatsPanel stats={docStats} chapterAvgWords={chapterAvgWords} />
-        <ChapterSidebar
-          chapters={currentStory.chapters}
-          maxChapterWords={maxChapterWords}
-        />
-      </div>
+      <ChapterSidebar
+        chapters={currentStory.chapters}
+      />
 
       <div className="flex flex-col flex-1">
         <div className="flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-900">
@@ -363,6 +378,185 @@ const StoryWorkspace = () => {
   }
 />
 
+<StoryChapterGenerator
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<PromptLibrary
+  onInsertPrompt={(prompt) => {
+    console.log("Selected Prompt:", prompt);
+  }}
+/>
+
+<StoryTitleRating
+  title={currentStory.title}
+  onReplace={(newTitle) => {
+    console.log("Replace title:", newTitle);
+  }}
+/>
+
+<StoryRevisionChecklist />
+
+<StoryKeywordExtractor
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryFactSheet
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StorySceneNavigator
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryComplexityAnalyzer
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StorySessionRecovery
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+  onRestore={(draft) => {
+    console.log("Restore draft:", draft);
+  }}
+/>
+<StoryComparisonDashboard
+  storyA={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+  storyB={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryTimelineVisualization
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<CharacterConsistencyChecker
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryRelationshipGraph
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryPlotTwistGenerator
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+  onApply={(twist) => {
+    console.log("Selected plot twist:", twist);
+  }}
+/>
+
+<StoryReadingAnalytics
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryRevisionHistory
+  revisions={[
+    createRevision(
+      currentStory.chapters
+        ?.map((chapter) => chapter.content)
+        .join("\n\n") || ""
+    ),
+  ]}
+  onRestore={(content) => {
+    console.log("Restore revision:", content);
+  }}
+/>
+
+<StoryEndingAnalyzer
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+  onRegenerate={(prompt) => {
+    console.log("Regenerate ending:", prompt);
+  }}
+/>
+
+<WritingChallengeGenerator />
+
+<StoryNamingAssistant
+  onInsert={(name) => {
+    console.log("Insert name:", name);
+  }}
+/>
+
+
+<StoryPublishingReadiness
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryTagGenerator
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryReadingInfo
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+
   <StoryViewer
     chapters={currentStory.chapters}
     storyId={currentStory.id}
@@ -374,14 +568,7 @@ const StoryWorkspace = () => {
   </div>
 </>
         ) : (
-           <CharacterNetwork
-           storyId={currentStory.id}
-                       storyContent={
-             currentStory.chapters
-               ?.map((chapter) => chapter.content)
-                .join("\n\n") || ""
-            }
-          />
+          <CharacterNetwork storyId={currentStory.id} />
         )}
       </div>
     </div>

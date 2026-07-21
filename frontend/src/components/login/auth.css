@@ -323,7 +323,7 @@ input::placeholder {
 
 input:focus {
     border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16), 0 0 16px rgba(124, 58, 237, 0.08);
+    box-shadow: inset 0 0 0 2px #7c3aed, 0 0 16px rgba(124, 58, 237, 0.15);
     outline: none;
     transform: translateY(-1px);
 }
