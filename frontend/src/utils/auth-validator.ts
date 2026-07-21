@@ -30,8 +30,9 @@ export const validateTokenPayload = (decodedData: Record<string, unknown>): void
   if (typeof decodedData.exp !== "number" || isNaN(decodedData.exp) || decodedData.exp <= 0) {
     throw new Error("Token is missing a valid numeric 'exp' claim.");
   }
+  const CLOCK_SKEW_TOLERANCE_SECONDS = 60;
   const currentTime = Math.floor(Date.now() / 1000);
-  if (decodedData.exp < currentTime) {
+  if (decodedData.exp < currentTime - CLOCK_SKEW_TOLERANCE_SECONDS) {
     throw new Error("Token has expired.");
   }
   if (typeof decodedData.iat !== "number" || isNaN(decodedData.iat) || decodedData.iat <= 0) {
