@@ -63,27 +63,27 @@ const Contact = lazy(() =>
 );
 
 const AboutUsComponent = lazy(() =>
-  import("./components/footer/about-us.tsx")
+  import("./components/footer/about-us")
 );
 
 const CareerComponent = lazy(() =>
-  import("./components/footer/career.tsx")
+  import("./components/footer/career")
 );
 
 const BlogComponent = lazy(() =>
-  import("./components/footer/blog.tsx")
+  import("./components/footer/blog")
 );
 
 const PrivacyPolicy = lazy(() =>
-  import("./components/footer/Privacy.tsx")
+  import("./components/footer/Privacy")
 );
 
 const CookiePolicy = lazy(() =>
-  import("./components/footer/cookie-policy.tsx")
+  import("./components/footer/cookie-policy")
 );
 
 const Terms = lazy(() =>
-  import("./components/footer/terms.tsx")
+  import("./components/footer/terms")
 );
 
 const HelpCenterComponent = lazy(() =>
@@ -91,11 +91,11 @@ const HelpCenterComponent = lazy(() =>
 );
 
 const GuidelinesComponent = lazy(() =>
-  import("./components/footer/guidelines.tsx")
+  import("./components/footer/guidelines")
 );
 
 const ContributorsComponent = lazy(() =>
-  import("./components/footer/contributors.tsx")
+  import("./components/footer/contributors")
 );
 
 const ExploreComponent = lazy(() =>
@@ -188,16 +188,7 @@ const ALL_ROLES = [
   USER_ROLE.USER,
 ];
 
-const ELEVATED_ADMIN_ROLES = [
-  USER_ROLE.ADMIN,
-  USER_ROLE.SUPER_ADMIN,
-];
 
-const WRITER_PLUS_ADMIN_ROLES = [
-  USER_ROLE.ADMIN,
-  USER_ROLE.SUPER_ADMIN,
-  USER_ROLE.WRITER,
-];
 
 
 // Suspense helper

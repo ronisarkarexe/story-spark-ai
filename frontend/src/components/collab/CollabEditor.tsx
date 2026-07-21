@@ -26,8 +26,8 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
   const quillRef = useRef<HTMLDivElement>(null);
   const ydocRef = useRef<Y.Doc | null>(null);
   const socketRef = useRef<Socket | null>(null);
-  const awarenessRef = useRef<any>(null);
-  const quillCursorsRef = useRef<any>(null);
+  const awarenessRef = useRef<Awareness | null>(null);
+  const quillCursorsRef = useRef<{ cursors?: Record<string, unknown>; createCursor: (id: string, name: string, color: string) => void; moveCursor: (id: string, cursor: unknown) => void; } | null>(null);
 
   useEffect(() => {
     if (!quillRef.current) return;
@@ -56,7 +56,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     });
     const cursors = quill.getModule('cursors');
     // Store cursors manager reference
-    (quillCursorsRef as any).current = cursors;
+    quillCursorsRef.current = cursors as typeof quillCursorsRef.current;
 
     // Bind Yjs text to Quill
     const binding = new QuillBinding(ytext, quill);
@@ -71,7 +71,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     });
 
     // Handle local cursor changes and broadcast via awareness
-    const handleSelectionChange = (range: any) => {
+    const handleSelectionChange = (range: { index: number; length: number } | null) => {
       if (!range) {
         awareness.setLocalStateField('cursor', null);
         return;
@@ -86,17 +86,17 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     // Render remote cursors from awareness updates
     const renderRemoteCursors = () => {
       const states = awareness.getStates();
-      states.forEach((state: any, clientId: number) => {
+      states.forEach((state: { user?: { name: string; color: string; userId: string }; cursor?: unknown }, clientId: number) => {
         if (clientId === awareness.clientID) return;
         const user = state.user;
         const cursor = state.cursor;
         if (user && cursor) {
           const cursorId = clientId.toString();
-          const existing = (quillCursorsRef as any).current?.cursors?.[cursorId];
+          const existing = quillCursorsRef.current?.cursors?.[cursorId];
           if (!existing) {
-            (quillCursorsRef as any).current?.createCursor(cursorId, user.name, user.color);
+            quillCursorsRef.current?.createCursor(cursorId, user.name, user.color);
           }
-          (quillCursorsRef as any).current?.moveCursor(cursorId, cursor);
+          quillCursorsRef.current?.moveCursor(cursorId, cursor);
         }
       });
     };
@@ -109,7 +109,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     // The editor still works locally via Yjs + IndexedDB persistence.
     const socketUrl = resolveSocketUrl();
     let socket: Socket | null = null;
-    let sendUpdate: ((update: Uint8Array, origin: unknown, doc: Y.Doc, tr: Y.Transaction) => void) | null = null;
+    let sendUpdate: ((update: Uint8Array) => void) | null = null;
 
     if (socketUrl) {
       socket = io(`${socketUrl}/yjs`, {
@@ -134,7 +134,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       });
 
       // Broadcast local updates
-      sendUpdate = (update: Uint8Array, _origin: unknown, _doc: Y.Doc, _tr: Y.Transaction) => {
+      sendUpdate = (update: Uint8Array) => {
         socket!.emit('update', update);
       };
       ydoc.on('update', sendUpdate);

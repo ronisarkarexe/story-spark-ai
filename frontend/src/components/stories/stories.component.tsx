@@ -3,7 +3,7 @@ import React, { useCallback, useState, useEffect, useRef, useMemo } from "react"
 import jsPDF from "jspdf";
 import StoriesViewComponent from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
+import { useCreatePostMutation } from "../../redux/apis/post.api";
 import { useRecentPrompts } from "../../hooks/useRecentPrompts";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import { getRequestLimit, getWordCount, prompts, STORY_TEMPLATES } from "./stories.utils";
@@ -21,9 +21,7 @@ import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import { useDebounce } from "../../hooks/useDebounce";
-import ConfirmDialog from "./ConfirmDialog";
 import {
-  clearStoryDraft,
   loadStoryDraft,
   saveStoryDraft,
   type StoryDraftData,
@@ -45,11 +43,11 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
-const lengths = ["short", "medium", "long"] as const;
+
 
 
 const WARN_THRESHOLD = 0.85;
-const DANGER_THRESHOLD = 0.95;
+
 
 const LANGUAGES = [
   { code: "en", name: "English" },
@@ -335,7 +333,7 @@ const UI_TEXT: Record<string, UiText> = {
   },
 };
 
-const LANGUAGE_STORAGE_KEY = "storySparkLanguage";
+
 
 // NEW: Tone definitions ├óΓé¼ΓÇ¥ each has a label, emoji, and Tailwind colour classes
 // for the active/inactive pill states.
@@ -414,14 +412,10 @@ const TonePicker: React.FC<TonePickerProps> = React.memo(({ selected, onChange }
     </div>
   );
 });
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
-import ImageFallback from "../ImageFallback";
-import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 export interface ITopicData {
   title: string;
   className: string;
@@ -444,20 +438,6 @@ export interface IStories {
 interface IPost extends IStories {
   topic: ITopicData[];
 }
-
-interface StoriesComponentProps {
-  stories: IStories[];
-  isLogin: boolean;
-  setStories: (stories: IStories[]) => void;
-  onPublishSuccess?: () => void;
-}
-
-type StorySentenceSegment = {
-  id: string;
-  text: string;
-  startWordIndex: number;
-  endWordIndex: number;
-};
 
 
 const getStoryDedupKey = (story: IStories) => {
@@ -497,7 +477,7 @@ interface ICharacter {
 }
 
 const TemplateSelectionScreen: React.FC<{
-  onSelectTemplate: (template: any) => void;
+  onSelectTemplate: (template: { genre: string; templateName: string; openingHook: string; length: string; characters: ICharacter[]; premise?: string; plotPoints?: string[]; tone?: string }) => void;
   onStartBlank: () => void;
 }> = ({ onSelectTemplate, onStartBlank }) => {
   return (
@@ -546,9 +526,9 @@ const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
-  const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [searchFilter, setSearchFilter] = useState("all");
+  const [selectTopics] = useState<ITopicData[]>([]);
+  const [debouncedSearchQuery] = useState("");
+  const [searchFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const storiesPerPage = 6;
   const [topics, setTopics] = useState<{ title: string; className: string; color: string; selected: boolean }[]>([]);
@@ -570,18 +550,20 @@ const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
     setSelectedPrompt("");
     setValue("prompt", "");
   };
-  const onPublishSuccess = () => {};
+
   const isDangerLimit = false;
   const logo = "/logo.png";
   const isLoading = loading;
 
-  const buildSentenceSegments = (text: string) => text.match(/[^.!?]+[.!?]+/g) || [text];
-  const handleCancelGeneration = (skipConfirm?: boolean) => {};
-  const setIsHighLatency = (v: boolean) => {};
   const DRAFT_KEY = "story_draft";
-  const setDraftStatus = (status: string) => {};
-  const setCurrentStep = (step: number) => {};
   const SELECTED_TOPIC_CLASSES = "";
+
+  const setDraftStatus = (...args: unknown[]) => { void args; };
+  const setIsHighLatency = (...args: unknown[]) => { void args; };
+  const handleCancelGeneration = (...args: unknown[]) => { void args; };
+  const setCurrentStep = (...args: unknown[]) => { void args; };
+  const onPublishSuccess = (...args: unknown[]) => { void args; };
+  const setShowWorldMap = (...args: unknown[]) => { void args; };
 
 
 const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -597,13 +579,13 @@ const handleSaveToRoster = async (char: ICharacter) => {
       personality: char.personality
     }).unwrap();
     toast.success("Character saved to roster!");
-  } catch (error) {
+  } catch {
     toast.error("Failed to save character.");
   }
 };
 
 const handleLoadFromRoster = (charId: string, rosterCharId: string) => {
-  const rosterChar = rosterCharacters.find((c: any) => c._id === rosterCharId);
+  const rosterChar = rosterCharacters.find((c: { _id?: string }) => c._id === rosterCharId);
   if (!rosterChar) return;
   // Use a direct DOM update or form update depending on how characters are managed,
   // Assuming setCharacters is available globally or we simulate the change:
@@ -652,19 +634,19 @@ const [selectedGenre, setSelectedGenre] = useState<string>(
 
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">((draft?.tone as ToneLabel) || "Dramatic");
-  const [selectedAudience, setSelectedAudience] = useState<string>("General Audience");
+  const [selectedAudience] = useState<string>("General Audience");
   const [textareaValue, setTextareaValue] = useState<string>(() => {
     return location.state?.prompt || draft?.prompt || "";
   });
   const debouncedPrompt = useDebounce(textareaValue, 1000);
-  const [generatedEndings, setGeneratedEndings] = useState<Record<string, { style: string; ending: string; fullStory: string; }[]>>({});
+  const [generatedEndings] = useState<Record<string, { style: string; ending: string; fullStory: string; }[]>>({});
 
   const [showTemplateScreen, setShowTemplateScreen] = useState<boolean>(() => {
     return !location.state?.prompt && !draft?.prompt;
   });
 
-  const handleSelectTemplate = (template: any) => {
-    const fullPremise = `${template.premise}\n\nSuggested Plot Points:\n- ${template.plotPoints.join('\n- ')}`;
+  const handleSelectTemplate = (template: { genre: string; templateName: string; openingHook: string; length: string; characters: ICharacter[]; premise?: string; plotPoints?: string[]; tone?: string }) => {
+    const fullPremise = `${template.premise || ""}\n\nSuggested Plot Points:\n- ${(template.plotPoints || []).join('\n- ')}`;
     setTextareaValue(fullPremise);
     setSelectedGenre(template.genre);
     setSelectedLength(template.length);
@@ -684,7 +666,7 @@ const [selectedGenre, setSelectedGenre] = useState<string>(
 
 
 
-  const languageDropdownRef = useRef<HTMLDivElement>(null);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
 
@@ -705,26 +687,25 @@ const [selectedGenre, setSelectedGenre] = useState<string>(
   }, []);
 
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+
   const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
-  const [deletePost] = useDeletePostMutation();
+
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !login });
   const lastSavedContentRef = useRef<string>("");
   const isSavingRef = useRef<boolean>(false);
   const hasSavedSessionRef = useRef<boolean>(false);
   const savedPostIdRef = useRef<string | null>(null);
   // Alternate ending state & hooks
-  const [endingsCache, setEndingsCache] = useState<{
-    [uuid: string]: { style: string; ending: string; fullStory: string }[];
-  }>({});
+  const [, setEndingsCache] = useState<{ [uuid: string]: { style: string; ending: string; fullStory: string }[]; }>({});
+
   const [originalStoryContent, setOriginalStoryContent] = useState<{
     [uuid: string]: string;
   }>({});
   const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
   const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
   const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
-  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+  const [narrationState, setNarrationState] = useState<string>("idle");
 
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
@@ -788,7 +769,7 @@ const [selectedGenre, setSelectedGenre] = useState<string>(
         
       const res = await generationRequest.unwrap();
       if (res && res.data) {
-        setEndingsCache((prev) => ({
+        setEndingsCache((prev: { [uuid: string]: { style: string; ending: string; fullStory: string }[]; }) => ({
           ...prev,
           [selectedStory.uuid]: res.data,
         }));
@@ -896,9 +877,7 @@ const [selectedGenre, setSelectedGenre] = useState<string>(
     setNarrationState("idle");
   }, [selectedStory?.uuid]);
 
-  const sentenceSegments = useMemo(() => {
-    return buildSentenceSegments(selectedStory?.content ?? "");
-  }, [selectedStory?.content]);
+
 
   // Sync state instantly whenever a new template is submitted or selected
   useEffect(() => {
@@ -1068,9 +1047,10 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     addPrompt,
     setValue,
     playSoundtrack,
-    handleCancelGeneration,
     characters,
     reset,
+    refetchUsage,
+    selectedAudience,
   ]);
 
   const handleAddTopic = () => {
@@ -1432,7 +1412,7 @@ const handleExportMarkdown = () => {
     } finally {
       setLoading(false);
     }
-  }, [login, selectedStory, selectTopics, createPost, setStories, setSelectedStory, onPublishSuccess]);
+  }, [login, selectedStory, selectTopics, createPost, setStories, setSelectedStory]);
 
 
 

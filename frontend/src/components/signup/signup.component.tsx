@@ -407,7 +407,7 @@ const SignUpComponent = () => {
                     register={register}
                     autoComplete="new-password"
                     validation={{
-                      validate: (value: any) => {
+                      validate: (value: string) => {
                         if (showOtpField) return true;
                         if (!value) return "Confirm password is required";
                         if (value !== password) return "Passwords do not match!";
