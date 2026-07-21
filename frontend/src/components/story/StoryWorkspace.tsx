@@ -41,6 +41,8 @@ import StoryRelationshipGraph from "../relationship-graph/StoryRelationshipGraph
 import StoryPlotTwistGenerator from "../plot-twist/StoryPlotTwistGenerator";
 import StoryReadingAnalytics from "../analytics/StoryReadingAnalytics";
 
+import StoryRevisionHistory from "../revision-history/StoryRevisionHistory";
+import { createRevision } from "../../utils/storyRevisionHistory";
 
 import {
   getSafeFileName,
@@ -489,6 +491,19 @@ const StoryWorkspace = () => {
       ?.map((chapter) => chapter.content)
       .join("\n\n") || ""
   }
+/>
+
+<StoryRevisionHistory
+  revisions={[
+    createRevision(
+      currentStory.chapters
+        ?.map((chapter) => chapter.content)
+        .join("\n\n") || ""
+    ),
+  ]}
+  onRestore={(content) => {
+    console.log("Restore revision:", content);
+  }}
 />
   <StoryViewer
     chapters={currentStory.chapters}
