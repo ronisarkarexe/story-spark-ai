@@ -109,6 +109,13 @@ const createBranchVersion = async (
     );
   }
 
+  if ((parentVersion.branchDepth ?? 0) >= 100) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Maximum branch depth (100) reached. Cannot create deeper branches."
+    );
+  }
+
   const latestVersion = await StoryVersion.findOne({
     storyId: parentVersion.storyId,
   })
@@ -202,18 +209,31 @@ const getBranchPath = async (
     );
   }
 
-  const path: IStoryVersion[] = [];
-  let current: IStoryVersion | null = version;
+  // Defend against N+1 query DoS using an optimized aggregation pipeline
+  const aggregated = await StoryVersion.aggregate([
+    { $match: { _id: version._id } },
+    {
+      $graphLookup: {
+        from: "storyversions",
+        startWith: "$parentVersionId",
+        connectFromField: "parentVersionId",
+        connectToField: "_id",
+        as: "ancestors",
+        maxDepth: 100, // Hard limit on graph depth
+      },
+    },
+  ]);
 
-  while (current) {
-    path.unshift(current);
-    if (!current.parentVersionId) {
-      break;
-    }
-    current = await StoryVersion.findById(current.parentVersionId);
+  if (!aggregated || aggregated.length === 0) {
+    return [version];
   }
 
-  return path;
+  const ancestors: IStoryVersion[] = aggregated[0].ancestors || [];
+  
+  // Sort ancestors by branchDepth (root downwards)
+  ancestors.sort((a, b) => (a.branchDepth || 0) - (b.branchDepth || 0));
+
+  return [...ancestors, version];
 };
 
 const getVersionsByStoryId = async (

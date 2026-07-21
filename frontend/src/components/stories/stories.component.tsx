@@ -1,70 +1,117 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from 'react';
+import { useBlocker } from 'react-router-dom';
 
-export type ChoiceButtonsProps = {
-  choices: string[];
-  onSelect: (choice: string) => void;
-  disabled: boolean;
-};
+import { getBaseUrl } from '../../helpers/config';
+import StoryGeneratingAnimation from '../loading/story-generating-animation.component';
 
-const ChoiceButtons = ({ choices, onSelect, disabled }: ChoiceButtonsProps) => {
-  const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
+const StoryInspirationPage: React.FC = () => {
+  const [intro, setIntro] = useState('');
+  const [ideas, setIdeas] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const isDirty = intro.trim().length > 0;
 
   useEffect(() => {
-    setSelectedChoice(null);
-  }, [choices]);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
-  const handleSelect = (choice: string) => {
-    if (disabled || selectedChoice) {
-      return;
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      const proceed = window.confirm(
+        "You have unsaved content in the intro field. Are you sure you want to leave?"
+      );
+      if (proceed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
     }
+  }, [blocker]);
 
-    setSelectedChoice(choice);
-    onSelect(choice);
+  const fetchIdeas = async () => {
+    setLoading(true);
+    setError('');
+    setIdeas([]);
+    try {
+      const response = await fetch(`${getBaseUrl()}/story-inspiration`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intro }),
+      });
+      if (!response.ok) throw new Error('Failed to fetch ideas');
+      const data = await response.json();
+      setIdeas(data.data?.ideas || data.ideas || []);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-3 w-full box-border items-stretch">
-      {choices.map((choice, index) => {
-        const isSelected = selectedChoice === choice;
+    <div className="max-w-xl mx-auto p-6 bg-white rounded shadow mt-10">
+      <h2 className="text-2xl font-bold mb-4">Get Story Inspiration</h2>
+      <textarea
+        className="w-full border rounded p-2 mb-4"
+        rows={4}
+        placeholder="Enter your story intro..."
+        value={intro}
+        onChange={e => setIntro(e.target.value)}
+        disabled={loading}
+      />
 
-        return (
-          <motion.button
-            key={`${choice}-${index}`}
-            type="button"
-            whileHover={disabled || selectedChoice ? undefined : { scale: 1.01, y: -1 }}
-            whileTap={disabled || selectedChoice ? undefined : { scale: 0.99 }}
-            onClick={() => handleSelect(choice)}
-            disabled={disabled || Boolean(selectedChoice)}
-            className={`w-full text-left bg-white dark:bg-[#111827]/40 border rounded-2xl sm:rounded-3xl p-5 shadow-sm transition-all duration-200 flex flex-col justify-between box-border relative overflow-hidden group ${
-              isSelected
-                ? "border-blue-600 dark:border-white bg-blue-500/[0.02] dark:bg-white/[0.02] shadow-md"
-                : "border-slate-200 dark:border-white/10 hover:border-blue-500/40 dark:hover:border-white/30"
-            } ${disabled || selectedChoice ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-          >
-            <div className="flex items-start justify-between gap-4 w-full box-border">
-              <div className="min-w-0 flex-1">
-                <span className="mb-3 inline-flex rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/40 dark:border-transparent px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none">
-                  Choice {index + 1}
-                </span>
-                <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-medium m-0">
-                  {choice}
-                </p>
-              </div>
-              
-              <span
-                className={`mt-1 h-3.5 w-3.5 rounded-full border transition-all duration-200 shrink-0 select-none ${
-                  isSelected 
-                    ? "border-blue-600 bg-blue-600 dark:border-white dark:bg-white scale-110" 
-                    : "border-slate-300 dark:border-white/20 bg-transparent group-hover:border-slate-400 dark:group-hover:border-white/40"
-                }`}
-              />
-            </div>
-          </motion.button>
-        );
-      })}
+    <div className="flex gap-2">
+  <button
+    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    onClick={fetchIdeas}
+    disabled={loading || !intro.trim()}
+  >
+    {loading ? 'Generating...' : 'Get Ideas'}
+  </button>
+
+  {intro.trim() && (
+    <button
+      type="button"
+      onClick={() => {
+        setIntro('');
+        setIdeas([]);
+        setError('');
+      }}
+      className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+    >
+      Clear Prompt
+    </button>
+  )}
+</div>
+
+      {error && <div className="text-red-600 mt-4">{error}</div>}
+
+      {!loading && ideas.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-xl font-semibold mb-2">Story Ideas:</h3>
+          <ul className="list-disc pl-6">
+            {ideas.map((idea, idx) => (
+              <li key={idx} className="mb-2">{idea}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ChoiceButtons;
+export default StoryInspirationPage;
+

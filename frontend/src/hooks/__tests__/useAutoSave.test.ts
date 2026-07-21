@@ -1,16 +1,66 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { renderHook, act } from "@testing-library/react";
+import { useAutoSave, loadDraft, clearDraft } from "../useAutoSave";
+
+describe("useAutoSave", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
+
+  it("loads an existing draft", () => {
+    localStorage.setItem(
+      "story_draft_demo",
+      JSON.stringify({
+        title: "Hello",
+        content: "World",
+        savedAt: "2025-01-01",
+      })
+    );
+
+    expect(loadDraft("demo")).toEqual({
+      title: "Hello",
+      content: "World",
+      savedAt: "2025-01-01",
+    });
+  });
+
+  it("returns null when draft does not exist", () => {
+    expect(loadDraft("missing")).toBeNull();
+  });
+
+  it("clears a draft", () => {
+    localStorage.setItem("story_draft_demo", "{}");
+
+    clearDraft("demo");
+
+    expect(localStorage.getItem("story_draft_demo")).toBeNull();
+  });
+
+  it("autosaves after debounce", () => {
+    renderHook(() => useAutoSave("demo", "Title", "Content"));
 /**
  * useAutoSave.test.ts
  * Unit tests for the useAutoSave React hook and draft helpers.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useAutoSave, loadDraft, clearDraft } from "../useAutoSave";
+import { useAutoSave, loadDraft, clearDraft, offlineQueue } from "../useAutoSave";
 
 const DRAFT_KEY = "story_draft_";
 
 beforeEach(() => {
   vi.useFakeTimers();
   localStorage.clear();
+  offlineQueue.length = 0;
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ success: true }),
+  });
 });
 
 afterEach(() => {
@@ -72,6 +122,96 @@ describe("useAutoSave", () => {
     await waitFor(() => {
       expect(result.current.saveStatus).toBe("error");
     });
+  });
+
+  it("should queue edits when offline and flush them to server on reconnect", async () => {
+    const onlineSpy = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    
+    act(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
+
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+    global.fetch = mockFetch;
+
+    const { result, rerender } = renderHook(
+      ({ id, title, content }: { id: string; title: string; content: string }) =>
+        useAutoSave(id, title, content),
+      { initialProps: { id: "draft-online-test", title: "A", content: "Initial Content" } }
+    );
+
+    rerender({ id: "draft-online-test", title: "A", content: "Edited Content Offline" });
+
+
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+
+
+    const saved = JSON.parse(
+      localStorage.getItem("story_draft_demo")!
+    );
+
+    expect(saved.title).toBe("Title");
+    expect(saved.content).toBe("Content");
+  });
+
+  it("changes saveStatus to saved", () => {
+    const { result } = renderHook(() =>
+      useAutoSave("demo", "Title", "Content")
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+
+    expect(result.current.saveStatus).toBe("saved");
+    expect(result.current.lastSaved).not.toBeNull();
+  });
+
+  it("sets saveStatus to error when localStorage fails", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("quota");
+    });
+
+    const { result } = renderHook(() =>
+      useAutoSave("demo", "Title", "Content")
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+
+    expect(result.current.saveStatus).toBe("error");
+    await waitFor(() => {
+      expect(result.current.saveStatus).toBe("saved");
+    });
+
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(result.current.isOnline).toBe(false);
+    expect(result.current.pendingCount).toBe(1);
+
+    onlineSpy.mockReturnValue(true);
+    
+    await act(async () => {
+      window.dispatchEvent(new Event("online"));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith("/api/stories/save", expect.objectContaining({
+      method: "PUT",
+      body: JSON.stringify({ content: "Edited Content Offline" }),
+    }));
+
+    expect(result.current.isOnline).toBe(true);
+    expect(result.current.pendingCount).toBe(0);
   });
 });
 
