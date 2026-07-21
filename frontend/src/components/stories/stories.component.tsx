@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import jsPDF from "jspdf";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
@@ -709,8 +709,7 @@ const [selectedGenre, setSelectedGenre] = useState<string>(
   );
   const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
   const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
-  const [isHighLatency, setIsHighLatency] = useState<boolean>(false);
-  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
+  const { addPrompt } = useRecentPrompts();
   
   const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
   const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
@@ -784,8 +783,7 @@ const [selectedGenre, setSelectedGenre] = useState<string>(
     toast.success("Reverted to original story ending!");
   };
 
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
+
 
   // Draft restore + autosave
   useEffect(() => {
@@ -937,7 +935,7 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     isGenerationInProgressRef.current = true;
 
     // Timeout to simulate high latency state if generation takes more than 5s
-    let latencyTimeoutId: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+    const latencyTimeoutId: ReturnType<typeof setTimeout> | null = setTimeout(() => {
       setIsHighLatency(true);
     }, 5000);
 
@@ -1386,12 +1384,7 @@ const handleExportMarkdown = () => {
     }
   }, [isLogin, selectedStory, selectTopics, createPost, setStories, setSelectedStory, onPublishSuccess]);
 
-  const calculateReadingTime = (content: string): number => {
-    const words = getWordCount(content);
-    return Math.max(1, Math.ceil(words / 200));
-  };
 
-  const isNarrationActive = narrationState !== "idle";
 
 
   const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
@@ -1418,12 +1411,6 @@ const handleExportMarkdown = () => {
       }
     });
   }, [uniqueStories, debouncedSearchQuery, searchFilter]);
-
-  const indexOfLastStory = currentPage * storiesPerPage;
-  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
-  const currentStories = useMemo(() => {
-    return filteredStories.slice(indexOfFirstStory, indexOfLastStory);
-  }, [filteredStories, indexOfFirstStory, indexOfLastStory]);
 
   const totalPages = useMemo(() => {
     return Math.ceil(filteredStories.length / storiesPerPage);
@@ -1862,7 +1849,7 @@ const handleExportMarkdown = () => {
                                   }}
                                 >
                                   <option value="">Load from Roster...</option>
-                                  {rosterCharacters.map((rc: any) => (
+                                  {rosterCharacters.map((rc: { _id: string; name: string; role: string; }) => (
                                     <option key={rc._id} value={rc._id}>{rc.name} ({rc.role})</option>
                                   ))}
                                 </select>
@@ -2076,7 +2063,7 @@ const handleExportMarkdown = () => {
               ) : generatedEndings[selectedStory.uuid] ? (
                 <div className="space-y-6 relative z-10">
                   <div className="flex flex-wrap gap-2">
-                    {generatedEndings[selectedStory.uuid].map((ending: any) => (
+                    {generatedEndings[selectedStory.uuid].map((ending: { style: string; fullStory: string; }) => (
                       <button
                         key={ending.style}
                         type="button"
@@ -2093,7 +2080,7 @@ const handleExportMarkdown = () => {
                   </div>
                   
                   {(() => {
-                    const currentEndingData = generatedEndings[selectedStory.uuid].find((e: any) => e.style === activeEndingTab);
+                    const currentEndingData = generatedEndings[selectedStory.uuid].find((e: { style: string; fullStory: string; }) => e.style === activeEndingTab);
                     if (!currentEndingData) return null;
                     
                     const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;

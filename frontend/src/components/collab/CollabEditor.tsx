@@ -127,7 +127,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       });
 
       // Broadcast local updates
-      sendUpdate = (update: Uint8Array) => {
+      sendUpdate = (update: Uint8Array, _origin: unknown, _doc: Y.Doc) => {
         socket!.emit('update', update);
       };
       ydoc.on('update', sendUpdate);
@@ -136,12 +136,12 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       const sendAwareness = (awarenessUpdate: Uint8Array) => {
         socket!.emit('awareness', awarenessUpdate);
       };
-      awareness.on('update', ({ added, updated, removed }: any) => {
-        const awUpdate = (awareness as any).encodeUpdate(added.concat(updated).concat(removed));
+      awareness.on('update', ({ added, updated, removed }: AwarenessUpdateEvent) => {
+        const awUpdate = (awareness as unknown as { encodeUpdate: (clients: number[]) => Uint8Array }).encodeUpdate(added.concat(updated).concat(removed));
         sendAwareness(awUpdate);
       });
       socket.on('awareness', (aw: Uint8Array) => {
-        (awareness as any).applyUpdate(aw);
+        (awareness as unknown as { applyUpdate: (update: Uint8Array) => void }).applyUpdate(aw);
       });
     } else {
       console.warn(
@@ -151,7 +151,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     }
 
     return () => {
-      ydoc.off('update', sendUpdate as any);
+      ydoc.off('update', sendUpdate);
       socket?.disconnect();
       awareness.off('update', renderRemoteCursors);
       awareness.destroy();

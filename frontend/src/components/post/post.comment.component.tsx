@@ -38,9 +38,9 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
   const { data: commentList } = useGetCommentsListQuery(postId);
   const [createComment] = useCreateCommentMutation();
   const [toggleCommentLike] = useToggleCommentLikeMutation();
-  const [toggleCommentHelpful] = [(args?: any) => ({ unwrap: async () => ({}) })];
+  const [toggleCommentHelpful] = [(_args?: unknown) => ({ unwrap: async () => ({}) })];
   const [deleteComment] = useDeleteCommentMutation();
-  const [reportComment, { isLoading: isReporting }] = [(args?: any) => ({ unwrap: async () => ({}) }), { isLoading: false }];
+  const [reportComment, { isLoading: isReporting }] = [(_args?: unknown) => ({ unwrap: async () => ({}) }), { isLoading: false }];
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

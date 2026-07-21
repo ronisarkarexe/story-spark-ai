@@ -3,7 +3,6 @@ import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
-import AudioPlayer from "../AudioPlayer";
 import FloatingStoryProgressCard from "./FloatingStoryProgressCard";
 
 interface Props {
@@ -146,22 +145,6 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       console.warn("Failed to read reading progress from storage:", e);
     }
     setShowResumeBanner(false);
-  };
-
-  const handleShare = async () => {
-    const url = window.location.href;
-    const title = document.title || "StorySparkAI Story";
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url });
-      } catch {
-        // user cancelled share dialog
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard!");
-    }
   };
 
   const handleExportPDF = () => {
