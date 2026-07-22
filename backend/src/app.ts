@@ -24,7 +24,12 @@ interface ApiError extends Error {
   errorMessages: { path: string; message: string }[];
 }
 const app: Application = express();
-app.set("trust proxy", 1);
+// Only trust the proxy in production, where we're actually behind a real
+// reverse proxy. In dev there's no real proxy in front of us, so trusting
+// X-Forwarded-For would let a client spoof its own IP and bypass rate limiting.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 app.use(helmet());
 
 const limiter = rateLimit({
@@ -49,7 +54,11 @@ const corsOrigins =
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || corsOrigins.includes(origin)) {
+      if (!origin) {
+        callback(new Error("Origin header required"));
+        return;
+      }
+      if (corsOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
