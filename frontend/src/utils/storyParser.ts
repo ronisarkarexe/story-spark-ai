@@ -3,9 +3,12 @@ export interface IStoryNode {
   name: string;
   type: "location" | "character";
   excerpt: string;
-  occurrenceCount?: number; // NEW: Track how many times location appears
-}
+ test/content-moderation-3836
+  occurrenceCount?: number; // ✅ YEH LINE ADD KI
 
+  occurrenceCount?: number; // NEW: Track how many times location appears
+main
+}
 export interface IStoryLink {
   source: string;
   target: string;
@@ -44,9 +47,33 @@ const SKIP_WORDS = new Set([
   "Very", "Too", "All", "Both", "Each", "Few", "Own", "Same", "Other",
   ...LOCATION_WORDS.map(w => w.charAt(0).toUpperCase() + w.slice(1)),
   "Dragons", "Dragon", "Night", "Day", "Morning", "Evening",
+  // ✅ Helper to find all occurrences of a word
+const getAllOccurrences = (content: string, word: string): number[] => {
+  const regex = new RegExp(word, 'gi');
+  const matches = [...content.matchAll(regex)];
+  return matches.map(m => m.index || 0);
+};
+
+// Score context quality
+const scoreContext = (context: string): number => {
+  let score = 0;
+  const sentences = context.match(/[.!?]/g);
+  if (sentences) score += sentences.length * 3;
+  const quotes = context.match(/["']/g);
+  if (quotes) score += quotes.length * 2;
+  const caps = context.match(/[A-Z][a-z]+/g);
+  if (caps) score += caps.length;
+  const words = context.split(/\s+/).length;
+  score += Math.min(words / 10, 5);
+  return score;
+};
 ]);
 
 // ✅ NEW: Helper to find all occurrences of a word
+ test/content-moderation-3836
+// ✅ NEW: Helper to find all occurrences of a word
+
+ main
 const getAllOccurrences = (content: string, word: string): number[] => {
   const regex = new RegExp(word, 'gi');
   const matches = [...content.matchAll(regex)];
@@ -54,6 +81,10 @@ const getAllOccurrences = (content: string, word: string): number[] => {
 };
 
 // ✅ NEW: Score context quality
+ test/content-moderation-3836
+// ✅ NEW: Score context quality
+
+ main
 const scoreContext = (context: string): number => {
   let score = 0;
   const sentences = context.match(/[.!?]/g);
@@ -66,7 +97,10 @@ const scoreContext = (context: string): number => {
   score += Math.min(words / 10, 5); // Longer context = better
   return score;
 };
+ test/content-moderation-3836
 
+
+ main
 export function parseStory(content: string): IStoryGraph {
   if (!content) {
     return { nodes: [], links: [] };
@@ -79,6 +113,26 @@ export function parseStory(content: string): IStoryGraph {
   const foundLocations: IStoryNode[] = [];
   
   LOCATION_WORDS.forEach((word) => {
+ test/content-moderation-3836
+  // ✅ FIX: Find ALL occurrences
+  const positions = getAllOccurrences(content, word);
+  
+  if (positions.length === 0) return;
+  
+  // Find the BEST occurrence (with most context)
+  let bestIdx = positions[0];
+  let bestScore = -1;
+  
+  for (const idx of positions) {
+    const start = Math.max(0, idx - 50);
+    const end = Math.min(content.length, idx + word.length + 50);
+    const context = content.slice(start, end);
+    const score = scoreContext(context);
+    
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = idx;
+
     // ✅ FIX: Find ALL occurrences
     const positions = getAllOccurrences(content, word);
     
@@ -129,8 +183,16 @@ export function parseStory(content: string): IStoryGraph {
       !SKIP_WORDS.has(clean)
     ) {
       charCount[clean] = (charCount[clean] || 0) + 1;
+ main
     }
-  });
+  }
+  
+  // Use the BEST occurrence for excerpt
+  const start = Math.max(0, bestIdx - 50);
+  const end = Math.min(content.length, bestIdx + word.length + 50);
+  const excerpt = "..." + content.slice(start, end).trim() + "...";
+  // ... rest
+});
 
   const sentenceStartWords = new Set<string>();
   const sentences = content.split(/(?<=[.!?])\s+/);
