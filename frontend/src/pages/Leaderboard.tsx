@@ -22,24 +22,32 @@ interface LeaderboardData {
 export default function Leaderboard() {
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLeaderboard = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BASE_URL || ""}/api/v1/leaderboard`
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch leaderboard");
+      }
+
+      const json = await res.json();
+
+      setData(json.data ?? json);
+    } catch (err) {
+      console.error("Leaderboard fetch error:", err);
+      setError("Failed to load leaderboard. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        const res = await fetch(
-          "/api/v1/leaderboard"
-        );
-
-        const json = await res.json();
-
-        setData(json);
-      } catch (error) {
-        console.error("Leaderboard fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLeaderboard();
   }, []);
 
@@ -78,7 +86,7 @@ export default function Leaderboard() {
         </motion.div>
 
         {/* Stats */}
-        {!loading && data && (
+        {!loading && !error && data && (
           <div className="mt-16 grid md:grid-cols-3 gap-6">
 
             <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
@@ -89,7 +97,7 @@ export default function Leaderboard() {
               </p>
 
               <h2 className="text-4xl font-black mt-2">
-                {data.totalStories}
+                {data.totalStories ?? 0}
               </h2>
             </div>
 
@@ -101,7 +109,7 @@ export default function Leaderboard() {
               </p>
 
               <h2 className="text-4xl font-black mt-2">
-                {data.leaderboard.length}
+                {data.leaderboard?.length ?? 0}
               </h2>
             </div>
 
@@ -113,7 +121,7 @@ export default function Leaderboard() {
               </p>
 
               <h2 className="text-2xl font-bold mt-2">
-                {data.leaderboard[0]?.username || "N/A"}
+                {data.leaderboard?.[0]?.username || "N/A"}
               </h2>
             </div>
           </div>
@@ -138,10 +146,20 @@ export default function Leaderboard() {
                 />
               ))}
             </div>
+          ) : error ? (
+            <div className="rounded-3xl border border-red-500/20 bg-red-500/10 backdrop-blur-xl p-8 text-center max-w-lg mx-auto">
+              <p className="text-red-300 font-medium mb-4">{error}</p>
+              <button
+                onClick={fetchLeaderboard}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold transition-colors shadow-lg cursor-pointer"
+              >
+                Retry
+              </button>
+            </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-              {data?.leaderboard.map((user, index) => (
+              {data?.leaderboard?.map((user, index) => (
                 <motion.div
                   key={user.username}
                   initial={{ opacity: 0, y: 40 }}
