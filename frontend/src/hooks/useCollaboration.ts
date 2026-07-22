@@ -79,21 +79,19 @@ export function useCollaboration({
 
     socket.emit("collab:join_room", { roomId });
 
-    socket.emit(
-      "collab:get_room",
-      { roomId },
-      (response: { room?: CollabRoom; message?: string }) => {
-        if (response?.room) {
-          setRoom(response.room);
-          setError(null);
-        } else {
-          const msg = response?.message || "Room not found";
-          setError(msg);
-          onError?.(msg);
-        }
-        setLoading(false);
+    const handleJoined = (response: { room?: CollabRoom; message?: string }) => {
+      if (response?.room) {
+        setRoom(response.room);
+        setError(null);
+      } else {
+        const msg = response?.message || "Room not found";
+        setError(msg);
+        onError?.(msg);
       }
-    );
+      setLoading(false);
+    };
+
+    socket.on("collab:joined", handleJoined);
 
     socket.on("collab:room_updated", (data: { room?: CollabRoom }) => {
       if (data?.room) setRoom(data.room);
@@ -130,10 +128,12 @@ export function useCollaboration({
       const msg = data?.message || "Collaboration error occurred.";
       setError(msg);
       onError?.(msg);
+      setLoading(false);
     });
 
     return () => {
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      socket.off("collab:joined", handleJoined);
       socket.disconnect();
       socketRef.current = null;
     };

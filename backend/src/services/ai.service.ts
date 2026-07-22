@@ -5,7 +5,11 @@ import { buildStoryPrompt, PromptOptions } from "../utils/promptBuilder";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Anthropic from "@anthropic-ai/sdk";
-import { StoryCache } from "../models/storyCache.model"; // Added Cache Model Import
+import { aiLimit } from "../utils/aiLimiter";
+import { StoryCache } from "../models/storyCache.model";
+import { assertAIProviderConfigured } from "../config";
+import { getNextApiKey } from "./apiKeyRotationService";
+
 
 let openai: OpenAI | null = null;
 let genAI: GoogleGenerativeAI | null = null;
@@ -13,9 +17,9 @@ let anthropic: Anthropic | null = null;
 
 export function getGeminiClient(): GoogleGenerativeAI {
   if (!genAI) {
-    const key = process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("Gemini API key is required but was not provided. Please set GEMINI_API_KEY environment variable.");
+      throw new Error("Gemini API key is required. Set GEMINI_API_KEY or AI_API_KEYS.");
     }
     genAI = new GoogleGenerativeAI(key);
   }
@@ -24,9 +28,9 @@ export function getGeminiClient(): GoogleGenerativeAI {
 
 export function getOpenAIClient(): OpenAI {
   if (!openai) {
-    const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY;
+    const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("OpenAI API key is required but was not provided. Please set OPEN_AI_KEY environment variable.");
+      throw new Error("OpenAI API key is required. Set OPEN_AI_KEY or AI_API_KEYS.");
     }
     openai = new OpenAI({ apiKey: key });
   }
@@ -35,9 +39,9 @@ export function getOpenAIClient(): OpenAI {
 
 export function getAnthropicClient(): Anthropic {
   if (!anthropic) {
-    const key = process.env.ANTHROPIC_API_KEY;
+    const key = process.env.ANTHROPIC_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("Anthropic API key is required but was not provided. Please set ANTHROPIC_API_KEY environment variable.");
+      throw new Error("Anthropic API key is required. Set ANTHROPIC_API_KEY or AI_API_KEYS.");
     }
     anthropic = new Anthropic({ apiKey: key });
   }
@@ -60,18 +64,18 @@ interface AIResponse {
 
 async function generateWithOpenAI(systemPrompt: string, userPrompt: string): Promise<string> {
   const client = getOpenAIClient();
-  const response = await client.chat.completions.create(
+  const response = await aiLimit(() => client.chat.completions.create(
     {
       model: OPENAI_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ],
-      response_format: { type: "json_object" }, // Enforce structured JSON output
+      response_format: { type: "json_object" },
       max_tokens: 1500,
     },
     { timeout: 60000 }
-  );
+  ));
 
   const text = response.choices[0]?.message?.content;
   if (!text) throw new Error("OpenAI returned an empty response");
@@ -82,15 +86,15 @@ async function generateWithOpenAI(systemPrompt: string, userPrompt: string): Pro
 
 async function generateWithAnthropic(systemPrompt: string, userPrompt: string): Promise<string> {
   const client = getAnthropicClient();
-  const response = await client.messages.create(
+  const response = await aiLimit(() => client.messages.create(
     {
       model: CLAUDE_MODEL,
-      system: systemPrompt, // Anthropic handles system instructions top-level
+      system: systemPrompt,
       max_tokens: 1500,
       messages: [{ role: "user", content: userPrompt }],
     },
     { timeout: 60000 }
-  );
+  ));
 
   const textBlock = response.content.find((block) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text : "";
@@ -109,12 +113,12 @@ async function generateWithGemini(systemPrompt: string, userPrompt: string): Pro
     systemInstruction: systemPrompt 
   });
   
-  const result = await model.generateContent({
+  const result = await aiLimit(() => model.generateContent({
     contents: [{ role: "user", parts: [{ text: userPrompt }] }],
     generationConfig: {
-      responseMimeType: "application/json", // Enforce structured JSON output
+      responseMimeType: "application/json",
     }
-  });
+  }));
   
   const text = result.response.text();
   if (!text) throw new Error("Gemini returned an empty response");
@@ -150,6 +154,9 @@ export async function generateStory(
   provider?: string, 
   options?: PromptOptions
 ): Promise<AIResponse> {
+
+  assertAIProviderConfigured(); 
+
   // ── Security layer: validate and wrap input ─────────────────────────
   const securePrompt = validateAndFormatPrompt(prompt);
 
