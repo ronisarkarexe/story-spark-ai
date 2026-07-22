@@ -37,6 +37,8 @@ export const removeSessionBookmark = (uuid: string): void => {
   }
   try {
     const bookmarks = getSessionBookmarks();
+    const existed = bookmarks.some((b) => b.uuid === uuid);
+    if (!existed) return; // nothing to remove — skip write and event
     const updated = bookmarks.filter((b) => b.uuid !== uuid);
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event("session_bookmarks_changed"));
