@@ -787,11 +787,16 @@ function initGoogleAuth() {
         return;
     }
 
+    if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com') {
+        console.warn('Google Sign-In is not configured (VITE_GOOGLE_CLIENT_ID missing) — skipping initialization.');
+        return;
+    }
+
     google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
-auto_select: true,
-      cancel_on_tap_outside: true,
+        auto_select: true,
+        cancel_on_tap_outside: true,
     });
 }
 
