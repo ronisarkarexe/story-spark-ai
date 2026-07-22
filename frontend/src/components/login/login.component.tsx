@@ -111,6 +111,13 @@ const LoginComponent = () => {
       />
 
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center justify-items-center lg:justify-items-stretch relative z-10 box-border">
+        {/* Mobile/Tablet Header Title */}
+        <div className="block lg:hidden text-center w-full max-w-md">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+            STORY SPARK AI
+          </h2>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -166,18 +173,18 @@ const LoginComponent = () => {
           </div>
         </motion.div>
 
-                <div className="flex justify-center w-full min-w-0 box-border">
-          <div className="w-full max-w-md overflow-hidden bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
+        <div className="flex justify-center w-full min-w-0 box-border">
+          <div className="w-full max-w-md bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl box-border relative mx-auto">
             <button
               onClick={() => navigate("/")}
-              className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+              className="mb-4 text-sm font-semibold text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
             >
               ← Back to Home
             </button>
 
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
-                Welcome back
+                Welcome Back
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Sign in to your Story Spark AI account
@@ -247,29 +254,29 @@ const LoginComponent = () => {
               </div>
             </form>
 
-            <div className="relative my-8 w-full">
+            <div className="relative my-6 w-full box-border">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+                <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-50 dark:bg-slate-800 px-4 text-slate-400 font-semibold tracking-wide">
+                <span className="bg-white dark:bg-slate-800 px-4 text-slate-400 font-semibold tracking-wide rounded-md">
                   Or
                 </span>
               </div>
             </div>
 
-              <div
-                className={`flex justify-center w-full max-w-full overflow-x-hidden ${
-                  isBusy ? "pointer-events-none opacity-50" : ""
-                }`}
-              >
-                <GoogleLogin
-                  onSuccess={handleGoogleLoginSuccess}
-                  onError={handleGoogleLoginError}
-                />
-              </div>
+            <div
+              className={`flex justify-center w-full max-w-full overflow-x-hidden ${
+                isBusy ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              <GoogleLogin
+                onSuccess={handleGoogleLoginSuccess}
+                onError={handleGoogleLoginError}
+              />
+            </div>
 
-            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
+            <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
               Don&apos;t have an account?{" "}
               <Link
                 to="/signup"

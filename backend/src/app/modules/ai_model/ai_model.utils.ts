@@ -7,6 +7,7 @@ import { fetchImageURL } from "../../../utils/image_generation";
 import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
+import { aiLimit } from "../../../utils/aiLimiter";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
@@ -25,20 +26,12 @@ import {
   TranslationResponseSchema,
   StoryboardResponseSchema,
 } from "../ai";
+import { sanitizeJsonText } from "../../../utils/promptSecurity";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
 const MISSING_GEMINI_API_KEY_MESSAGE =
   "Gemini API key is not configured. Set GEMINI_API_KEY before using Gemini generation features.";
-
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) return trimmed;
-  return trimmed
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-};
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -164,51 +157,53 @@ const executeWithRetryAndFallback = async <T>(
   operation: (activeModel: GenerativeModel) => Promise<T>,
   signal?: AbortSignal,
 ): Promise<T> => {
-  const maxRetries = 2;
-  const baseDelayMs = 1000;
+  return aiLimit(async () => {
+    const maxRetries = 2;
+    const baseDelayMs = 1000;
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        throwIfAborted(signal);
+        return await operation(model);
+      } catch (error: any) {
+        if (
+          signal?.aborted ||
+          error instanceof GenerationAbortedError ||
+          error?.name === "AbortError"
+        ) {
+          throw new GenerationAbortedError();
+        }
+
+        const status = error?.status || error?.response?.status;
+        const isRetryable =
+          status >= 500 ||
+          status === 429 ||
+          error?.message?.includes("fetch failed");
+
+        if (!isRetryable || attempt === maxRetries) {
+          break;
+        }
+
+        const delay = baseDelayMs * Math.pow(2, attempt - 1);
+        await new Promise((res) => setTimeout(res, delay));
+      }
+    }
+
+    // Fallback to the smaller model
     try {
       throwIfAborted(signal);
-      return await operation(model);
-    } catch (error: any) {
+      return await operation(fallbackModel);
+    } catch (fallbackError: any) {
       if (
         signal?.aborted ||
-        error instanceof GenerationAbortedError ||
-        error?.name === "AbortError"
+        fallbackError instanceof GenerationAbortedError ||
+        fallbackError?.name === "AbortError"
       ) {
         throw new GenerationAbortedError();
       }
-
-      const status = error?.status || error?.response?.status;
-      const isRetryable =
-        status >= 500 ||
-        status === 429 ||
-        error?.message?.includes("fetch failed");
-
-      if (!isRetryable || attempt === maxRetries) {
-        break; // Break to try fallback
-      }
-
-      const delay = baseDelayMs * Math.pow(2, attempt - 1);
-      await new Promise((res) => setTimeout(res, delay));
+      throw fallbackError;
     }
-  }
-
-  // Fallback to the smaller model
-  try {
-    throwIfAborted(signal);
-    return await operation(fallbackModel);
-  } catch (fallbackError: any) {
-    if (
-      signal?.aborted ||
-      fallbackError instanceof GenerationAbortedError ||
-      fallbackError?.name === "AbortError"
-    ) {
-      throw new GenerationAbortedError();
-    }
-    throw fallbackError;
-  }
+  });
 };
 
 export async function generateWithGeminiStories(

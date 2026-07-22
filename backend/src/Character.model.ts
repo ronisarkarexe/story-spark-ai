@@ -9,6 +9,7 @@ export interface ICharacter extends Document {
   appearance?: string;
   background?: string;
   traits: string[];
+  portraitUrl?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -49,6 +50,9 @@ const CharacterSchema = new Schema<ICharacter>(
       default: [],
     },
     notes: {
+      type: String,
+    },
+    portraitUrl: {
       type: String,
     },
   },

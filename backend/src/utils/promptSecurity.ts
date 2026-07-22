@@ -136,3 +136,15 @@ export const validateOutput = (aiResponse: string): string => {
 
   return aiResponse;
 };
+
+/**
+ * Strips markdown code block formatting (```json ... ```) from JSON string.
+ */
+export const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};

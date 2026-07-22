@@ -54,7 +54,7 @@ const buildUserInfo = (decodedData: RawJwtPayload): AuthUserInfo => ({
   subscriptionType: decodedData?.subscriptionType || "free",
   exp: decodedData?.exp || 0,
   iat: decodedData?.iat || 0,
-  avatar: decodedData?.avatar || "",
+  avatar: decodedData?.avatar || undefined,
 });
 
 export const getValidDecodedToken = () => {
@@ -63,11 +63,8 @@ export const getValidDecodedToken = () => {
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
-
-      if (!decodedData) {
-        removeFromLocalStorage(AUTH_KEY);
-        return null;
-      }
+      // decodedToken always throws on failure — it never returns null.
+      // If it throws, the catch block below handles cleanup and logging.
 
       validateTokenPayload(decodedData as Record<string, unknown>);
 
@@ -92,6 +89,14 @@ export const getValidDecodedToken = () => {
 };
 
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
+  try {
+    const decodedData = decodedToken(accessToken);
+    validateTokenPayload(decodedData as Record<string, unknown>);
+  } catch (error) {
+    console.error("Refusing to store invalid access token:", error);
+    throw new Error("Received an invalid access token. Please try logging in again.");
+  }
+
   const result = setToLocalStorage(AUTH_KEY, accessToken);
   emitAuthChange();
   return result;
@@ -102,7 +107,7 @@ export const getUserInfo = (): AuthUserInfo | null => {
 };
 
 export const isLoggedIn = () => {
-  return !!getValidDecodedToken();
+  return getUserInfo() !== null;
 };
 
 export const removeUserInfo = () => {

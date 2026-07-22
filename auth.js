@@ -807,35 +807,21 @@ function decodeJwt(token) {
 
         if (!decoded || typeof decoded !== 'object') return null;
 
-        // Required userId validation
-        if (typeof decoded.userId !== 'string' || decoded.userId.trim() === '') return null;
-
-        // Required email validation with format regex
-        if (typeof decoded.email !== 'string' || decoded.email.trim() === '') return null;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(decoded.email)) return null;
-
-        // Required role validation
-        if (typeof decoded.role !== 'string' || decoded.role.trim() === '') return null;
-        const validRoles = ['user', 'admin', 'guest'];
-        if (!validRoles.includes(decoded.role)) return null;
-
-        // Required subscriptionType validation
-        if (typeof decoded.subscriptionType !== 'string' || decoded.subscriptionType.trim() === '') return null;
-        const validSubscriptions = ['free', 'premium'];
-        if (!validSubscriptions.includes(decoded.subscriptionType)) return null;
-
         // Required exp (expiration) validation
         if (typeof decoded.exp !== 'number' || decoded.exp <= Math.floor(Date.now() / 1000)) return null;
 
         // Required iat validation
         if (typeof decoded.iat !== 'number') return null;
 
+        // Optional email validation if present
+        if (decoded.email !== undefined) {
+          if (typeof decoded.email !== 'string' || decoded.email.trim() === '') return null;
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(decoded.email)) return null;
+        }
+
         // Optional name validation
         if (decoded.name !== undefined && typeof decoded.name !== 'string') return null;
-
-        // Optional postsCount validation
-        if (decoded.postsCount !== undefined && typeof decoded.postsCount !== 'number') return null;
 
         return decoded;
     } catch (e) {
