@@ -68,14 +68,18 @@ export default function StoryReadingAnalytics({
         </h3>
 
         <div className="flex items-end gap-2 h-36">
-          {analytics.engagementTrend.map((value, index) => (
-            <div
-              key={index}
-              className="flex-1 rounded-t bg-indigo-500"
-              style={{ height: `${value}%` }}
-              title={`${value}`}
-            />
-          ))}
+          {analytics.engagementTrend.map((value, index) => {
+            const normalizedValue = Math.min(Math.max(value, 0), 100);
+
+            return (
+              <div
+                key={index}
+                className="flex-1 rounded-t bg-indigo-500"
+                style={{ height: `${normalizedValue}%` }}
+                title={`${value}`}
+              />
+            );
+          })}
         </div>
 
       </div>
