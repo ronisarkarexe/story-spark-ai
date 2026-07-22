@@ -33,7 +33,8 @@ const ReviewApprovalComponent = () => {
     }
   };
 
-  const handleApproveSelected = async () => {
+const handleApproveSelected = async () => {
+  if (selectedReviews.length === 0) return;
     try {
       await Promise.all(selectedReviews.map((id) => approveReview(id).unwrap()));
       toast.success(`${selectedReviews.length} reviews approved successfully!`);
@@ -77,8 +78,9 @@ const ReviewApprovalComponent = () => {
             Selected Reviews: {selectedReviews.length}
           </p>
           <button
-            className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg"
+            className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleApproveSelected}
+            disabled={selectedReviews.length === 0 || isApproving}
           >
             Approve Selected ({selectedReviews.length})
           </button>
