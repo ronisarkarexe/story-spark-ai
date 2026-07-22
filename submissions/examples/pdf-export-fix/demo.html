@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Story Spark AI — PDF Export Filename Sanitization Fix</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="app-card">
+    <header class="app-header">
+      <div class="logo">⭐ Story Spark AI</div>
+      <span class="badge">Issue #4140 Fix</span>
+    </header>
+
+    <main class="content">
+      <div class="input-group">
+        <label for="storyTitle">Story Title:</label>
+        <input type="text" id="storyTitle" value="Hero's Journey & More 🚀" placeholder="Enter story title..." />
+        <small>Try adding quotes, dashes, ampersands, or symbols above to test.</small>
+      </div>
+
+      <div class="preview-box">
+        <h4>Live Filename Sanitization Preview:</h4>
+        <div class="preview-line">
+          <span>Raw Input:</span>
+          <code id="rawPreview">Hero's Journey & More 🚀</code>
+        </div>
+        <div class="preview-line">
+          <span>Sanitized Target Name:</span>
+          <code id="sanitizedPreview" class="highlight">Heros_Journey_More.pdf</code>
+        </div>
+      </div>
+
+      <div class="btn-grid">
+        <button id="btnBuggy" class="btn btn-secondary">Simulate Unsanitized Export (Fails/Corrupts)</button>
+        <button id="btnFixed" class="btn btn-primary">Export PDF with Sanitized Name (Success ✅)</button>
+      </div>
+
+      <div id="statusMessage" class="status-box hidden"></div>
+    </main>
+  </div>
+
+  <script>
+    // Helper function used to solve Issue #4140
+    function sanitizeFilename(title) {
+      if (!title) return 'untitled_story';
+      
+      return title
+        .trim()
+        // Remove emojis and non-ASCII symbols
+        .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E6}-\u{1F1FF}]/gu, '')
+        // Remove apostrophes and quotes completely to preserve word flow (e.g., Hero's -> Heros)
+        .replace(/['"`]/g, '')
+        // Replace other special characters, spaces, and punctuation with underscores
+        .replace(/[^a-zA-Z0-9-_]+/g, '_')
+        // Clean up duplicate consecutive underscores
+        .replace(/_+/g, '_')
+        // Strip trailing or leading underscores
+        .replace(/^_+|_+$/g, '');
+    }
+
+    // Input monitoring
+    const titleInput = document.getElementById('storyTitle');
+    const rawPreview = document.getElementById('rawPreview');
+    const sanitizedPreview = document.getElementById('sanitizedPreview');
+    const statusBox = document.getElementById('statusMessage');
+
+    function updatePreviews() {
+      const val = titleInput.value;
+      rawPreview.textContent = val || '(Empty)';
+      const cleanName = sanitizeFilename(val) || 'story';
+      sanitizedPreview.textContent = cleanName + '.pdf';
+    }
+
+    titleInput.addEventListener('input', updatePreviews);
+
+    function showStatus(text, type) {
+      statusBox.textContent = text;
+      statusBox.className = `status-box status-${type}`;
+    }
+
+    // Trigger jsPDF Actions
+    const { jsPDF } = window.jspdf;
+
+    document.getElementById('btnBuggy').addEventListener('click', () => {
+      try {
+        const doc = new jsPDF();
+        doc.setFont("Helvetica");
+        doc.text("Story Spark AI Export Test", 20, 20);
+        doc.text(`Title: ${titleInput.value}`, 20, 30);
+        
+        // This attempts to pass special characters directly to save stream
+        const unsafeName = `${titleInput.value}.pdf`;
+        doc.save(unsafeName);
+        showStatus(`Export pushed using raw title. On specific systems/browsers, strings containing symbols or emoji sets crash the internal Blob generator stream entirely.`, 'warning');
+      } catch (err) {
+        showStatus(`Export failed raw stream parsing: ${err.message}`, 'error');
+      }
+    });
+
+    document.getElementById('btnFixed').addEventListener('click', () => {
+      try {
+        const doc = new jsPDF();
+        doc.setFont("Helvetica");
+        doc.text("Story Spark AI Export Test", 20, 20);
+        doc.text(`Original Title: ${titleInput.value}`, 20, 30);
+        doc.text("Export successful via filename sanitization layer.", 20, 40);
+        
+        // Apply the sanitization patch
+        const safeBase = sanitizeFilename(titleInput.value) || 'story';
+        const safeName = `${safeBase}.pdf`;
+        
+        doc.save(safeName);
+        showStatus(`Success! File downloaded safely as: "${safeName}"`, 'success');
+      } catch (err) {
+        showStatus(`Export Error: ${err.message}`, 'error');
+      }
+    });
+  </script>
+
+</body>
+</html>
