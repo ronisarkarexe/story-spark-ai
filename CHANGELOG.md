@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Story collection features
 
 ### Changed
+- Improved CONTRIBUTING.md with comprehensive local setup guide, monorepo structure explanation, environment variable guide, branch naming conventions, Conventional Commits format, and PR checklist cross-reference (#4258)
 - Updated empty stories state component
 - Improved trending topics layout with responsive grid
 - Enhanced dark mode support across components
