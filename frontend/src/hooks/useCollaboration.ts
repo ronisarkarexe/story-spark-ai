@@ -148,6 +148,8 @@ export function useCollaboration({
     [roomId]
   );
 
+  const TYPING_STOP_DELAY_MS = 2000; // standard debounce: stop after 2s of inactivity
+
   const emitTyping = useCallback(() => {
     if (!socketRef.current || !roomId) return;
     socketRef.current.emit("collab:typing", { roomId });
@@ -155,7 +157,7 @@ export function useCollaboration({
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     typingTimerRef.current = setTimeout(() => {
       socketRef.current?.emit("collab:stop_typing", { roomId });
-    }, 300);
+    }, TYPING_STOP_DELAY_MS);
   }, [roomId]);
 
   const stopTyping = useCallback(() => {
