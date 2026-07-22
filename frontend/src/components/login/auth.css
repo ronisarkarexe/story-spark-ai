@@ -161,9 +161,9 @@ body {
     overflow: hidden;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"] {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -231,9 +231,9 @@ input[type="password"] {
 }
 
 /* ── Design System: Form Input Custom Fields ── */
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"] {
     width: 100%;
     max-width: 100%;
     height: var(--ds-input-height);
