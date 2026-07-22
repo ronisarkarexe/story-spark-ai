@@ -48,6 +48,9 @@ body {
         linear-gradient(180deg, #060816 0%, #0b1020 100%);
     position: relative;
     touch-action: pan-x pan-y;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 button, a, input {
@@ -115,19 +118,22 @@ body::after {
    MAIN WRAPPER & CONTAINER
 ────────────────────────────────────────────── */
 .auth-wrapper {
-    min-height: 100vh;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px 16px;
+    padding: 32px 16px;
     position: relative;
     z-index: 1;
+    width: 100%;
+    min-height: 100vh;
 }
 
 .auth-container {
     width: 100%;
     max-width: var(--ds-card-max-width);
     display: flex;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
 }
@@ -141,6 +147,7 @@ body::after {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex: 1;
 }
 
 /* ──────────────────────────────────────────────
@@ -153,8 +160,9 @@ body::after {
 
 .auth-form-card {
     width: 100%;
+    max-width: var(--ds-card-max-width);
     border-radius: 28px;
-    padding: clamp(24px, 5vw, 36px);
+    padding: clamp(28px, 5vw, 40px);
     display: flex;
     flex-direction: column;
     background: var(--card-bg);
@@ -162,6 +170,7 @@ body::after {
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     animation: cardEnter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
     box-sizing: border-box;
+    margin: 0 auto;
 }
 
 /* ── Brand Header inside Card ── */
@@ -241,6 +250,9 @@ body::after {
 
 .auth-fields > div {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .ds-label {
@@ -254,7 +266,12 @@ body::after {
 .ds-input-group {
     position: relative;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
 }
+
+
 
 .ds-input-icon {
     position: absolute;
@@ -271,13 +288,15 @@ input[type="text"],
 input[type="email"],
 input[type="password"] {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     height: var(--ds-input-height);
     border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: var(--input-bg);
     color: var(--text);
     font-size: 14px;
-    padding: 0 16px 0 46px;
+    padding: 0 46px 0 46px; /* Symmetrical padding prevents text from overlapping icons */
     box-sizing: border-box;
     transition: var(--transition);
 }
@@ -289,6 +308,7 @@ input::placeholder {
 input:focus {
     outline: none;
     border-color: var(--primary);
+    box-shadow: inset 0 0 0 2px var(--primary), 0 0 16px rgba(139, 92, 246, 0.25);
 }
 
 .ds-input-group:focus-within .ds-input-icon {
@@ -385,6 +405,32 @@ input:-webkit-autofill:focus {
     gap: 10px;
     margin-top: 4px;
 }
+.particle-area{
+    position:absolute;
+    left:0;
+    right:0;
+
+    /* Push canvas below the text */
+    top:170px;
+
+    bottom:0;
+
+    overflow:hidden;
+
+    z-index:0;
+}
+
+#particle-canvas{
+    width:100%;
+    height:100%;
+    display:block;
+}
+
+.left-pane > *:not(.particle-area){
+    position:relative;
+    z-index:2;
+}
+
 
 .auth-terms input {
     width: 16px;
@@ -564,9 +610,132 @@ input:-webkit-autofill:focus {
 /* ──────────────────────────────────────────────
    RESPONSIVE DESIGN
 ────────────────────────────────────────────── */
-@media (max-width: 480px) {
-    .auth-wrapper {
-        padding: 16px 12px;
+
+
+.auth-footer{
+
+    text-align:center;
+
+    font-size:14px;
+
+    color:rgba(255,255,255,.55);
+}
+
+.auth-footer a{
+
+    color:#c4b5fd;
+
+    text-decoration:none;
+
+    font-weight:600;
+}
+
+.auth-footer a:hover{
+    color:white;
+}
+
+ 
+@media (max-width: 1024px) {
+    .auth-container {
+        max-width: 100%;
+    }
+}
+
+/* Mobile and alignment fixes */
+.auth-wrapper{
+    align-items:center;
+    min-height:100svh;
+    padding:clamp(16px, 3vw, 32px);
+}
+
+.auth-container{
+    width:min(1180px, 100%);
+    min-height:min(760px, calc(100svh - 48px));
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) minmax(380px, 0.92fr);
+    align-items:stretch;
+}
+
+.left-pane,
+.right-pane{
+    min-width:0;
+}
+
+.left-pane{
+    min-height:100%;
+    justify-content:center;
+}
+
+.right-pane{
+    min-height:100%;
+    padding:clamp(32px, 5vw, 60px);
+}
+
+.auth-form-card{
+    width:min(100%, 540px);
+    max-height:calc(100svh - 96px);
+    overflow-y:auto;
+}
+
+.auth-form-card .ds-input-group,
+.auth-form-card .input-icon-wrapper,
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"],
+.ds-btn-submit,
+.ds-btn-google{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    box-sizing:border-box;
+    overflow:hidden;
+}
+
+/* Restore overflow:visible on wrappers so icon/toggle button remain visible */
+.auth-form-card .ds-input-group,
+.auth-form-card .input-icon-wrapper{
+    overflow:visible;
+}
+
+.auth-fields,
+.auth-form > *,
+.auth-fields > * {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+@media(max-width:1100px){
+    .auth-container{
+        grid-template-columns:minmax(0, 0.95fr) minmax(360px, 1fr);
+    }
+
+    .left-pane{
+        padding:40px;
+    }
+
+    .right-pane{
+        padding:40px;
+    }
+}
+
+@media(max-width:900px){
+    .auth-wrapper{
+        align-items:stretch;
+        padding:0;
+    }
+
+    .auth-container{
+        width:100%;
+        min-height:100svh;
+        grid-template-columns:1fr;
+        border-radius:0;
+    }
+
+    .left-pane{
+        min-height:auto;
+        padding:36px 24px;
     }
     
     .auth-form-card {
@@ -591,4 +760,18 @@ input:-webkit-autofill:focus {
         transition: none !important;
         scroll-behavior: auto !important;
     }
+
+/* Ensure submit and Google buttons fill the card width */
+.ds-btn-submit,
+.ds-btn-google {
+    width: 100%;
+}
+
+/* Fix for inputs breaking out of the container */
+.auth-container input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+
 }

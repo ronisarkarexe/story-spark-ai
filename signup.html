@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
-
 <head>
-
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 
@@ -12,55 +10,46 @@
         name="description"
         content="Create an account for Story Spark AI."
     />
-
     <!-- FONTS -->
-
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet"
     />
-
     <!-- ICONS -->
-
     <link
         href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css"
         rel="stylesheet"
     />
-
     <!-- GOOGLE AUTH -->
-
     <script
         src="https://accounts.google.com/gsi/client"
         async
         defer
     ></script>
-
     <!-- STYLES -->
-
     <link href="auth.css" rel="stylesheet"/>
-
 </head>
 <body>
 
     <!-- PARTICLE CANVAS BACKGROUND -->
-    <canvas id="particle-canvas"></canvas>
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
     <!-- MAIN WRAPPER -->
 
     <div class="auth-wrapper">
 
-        <!-- MAIN CONTAINER -->
+    <div class="ds-input-group has-action">
 
-        <main class="auth-container">
+        <i class="fi fi-rr-lock ds-input-icon"></i>
 
             <!-- LEFT PANEL (HIDDEN IN CSS) -->
             <section class="left-pane"></section>
 
-            <!-- RIGHT PANEL -->
+CONFIRM PASSWORD
 
-            <section class="right-pane">
+</label>
 
-                <div class="auth-form-card">
+<div class="ds-input-group has-action">
 
                     <!-- CARD BRANDING -->
                     <div class="auth-card-brand">
@@ -153,7 +142,7 @@
                                 <div class="ds-input-group">
                                     <i class="fi fi-rr-lock ds-input-icon"></i>
                                     <input id="password-field" placeholder="••••••••" type="password" autocomplete="new-password" required />
-                                    <button onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); background:none; border:none; color:rgba(255,255,255,.5); cursor:pointer;">
+                                    <button onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); display:flex; align-items:center; justify-content:center; padding:0; margin:0; background:none; border:none; color:rgba(255,255,255,.5); cursor:pointer;">
                                         <i class="fi fi-rr-eye-crossed" id="eye-icon"></i>
                                     </button>
                                 </div>
@@ -191,7 +180,7 @@
                         <div class="auth-terms">
                             <input id="terms-checkbox" type="checkbox" required>
                             <div class="auth-terms-text">
-                                I agree to the <a onclick="openLegalModal('terms')">Terms</a> and <a onclick="openLegalModal('privacy')">Privacy Policy</a>
+                                I agree to the <a href="javascript:void(0)" onclick="openLegalModal('terms')">Terms</a> and <a href="javascript:void(0)" onclick="openLegalModal('privacy')">Privacy Policy</a>
                             </div>
                         </div>
 
@@ -214,7 +203,7 @@
 
             </section>
 
-        </main>
+</p>
 
     </div>
 

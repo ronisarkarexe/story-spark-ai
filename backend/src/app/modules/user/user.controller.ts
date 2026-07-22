@@ -34,6 +34,15 @@ const getUser = catchAsync(async (req: Request, res: Response) => {
 const updateUser = catchAsync(async (req: Request, res: Response) => {
   const token = await getToken(req);
   const result = await UserService.updateUser(token, req.body);
+  if (result && "pendingEmail" in result) {
+    sendResponse(res, {
+      statusCode: httpStatus.ACCEPTED,
+      success: true,
+      message: result.message,
+      data: { pendingEmail: result.pendingEmail },
+    });
+    return;
+  }
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

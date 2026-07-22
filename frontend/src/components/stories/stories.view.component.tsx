@@ -34,7 +34,6 @@ import { useDispatch } from "react-redux";
 
 import { fetchImageAsBlob, exportStoryToEPUB } from "../../services/export.service";
 
-
 export interface IStories {
   uuid: string;
   title: string;
@@ -322,6 +321,7 @@ export default function StoriesViewComponent({
 
   const handleExportDOCX = async () => {
     if (!selectedStory) return toast.error("No story available to export.");
+    if (!selectedStory.content?.trim()) return toast.error("Story content is empty. Cannot export.");
 
     const toastId = toast.loading("Preparing your DOCX file...");
     try {
@@ -410,8 +410,9 @@ export default function StoriesViewComponent({
       setStories([]);
       setSelectedStory(null);
       onPublishSuccess?.();
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error: any) {
+      const message = error?.data?.message || error?.message || "Something went wrong. Please try again.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
