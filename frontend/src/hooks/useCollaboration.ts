@@ -133,7 +133,7 @@ export function useCollaboration({
 
     return () => {
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-      socket.off("collab:joined", handleJoined);
+      socket.removeAllListeners(); // remove all handlers before disconnecting
       socket.disconnect();
       socketRef.current = null;
     };
