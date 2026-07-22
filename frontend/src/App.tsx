@@ -466,6 +466,16 @@ const router = createBrowserRouter([
 
 
       {
+        path: "resources", element: <ResourcesListComponent /> },
+{ path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+{
+  element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+  children: [
+    { path: "explore", element: <ExploreComponent /> },
+    { path: "bookmarks", element: <BookmarksComponent /> },
+    { path: "stories", element: <StoriesComponent /> },
+    { path: "branching-story", element: <BranchingStory /> },
+    { path: "story-workspace", element: <StoryWorkspace /> },
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
 
         children: [
