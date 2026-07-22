@@ -79,6 +79,8 @@ async function flushOfflineQueueOnce(
     await flushInProgress;
   } finally {
     flushInProgress = null;
+  }
+}
 
 type AutoSaveEvent =
   | { type: "online" }
