@@ -26,6 +26,7 @@ import PromptAnalysisRouter from "../app/modules/prompt_analysis/prompt_analysis
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
 import { UsageRouter } from "../app/modules/usage/usage.router";
 import characterRouter from "./character.routes";
+import { KotlinAnalysisRouter } from "../app/modules/kotlin_analysis/kotlin_analysis.router";
 
 
 const router = express.Router();
@@ -106,6 +107,10 @@ const modules = [
   {
     path: "/usage",
     router: UsageRouter,
+  },
+  {
+    path: "/kotlin-analysis",
+    router: KotlinAnalysisRouter,
   },
 ];
 
