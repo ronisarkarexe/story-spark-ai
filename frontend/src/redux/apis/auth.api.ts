@@ -66,6 +66,9 @@ const authApi = baseApi.injectEndpoints({
         method: "POST",
         data: data,
       }),
+      transformResponse: (response: { data: { message: string } }) => {
+        return { data: response.data };
+      },
     }),
     resetPassword: build.mutation({
       query: (data) => ({
