@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { getUserInfo } from "../services/auth.service";
@@ -19,9 +19,12 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   const navigate = useNavigate();
   const currentUser = getUserInfo();
   const [toggleBookmark] = useToggleBookmarkMutation();
-  const [isLoading, setIsLoading] = useState(false);
+  
+  // Local states to prevent race conditions and handle snappy UI transitions
+  const [isOptimisticBookmarked, setIsOptimisticBookmarked] = useState<boolean | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Bookmark state comes from the per-user status endpoint (single source of truth).
+  // Bookmark state comes from the per-user status endpoint
   const {
     data: statusData,
     isLoading: isStatusLoading,
@@ -29,18 +32,36 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   } = useCheckBookmarkStatusQuery(storyId, {
     skip: !currentUser?.userId || !storyId,
   });
-  const isCurrentlyBookmarked = Boolean(statusData?.isBookmarked);
+
+  // Keep local state perfectly synchronized when backend query changes/resolves
+  useEffect(() => {
+    if (statusData !== undefined) {
+      setIsOptimisticBookmarked(statusData.isBookmarked);
+    }
+  }, [statusData]);
+
+  // Derive final value, falling back to query data if optimistic value isn't evaluated yet
+  const isCurrentlyBookmarked = isOptimisticBookmarked ?? statusData?.isBookmarked ?? false;
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
+    // GUARD: If a toggle operation is actively in-flight, discard incoming clicks
+    if (isProcessing) return;
+
     if (!currentUser || !currentUser.email) {
       toast.error("You need to login to bookmark stories!");
       navigate("/login");
       return;
     }
 
-    setIsLoading(true);
+    // Capture state immediately prior to mutation block for rollback capability
+    const previousState = isCurrentlyBookmarked;
+    
+    // Set lock flag and update state optimistically
+    setIsProcessing(true);
+    setIsOptimisticBookmarked(!previousState);
+
     try {
       const response = await toggleBookmark(storyId).unwrap();
       if (response.success) {
@@ -48,12 +69,17 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
       }
     } catch (error: unknown) {
       console.error("Failed to toggle bookmark", error);
+      
+      // Rollback to previous state on failure
+      setIsOptimisticBookmarked(previousState);
+      
       const message =
         (error as { data?: { message?: string } })?.data?.message ||
         "Something went wrong. Please try again.";
       toast.error(message);
     } finally {
-      setIsLoading(false);
+      // Release request lock boundary
+      setIsProcessing(false);
     }
   };
 
@@ -86,7 +112,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   return (
     <button
       onClick={handleBookmark}
-      disabled={isLoading || isStatusLoading}
+      disabled={isProcessing || isStatusLoading}
       title={isCurrentlyBookmarked ? "Remove bookmark" : "Save story"}
       aria-label={isCurrentlyBookmarked ? "Remove bookmark" : "Save story"}
       className={`!rounded-button cursor-pointer transition-all duration-300 border px-3 py-1 flex items-center justify-center hover:scale-105 active:scale-95 ${
@@ -101,7 +127,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         className={`${
           isCurrentlyBookmarked ? "fas" : "far"
         } fa-bookmark transition-transform duration-300 ${
-          isLoading ? "animate-pulse" : ""
+          isProcessing ? "animate-pulse" : ""
         }`}
       ></i>
     </button>
