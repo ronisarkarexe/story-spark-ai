@@ -651,8 +651,8 @@ input:-webkit-autofill:focus {
 .auth-container{
     width:min(1180px, 100%);
     min-height:min(760px, calc(100svh - 48px));
-    display:grid;
-    grid-template-columns:minmax(0, 1fr) minmax(380px, 0.92fr);
+    display:flex;
+    justify-content:center;
     align-items:stretch;
 }
 
@@ -760,6 +760,7 @@ input:-webkit-autofill:focus {
         transition: none !important;
         scroll-behavior: auto !important;
     }
+}
 
 /* Ensure submit and Google buttons fill the card width */
 .ds-btn-submit,
