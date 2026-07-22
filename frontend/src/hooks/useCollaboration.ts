@@ -50,6 +50,8 @@ export function useCollaboration({
 }: UseCollaborationOptions): UseCollaborationReturn {
   const socketRef = useRef<Socket | null>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onErrorRef = useRef(onError);
+  useEffect(() => { onErrorRef.current = onError; }, [onError]);
 
   const [room, setRoom] = useState<CollabRoom | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,7 +88,7 @@ export function useCollaboration({
       } else {
         const msg = response?.message || "Room not found";
         setError(msg);
-        onError?.(msg);
+        onErrorRef.current?.(msg);
       }
       setLoading(false);
     };
@@ -127,7 +129,7 @@ export function useCollaboration({
     socket.on("collab:error", (data: { message: string }) => {
       const msg = data?.message || "Collaboration error occurred.";
       setError(msg);
-      onError?.(msg);
+      onErrorRef.current?.(msg);
       setLoading(false);
     });
 
@@ -137,7 +139,7 @@ export function useCollaboration({
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [roomId, onError]);
+  }, [roomId]); // onError is accessed via onErrorRef — stable reference
 
   const addText = useCallback(
     (text: string) => {
