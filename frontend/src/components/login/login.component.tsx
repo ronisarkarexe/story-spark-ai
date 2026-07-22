@@ -110,9 +110,9 @@ const LoginComponent = () => {
         className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"
       />
 
-      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center justify-items-center lg:justify-items-stretch relative z-10 box-border">
+      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center justify-items-center md:justify-items-stretch relative z-10 box-border">
         {/* Mobile/Tablet Header Title */}
-        <div className="block lg:hidden text-center w-full max-w-md">
+        <div className="block md:hidden text-center w-full max-w-md">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
@@ -122,7 +122,7 @@ const LoginComponent = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hidden lg:flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
+          className="hidden md:flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
         >
           {/* Brand headline */}
           <div className="mb-1">
@@ -173,8 +173,8 @@ const LoginComponent = () => {
           </div>
         </motion.div>
 
-        <div className="flex justify-center w-full min-w-0 box-border">
-          <div className="w-full max-w-md bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl box-border relative mx-auto">
+        <div className="flex justify-center w-full box-border">
+          <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
             <button
               onClick={() => navigate("/")}
               className="mb-4 text-sm font-semibold text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
@@ -237,7 +237,7 @@ const LoginComponent = () => {
                 <div className="flex justify-end pt-2">
                   <Link
                     to="/forgot-password"
-                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors focus:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm"
+                    className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors focus:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm"
                   >
                     Forgot Password?
                   </Link>
@@ -254,7 +254,7 @@ const LoginComponent = () => {
               </div>
             </form>
 
-            <div className="relative my-6 w-full box-border">
+            <div className="relative my-6 w-full">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
               </div>
@@ -280,7 +280,7 @@ const LoginComponent = () => {
               Don&apos;t have an account?{" "}
               <Link
                 to="/signup"
-                className="font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
               >
                 Sign up for free
               </Link>
