@@ -281,7 +281,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 disabled={!canNarrate}
                 className={`${controlButtonBaseClass} border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:bg-indigo-500/20`}
               >
-                <Play className="h-4 w-4" aria-hidden="true" />
+                <RotateCcw className="h-4 w-4" aria-hidden="true" />
                 Play
               </button>
 
@@ -307,7 +307,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 disabled={!speech.isPaused}
                 className={`${controlButtonBaseClass} border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/20`}
               >
-                <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                <Play className="h-4 w-4" aria-hidden="true" />
                 Resume
               </button>
 
