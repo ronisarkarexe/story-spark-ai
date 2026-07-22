@@ -7,17 +7,26 @@ const LazyImage = ({ src, alt, className, ...props }) => {
   useEffect(() => {
     let isMounted = true;
 
+    // Reset state whenever the image source changes
+    setIsLoaded(false);
+    setHasError(false);
+
     const img = new Image();
-    img.src = src;
+
     img.onload = () => {
-      if (isMounted) setIsLoaded(true);
+      if (isMounted) {
+        setIsLoaded(true);
+      }
     };
+
     img.onerror = () => {
       if (isMounted) {
         setIsLoaded(true);
         setHasError(true);
       }
     };
+
+    img.src = src;
 
     return () => {
       isMounted = false;
