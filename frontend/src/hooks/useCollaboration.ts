@@ -77,7 +77,9 @@ export function useCollaboration({
 
     socketRef.current = socket;
 
-    socket.emit("collab:join_room", { roomId });
+    // emit join on initial connect AND on every reconnect
+    const joinRoom = () => socket.emit("collab:join_room", { roomId });
+    socket.on("connect", joinRoom);
 
     const handleJoined = (response: { room?: CollabRoom; message?: string }) => {
       if (response?.room) {
