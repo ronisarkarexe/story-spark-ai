@@ -12,7 +12,7 @@ const authApi = baseApi.injectEndpoints({
         data: data,
       }),
       transformResponse: (response: { data: AccessToken }) => {
-        return { data: response.data };
+        return response.data;
       },
       invalidatesTags: [tagTypes.user],
     }),
@@ -23,7 +23,7 @@ const authApi = baseApi.injectEndpoints({
         data: data,
       }),
       transformResponse: (response: { data: AccessToken }) => {
-        return { data: response.data };
+        return response.data;
       },
       invalidatesTags: [tagTypes.user],
     }),
@@ -34,7 +34,7 @@ const authApi = baseApi.injectEndpoints({
         data: data,
       }),
       transformResponse: (response: { data: AccessToken }) => {
-        return { data: response.data };
+        return response.data;
       },
       invalidatesTags: [tagTypes.user],
     }),
@@ -45,7 +45,7 @@ const authApi = baseApi.injectEndpoints({
         data: data,
       }),
       transformResponse: (response: { data: AccessToken }) => {
-        return { data: response.data };
+        return response.data;
       },
       invalidatesTags: [tagTypes.user],
     }),
@@ -56,7 +56,7 @@ const authApi = baseApi.injectEndpoints({
         data: data,
       }),
       transformResponse: (response: { data: AccessToken }) => {
-        return { data: response.data };
+        return response.data;
       },
       invalidatesTags: [tagTypes.user],
     }),
@@ -74,7 +74,7 @@ const authApi = baseApi.injectEndpoints({
         data: data,
       }),
       transformResponse: (response: { data: AccessToken }) => {
-        return { data: response.data };
+        return response.data;
       },
       invalidatesTags: [tagTypes.user],
     }),
