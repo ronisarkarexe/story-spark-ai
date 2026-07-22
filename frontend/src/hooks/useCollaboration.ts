@@ -50,6 +50,7 @@ export function useCollaboration({
 }: UseCollaborationOptions): UseCollaborationReturn {
   const socketRef = useRef<Socket | null>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isAiThinkingRef = useRef(false);
 
   const [room, setRoom] = useState<CollabRoom | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,6 +104,7 @@ export function useCollaboration({
         if (data?.story) {
           setRoom((prev) => (prev ? { ...prev, story: data.story! } : null));
         }
+        isAiThinkingRef.current = false;
         setIsAiThinking(false);
       }
     );
@@ -122,7 +124,10 @@ export function useCollaboration({
       });
     });
 
-    socket.on("collab:ai_thinking", () => setIsAiThinking(true));
+    socket.on("collab:ai_thinking", () => {
+      isAiThinkingRef.current = true;
+      setIsAiThinking(true);
+    });
 
     socket.on("collab:error", (data: { message: string }) => {
       const msg = data?.message || "Collaboration error occurred.";
@@ -166,6 +171,7 @@ export function useCollaboration({
 
   const requestAiContinue = useCallback(() => {
     if (!socketRef.current || !roomId) return;
+    if (isAiThinkingRef.current) return; // prevent duplicate AI requests
     socketRef.current.emit("collab:ai_continue", { roomId });
   }, [roomId]);
 
