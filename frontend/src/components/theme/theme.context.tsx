@@ -12,42 +12,43 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const getInitialTheme = (): Theme => {
-  if (typeof window === "undefined") {
-    return "light";
-  }
-
-  const storedTheme = localStorage.getItem("theme");
-  if (storedTheme === "dark" || storedTheme === "light") {
-    return storedTheme;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-};
-
-const getInitialGlow = (): boolean => {
-  if (typeof window === "undefined") {
-    return true;
-  }
-
-  const storedGlow = localStorage.getItem("cursorGlow");
-  return storedGlow !== "false";
-};
-
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
-  const [glowEnabled, setGlowEnabled] = useState<boolean>(getInitialGlow);
+  // Start with standard safe defaults to prevent server-side hydration crashes
+  const [theme, setTheme] = useState<Theme>("light");
+  const [glowEnabled, setGlowEnabled] = useState<boolean>(true);
+  const [mounted, setMounted] = useState(false);
 
+  // Read preferences safely ONLY once mounted on the client browser
   useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme === "dark" || storedTheme === "light") {
+      setTheme(storedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+
+    const storedGlow = localStorage.getItem("cursorGlow");
+    if (storedGlow === "false") {
+      setGlowEnabled(false);
+    }
+
+    setMounted(true);
+  }, []);
+
+  // Update DOM attributes and persist changes whenever states shift
+  useEffect(() => {
+    if (!mounted) return;
+
     const root = document.documentElement;
     root.classList.toggle("dark", theme === "dark");
     root.style.colorScheme = theme;
     localStorage.setItem("theme", theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
   useEffect(() => {
+    if (!mounted) return;
     localStorage.setItem("cursorGlow", glowEnabled ? "true" : "false");
-  }, [glowEnabled]);
+  }, [glowEnabled, mounted]);
 
   const value = useMemo(
     () => ({
@@ -60,6 +61,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     [theme, glowEnabled],
   );
 
+  // Prevent UI flashing/mismatches during hydration phase
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
