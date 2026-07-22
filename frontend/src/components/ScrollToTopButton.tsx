@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { ArrowUp } from "lucide-react";
 import { ChevronUp } from "lucide-react";
+
 
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -50,6 +52,7 @@ const ScrollToTopButton = () => {
         }
       `}
     >
+        <ArrowUp size={22} strokeWidth={2.5} />
       <ChevronUp className="h-6 w-6" />
     </button>
   );

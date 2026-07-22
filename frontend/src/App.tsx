@@ -103,6 +103,15 @@ const WRITER_PLUS_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_RO
 import toast, { Toaster } from "react-hot-toast";
 // Core imports
 import LoadingAnimation from "./components/loading/loading.component";
+import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import HeroSectionComponent from "./components/hero/hero_section.component";
+import HomeComponent from "./components/home/home.component";
+import NotFoundComponent from "./components/not-found.component";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import PageTitleUpdater from "./components/PageTitleUpdater";
+import ResourcesListComponent from "./components/community/resources_list.component";
+import SettingComponent from "./components/dashboard/settings/settings.component";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFoundComponent from "./components/not-found.component";
 import Leaderboard from "./pages/Leaderboard";
