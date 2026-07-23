@@ -58,11 +58,6 @@ const extractTokenFromRequest = (req: Request): string => {
   const cookieToken =
     req.cookies?.accessToken || req.cookies?.token;
 
-  return bearerToken || cookieToken || "";
-
-    req.cookies?.accessToken ||
-    req.cookies?.token;
-
   if (!cookieToken) {
     return "";
   }
@@ -98,30 +93,19 @@ const auth =
           );
         }
 
-        // Verify JWT token
-        const verifiedUser = JwtHelpers.verifyToken(
+        const decodedUser = JwtHelpers.verifyToken(
           token,
           config.jwt.secret as Secret
-        ) as JwtVerifiedUser;
+        );
 
-        if (!verifiedUser?._id) {
+        if (!isJwtVerifiedUser(decodedUser)) {
           throw new ApiError(
             httpStatus.UNAUTHORIZED,
             "Invalid token"
-
-          const decodedUser = JwtHelpers.verifyToken(
-            token,
-            config.jwt.secret as Secret
           );
-
-          if (!isJwtVerifiedUser(decodedUser)) {
-            throw new ApiError(
-              httpStatus.UNAUTHORIZED,
-              "Invalid token"
-            );
         }
 
-      const verifiedUser = decodedUser;
+        const verifiedUser = decodedUser;
 
         const user = await User.findById(verifiedUser._id);
 
@@ -174,16 +158,10 @@ const auth =
         }
 
         req.user = user as Express.Request["user"];
-
         next();
       } catch (err) {
         next(err);
       }
-      req.user = user;
-      return next();
-    } catch (err) {
-      return next(err);
-    }
   };
 
 export default auth;

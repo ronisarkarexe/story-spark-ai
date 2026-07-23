@@ -80,6 +80,9 @@ app.use((req, res, next) => {
   ) {
     req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
   }
+  next();
+});
+
 // Payload limit set to 10mb to support large story content and
 // character network data without triggering 413 errors.
 // Previously used Express default (100kb) which was too restrictive.
@@ -91,10 +94,6 @@ app.use(cookieParser() as unknown as RequestHandler);
 app.use("/api/v1", Routers);
 
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
-app.use((req: Request, res: Response, next: NextFunction) => {
-  // Constructing a standardized operational error structure
-  const error = new Error("API Not Found") as ApiError;
-  error.statusCode = httpStatus.NOT_FOUND;
 app.use((req: Request, _res: Response, next: NextFunction) => {
   const error = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
   error.errorMessages = [
