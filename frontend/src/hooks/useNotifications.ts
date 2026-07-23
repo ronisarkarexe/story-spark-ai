@@ -15,6 +15,7 @@ import type { NotificationItem, INotification } from "../models/notification";
 export const useNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [realtimeNotifications, setRealtimeNotifications] = useState<INotification[]>([]);
+  const [mutationError, setMutationError] = useState<string | null>(null);
   const isAuthed = isLoggedIn();
 
   const { data, isFetching, refetch } = useGetNotificationsQuery(undefined, {
@@ -52,16 +53,30 @@ export const useNotifications = () => {
   const close = () => setIsOpen(false);
 
   const markAsRead = async (notificationId: string) => {
-    await markNotificationRead(notificationId).unwrap();
+    try {
+      setMutationError(null);
+      await markNotificationRead(notificationId).unwrap();
+    } catch (error) {
+      const msg = "Failed to mark notification as read. Please try again.";
+      console.error(msg, error);
+      setMutationError(msg);
+    }
   };
 
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
-    await markAllRead().unwrap();
-    // Optimistically clear realtime state so the badge drops immediately
-    setRealtimeNotifications((prev) =>
-      prev.map((n) => ({ ...n, isRead: true }))
-    );
+    try {
+      setMutationError(null);
+      await markAllRead().unwrap();
+      // Optimistically clear realtime state so the badge drops immediately
+      setRealtimeNotifications((prev) =>
+        prev.map((n) => ({ ...n, isRead: true }))
+      );
+    } catch (error) {
+      const msg = "Failed to mark all notifications as read. Please try again.";
+      console.error(msg, error);
+      setMutationError(msg);
+    }
   };
 
   const refreshNotifications = useCallback(() => {
@@ -128,6 +143,7 @@ export const useNotifications = () => {
     isOpen,
     isFetching,
     isMarkingAllRead,
+    mutationError, 
     toggle,
     close,
     markAsRead,
