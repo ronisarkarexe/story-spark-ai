@@ -206,38 +206,55 @@ const PricingComponent: React.FC = () => {
           </p>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-3">
+       {/* Pricing Cards */}
+        <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-3 lg:gap-6">
           {plans.map((plan) => (
             <div
               key={plan.title}
-              className={`relative flex flex-col rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1 ${
+              className={`group relative flex flex-col rounded-3xl transition-all duration-300 ${
                 plan.highlight
-                  ? "border-2 border-blue-500 bg-white shadow-2xl shadow-blue-500/10 dark:bg-slate-900 lg:scale-105"
-                  : "border border-slate-200 bg-white hover:shadow-xl dark:border-white/10 dark:bg-slate-900/50"
+                  ? "z-10 bg-white p-8 shadow-2xl shadow-blue-600/20 ring-2 ring-blue-500 dark:bg-slate-900 lg:-my-4 lg:scale-105 lg:p-10"
+                  : "border border-slate-200 bg-white p-8 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-slate-900/50"
               }`}
             >
               {plan.badge && (
-                <div className="absolute right-5 top-5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                  {plan.badge}
+                <div className="absolute inset-x-0 -top-4 flex justify-center">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-600/30">
+                    <i className="fa-solid fa-star text-[10px]" />
+                    {plan.badge}
+                  </span>
                 </div>
               )}
 
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+              <div className="flex-1">
+                <span
+                  className={`text-xs font-bold uppercase tracking-widest ${
+                    plan.highlight
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-slate-400 dark:text-slate-500"
+                  }`}
+                >
+                  {plan.title === "Free"
+                    ? "Get Started"
+                    : plan.title === "Enterprise"
+                    ? "For Teams"
+                    : "Best Value"}
+                </span>
+
+                <h3 className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
                   {plan.title}
                 </h3>
 
-                <div className="mt-6 flex items-end">
-                  <span className="text-5xl font-extrabold text-slate-900 dark:text-white">
+                <div className="mt-6 flex items-end gap-1.5">
+                  <span className="text-5xl font-extrabold tabular-nums tracking-tight text-slate-900 dark:text-white">
                     $
                     {billing === "monthly"
                       ? plan.price.monthly
                       : plan.price.yearly}
                   </span>
 
-                  <span className="mb-1 ml-2 text-slate-500 dark:text-slate-400">
-                    {billing === "monthly" ? "/month" : "/year"}
+                  <span className="mb-1.5 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    {billing === "monthly" ? "/ month" : "/ year"}
                   </span>
                 </div>
 
@@ -249,12 +266,24 @@ const PricingComponent: React.FC = () => {
 
                 <div className="my-8 h-px bg-slate-200 dark:bg-white/10" />
 
-                <ul className="space-y-4">
+                <p className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  {plan.title === "Free" ? "Includes" : "Everything, plus"}
+                </p>
+
+                <ul className="space-y-3.5">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-3">
-                      <i className="fa-solid fa-circle-check mt-1 shrink-0 text-green-500" />
+                      <span
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                          plan.highlight
+                            ? "bg-blue-600 text-white"
+                            : "bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400"
+                        }`}
+                      >
+                        <i className="fa-solid fa-check text-[10px]" />
+                      </span>
 
-                      <span className="text-sm text-slate-600 dark:text-slate-300">
+                      <span className="text-sm leading-snug text-slate-600 dark:text-slate-300">
                         {feature}
                       </span>
                     </li>
@@ -265,13 +294,14 @@ const PricingComponent: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate(plan.linkTo)}
-                className={`mt-10 w-full rounded-xl px-4 py-4 font-bold uppercase tracking-wide transition-all active:scale-[0.98] ${
+                className={`mt-10 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-4 text-sm font-bold uppercase tracking-wide transition-all duration-200 active:scale-[0.98] ${
                   plan.highlight
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-500 hover:to-indigo-500"
-                    :  "bg-blue-600 text-white shadow-lg hover:bg-blue-700"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 hover:brightness-110"
+                    : "border-2 border-slate-200 text-slate-700 hover:border-blue-500 hover:text-blue-600 dark:border-white/10 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-400"
                 }`}
               >
                 {plan.buttonLabel}
+                <i className="fa-solid fa-arrow-right text-xs transition-transform duration-200 group-hover:translate-x-1" />
               </button>
             </div>
           ))}
