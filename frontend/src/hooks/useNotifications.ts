@@ -42,14 +42,14 @@ export const useNotifications = () => {
 
   const unreadCount = notifications.filter((item) => !item.isRead).length;
 
-  const toggle = () => {
+  const toggle = useCallback(() => {
     setIsOpen((prev) => !prev);
     if (!data && isAuthed) {
       void refetch();
     }
-  };
+  }, [data, isAuthed, refetch]);
 
-  const close = () => setIsOpen(false);
+  const close = useCallback(() => setIsOpen(false), []);
 
   const markAsRead = async (notificationId: string) => {
     await markNotificationRead(notificationId).unwrap();
