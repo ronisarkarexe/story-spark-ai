@@ -499,6 +499,35 @@ const resetPassword = async (payload: {
   };
 };
 
+const resendVerificationEmail = async (rawEmail: unknown) => {
+  const email = normalizeEmail(rawEmail);
+
+  // Registered users have already completed the signup verification flow.
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      "An account with this email already exists."
+    );
+  }
+
+  const otpRecord = await OTPModel.findOne({ email });
+
+  // Once the OTP has been verified, the generated verification token should
+  // be used for registration instead of starting a new OTP flow.
+  if (otpRecord?.isVerified) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      "Email has already been verified. Please continue with registration."
+    );
+  }
+
+  return VerifyEmailService.VerifyEmail({
+    email,
+    name: "User",
+  });
+};
+
 const verifyEmailChange = async (payload: { token: string; email: string }) => {
   const { token, email } = payload;
   const normalizedEmail = normalizeEmail(email);
@@ -533,5 +562,6 @@ export const AuthService = {
   changePassword,
   forgotPassword,
   resetPassword,
+  resendVerificationEmail,
   verifyEmailChange,
 };
