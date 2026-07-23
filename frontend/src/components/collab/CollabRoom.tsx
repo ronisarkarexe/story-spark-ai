@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import CollabEditor from './CollabEditor';
+import logger from "../../utils/logger.util";
+
 interface Participant {
   userId: string;
   username: string;
@@ -148,11 +150,11 @@ export default function CollabRoom() {
         socketInstance.off("collab:error", handleError);
         socketInstance.disconnect();
       };
-    } catch (err) {
-      console.error("Collab initialization error:", err);
-      setError("Failed to initialize collaboration space.");
-      setLoading(false);
-    }
+   } catch (err) {
+  logger.error("Collab initialization error:", err);
+  setError("Failed to initialize collaboration space.");
+  setLoading(false);
+  }
   }, [roomId, navigate]);
 
   const handleAIContinue = () => {
@@ -171,10 +173,10 @@ export default function CollabRoom() {
           text: "Let's co-write an incredible story together with AI assistance.",
           url: currentUrl,
         });
-      } catch (err) {
-        console.log("Native share canceled or failed, using fallback.", err);
-        fallbackCopyToClipboard(currentUrl);
-      }
+     } catch (err) {
+  logger.debug("Native share canceled or failed, using fallback.", err);
+  fallbackCopyToClipboard(currentUrl);
+}
     } else {
       fallbackCopyToClipboard(currentUrl);
     }
