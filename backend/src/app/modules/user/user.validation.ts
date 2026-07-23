@@ -41,7 +41,11 @@ const resetPassword = z.object({
   body: z.object({
     email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
     password: passwordSchema,
-    confirmPassword: z.string({ required_error: "Confirm password is required" }),
+    confirmPassword: z
+      .string({ required_error: "Confirm password is required" })
+      .refine((val, ctx) => val === ctx.parent.password, {
+        message: "Confirm password must match the password",
+      }),
     verificationToken: z.string({ required_error: "Verification token is required" }),
   }),
 });
@@ -49,8 +53,7 @@ const resetPassword = z.object({
 const updateUser = z.object({
   body: z
     .object({
-      email: z.string().email("Invalid email address").optional(),
-      name: z.string().trim().min(5, "Name must be at least 5 characters long").max(100).optional(),
+      name: z.string().trim().min(2, "Name must be at least 2 characters long").max(100).optional(),
       profile: z
         .object({
           avatar: z.string().max(2000).optional(),
