@@ -503,13 +503,11 @@ const verifyEmailChange = async (payload: { token: string; email: string }) => {
   const { token, email } = payload;
   const normalizedEmail = normalizeEmail(email);
 
-  const user = await User.findOne()
-    .where("pendingEmail")
-    .equals(normalizedEmail)
-    .where("pendingEmailToken")
-    .equals(token)
-    .where("pendingEmailTokenExpires")
-    .gt(new Date());
+  const user = await User.findOne({
+    pendingEmail: normalizedEmail,
+    pendingEmailToken: token,
+    pendingEmailTokenExpires: { $gt: new Date() }
+  });
 
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid or expired verification token.");

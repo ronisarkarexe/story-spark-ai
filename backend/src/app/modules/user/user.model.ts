@@ -104,15 +104,16 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
 
 UserSchema.pre("save", async function (next) {
   const user = this;
-main
+
   if (!user.isModified("password")) {
     return next();
   }
+
   if (!this.isNew) {
     this.passwordChangedAt = new Date(Date.now() - 1000);
   }
 
-main
+  if (user.isModified("password")) {
     user.password = await bcrypt.hash(
       user.password,
       Number(config.bcrypt_salt_rounds)
