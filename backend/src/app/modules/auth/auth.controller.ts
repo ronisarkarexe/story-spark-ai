@@ -149,6 +149,21 @@ const sendOtp = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const resendVerificationEmail = catchAsync(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    const result = await AuthService.resendVerificationEmail(email);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Verification email resent successfully!",
+      data: result,
+    });
+  }
+);
+
 const verifyEmailChange = catchAsync(async (req: Request, res: Response) => {
   const { token, email } = req.body;
   const result = await AuthService.verifyEmailChange({ token, email });
@@ -171,5 +186,6 @@ export const AuthController = {
   forgotPassword,
   resetPassword,
   sendOtp,
+  resendVerificationEmail,
   verifyEmailChange,
 };

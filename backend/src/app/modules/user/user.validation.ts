@@ -37,6 +37,14 @@ const forgotPassword = z.object({
   }),
 });
 
+const resendVerificationEmail = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
+  }),
+});
+
 const resetPassword = z.object({
   body: z.object({
     email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
@@ -111,5 +119,6 @@ export const UserValidator = {
   updateUser,
   changePassword,
   sendOtp,
+  resendVerificationEmail,
   verifyEmailChange,
 };
