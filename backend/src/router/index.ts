@@ -23,6 +23,7 @@ import { RecommendationRouter } from "../app/modules/recommendation/recommendati
 import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
 import { StoryVisualizerRouter } from "../app/modules/story_visualizer/story_visualizer.router";
 import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
+import StoryRouter from "../routes/story.routes";
 import { EngagementRouter } from "../app/modules/engagement/engagement.router";
 import { ChatRouter } from "../app/modules/chat/chat.router";
 import { SearchRouter } from "../app/modules/search/search.router";
