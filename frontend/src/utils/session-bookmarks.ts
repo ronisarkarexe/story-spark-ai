@@ -3,6 +3,9 @@ import { IStories } from "../components/stories/stories.view.component";
 const SESSION_KEY = "story_spark_session_bookmarks";
 
 export const getSessionBookmarks = (): IStories[] => {
+  if (typeof window === "undefined") {
+    return [];
+  }
   try {
     const data = sessionStorage.getItem(SESSION_KEY);
     return data ? JSON.parse(data) : [];
@@ -13,6 +16,9 @@ export const getSessionBookmarks = (): IStories[] => {
 };
 
 export const addSessionBookmark = (story: IStories): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
   try {
     const bookmarks = getSessionBookmarks();
     if (!bookmarks.some((b) => b.uuid === story.uuid)) {
@@ -26,6 +32,9 @@ export const addSessionBookmark = (story: IStories): void => {
 };
 
 export const removeSessionBookmark = (uuid: string): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
   try {
     const bookmarks = getSessionBookmarks();
     const updated = bookmarks.filter((b) => b.uuid !== uuid);
@@ -37,6 +46,9 @@ export const removeSessionBookmark = (uuid: string): void => {
 };
 
 export const isSessionBookmarked = (uuid: string): boolean => {
+  if (typeof window === "undefined") {
+    return false;
+  }
   const bookmarks = getSessionBookmarks();
   return bookmarks.some((b) => b.uuid === uuid);
 };

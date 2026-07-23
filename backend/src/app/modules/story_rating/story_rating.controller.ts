@@ -5,7 +5,7 @@ import httpStatus from "http-status";
 import { StoryRatingService } from "./story_rating.service";
 
 const createOrUpdateRating = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?._id;
   const { storyId, rating, review } = req.body;
 
   const result = await StoryRatingService.rateStory(
@@ -53,7 +53,7 @@ const getAverageRating = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteRating = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?._id;
   const { ratingId } = req.params;
 
   const result = await StoryRatingService.deleteRating(userId, ratingId);

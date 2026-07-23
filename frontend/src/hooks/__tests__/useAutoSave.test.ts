@@ -1,77 +1,116 @@
-/**
- * useAutoSave.test.ts
- * Unit tests for the useAutoSave React hook and draft helpers.
- */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useAutoSave, loadDraft, clearDraft } from "../useAutoSave";
+import { useAutoSave, loadDraft, clearDraft, offlineQueue } from "../useAutoSave";
 
 const DRAFT_KEY = "story_draft_";
 
 beforeEach(() => {
   vi.useFakeTimers();
   localStorage.clear();
+  offlineQueue.length = 0;
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ success: true }),
+  }) as unknown as typeof fetch;
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
 describe("useAutoSave", () => {
-  it("initializes with idle saveStatus", () => {
-    const { result } = renderHook(() =>
-      useAutoSave("draft-1", "My Title", "My content")
+  it("uses the autosave endpoint and includes the draft identifier", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const { result } = renderHook(() => useAutoSave("draft-1", "Hello", "World"));
+
+    await act(async () => {
+      vi.advanceTimersByTime(1500);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(result.current.saveStatus).toBe("saved"));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/stories/save",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ draftId: "draft-1", title: "Hello", content: "World" }),
+      })
     );
-    expect(result.current.saveStatus).toBe("idle");
-    expect(result.current.lastSaved).toBeNull();
   });
 
-  it("transitions through saving and saved on explicit save()", async () => {
-    const { result } = renderHook(() =>
-      useAutoSave("draft-2", "Title", "Content")
-    );
-    act(() => {
-      result.current.save();
+  it("queues offline edits and flushes them once after reconnect", async () => {
+    const onlineSpy = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
     });
-    await waitFor(() => {
-      expect(result.current.saveStatus).toBe("saved");
-    });
-    expect(result.current.lastSaved).not.toBeNull();
-  });
+    global.fetch = fetchMock as unknown as typeof fetch;
 
-  it("debounces saves on title change", async () => {
     const { result, rerender } = renderHook(
       ({ id, title, content }: { id: string; title: string; content: string }) =>
         useAutoSave(id, title, content),
-      { initialProps: { id: "draft-3", title: "A", content: "B" } }
+      { initialProps: { id: "draft-2", title: "A", content: "B" } }
     );
-    // Advance just under debounce threshold — should not save yet
-    act(() => {
-      vi.advanceTimersByTime(1400);
-    });
-    // Rerender with changed title — resets debounce timer
-    rerender({ id: "draft-3", title: "B Updated", content: "B" });
-    act(() => {
+
+    rerender({ id: "draft-2", title: "A", content: "Offline edit" });
+
+    await act(async () => {
       vi.advanceTimersByTime(1500);
+      await Promise.resolve();
     });
-    await waitFor(() => {
-      expect(result.current.saveStatus).toBe("saved");
+
+    expect(result.current.pendingCount).toBe(1);
+    expect(offlineQueue).toHaveLength(1);
+
+    onlineSpy.mockReturnValue(true);
+    await act(async () => {
+      window.dispatchEvent(new Event("online"));
+      await Promise.resolve();
     });
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/stories/save",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ draftId: "draft-2", title: "A", content: "Offline edit" }),
+      })
+    );
+    expect(result.current.pendingCount).toBe(0);
   });
 
-  it("sets error status when localStorage throws quota exceeded", async () => {
-    const { result } = renderHook(() =>
-      useAutoSave("draft-4", "Title", "Content")
-    );
-    vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => {
-      throw new Error("QuotaExceededError");
+  it("flushes the queue only once when multiple hook instances are mounted", async () => {
+    const onlineSpy = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
     });
-    act(() => {
-      result.current.save();
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    renderHook(() => useAutoSave("draft-a", "A", "First"));
+    renderHook(() => useAutoSave("draft-b", "B", "Second"));
+
+    await act(async () => {
+      vi.advanceTimersByTime(1500);
+      await Promise.resolve();
     });
-    await waitFor(() => {
-      expect(result.current.saveStatus).toBe("error");
+
+    expect(offlineQueue).toHaveLength(2);
+
+    onlineSpy.mockReturnValue(true);
+    await act(async () => {
+      window.dispatchEvent(new Event("online"));
+      window.dispatchEvent(new Event("online"));
+      await Promise.resolve();
     });
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
   });
 });
 
