@@ -4,6 +4,12 @@ import { PLAN_QUOTAS } from "../../config/quota.config";
 import { UsageRecord } from "../modules/ai_model/usageRecord.model";
 import { QuotaRefundGuard } from "../modules/ai_model/quota.lifecycle";
 
+/**
+ * Middleware to enforce quota tracking based on user subscription tiers.
+ * Tracks usage records atomically in MongoDB to prevent race conditions.
+ *
+ * @param action The specific quota action being enforced (e.g. story_generate)
+ */
 export const enforceQuota = (action: "story_generate" | "story_continue") => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
