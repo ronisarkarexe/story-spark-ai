@@ -84,7 +84,7 @@ const StoryWorkspace = () => {
     await navigator.clipboard.writeText(storyText);
     toast.success("Story copied to clipboard!");
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     toast.error("Failed to copy story.");
   }
 };
@@ -114,7 +114,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export Markdown.");
     }
   };
@@ -145,7 +145,7 @@ const StoryWorkspace = () => {
 
       toast.success("PDF downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export PDF.");
     } finally {
       toast.dismiss(toastId);
@@ -178,7 +178,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "docx"));
       toast.success("DOCX downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export DOCX.");
     }
   };
