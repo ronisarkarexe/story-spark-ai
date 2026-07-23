@@ -18,11 +18,6 @@ import leaderboardRoute from "./routes/leaderboard.route";
 import globalRateLimiter from "./app/middleware/global.rate-limiter";
 import { sanitizeAllMiddleware } from "./app/middleware/sanitize.middleware";
 import ApiError from "./errors/api_error";
-
-interface ApiError extends Error {
-  statusCode: number;
-  errorMessages: { path: string; message: string }[];
-}
 const app: Application = express();
 app.set("trust proxy", 1);
 app.use(helmet());
@@ -95,7 +90,7 @@ app.use("/api/v1", Routers);
 
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
 app.use((req: Request, _res: Response, next: NextFunction) => {
-  const error = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
+  const error: any = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
   error.errorMessages = [
     {
       path: req.originalUrl,
@@ -108,4 +103,3 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 app.use(globalErrorHandler);
 
 export default app;
-export { defaultCorsOrigins };
