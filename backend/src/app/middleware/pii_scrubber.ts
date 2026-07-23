@@ -19,7 +19,7 @@ export const scrubPII = (text: string): string => {
 
   // 1. Emails
 
-  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const emailRegex = /[a-zA-Z0-9._%+\-']+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
   scrubbed = scrubbed.replace(emailRegex, "[REDACTED_EMAIL]");
 
   // 2. Phone numbers
@@ -29,6 +29,10 @@ export const scrubPII = (text: string): string => {
   // UK/International Mobile formats
   const phoneIntRegex = /(?<![\w/])(?:\+44\s?|0)7\d{3}[-.\s]?\d{6}\b/g;
   scrubbed = scrubbed.replace(phoneIntRegex, "[REDACTED_PHONE]");
+
+  // Generic international formats (+49, +61, etc.)
+  const phoneGenericIntRegex = /(?<![\w/])\+\d{1,4}\s?(?:\(\d{1,4}\)|\d{1,4})[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}\b/g;
+  scrubbed = scrubbed.replace(phoneGenericIntRegex, "[REDACTED_PHONE]");
 
   const phoneRegex =
     /(?<![\w/])(?:\+\d{1,3}[-.\s]?|1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
