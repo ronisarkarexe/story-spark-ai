@@ -42,6 +42,12 @@ export const ExploreComponent = () => {
 
   const filteredPosts = data?.posts || [];
 
+  const hasActiveFilters =
+    searchTerm.trim() !== "" ||
+    selectedTags.length > 0 ||
+    sortBy !== "createdAt" ||
+    sortOrder !== "desc";
+
   const resetAllStates = () => {
     setSortBy("createdAt");
     setSortOrder("desc");
@@ -153,10 +159,7 @@ export const ExploreComponent = () => {
                   Filters
                 </h3>
 
-                {(searchTerm ||
-                  selectedTags.length > 0 ||
-                  sortBy !== "createdAt" ||
-                  sortOrder !== "desc") && (
+                {hasActiveFilters && (
                   <button
                     onClick={resetAllStates}
                     className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
@@ -288,6 +291,32 @@ export const ExploreComponent = () => {
 
               {featuredPost && <ExploreFeatureComponent />}
             </div>
+
+            {/* Active Filters Clear All */}
+            {hasActiveFilters && (
+              <div className="mb-4 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800/40 rounded-xl animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-800/40 rounded-full">
+                    <i className="fas fa-filter text-blue-600 dark:text-blue-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                      {selectedTags.length + (searchTerm.trim() !== "" ? 1 : 0) + (sortBy !== "createdAt" ? 1 : 0) + (sortOrder !== "desc" ? 1 : 0)} filter{selectedTags.length + (searchTerm.trim() !== "" ? 1 : 0) + (sortBy !== "createdAt" ? 1 : 0) + (sortOrder !== "desc" ? 1 : 0) > 1 ? "s" : ""} active
+                    </p>
+                    <p className="text-xs text-blue-600/70 dark:text-blue-400/60">
+                      Showing filtered results
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={resetAllStates}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-md shadow-blue-500/25 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+                >
+                  <i className="fas fa-xmark text-sm"></i>
+                  Clear All Filters
+                </button>
+              </div>
+            )}
 
             {/* Active Filters Summary */}
             {(searchTerm.trim() !== "" || selectedTags.length > 0) && (

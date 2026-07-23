@@ -16,6 +16,8 @@ import { Request, Response } from "express";
 import piiScrubberMiddleware from "../app/middleware/pii_scrubber";
 import { generateStory } from "../services/ai.service";
 import { runWithQuotaCleanup } from "../app/modules/ai_model/quota.lifecycle";
+import mongoose from "mongoose";
+import { Post } from "../app/modules/post/post.model";
 import rateLimit from "express-rate-limit";
 
 const router = express.Router();
@@ -196,6 +198,61 @@ router.post(
       await releaseIdempotentRequest(idempotencyKey);
       throw err;
     }
+  })
+);
+
+/** SAVE STORY DRAFT (autosave) */
+router.patch(
+  "/:id/save",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { title, content } = req.body as { title?: string; content?: string };
+    const userId = (req as any).user?._id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ success: false, message: "Invalid story id." });
+      return;
+    }
+
+    if (typeof title !== "string" && typeof content !== "string") {
+      res.status(400).json({
+        success: false,
+        message: "Nothing to save — provide a title and/or content.",
+      });
+      return;
+    }
+
+    const update: Record<string, string> = {};
+    if (typeof title === "string") update.title = title;
+    if (typeof content === "string") update.content = content;
+
+    // Scoped to author so one user can't autosave over another user's story.
+    const updated = await Post.findOneAndUpdate(
+      { _id: id, author: userId, isDeleted: { $ne: true } },
+      { $set: update },
+      { new: true, runValidators: true, select: "title content updatedAt" }
+    );
+
+    if (!updated) {
+      res.status(404).json({
+        success: false,
+        message: "Story not found, or you don't have permission to edit it.",
+      });
+      return;
+    }
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Draft saved.",
+      data: updated,
+    });
   })
 );
 

@@ -101,6 +101,12 @@ async function main() {
     logger.error(error);
 
     try {
+      if (httpServer) {
+        await new Promise<void>((resolve) => {
+          httpServer.close(() => resolve());
+        });
+        logger.info('🔌 HTTP server closed.');
+      }
       if (mongoose && mongoose.connection && mongoose.connection.readyState !== 0) {
         await new Promise<void>((resolve, reject) => {
         httpServer.close((err) => {
