@@ -15,7 +15,15 @@ import type { NotificationItem, INotification } from "../models/notification";
 export const useNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [realtimeNotifications, setRealtimeNotifications] = useState<INotification[]>([]);
-  const isAuthed = isLoggedIn();
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const [isAuthed, setIsAuthed] = useState(() => isLoggedIn());
+
+  // Keep isAuthed reactive to auth changes from this tab and other tabs
+  useEffect(() => {
+    const handleAuthChange = () => setIsAuthed(isLoggedIn());
+    window.addEventListener("story-spark-auth-change", handleAuthChange);
+    return () => window.removeEventListener("story-spark-auth-change", handleAuthChange);
+  }, []);
 
   const { data, isFetching, refetch } = useGetNotificationsQuery(undefined, {
     skip: !isAuthed,
