@@ -45,7 +45,7 @@ describe("useDebounced hook", () => {
     rerender({ query: "updated", delay: 300 });
 
     // Still initial before timer fires
-    expect(result.current).toBe("updated");
+    expect(result.current).toBe("initial");
 
     // Advance past the delay
     act(() => {
