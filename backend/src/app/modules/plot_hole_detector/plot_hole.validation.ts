@@ -6,7 +6,8 @@ const detectSchema = z.object({
     content: z
       .string({ required_error: "Story content is required." })
       .trim()
-      .min(1, "Story content cannot be empty."),
+      .min(1, "Story content cannot be empty.")
+      .max(50000, "Content cannot exceed 50000 characters"),
   }),
 });
 
