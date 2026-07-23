@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Story trailer generation
 - Continue story modal
 - Story collection features
+- Real Flesch-Kincaid-based readability, diversity, and repeated-word analysis in the Vocabulary Analyzer (previously hardcoded)
 
 ### Changed
 - Updated empty stories state component
