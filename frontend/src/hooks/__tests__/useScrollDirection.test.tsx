@@ -1,60 +1,78 @@
-import { describe, it, expect, afterEach } from "vitest";
+/* eslint-disable */
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useScrollDirection } from "../useScrollDirection";
 
 describe("useScrollDirection", () => {
-  afterEach(() => {
-    // Reset scrollY to 0 for next test
-    window.scrollY = 0;
+  let scrollY = 0;
+  const listeners: Record<string, EventListener[]> = {};
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    scrollY = 0;
+    for (const key of Object.keys(listeners)) {
+      delete listeners[key];
+    }
+    // Use a getter/setter so the value persists
+    Object.defineProperty(window, "scrollY", {
+      get: () => scrollY,
+      set: (v) => { scrollY = v; },
+      configurable: true,
+    });
+    window.addEventListener = vi.fn((event: string, handler: EventListener) => {
+      if (!listeners[event]) listeners[event] = [];
+      listeners[event].push(handler);
+    });
+    window.removeEventListener = vi.fn((event: string, handler: EventListener) => {
+      if (listeners[event]) {
+        listeners[event] = listeners[event].filter(h => h !== handler);
+      }
+    });
   });
 
-  it("returns isAtTop=true when scrollY is 0 (initial state)", () => {
-    window.scrollY = 0;
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const fireScroll = (newScrollY: number) => {
+    scrollY = newScrollY;
+    const event = new Event("scroll");
+    listeners["scroll"]?.forEach(handler => handler(event));
+  };
+
+  it("initializes with scrollDirection as up", () => {
+    const { result } = renderHook(() => useScrollDirection());
+    expect(result.current.scrollDirection).toBe("up");
+  });
+
+  it("initializes with isAtTop as true when scrollY is 0", () => {
     const { result } = renderHook(() => useScrollDirection());
     expect(result.current.isAtTop).toBe(true);
   });
 
-  it("returns isAtTop=false when scrollY >= 10", () => {
-    window.scrollY = 0;
+  it("sets isAtTop to false when scrollY >= 10", () => {
     const { result } = renderHook(() => useScrollDirection());
-    // Scroll down to 50 and fire scroll event
-    window.scrollY = 50;
-    act(() => {
-      window.dispatchEvent(new Event("scroll"));
-    });
+    act(() => { fireScroll(50); });
     expect(result.current.isAtTop).toBe(false);
   });
 
-  it("returns scrollDirection='up' initially", () => {
-    window.scrollY = 0;
+  it("sets scrollDirection to down when scrolling down", () => {
     const { result } = renderHook(() => useScrollDirection());
-    expect(result.current.scrollDirection).toBe("up");
-  });
-
-  it("returns scrollDirection='down' when scrollY increases", () => {
-    window.scrollY = 0;
-    const { result } = renderHook(() => useScrollDirection());
-    window.scrollY = 100;
-    act(() => {
-      window.dispatchEvent(new Event("scroll"));
-    });
+    act(() => { fireScroll(100); });
     expect(result.current.scrollDirection).toBe("down");
   });
 
-  it("returns scrollDirection='up' when scrollY decreases", () => {
-    window.scrollY = 0;
+  it("sets scrollDirection to up when scrolling back up", () => {
     const { result } = renderHook(() => useScrollDirection());
-    // First scroll down
-    window.scrollY = 200;
-    act(() => {
-      window.dispatchEvent(new Event("scroll"));
-    });
+    act(() => { fireScroll(100); });
     expect(result.current.scrollDirection).toBe("down");
-    // Then scroll up
-    window.scrollY = 50;
-    act(() => {
-      window.dispatchEvent(new Event("scroll"));
-    });
+    act(() => { fireScroll(50); });
     expect(result.current.scrollDirection).toBe("up");
+  });
+
+  it("removes event listener on unmount", () => {
+    const { unmount } = renderHook(() => useScrollDirection());
+    unmount();
+    expect(window.removeEventListener).toHaveBeenCalledWith("scroll", expect.any(Function));
   });
 });
