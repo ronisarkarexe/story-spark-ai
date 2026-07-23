@@ -29,7 +29,9 @@ export const useNotifications = () => {
     const baseNotifications = data ?? [];
     const merged = new Map<string, NotificationItem>();
 
-    for (const notification of [...realtimeNotifications, ...baseNotifications]) {
+    // REST data is added first — real-time data is added last and wins
+    // for duplicate IDs, since real-time state is always more up-to-date.
+    for (const notification of [...baseNotifications, ...realtimeNotifications]) {
       merged.set(notification._id, notification);
     }
 
