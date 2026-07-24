@@ -1,67 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-
-interface DevToArticle {
-  id: number;
-  title: string;
-  description: string;
-  url: string;
-  tag_list: string[];
-  published_at: string;
-  reading_time_minutes: number;
-  user: { name: string };
-  cover_image: string | null;
-}
-
-interface BlogPost {
-  id: number;
-  title: string;
-  description: string;
-  url: string;
-  category: "AI" | "Writing" | "OSS";
-  date: string;
-  readMin: number;
-  author: string;
-  cover: string | null;
-}
-
-type Category = "All" | "AI" | "Writing" | "OSS";
-type SortOption = "newest" | "oldest" | "shortest";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  All: "All",
-  AI: "AI Storytelling",
-  Writing: "Writing Tips",
-  OSS: "Open Source",
-};
-
-const CATEGORY_STYLES: Record<string, string> = {
-  AI: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  Writing: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  OSS: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-};
-
-const TAG_QUERIES: Record<Category, string> = {
-  All: "ai",
-  AI: "ai",
-  Writing: "writing",
-  OSS: "opensource",
-};
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function mapCategory(tags: string[]): "AI" | "Writing" | "OSS" {
-  const t = tags.join(" ").toLowerCase();
-  if (t.includes("writing") || t.includes("tutorial") || t.includes("beginners")) return "Writing";
-  if (t.includes("opensource") || t.includes("github") || t.includes("hacktoberfest")) return "OSS";
-  return "AI";
-}
 
 const Blog = () => {
   const blogPosts = [
@@ -84,7 +21,7 @@ const Blog = () => {
 
   return (
     <div className="relative min-h-screen bg-white text-slate-900 px-6 py-16 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white overflow-hidden">
-      <div className="absolute top-10 left-16 w-3 h-3 rounded-full bg-yellow-400 opacity-70" />
+      <div className="absolute top-10 left-16 w-3 h-3 rounded-full bg-yellow-400 opacity-70" aria-hidden="true" />
       <div className="absolute top-24 right-24 w-2 h-2 rounded-full bg-pink-400 opacity-60" />
       <div className="absolute bottom-32 right-16 w-3 h-3 rounded-full bg-purple-400 opacity-60" />
 
@@ -105,9 +42,9 @@ const Blog = () => {
             Latest Topics
           </h2>
           <ul className="space-y-2 text-slate-600 dark:text-gray-300">
-            <li>📖 AI-powered storytelling</li>
-            <li>✍️ Creative writing tips</li>
-            <li>🚀 Open-source updates</li>
+            <li><span aria-hidden="true">📖</span> AI-powered storytelling</li>
+            <li><span aria-hidden="true">✍️</span> Creative writing tips</li>
+            <li><span aria-hidden="true">🚀</span> Open-source updates</li>
           </ul>
         </div>
 
@@ -146,7 +83,7 @@ const Blog = () => {
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 };
 

@@ -25,10 +25,10 @@ const SSButton: FC<SSButtonProps> = ({
       onClick={onClick}
       disabled={isDisabled}
       aria-busy={isLoading}
-      className={`motion-cta flex w-full items-center justify-center rounded-xl bg-indigo-600 h-12 px-4 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
+      className={`motion-cta flex w-full items-center justify-center rounded-xl bg-yellow-600 h-12 px-4 text-sm font-semibold text-white shadow-md shadow-yellow-500/20 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
         isDisabled
           ? "cursor-not-allowed opacity-60"
-          : "hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/30 active:scale-[0.98]"
+          : "hover:bg-indigo-500 hover:shadow-lg hover:shadow-yellow-500/30 active:scale-[0.98]"
       } ${className}`}
     >
       {isLoading ? (
