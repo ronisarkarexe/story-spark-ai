@@ -278,11 +278,17 @@ const StoryWorkspace = () => {
     />
   </div>
 
-  <StoryCoverGenerator
+<StoryCoverGenerator
   title={currentStory.title}
-  genre="Fantasy"
-  theme="Adventure"
-  characters={["Hero", "Villain"]}
+  genre={currentStory.genre ?? "General"}
+  theme={currentStory.theme ?? currentStory.title}
+  characters={
+    currentStory.characters?.map((c) => c.name) ??
+    currentStory.chapters
+      ?.flatMap((ch) => ch.characters ?? [])
+      .slice(0, 3) ??
+    []
+  }
 />
 
 <StoryRewritePanel
