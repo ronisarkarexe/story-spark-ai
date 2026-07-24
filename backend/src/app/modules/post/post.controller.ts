@@ -9,9 +9,10 @@ import pick from "../../../shared/pick";
 import { postFilterFields } from "./post.constant";
 import { paginationFields } from "../../../constants/pagination";
 import { IPost } from "./post.interface";
+import { sanitizeStoryPayload } from "../../../utils/sanitize.util";
 
 const createPost = catchAsync(async (req: Request, res: Response) => {
-  const postData = req.body;
+  const postData = sanitizeStoryPayload(req.body);
   const token = await getToken(req);
   const result = await PostService.createPost(postData, token);
   sendResponse(res, {
@@ -133,7 +134,7 @@ const toggleBookmark = catchAsync(async (req: Request, res: Response) => {
 
 const updatePost = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
-  const postData = req.body;
+  const postData = sanitizeStoryPayload(req.body);
   const token = await getToken(req);
   const result = await PostService.updatePost(id, postData, token);
   sendResponse(res, {

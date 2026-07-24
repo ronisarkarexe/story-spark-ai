@@ -94,11 +94,9 @@ const getCursorCondition = (
 };
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
-  const { email, role } = token;
-  const user = await User.findOne({
-    email: email,
-    role: role,
-  });
+  const { _id } = token;
+
+  const user = await User.findById(_id).select("_id role postsCount");
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
@@ -449,7 +447,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (isBookmarked) {
     await Post.updateOne(
       { _id: postId },
-      { $pull: { bookmarks: user._id } }
+      { $pull: { bookmarks: user._id }, $inc: { bookmarksCount: -1 } }
     );
 
     return {
@@ -460,7 +458,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
 
   await Post.updateOne(
     { _id: postId },
-    { $addToSet: { bookmarks: user._id } }
+    { $addToSet: { bookmarks: user._id }, $inc: { bookmarksCount: 1 } }
   );
 
   return {
