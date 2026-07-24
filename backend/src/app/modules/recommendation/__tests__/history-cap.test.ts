@@ -49,7 +49,7 @@ describe("RecommendationService — readingHistory EXCLUSION_LIMIT", () => {
 
   it("caps readingHistory to 100 entries before passing to $nin", async () => {
     // readingHistory with exactly 100 entries — should NOT be capped
-    const exactly100 = Array.from({ length: 100 }, (_, i) => new Types.ObjectId(`507f1f77bcf86cd79943910${String(i).padStart(2, "0")}`));
+    const exactly100 = Array.from({ length: 100 }, (_, i) => new Types.ObjectId(`507f1f77bcf86cd799439${String(i).padStart(3, "0")}`));
     createUserQuery({ readingPreferences: undefined, readingHistory: exactly100 });
     createPostQuery([]);
 
@@ -65,7 +65,7 @@ describe("RecommendationService — readingHistory EXCLUSION_LIMIT", () => {
 
   it("caps readingHistory to the last 100 entries when over 100", async () => {
     // readingHistory with 150 entries — should be capped to last 100
-    const overLimit = Array.from({ length: 150 }, (_, i) => new Types.ObjectId(`507f1f77bcf86cd79943911${String(i).padStart(2, "0")}`));
+    const overLimit = Array.from({ length: 150 }, (_, i) => new Types.ObjectId(`507f1f77bcf86cd799439${String(100 + i).padStart(3, "0")}`));
     createUserQuery({ readingPreferences: undefined, readingHistory: overLimit });
     createPostQuery([]);
 
