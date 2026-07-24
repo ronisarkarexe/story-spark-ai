@@ -389,14 +389,18 @@ const StoryWorkspace = () => {
 
 <PromptLibrary
   onInsertPrompt={(prompt) => {
-    console.log("Selected Prompt:", prompt);
+    // TODO: dispatch action to insert prompt into the active editor
+    toast("Prompt insertion coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onInsertPrompt not wired:", prompt);
   }}
 />
 
 <StoryTitleRating
   title={currentStory.title}
   onReplace={(newTitle) => {
-    console.log("Replace title:", newTitle);
+    // TODO: dispatch updateStoryTitle action
+    toast("Title replacement coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onReplace title not wired:", newTitle);
   }}
 />
 
@@ -441,7 +445,9 @@ const StoryWorkspace = () => {
       .join("\n\n") || ""
   }
   onRestore={(draft) => {
-    console.log("Restore draft:", draft);
+    // TODO: dispatch action to restore draft content to editor
+    toast("Draft restore coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onRestore draft not wired:", draft);
   }}
 />
 <StoryComparisonDashboard
@@ -488,7 +494,9 @@ const StoryWorkspace = () => {
       .join("\n\n") || ""
   }
   onApply={(twist) => {
-    console.log("Selected plot twist:", twist);
+    // TODO: dispatch action to append plot twist to story
+    toast("Plot twist apply coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onApply twist not wired:", twist);
   }}
 />
 
@@ -520,7 +528,9 @@ const StoryWorkspace = () => {
       .join("\n\n") || ""
   }
   onRegenerate={(prompt) => {
-    console.log("Regenerate ending:", prompt);
+    // TODO: dispatch action to regenerate story ending
+    toast("Ending regeneration coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onRegenerate ending not wired:", prompt);
   }}
 />
 
@@ -528,7 +538,9 @@ const StoryWorkspace = () => {
 
 <StoryNamingAssistant
   onInsert={(name) => {
-    console.log("Insert name:", name);
+    // TODO: dispatch action to insert name into editor at cursor position
+    toast("Name insertion coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onInsert name not wired:", name);
   }}
 />
 
