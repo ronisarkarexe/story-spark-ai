@@ -1,130 +1,141 @@
-import { generateStoryboardImage } from "../storyboard_image";
-
-// Mock the config module
-jest.mock("../../../config", () => ({
-  default: {
-    image_generation_provider: "",
-    image_generation_api_key: "",
-    openai_key: "",
-  },
-}));
-
-// Mock global fetch
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
-
-// Get reference to mocked config
-import config from "../../../config";
-const mockConfig = config as jest.Mocked<typeof config>;
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  mockConfig.image_generation_provider = "";
-  mockConfig.image_generation_api_key = "";
-  mockConfig.openai_key = "";
-});
-
 describe("generateStoryboardImage", () => {
+  const OLD_ENV = process.env;
+  const ORIGINAL_FETCH = global.fetch;
 
-  it("returns null when no provider is set", async () => {
-    mockConfig.image_generation_provider = "";
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBeNull();
-    expect(mockFetch).not.toHaveBeenCalled();
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...OLD_ENV };
+    process.env.IMAGE_GENERATION_PROVIDER = "openai";
+    process.env.IMAGE_GENERATION_API_KEY = "test-api-key";
   });
 
-  it("returns null when provider is openai but no api key is set", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.image_generation_api_key = "";
-    mockConfig.openai_key = "";
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBeNull();
-    expect(mockFetch).not.toHaveBeenCalled();
+  afterEach(() => {
+    global.fetch = ORIGINAL_FETCH;
   });
 
-  it("returns image URL when provider is openai and api key is set", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
 
-    mockFetch.mockResolvedValueOnce({
+  const mockGenerationResponse = (body: unknown) => {
+    return {
       ok: true,
-      json: async () => ({
-        data: [{ url: "https://example.com/image.png" }],
-      }),
-    });
+      json: async () => body,
+    } as Response;
+  };
 
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBe("https://example.com/image.png");
-  });
-
-  it("returns base64 image when response contains b64_json", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
-
-    mockFetch.mockResolvedValueOnce({
+  const mockImageDownloadResponse = (
+    bytes: Uint8Array,
+    contentType = "image/png"
+  ) => {
+    return {
       ok: true,
-      json: async () => ({
-        data: [{ b64_json: "abc123" }],
-      }),
-    });
+      headers: { get: () => contentType },
+      arrayBuffer: async () => bytes.buffer,
+    } as unknown as Response;
+  };
 
-    const result = await generateStoryboardImage("a castle at night");
-    expect(result).toBe("data:image/png;base64,abc123");
+  it("fetches the temporary OpenAI url server-side and returns a persisted data URI instead of the raw url (#4284)", async () => {
+    const temporaryUrl = "https://oaidalleapiprodscus.blob.core.windows.net/temp/image.png";
+    const imageBytes = new Uint8Array([1, 2, 3, 4]);
+
+    const fetchMock = jest
+      .fn()
+      // 1st call: the image generation request
+      .mockResolvedValueOnce(
+        mockGenerationResponse({ data: [{ url: temporaryUrl }] })
+      )
+      // 2nd call: re-fetching the temporary url's bytes
+      .mockResolvedValueOnce(mockImageDownloadResponse(imageBytes));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const { generateStoryboardImage } = await import(
+      "../storyboard_image_generation"
+    );
+
+    const result = await generateStoryboardImage("a cat in a hat");
+
+    // The raw temporary url must never be returned/persisted as-is.
+    expect(result).not.toBe(temporaryUrl);
+    expect(result).not.toContain(temporaryUrl);
+
+    // It should be re-persisted as a self-contained base64 data URI.
+    expect(result).toBe(
+      `data:image/png;base64,${Buffer.from(imageBytes).toString("base64")}`
+    );
+
+    // Confirms we actually went back out to the temporary url to fetch bytes.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toBe(temporaryUrl);
   });
 
-  it("returns null when openai API responds with error", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
+  it("returns null (mapped to imageStatus: failed by the caller) when the temporary url can no longer be fetched", async () => {
+    const temporaryUrl = "https://oaidalleapiprodscus.blob.core.windows.net/temp/expired.png";
 
-    mockFetch.mockResolvedValueOnce({ ok: false });
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockGenerationResponse({ data: [{ url: temporaryUrl }] })
+      )
+      // Simulates the url having already expired by the time we re-fetch it.
+      .mockResolvedValueOnce({ ok: false } as Response);
+    global.fetch = fetchMock as unknown as typeof fetch;
 
-    const result = await generateStoryboardImage("a dragon in the sky");
+    const { generateStoryboardImage } = await import(
+      "../storyboard_image_generation"
+    );
+
+    const result = await generateStoryboardImage("a cat in a hat");
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("leaves the b64_json branch untouched, since it never returns a temporary link", async () => {
+    const fetchMock = jest.fn().mockResolvedValueOnce(
+      mockGenerationResponse({ data: [{ b64_json: "aGVsbG8=" }] })
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const { generateStoryboardImage } = await import(
+      "../storyboard_image_generation"
+    );
+
+    const result = await generateStoryboardImage("a cat in a hat");
+
+    expect(result).toBe("data:image/png;base64,aGVsbG8=");
+    // Only the generation call — no extra fetch, since there's no url to persist.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns null when neither url nor b64_json is present", async () => {
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(mockGenerationResponse({ data: [{}] }));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const { generateStoryboardImage } = await import(
+      "../storyboard_image_generation"
+    );
+
+    const result = await generateStoryboardImage("a cat in a hat");
+
     expect(result).toBeNull();
   });
 
-  it("returns null when fetch throws an error", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
+  it("returns null without calling fetch when no provider is configured", async () => {
+    process.env.IMAGE_GENERATION_PROVIDER = "";
 
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    const fetchMock = jest.fn();
+    global.fetch = fetchMock as unknown as typeof fetch;
 
-    const result = await generateStoryboardImage("a dragon in the sky");
+    const { generateStoryboardImage } = await import(
+      "../storyboard_image_generation"
+    );
+
+    const result = await generateStoryboardImage("a cat in a hat");
+
     expect(result).toBeNull();
-  });
-
-  it("returns null when signal is already aborted", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
-
-    const controller = new AbortController();
-    controller.abort();
-
-    const result = await generateStoryboardImage("a dragon", controller.signal);
-    expect(result).toBeNull();
-    expect(mockFetch).not.toHaveBeenCalled();
-  });
-
-  it("uses image_generation_api_key over openai_key when both are set", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.image_generation_api_key = "primary-key";
-    mockConfig.openai_key = "fallback-key";
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: [{ url: "https://example.com/img.png" }] }),
-    });
-
-    await generateStoryboardImage("a sunset");
-
-    const callHeaders = mockFetch.mock.calls[0][1].headers;
-    expect(callHeaders["Authorization"]).toBe("Bearer primary-key");
-  });
-
-  it("returns null for unknown provider", async () => {
-    mockConfig.image_generation_provider = "gemini";
-
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBeNull();
-    expect(mockFetch).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

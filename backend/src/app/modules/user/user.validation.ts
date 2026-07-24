@@ -49,6 +49,7 @@ const resetPassword = z.object({
 const updateUser = z.object({
   body: z
     .object({
+      email: z.string().email("Invalid email address").optional(),
       name: z.string().trim().min(5, "Name must be at least 5 characters long").max(100).optional(),
       profile: z
         .object({
@@ -95,6 +96,13 @@ const sendOtp = z.object({
   }),
 });
 
+const verifyEmailChange = z.object({
+  body: z.object({
+    token: z.string({ required_error: "Verification token is required" }),
+    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+  }),
+});
+
 export const UserValidator = {
   register,
   login,
@@ -102,5 +110,6 @@ export const UserValidator = {
   resetPassword,
   updateUser,
   changePassword,
-  sendOtp
+  sendOtp,
+  verifyEmailChange,
 };
