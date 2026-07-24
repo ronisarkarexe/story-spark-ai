@@ -20,17 +20,19 @@ export interface UseVoicePreviewResult {
  */
 export const useVoicePreview = (): UseVoicePreviewResult => {
   const previewUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const isPlayingRef = useRef(false);
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
 
   const stopPreview = useCallback(() => {
-    if (isPreviewPlaying && previewUtteranceRef.current) {
+    if (isPlayingRef.current && previewUtteranceRef.current) {
       window.speechSynthesis.cancel();
       previewUtteranceRef.current = null;
     }
+    isPlayingRef.current = false;
     setIsPreviewPlaying(false);
     setPreviewingVoiceId(null);
-  }, [isPreviewPlaying]);
+  }, []);
 
   const playPreview = useCallback(
     (voice: SpeechVoiceOption) => {
@@ -50,18 +52,21 @@ export const useVoicePreview = (): UseVoicePreviewResult => {
       }
 
       utterance.onstart = () => {
+        isPlayingRef.current = true;
         setPreviewingVoiceId(voice.id);
         setIsPreviewPlaying(true);
       };
 
       utterance.onend = () => {
         previewUtteranceRef.current = null;
+        isPlayingRef.current = false;
         setIsPreviewPlaying(false);
         setPreviewingVoiceId(null);
       };
 
       utterance.onerror = () => {
         previewUtteranceRef.current = null;
+        isPlayingRef.current = false;
         setIsPreviewPlaying(false);
         setPreviewingVoiceId(null);
       };
