@@ -444,18 +444,18 @@ const StoryWorkspace = () => {
     console.log("Restore draft:", draft);
   }}
 />
-<StoryComparisonDashboard
+{/* StoryComparisonDashboard requires a second story source (e.g. a saved
+    draft or previous version) for storyB. Passing the same content for both
+    sides makes the comparison meaningless. Wire storyB to a real alternate
+    source before rendering this component. */}
+{/* <StoryComparisonDashboard
   storyA={
     currentStory.chapters
       ?.map((chapter) => chapter.content)
       .join("\n\n") || ""
   }
-  storyB={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
-  }
-/>
+  storyB={previousStoryDraft ?? ""}
+/> */}
 
 <StoryTimelineVisualization
   story={
