@@ -68,6 +68,12 @@ const StoryWorkspace = () => {
   "Classic" | "Novel" | "Minimal" | "Dark"
 >("Classic");
 
+  const [revisions, setRevisions] = useState(() => {
+    const storyContent =
+      currentStory?.chapters?.map((c) => c.content).join("\n\n") || "";
+    return storyContent ? [createRevision(storyContent)] : [];
+  });
+
   const handleCopyStory = async () => {
   if (!currentStory) {
     toast.error("No story available to copy.");
@@ -501,15 +507,10 @@ const StoryWorkspace = () => {
 />
 
 <StoryRevisionHistory
-  revisions={[
-    createRevision(
-      currentStory.chapters
-        ?.map((chapter) => chapter.content)
-        .join("\n\n") || ""
-    ),
-  ]}
+  revisions={revisions}
   onRestore={(content) => {
-    console.log("Restore revision:", content);
+    // TODO: dispatch action to restore story content from revision
+    console.warn("Restore revision not yet wired to Redux store:", content);
   }}
 />
 
