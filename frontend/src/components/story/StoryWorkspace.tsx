@@ -243,8 +243,6 @@ const StoryWorkspace = () => {
                 🕸️ Character Network
               </button>
             </div>
-<<<<<<< HEAD
-
             {workspaceMode === "editor" && (
               <div className="flex gap-2 mr-2">
                 <button
@@ -266,22 +264,21 @@ const StoryWorkspace = () => {
               </div>
             )}
 
-=======
             <select
-  value={selectedTheme}
-  onChange={(e) =>
-    setSelectedTheme(
-      e.target.value as "Classic" | "Novel" | "Minimal" | "Dark"
-    )
-  }
-  className="bg-zinc-800 text-white rounded px-3 py-2 border border-zinc-700 text-sm"
->
-  <option value="Classic">📖 Classic</option>
-  <option value="Novel">📚 Novel</option>
-  <option value="Minimal">✨ Minimal</option>
-  <option value="Dark">🌙 Dark</option>
-</select>
->>>>>>> main
+              value={selectedTheme}
+              onChange={(e) =>
+                setSelectedTheme(
+                  e.target.value as "Classic" | "Novel" | "Minimal" | "Dark"
+                )
+              }
+              className="bg-zinc-800 text-white rounded px-3 py-2 border border-zinc-700 text-sm"
+            >
+              <option value="Classic">📖 Classic</option>
+              <option value="Novel">📚 Novel</option>
+              <option value="Minimal">✨ Minimal</option>
+              <option value="Dark">🌙 Dark</option>
+            </select>
+
             <button
               onClick={handleCopyStory}
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
@@ -310,7 +307,6 @@ const StoryWorkspace = () => {
         </div>
 
         {workspaceMode === "editor" ? (
-<<<<<<< HEAD
           <>
             {showNarration && (
               <div className="p-4 bg-zinc-900/40 border-b border-zinc-800">
@@ -333,19 +329,18 @@ const StoryWorkspace = () => {
               activeSegmentIndex={activeSegmentIndex}
               truncated={currentStory.truncated}
             />
-=======
-  <>
-  <div className="p-4 border-b border-zinc-800">
-    <StoryChecklist
-      title={currentStory.title}
-      content={
-        currentStory.chapters
-          ?.map((chapter) => chapter.content)
-          .join("\n\n") || ""
-      }
-    />
-  </div>
->>>>>>> main
+
+            <div className="p-4 border-b border-zinc-800">
+              <StoryChecklist
+                title={currentStory.title}
+                content={
+                  currentStory.chapters
+                    ?.map((chapter) => chapter.content)
+                    .join("\n\n") || ""
+                }
+              />
+            </div>
+
 
   <StoryCoverGenerator
   title={currentStory.title}
