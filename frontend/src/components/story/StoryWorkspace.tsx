@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -67,6 +67,13 @@ const StoryWorkspace = () => {
   const [selectedTheme, setSelectedTheme] = useState<
   "Classic" | "Novel" | "Minimal" | "Dark"
 >("Classic");
+
+  // Memoized once — used by all 20+ components instead of recomputing each time
+  const fullStoryContent = useMemo(
+    () =>
+      currentStory?.chapters?.map((chapter) => chapter.content).join("\n\n") ?? "",
+    [currentStory?.chapters]
+  );
 
   const handleCopyStory = async () => {
   if (!currentStory) {
@@ -287,9 +294,7 @@ const StoryWorkspace = () => {
 
 <StoryRewritePanel
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
@@ -298,59 +303,43 @@ const StoryWorkspace = () => {
 />
 <PlotHoleDetector
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <PacingAnalyzer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <OutlineQualityAnalyzer
   outline={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <DialogueEnhancer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <TimelineConsistencyChecker
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <GenreBlendGenerator
   prompt={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <RelationshipGraph
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <VocabularyAnalyzer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
@@ -359,31 +348,23 @@ const StoryWorkspace = () => {
 
 <StoryPerspectiveSwitcher
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <StoryTonePresets
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <StoryAudienceSelector
   prompt={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryChapterGenerator
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
@@ -404,41 +385,31 @@ const StoryWorkspace = () => {
 
 <StoryKeywordExtractor
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryFactSheet
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StorySceneNavigator
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryComplexityAnalyzer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StorySessionRecovery
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
   onRestore={(draft) => {
     console.log("Restore draft:", draft);
@@ -446,46 +417,34 @@ const StoryWorkspace = () => {
 />
 <StoryComparisonDashboard
   storyA={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
   storyB={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryTimelineVisualization
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <CharacterConsistencyChecker
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryRelationshipGraph
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryPlotTwistGenerator
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
   onApply={(twist) => {
     console.log("Selected plot twist:", twist);
@@ -494,9 +453,7 @@ const StoryWorkspace = () => {
 
 <StoryReadingAnalytics
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
@@ -515,9 +472,7 @@ const StoryWorkspace = () => {
 
 <StoryEndingAnalyzer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
   onRegenerate={(prompt) => {
     console.log("Regenerate ending:", prompt);
@@ -535,25 +490,19 @@ const StoryWorkspace = () => {
 
 <StoryPublishingReadiness
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryTagGenerator
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryReadingInfo
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
