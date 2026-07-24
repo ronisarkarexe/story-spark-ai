@@ -285,7 +285,6 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     expect(mockedPost.find.mock.calls[0][0]).toEqual({
       isDeleted: false,
       isPublished: true,
-      _id: { $nin: [] },
     });
     expect(fallbackPostQuery.limit).toHaveBeenCalledWith(10);
   });
