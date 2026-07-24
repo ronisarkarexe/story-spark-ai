@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
+    "@types/node": "22.19.19",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "express": "^4.21.1",

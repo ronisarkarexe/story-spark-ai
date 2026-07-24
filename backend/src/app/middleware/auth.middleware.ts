@@ -108,20 +108,8 @@ const auth =
           throw new ApiError(
             httpStatus.UNAUTHORIZED,
             "Invalid token"
-
-          const decodedUser = JwtHelpers.verifyToken(
-            token,
-            config.jwt.secret as Secret
           );
-
-          if (!isJwtVerifiedUser(decodedUser)) {
-            throw new ApiError(
-              httpStatus.UNAUTHORIZED,
-              "Invalid token"
-            );
         }
-
-      const verifiedUser = decodedUser;
 
         const user = await User.findById(verifiedUser._id);
 
@@ -175,14 +163,9 @@ const auth =
 
         req.user = user as Express.Request["user"];
 
-        next();
-      } catch (err) {
-        next(err);
-      }
-      req.user = user;
-      return next();
+      next();
     } catch (err) {
-      return next(err);
+      next(err);
     }
   };
 

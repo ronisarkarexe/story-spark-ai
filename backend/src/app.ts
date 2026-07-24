@@ -18,11 +18,6 @@ import leaderboardRoute from "./routes/leaderboard.route";
 import globalRateLimiter from "./app/middleware/global.rate-limiter";
 import { sanitizeAllMiddleware } from "./app/middleware/sanitize.middleware";
 import ApiError from "./errors/api_error";
-
-interface ApiError extends Error {
-  statusCode: number;
-  errorMessages: { path: string; message: string }[];
-}
 const app: Application = express();
 app.set("trust proxy", 1);
 app.use(helmet());
@@ -80,6 +75,9 @@ app.use((req, res, next) => {
   ) {
     req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
   }
+  next();
+});
+
 // Payload limit set to 10mb to support large story content and
 // character network data without triggering 413 errors.
 // Previously used Express default (100kb) which was too restrictive.
@@ -90,11 +88,7 @@ app.use(cookieParser() as unknown as RequestHandler);
 
 app.use("/api/v1", Routers);
 
-// ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
-app.use((req: Request, res: Response, next: NextFunction) => {
-  // Constructing a standardized operational error structure
-  const error = new Error("API Not Found") as ApiError;
-  error.statusCode = httpStatus.NOT_FOUND;
+// ─── 404 handler ───
 app.use((req: Request, _res: Response, next: NextFunction) => {
   const error = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
   error.errorMessages = [
@@ -109,4 +103,3 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 app.use(globalErrorHandler);
 
 export default app;
-export { defaultCorsOrigins };
