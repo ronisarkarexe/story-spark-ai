@@ -208,7 +208,7 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "editor"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-250"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 📖 Read Story
@@ -218,7 +218,7 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "network"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-255"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 🕸️ Character Network
