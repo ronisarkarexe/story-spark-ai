@@ -39,6 +39,22 @@ export const audienceOptions: AudienceOption[] = [
   },
 ];
 
+/**
+ * Looks up an audience option by its id string.
+ * Returns undefined if no matching audience is found.
+ */
+export const getAudienceById = (id: string): AudienceOption | undefined => {
+  return audienceOptions.find((option) => option.id === id);
+};
+
+/**
+ * Validates whether a given string is a known StoryAudience value.
+ * Returns true for valid audiences, false otherwise.
+ */
+export const validateAudience = (audience: string): boolean => {
+  return (audienceOptions.map((o) => o.name) as string[]).includes(audience);
+};
+
 export const buildAudiencePrompt = (
   audience: StoryAudience,
   prompt: string
