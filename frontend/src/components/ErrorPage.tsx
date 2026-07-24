@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AUTH_KEY } from "../constants/storage-key";
 
 const ErrorPage = () => {
+  const navigate = useNavigate();
   const [isReloading, setIsReloading] = useState(false);
+  
 
   const handleReload = () => {
     setIsReloading(true);
@@ -138,6 +141,39 @@ const ErrorPage = () => {
                 Reset Cache & Reload
               </>
             )}
+          </button>
+          <button
+            onClick={() => {
+  sessionStorage.setItem(
+    "error-report",
+    JSON.stringify({
+      message: "Application crashed",
+      url: window.location.href,
+      stack: "Captured from ErrorBoundary",
+      timestamp: new Date().toISOString(),
+    })
+  );
+
+  navigate("/report-bug");
+}}
+            className="w-full px-6 py-3 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 font-semibold rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+            aria-label="Report this error"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 10h8m-8 4h5M9 3h6a2 2 0 012 2v14l-5-3-5 3V5a2 2 0 012-2z"
+              />
+            </svg>
+            Report Error
           </button>
         </div>
 
