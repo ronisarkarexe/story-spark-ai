@@ -1,5 +1,6 @@
 import express from "express";
 import { AuthRouter } from "../app/modules/auth/auth.router";
+import storyRoutes from "../routes/story.routes";
 import { UserRouter } from "../app/modules/user/user.router";
 import { AIModelRouter } from "../app/modules/ai_model/ai_model.router";
 import { VerifyEmailRouter } from "../app/modules/verify_email/verify_email.router";
@@ -101,7 +102,7 @@ const modules = [
     // /continuations). Express tries routers in array order, so this is safe
     // to add right after StoryVersionRouter above.
     path: "/story",
-    router: StoryRouter,
+    router: storyRoutes,
   },
   {
     path: "/analytics",

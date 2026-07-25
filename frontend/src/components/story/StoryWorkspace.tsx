@@ -39,7 +39,8 @@ import StoryComparisonDashboard from "../comparison/StoryComparisonDashboard";
 import StoryTimelineVisualization from "../timeline/StoryTimelineVisualization";
 import StoryRelationshipGraph from "../relationship-graph/StoryRelationshipGraph";
 import StoryPlotTwistGenerator from "../plot-twist/StoryPlotTwistGenerator";
-import StoryReadingAnalytics from "../analytics/StoryReadingAnalytics";
+import StoryReadingAnalytics from "../analytics-jp/StoryReadingAnalytics";
+import VocabularyAnalyzer from "../vocabulary/VocabularyAnalyzer";
 
 import StoryRevisionHistory from "../revision-history/StoryRevisionHistory";
 import { createRevision } from "../../utils/storyRevisionHistory";
@@ -196,6 +197,7 @@ const StoryWorkspace = () => {
       <Toaster position="top-right" reverseOrder={false} />
       <ChapterSidebar
         chapters={currentStory.chapters}
+        maxChapterWords={2500}
       />
 
       <div className="flex flex-col flex-1">
@@ -293,9 +295,7 @@ const StoryWorkspace = () => {
   }
 />
 
-<StoryBranchingEditor
-  storyTitle={currentStory.title}
-/>
+<StoryBranchingEditor />
 <PlotHoleDetector
   story={
     currentStory.chapters
@@ -569,7 +569,7 @@ const StoryWorkspace = () => {
   </div>
 </>
         ) : (
-          <CharacterNetwork storyId={currentStory.id} />
+          <CharacterNetwork storyId={currentStory.id} storyContent={currentStory.chapters?.map((chapter) => chapter.content).join("\n\n") || ""} />
         )}
       </div>
     </div>

@@ -88,3 +88,30 @@ export const checkCharacterConsistency = (
 
   return conflicts;
 };
+
+export interface CharacterIssue {
+  id: string;
+  character: string;
+  category: string;
+  severity: string;
+  description: string;
+  suggestion: string;
+}
+
+export const analyzeCharacterConsistency = (story: string): CharacterIssue[] => {
+  const conflicts = checkCharacterConsistency([{ content: story || "" }]);
+  return conflicts.map((conflict, idx) => ({
+    id: `issue-${idx}`,
+    character: conflict.character,
+    category: "Appearance",
+    severity: "Medium",
+    description: `Inconsistent ${conflict.attribute}: was '${conflict.previous}', now '${conflict.current}'`,
+    suggestion: `Ensure ${conflict.character}'s ${conflict.attribute} is consistent across chapters or explain the change.`,
+  }));
+};
+
+export const getConsistencyScore = (issues: CharacterIssue[] | unknown[]): number => {
+  if (!issues || issues.length === 0) return 100;
+  const score = 100 - issues.length * 15;
+  return Math.max(0, score);
+};

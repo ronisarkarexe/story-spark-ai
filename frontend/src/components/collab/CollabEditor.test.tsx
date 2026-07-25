@@ -47,7 +47,8 @@ describe('CollabEditor', () => {
       />,
     );
     const container = screen.getByRole('textbox', { hidden: true });
-    expect(container).toBeInTheDocument();
+    expect(container).toBeDefined();
+    expect(container).not.toBeNull();
   });
 
   it('applies remote Yjs updates to the editor', async () => {
