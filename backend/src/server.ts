@@ -1,7 +1,7 @@
 import { Application, Request, Response } from "express";
 import mongoose from "mongoose";
 import config from "./config";
-import app, { defaultCorsOrigins } from "./app";
+import app from "./app";
 import dns from "node:dns";
 import http from "http";
 import { Server } from "socket.io";
@@ -12,13 +12,14 @@ import { setNotificationSocket } from "./socket/notification.socket";
 import { setupCollabSocket } from "./socket/collab.socket";
 import { YjsGateway } from "./app/modules/collab/yjs.gateway";
 import { socketRateLimiter } from "./socket/socket-rate-limiter";
-import { startOrderReconciliationJob } from "./jobs/reconcilePendingOrders.job";
 
+// Override DNS resolvers only when explicitly configured, default to the platform environment
 if (config.dns_servers?.length) {
   dns.setServers(config.dns_servers);
 }
 
 if (config.disable_logs) {
+  // Silence only verbose channels; keep warn/error so failures stay visible in logs
   const noop = () => undefined;
   console.log = noop;
   console.info = noop;
@@ -34,6 +35,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 async function reconnectMongo() {
   if (isMongoReconnectInProgress) return;
   isMongoReconnectInProgress = true;
+
   try {
     for (let attempt = 1; attempt <= MAX_MONGO_RECONNECT_ATTEMPTS; attempt += 1) {
       try {
@@ -52,7 +54,11 @@ async function reconnectMongo() {
         }
       }
     }
-    logger.error('MongoDB failed to reconnect.');
+
+    logger.error(
+      `MongoDB failed to reconnect after ${MAX_MONGO_RECONNECT_ATTEMPTS} attempts. ` +
+        'Database operations may fail until the service becomes available again.'
+    );
   } finally {
     isMongoReconnectInProgress = false;
   }
@@ -60,14 +66,22 @@ async function reconnectMongo() {
 
 async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
+  // config.database_url is guaranteed non-empty by config/index.ts
   if (!mongoose.connection.listeners('error').length) {
-    mongoose.connection.on('error', (err) => logger.error('MongoDB error:', err));
+    mongoose.connection.on('error', (err) => {
+      logger.error('MongoDB runtime connection error:', err);
+    });
+
     mongoose.connection.on('disconnected', async () => {
       logger.warn('MongoDB disconnected. Attempting to reconnect...');
       await reconnectMongo();
     });
-    mongoose.connection.on('reconnected', () => logger.info('MongoDB reconnected.'));
+
+    mongoose.connection.on('reconnected', () => {
+      logger.info('MongoDB connection reestablished.');
+    });
   }
+
   await mongoose.connect(config.database_url as string, {
     serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
@@ -78,26 +92,39 @@ async function connectDB() {
 let httpServer: http.Server;
 
 async function main() {
+  // ==========================================
+  // CENTRALIZED GRACEFUL SHUTDOWN HANDLERS
+  // ==========================================
   const handleGracefulShutdown = async (errorType: string, error: unknown) => {
-    logger.error(`💥 CRITICAL: ${errorType} encountered! Initiating defensive shutdown cleanup...`, error);
+    logger.error(`CRITICAL: ${errorType} encountered! Initiating defensive shutdown cleanup...`);
+    logger.error(error);
+
     try {
       if (httpServer) {
-        await new Promise<void>((resolve) => httpServer.close(() => resolve()));
-        logger.info('🔌 HTTP server closed.');
+        await new Promise<void>((resolve) => {
+          httpServer.close(() => resolve());
+        });
+        logger.info('HTTP server closed.');
       }
       if (mongoose && mongoose.connection && mongoose.connection.readyState !== 0) {
         await mongoose.connection.close();
-        logger.info('🔌 MongoDB connection safely closed.');
+        logger.info('MongoDB connection safely closed.');
       }
       process.exit(1);
     } catch (shutdownError) {
-      logger.error('❌ Error during graceful shutdown cleanup sequence:', shutdownError);
+      logger.error('Error during graceful shutdown cleanup sequence:', shutdownError);
       process.exit(1);
     }
   };
 
-  process.on('unhandledRejection', (reason: unknown) => handleGracefulShutdown('Unhandled Rejection', reason));
-  process.on('uncaughtException', (error: Error) => handleGracefulShutdown('Uncaught Exception', error));
+  // Catch unhandled Promise failures across asynchronous operations
+  process.on('unhandledRejection', (reason: unknown) => {
+    handleGracefulShutdown('Unhandled Rejection', reason);
+  });
+
+  process.on('uncaughtException', (error: Error) => {
+    handleGracefulShutdown('Uncaught Exception', error);
+  });
 
   try {
     await connectDB();
@@ -107,32 +134,42 @@ async function main() {
   }
 
   try {
-    startOrderReconciliationJob();
-
     httpServer = http.createServer(app);
-    const socketCorsOrigins = config.cors_origins && config.cors_origins.length > 0 ? config.cors_origins : defaultCorsOrigins;
+
+    const defaultCorsOrigins = process.env.NODE_ENV === "development"
+      ? ["http://localhost:4001", "http://localhost:4002"]
+      : [];
+
+    const socketCorsOrigins = config.cors_origins && config.cors_origins.length > 0
+      ? config.cors_origins
+      : defaultCorsOrigins;
 
     const io = new Server(httpServer, {
       cors: {
         origin: socketCorsOrigins,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       },
     });
 
+    // Apply rate limiting to all Socket.IO connections
     io.use(socketRateLimiter);
-    setNotificationSocket(io);
-    setupCollabSocket(io);
-    new YjsGateway(io);
 
     io.use((socket, next) => {
       try {
         const token = socket.handshake.auth?.token as string | undefined;
-        if (!token) return next(new Error("Unauthorized"));
+        if (!token) {
+          return next(new Error("Unauthorized"));
+        }
 
-        const verifiedUser = JwtHelpers.verifyToken(token, config.jwt.secret as Secret);
+        const verifiedUser = JwtHelpers.verifyToken(
+          token,
+          config.jwt.secret as Secret
+        ) as any;
         const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
-        if (!userId) return next(new Error("Unauthorized"));
+        if (!userId) {
+          return next(new Error("Unauthorized"));
+        }
 
         socket.data.userId = userId.toString();
         next();
@@ -141,10 +178,19 @@ async function main() {
       }
     });
 
+    // Setup Socket.IO namespaces
+    setupCollabSocket(io);
+    setNotificationSocket(io);
+    new YjsGateway(io);
+
     io.on("connection", (socket) => {
       const userId = socket.data.userId as string | undefined;
-      if (userId) socket.join(`user:${userId}`);
+      if (userId) {
+        socket.join(`user:${userId}`);
+      }
     });
+
+    logger.info("Socket.IO server initialized with rate limiting");
 
     httpServer.listen(config.port, () => {
       logger.info(`Story-Spark-AI app listening on port ${config.port}`);
@@ -154,4 +200,5 @@ async function main() {
   }
 }
 
+// Invoke the main initialization lifecycle block
 main();

@@ -1,7 +1,17 @@
 /**
- * Removes all emoji characters from a string using Unicode emoji ranges.
+ * Strips all emojis from a string using comprehensive Unicode ranges.
  * Useful for sanitizing usernames, titles, and content fields where
  * emojis are not desired or could cause display issues.
+ *
+ * Handles:
+ * - Basic emoticons (1F600-1F64F)
+ * - Dingbats (2700-27BF)
+ * - Transport/map symbols (1F680-1F6FF)
+ * - Miscellaneous symbols (1F300-1F5FF)
+ * - Emoticons extended (1F600-1F64F)
+ * - Symbols and pictographs (1F300-1F9FF)
+ * - Flags (1F1E6-1F1FF)
+ * - Zero-width joiners used in emoji sequences
  */
 export const stripEmojis = (input: string): string => {
   if (!input || typeof input !== "string") {

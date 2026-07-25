@@ -90,8 +90,8 @@ app.use("/api/v1", Routers);
 
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
 app.use((req: Request, _res: Response, next: NextFunction) => {
-  const error: any = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
-  error.errorMessages = [
+  const error = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
+  (error as any).errorMessages = [
     {
       path: req.originalUrl,
       message: "The requested API endpoint route does not exist.",
