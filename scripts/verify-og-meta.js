@@ -15,16 +15,21 @@ async function main() {
 
   let html;
   try {
-    const response = await fetch(targetUrl, {
-      headers: { "User-Agent": "og-meta-check-bot" },
-    });
-    if (!response.ok) {
-      console.error(`✗ Failed to fetch ${targetUrl}: HTTP ${response.status}`);
-      process.exit(1);
+    if (targetUrl.startsWith("http")) {
+      const response = await fetch(targetUrl, {
+        headers: { "User-Agent": "og-meta-check-bot" },
+      });
+      if (!response.ok) {
+        console.error(`✗ Failed to fetch ${targetUrl}: HTTP ${response.status}`);
+        process.exit(1);
+      }
+      html = await response.text();
+    } else {
+      const fs = require("fs");
+      html = fs.readFileSync(targetUrl, "utf-8");
     }
-    html = await response.text();
   } catch (err) {
-    console.error(`✗ Error fetching ${targetUrl}: ${err.message}`);
+    console.error(`✗ Error retrieving ${targetUrl}: ${err.message}`);
     process.exit(1);
   }
 

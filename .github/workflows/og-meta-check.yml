@@ -20,5 +20,5 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Verify OG/Twitter meta tags on live site
-        run: node scripts/verify-og-meta.js https://storysparkai.vercel.app
+      - name: Verify OG/Twitter meta tags on local index.html
+        run: node scripts/verify-og-meta.js frontend/index.html

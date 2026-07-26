@@ -43,9 +43,13 @@
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
+    "@reduxjs/toolkit": "^2.12.0",
+    "@vitejs/plugin-react": "^6.0.4",
+    "axios": "^1.18.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "express": "^4.21.1",
+    "file-saver": "^2.0.5",
     "fuse.js": "^7.4.2",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
