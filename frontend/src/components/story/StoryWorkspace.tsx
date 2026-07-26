@@ -296,12 +296,12 @@ const StoryWorkspace = () => {
 
 <StoryCoverGenerator
   title={currentStory.title}
-  genre={currentStory.genre ?? "General"}
-  theme={currentStory.theme ?? currentStory.title}
+  genre={(currentStory as any).genre ?? "General"}
+  theme={(currentStory as any).theme ?? currentStory.title}
   characters={
-    currentStory.characters?.map((c) => c.name) ??
+    (currentStory as any).characters?.map((c: any) => c.name) ??
     currentStory.chapters
-      ?.flatMap((ch) => ch.characters ?? [])
+      ?.flatMap((ch: any) => ch.characters ?? [])
       .slice(0, 3) ??
     []
   }
@@ -441,18 +441,7 @@ const StoryWorkspace = () => {
 
   storyB={previousStoryDraft ?? ""}
 /> */}
-  storyB={
-    fullStoryContent
-    currentStory.chapters?.length
-      ? currentStory.chapters[currentStory.chapters.length - 1].content
-      : ""
-  }
-  storyB={
-    currentStory.chapters?.length && currentStory.chapters.length > 1
-      ? currentStory.chapters[currentStory.chapters.length - 2].content
-      : "(previous chapter will appear here)"
-  }
-/>
+
 
 
 <StoryTimelineVisualization

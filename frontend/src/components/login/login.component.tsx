@@ -45,9 +45,9 @@ const LoginComponent = () => {
     try {
       const res = await loginUser(data).unwrap();
 
-      if (res.data.accessToken) {
+      if ((res as any).data?.accessToken ?? (res as any).accessToken) {
         toast.success("User logged in successfully!");
-        login(res.data.accessToken);
+        login((res as any).data?.accessToken ?? (res as any).accessToken);
         const from = location.state?.from || "/dashboard";
         navigate(from, { replace: true });
       }
@@ -73,9 +73,9 @@ const LoginComponent = () => {
         token: credentialResponse.credential,
       }).unwrap();
 
-      if (res.data.accessToken) {
+      if ((res as any).data?.accessToken ?? (res as any).accessToken) {
         toast.success("User logged in successfully with Google!");
-        login(res.data.accessToken);
+        login((res as any).data?.accessToken ?? (res as any).accessToken);
         const from = location.state?.from || "/dashboard";
         try {
           navigate(from, { replace: true });

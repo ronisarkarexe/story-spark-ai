@@ -167,11 +167,11 @@ const SignUpComponent = () => {
           ...registerInfo,
           verificationToken: otpResponse.data.verificationToken,
         }).unwrap();
-        if (res.data.accessToken) {
+        if ((res as any).data?.accessToken ?? (res as any).accessToken) {
           toast.success("Registration successful! Welcome to StorySparkAI!");
           // Use AuthContext.login() so React auth state updates synchronously
           // alongside localStorage persistence — fixes session not initialising after signup
-          authContext?.login(res.data.accessToken);
+          authContext?.login((res as any).data?.accessToken ?? (res as any).accessToken);
           navigate("/");
         }
       } else {
@@ -224,11 +224,11 @@ const SignUpComponent = () => {
       const res = await googleLogin({
         token: credentialResponse.credential,
       }).unwrap();
-      if (res.data.accessToken) {
+      if ((res as any).data?.accessToken ?? (res as any).accessToken) {
         toast.success("User logged in successfully with Google!");
         // Use AuthContext.login() so React auth state updates synchronously
         // alongside localStorage persistence — fixes session not initialising after Google signup
-        authContext?.login(res.data.accessToken);
+        authContext?.login((res as any).data?.accessToken ?? (res as any).accessToken);
         navigate("/");
       }
     } catch {

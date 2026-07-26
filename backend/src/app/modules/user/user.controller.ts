@@ -38,7 +38,7 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
       statusCode: httpStatus.ACCEPTED,
       success: true,
-      message: result.message,
+      message: (result as any).message // eslint-disable-line @typescript-eslint/no-explicit-any,
       data: { pendingEmail: result.pendingEmail },
     });
     return;
