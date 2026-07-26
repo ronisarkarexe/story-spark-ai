@@ -10,12 +10,18 @@ export interface GenreWeightConfig {
 export const normalizeWeights = (
   config: GenreWeightConfig
 ): GenreWeightConfig => {
+  if (config.genres.length === 0) {
+    return { genres: [] };
+  }
+
   const total = config.genres.reduce(
     (sum, g) => sum + g.weight,
     0
   );
 
-  if (total === 0) return config;
+  if (total === 0) {
+    return { genres: [] };
+  }
 
   return {
     genres: config.genres.map((g) => ({

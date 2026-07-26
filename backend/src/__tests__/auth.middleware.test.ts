@@ -63,4 +63,33 @@ describe("auth middleware", () => {
       })
     );
   });
+
+  it("assigns the authenticated user on a valid request", async () => {
+    const user = {
+      _id: "user-123",
+      tokenVersion: 0,
+      status: USER_STATUS.ACTIVE,
+      passwordChangedAt: undefined,
+    };
+
+    (JwtHelpers.verifyToken as jest.Mock).mockReturnValue({
+      _id: "user-123",
+      role: "user",
+      tokenVersion: 0,
+      iat: 100,
+    });
+    (User.findById as jest.Mock).mockResolvedValue(user);
+
+    const req = {
+      headers: { authorization: "Bearer valid-token" },
+      cookies: {},
+    } as any;
+    const res = {} as any;
+    const next = jest.fn();
+
+    await auth()(req, res, next);
+
+    expect(req.user).toBe(user);
+    expect(next).toHaveBeenCalledWith();
+  });
 });
