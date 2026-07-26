@@ -145,7 +145,7 @@ useEffect(() => {
     try {
       await createPost(post).unwrap();
       toast.success("Story auto-saved!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Auto-save failed", error);
     }
   }, 1500);
@@ -221,7 +221,7 @@ const handleGenerateCharacterProfile = async () => {
     setCharacterProfiles(data.data);
 
     toast.success("Character profiles generated!");
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     toast.error("Failed to generate profiles.");
   } finally {
@@ -250,7 +250,7 @@ const handleGenerateCharacterProfile = async () => {
         setStories([]);
         setSelectedStory(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       const message = error?.data?.message || error?.message || "Something went wrong. Please try again.";
       toast.error(message);
     } finally {

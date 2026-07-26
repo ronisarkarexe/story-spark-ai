@@ -39,7 +39,6 @@ import StoryComparisonDashboard from "../comparison/StoryComparisonDashboard";
 import StoryTimelineVisualization from "../timeline/StoryTimelineVisualization";
 import StoryRelationshipGraph from "../relationship-graph/StoryRelationshipGraph";
 import StoryPlotTwistGenerator from "../plot-twist/StoryPlotTwistGenerator";
-import StoryReadingAnalytics from "../analytics/StoryReadingAnalytics";
 
 import StoryRevisionHistory from "../revision-history/StoryRevisionHistory";
 import { createRevision } from "../../utils/storyRevisionHistory";
@@ -156,7 +155,7 @@ const StoryWorkspace = () => {
   authorName,
   dateStr: formattedDate,
   chapters: currentStory.chapters || [],
-  theme: selectedTheme,
+  
 });
 
       toast.success("PDF downloaded!");
@@ -188,7 +187,7 @@ const StoryWorkspace = () => {
   authorName,
   dateStr: formattedDate,
   chapters: currentStory.chapters || [],
-  theme: selectedTheme,
+  
 });
 
       downloadBlob(blob, getSafeFileName(title, "docx"));
@@ -212,6 +211,7 @@ const StoryWorkspace = () => {
       <Toaster position="top-right" reverseOrder={false} />
       <ChapterSidebar
         chapters={currentStory.chapters}
+        maxChapterWords={2000}
       />
 
       <div className="flex flex-col flex-1">
@@ -313,9 +313,7 @@ const StoryWorkspace = () => {
   }
 />
 
-<StoryBranchingEditor
-  storyTitle={currentStory.title}
-/>
+<StoryBranchingEditor />
 <PlotHoleDetector
   story={
     fullStoryContent
@@ -352,11 +350,7 @@ const StoryWorkspace = () => {
   }
 />
 
-<VocabularyAnalyzer
-  story={
-    fullStoryContent
-  }
-/>
+
 
 <GenreWeightControls />
 <StoryStylePresets />
@@ -490,11 +484,7 @@ const StoryWorkspace = () => {
   }}
 />
 
-<StoryReadingAnalytics
-  story={
-    fullStoryContent
-  }
-/>
+
 
 <StoryRevisionHistory
   revisions={revisions}
@@ -563,18 +553,14 @@ const StoryWorkspace = () => {
   }}
 />
 
-  <StoryViewer
-    chapters={currentStory.chapters}
-    storyId={currentStory.id}
-    truncated={currentStory.truncated}
-  />
+  <StoryViewer chapters={currentStory.chapters} storyId={currentStory.id} truncated={currentStory.truncated} />
 
   <div className="p-6 border-t border-zinc-800">
     <ContinueStoryButton />
   </div>
 </>
         ) : (
-          <CharacterNetwork storyId={currentStory.id} />
+          <CharacterNetwork storyId={currentStory.id} storyContent={currentStory.chapters?.map(c => c.content).join("\n\n") || ""} />
         )}
       </div>
     </div>

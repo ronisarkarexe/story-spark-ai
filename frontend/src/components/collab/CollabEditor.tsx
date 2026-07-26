@@ -4,11 +4,9 @@ import QuillCursors from 'quill-cursors';
 import * as Y from 'yjs';
 import { QuillBinding } from 'y-quill';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import { Awareness } from 'y-protocols/awareness';
+import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } from 'y-protocols/awareness';
 import { io, Socket } from 'socket.io-client';
-import { Awareness } from 'y-protocols/awareness';
 import { resolveSocketUrl } from '../../helpers/socket-url';
-import { Awareness } from 'y-protocols/awareness';
 
 interface CollabEditorProps {
   storyId: string;
@@ -104,7 +102,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     // The editor still works locally via Yjs + IndexedDB persistence.
     const socketUrl = resolveSocketUrl();
     let socket: Socket | null = null;
-    let sendUpdate: ((update: Uint8Array) => void) | null = null;
+    let sendUpdate: ((update: Uint8Array, origin: any, doc: any, tr: any) => void) | null = null;
 
     if (socketUrl) {
       socket = io(`${socketUrl}/yjs`, {
@@ -129,7 +127,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       });
 
       // Broadcast local updates
-      sendUpdate = (update: Uint8Array) => {
+      sendUpdate = (update: Uint8Array, origin: any, doc: any, tr: any) => {
         socket!.emit('update', update);
       };
       ydoc.on('update', sendUpdate);
@@ -139,11 +137,11 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
         socket!.emit('awareness', awarenessUpdate);
       };
       awareness.on('update', ({ added, updated, removed }: any) => {
-        const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
+        const awUpdate = encodeAwarenessUpdate(awareness, added.concat(updated).concat(removed));
         sendAwareness(awUpdate);
       });
-      socket.on('awareness', (aw: Uint8Array) => {
-        awareness.applyUpdate(aw);
+      socket?.on('awareness', (aw: Uint8Array) => {
+        applyAwarenessUpdate(awareness, aw, 'remote');
       });
     } else {
       console.warn(
@@ -153,8 +151,8 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     }
 
     return () => {
-      ydoc.off('update', sendUpdate);
-      socket.disconnect();
+      if (sendUpdate) ydoc.off('update', sendUpdate);
+      socket?.disconnect();
       awareness.off('update', renderRemoteCursors);
       awareness.destroy();
       binding.destroy();

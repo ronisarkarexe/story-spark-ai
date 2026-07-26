@@ -4,7 +4,7 @@ import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
-import { AudioPlayer } from "../AudioPlayer";
+import AudioPlayer from "../AudioPlayer";
 
 interface Props {
   chapters: Chapter[];
@@ -189,7 +189,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       );
 
       // 3. Stylesheet (Formatting settings dynamically converted to CSS)
-      const fontStack = fontFamily === "serif" || fontFamily === "times" ? "Times New Roman, Times, serif" : fontFamily === "courier" ? "Courier New, Courier, monospace" : "Helvetica, Arial, sans-serif";
+      const fontStack = fontFamily === "times" ? "Times New Roman, Times, serif" : fontFamily === "courier" ? "Courier New, Courier, monospace" : "Helvetica, Arial, sans-serif";
       const cssContent = `
 body {
   font-family: ${fontStack};

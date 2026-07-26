@@ -1,22 +1,24 @@
 import { useMemo } from "react";
-import {
-  analyzeCharacterConsistency,
-  getConsistencyScore,
-} from "../../utils/characterConsistency";
+import { checkCharacterConsistency } from "../../utils/characterConsistency";
 
 interface Props {
   story: string;
 }
 
-export default function CharacterConsistencyChecker({
-  story,
-}: Props) {
-  const issues = useMemo(
-    () => analyzeCharacterConsistency(story),
-    [story]
-  );
+export default function CharacterConsistencyChecker({ story }: Props) {
+  const issues = useMemo(() => {
+    const conflicts = checkCharacterConsistency([{ content: story }]);
+    return conflicts.map((c, idx) => ({
+      id: idx,
+      character: c.character,
+      category: "Appearance",
+      severity: "Medium",
+      description: `Inconsistent ${c.attribute}. Was ${c.previous}, but is now ${c.current}.`,
+      suggestion: `Change '${c.current}' back to '${c.previous}' to maintain consistency.`
+    }));
+  }, [story]);
 
-  const score = getConsistencyScore(issues);
+  const score = Math.max(0, 100 - (issues.length * 10));
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
