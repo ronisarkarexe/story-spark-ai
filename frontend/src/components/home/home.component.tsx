@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import CommunitySpotlightComponent from "./community_spotlight/community_spotlight.component";
 import FeatureComponent from "./feature/feature.component";
 import LatestPostsComponent from "./latest_posts/latest_posts.component";
@@ -38,10 +37,6 @@ const itemVariants = {
 
 const HomeComponent = () => {
   const isLogin = isLoggedIn();
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 w-full box-border overflow-x-hidden">

@@ -45,6 +45,8 @@ const aiModel = z.object({
       })
       .optional(),
 
+    targetAudience: z.string().max(100).optional(),
+
     characters: z
       .array(
         z.object({

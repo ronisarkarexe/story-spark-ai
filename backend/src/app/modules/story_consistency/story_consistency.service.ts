@@ -82,7 +82,7 @@ Story to analyze:
 ${storyText}
 """`;
 
-  const result = await model.generateContent(prompt);
+  const result = await aiLimit(() => model.generateContent(prompt));
   const text = result.response.text();
   const clean = text.replace(/```json|```/g, "").trim();
   return JSON.parse(clean) as IConsistencyResult;
@@ -145,7 +145,7 @@ Story to analyze:
 ${storyText}
 """`;
 
-  const result = await model.generateContent(prompt);
+  const result = await aiLimit(() => model.generateContent(prompt));
   const text = result.response.text();
   const clean = text.replace(/```json|```/g, "").trim();
   return JSON.parse(clean) as IFactTrackingResult;

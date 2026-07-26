@@ -158,35 +158,20 @@ git commit -m "feat: description of your change"
 git push origin feat/your-feature-name
 ```
 
+## 7. Updating the Changelog
+
+When submitting a Pull Request that includes user-facing changes, please update the `CHANGELOG.md` file:
+
+- **Add** new features, enhancements, or capabilities
+- **Changed** modifications to existing functionality
+- **Deprecated** features that will be removed in future versions
+- **Removed** features or functionality that have been deleted
+- **Fixed** bug fixes and corrections
+- **Security** security-related fixes or improvements
+
+Add your changes to the `[Unreleased]` section under the appropriate heading. Keep entries concise and focused on what users or developers need to know.
+
 ---
-
-## 7. CI / Continuous Integration
-
-This project uses **GitHub Actions** to automatically run quality checks on every push and pull request targeting `main`.
-
-> ⚠️ **CI must pass before a PR can be reviewed or merged.**
-
-The CI pipeline (`.github/workflows/ci.yml`) verifies:
-
-| Check | Command |
-|-------|---------|
-| TypeScript compilation – backend | `tsc --noEmit --project tsconfig.json` |
-| TypeScript compilation – frontend | `tsc --noEmit --project tsconfig.json` |
-| Backend production build | `npm run build:backend` |
-| Frontend Vite build | `npm run build:frontend` |
-
-You can run these checks locally before pushing:
-
-```bash
-# From the repo root
-npm run typecheck        # TypeScript --noEmit for both workspaces
-npm run build:backend    # Compile backend to dist/
-npm run build:frontend   # Vite production build
-```
-
-If CI is failing on your PR, fix the reported errors before requesting a review.
-
-
 
 ## 8. Common Troubleshooting
 
@@ -211,7 +196,7 @@ If CI is failing on your PR, fix the reported errors before requesting a review.
 
 ---
 
-## Code of Conduct
+## 9. Code of Conduct
 
 Please read and follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
 

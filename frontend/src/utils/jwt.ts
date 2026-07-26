@@ -1,13 +1,14 @@
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
 export interface CustomJwtPayload extends JwtPayload {
-  email?: string | undefined;
-  userId?: string | undefined;
-  _id?: string | undefined;
-  name?: string | undefined;
-  postsCount?: number | undefined;
-  role?: string | undefined;
-  subscriptionType?: string | undefined;
+  // Standard JWT claim `sub` is inherited from JwtPayload — not redeclared here
+  email?: string;
+  userId?: string;
+  _id?: string;
+  name?: string;
+  postsCount?: number;
+  role?: string;
+  subscriptionType?: string;
 }
 
 /**
@@ -16,14 +17,14 @@ export interface CustomJwtPayload extends JwtPayload {
 export const isJwtTokenFormat = (token: string): boolean => {
   if (!token || typeof token !== "string") return false;
   const parts = token.split(".");
-  return parts.length === 3;
+  return parts.length === 3 && parts.every((part) => part.length > 0);
 };
 
 /**
  * Decodes a JWT token and strictly validates its payload structure and claims.
  * Throws an error if validation fails.
  */
-export const decodedToken = (token: string): CustomJwtPayload => {
+export const decodeToken = (token: string): CustomJwtPayload => {
   if (!isJwtTokenFormat(token)) {
     throw new Error("Token format is invalid. A JWT must consist of three dot-separated segments.");
   }
@@ -40,12 +41,12 @@ export const decodedToken = (token: string): CustomJwtPayload => {
   }
 
 
-  // 1. Validate required userId or _id claim
-  const idToUse = decoded.userId || decoded._id;
+  // 1. Validate required userId or _id claim, then normalize to decoded.userId
+  const idToUse = decoded.userId || decoded._id || decoded.sub;
   if (typeof idToUse !== "string" || idToUse.trim() === "") {
-    throw new Error("Token is missing a valid 'userId' or '_id' claim.");
-
+    throw new Error("Token is missing a valid 'userId', '_id', or 'sub' claim.");
   }
+  decoded.userId = idToUse; // normalize: callers always find the user ID in decoded.userId
 
   // 2. Validate required email claim
   if (typeof decoded.email !== "string" || decoded.email.trim() === "") {
@@ -63,9 +64,10 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid 'role' claim.");
   }
 
-  const validRoles = ["user", "admin", "super_admin", "writer", "guest"];
-  if (!validRoles.includes(decoded.role)) {
-    throw new Error(`Token 'role' claim must be one of: ${validRoles.join(", ")}`);
+  const VALID_ROLES = ["user", "admin", "super_admin", "writer", "guest"] as const;
+  if (!VALID_ROLES.includes(decoded.role as typeof VALID_ROLES[number])) {
+    console.warn(`Unrecognised token role: "${decoded.role}". Allowed: ${VALID_ROLES.join(", ")}`);
+    // Warn but do not throw — prevents valid tokens from being rejected if backend adds new roles.
   }
 
   // 4. Validate required subscriptionType claim
@@ -73,9 +75,10 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid 'subscriptionType' claim.");
   }
 
-  const validSubscriptions = ["free", "pro", "premium"];
-  if (!validSubscriptions.includes(decoded.subscriptionType)) {
-    throw new Error(`Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`);
+  const VALID_SUBSCRIPTIONS = ["free", "pro", "premium"] as const;
+  if (!VALID_SUBSCRIPTIONS.includes(decoded.subscriptionType as typeof VALID_SUBSCRIPTIONS[number])) {
+    console.warn(`Unrecognised subscription type: "${decoded.subscriptionType}". Allowed: ${VALID_SUBSCRIPTIONS.join(", ")}`);
+    // Warn but do not throw — prevents valid tokens from being rejected if backend adds new plans.
   }
 
   // 5. Validate exp claim (must be a future timestamp in seconds)
@@ -83,13 +86,24 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid numeric 'exp' claim.");
   }
 
-  if (decoded.exp <= Math.floor(Date.now() / 1000)) {
+  const CLOCK_SKEW_TOLERANCE_SECONDS = 60;
+  if (decoded.exp <= Math.floor(Date.now() / 1000) - CLOCK_SKEW_TOLERANCE_SECONDS) {
     throw new Error("Token has expired.");
   }
 
   // 6. Validate iat claim
   if (typeof decoded.iat !== "number") {
     throw new Error("Token is missing a valid numeric 'iat' claim.");
+  }
+
+  // 6b. Validate nbf (not before) claim if present — RFC 7519 §4.1.5
+  if (decoded.nbf !== undefined) {
+    if (typeof decoded.nbf !== "number") {
+      throw new Error("Token 'nbf' claim must be a number.");
+    }
+    if (decoded.nbf > Math.floor(Date.now() / 1000) + CLOCK_SKEW_TOLERANCE_SECONDS) {
+      throw new Error("Token is not yet valid (nbf claim is in the future).");
+    }
   }
 
   // 7. Validate optional name claim type if present

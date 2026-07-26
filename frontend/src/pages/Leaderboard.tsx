@@ -27,7 +27,7 @@ export default function Leaderboard() {
     const fetchLeaderboard = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/v1/leaderboard"
+          "/api/v1/leaderboard"
         );
 
         const json = await res.json();

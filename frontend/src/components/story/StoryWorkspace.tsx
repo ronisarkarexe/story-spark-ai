@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -28,6 +28,20 @@ const StoryWorkspace = () => {
   const [selectedTheme, setSelectedTheme] = useState<
   "Classic" | "Novel" | "Minimal" | "Dark"
 >("Classic");
+
+
+  const [revisions, setRevisions] = useState(() => {
+    const storyContent =
+      currentStory?.chapters?.map((c) => c.content).join("\n\n") || "";
+    return storyContent ? [createRevision(storyContent)] : [];
+  });
+  // Memoized once — used by all 20+ components instead of recomputing each time
+  const fullStoryContent = useMemo(
+    () =>
+      currentStory?.chapters?.map((chapter) => chapter.content).join("\n\n") ?? "",
+    [currentStory?.chapters]
+  );
+
 
   const handleCopyStory = async () => {
   if (!currentStory) {
@@ -173,7 +187,7 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "editor"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-250"
+                    : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 📖 Read Story
@@ -183,7 +197,7 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "network"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-255"
+                    : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 🕸️ Network

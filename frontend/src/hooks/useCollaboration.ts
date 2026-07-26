@@ -50,6 +50,7 @@ export function useCollaboration({
 }: UseCollaborationOptions): UseCollaborationReturn {
   const socketRef = useRef<Socket | null>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isAiThinkingRef = useRef(false);
 
   const [room, setRoom] = useState<CollabRoom | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,23 +78,23 @@ export function useCollaboration({
 
     socketRef.current = socket;
 
-    socket.emit("collab:join_room", { roomId });
+    // emit join on initial connect AND on every reconnect
+    const joinRoom = () => socket.emit("collab:join_room", { roomId });
+    socket.on("connect", joinRoom);
 
-    socket.emit(
-      "collab:get_room",
-      { roomId },
-      (response: { room?: CollabRoom; message?: string }) => {
-        if (response?.room) {
-          setRoom(response.room);
-          setError(null);
-        } else {
-          const msg = response?.message || "Room not found";
-          setError(msg);
-          onError?.(msg);
-        }
-        setLoading(false);
+    const handleJoined = (response: { room?: CollabRoom; message?: string }) => {
+      if (response?.room) {
+        setRoom(response.room);
+        setError(null);
+      } else {
+        const msg = response?.message || "Room not found";
+        setError(msg);
+        onError?.(msg);
       }
-    );
+      setLoading(false);
+    };
+
+    socket.on("collab:joined", handleJoined);
 
     socket.on("collab:room_updated", (data: { room?: CollabRoom }) => {
       if (data?.room) setRoom(data.room);
@@ -105,6 +106,7 @@ export function useCollaboration({
         if (data?.story) {
           setRoom((prev) => (prev ? { ...prev, story: data.story! } : null));
         }
+        isAiThinkingRef.current = false;
         setIsAiThinking(false);
       }
     );
@@ -124,16 +126,21 @@ export function useCollaboration({
       });
     });
 
-    socket.on("collab:ai_thinking", () => setIsAiThinking(true));
+    socket.on("collab:ai_thinking", () => {
+      isAiThinkingRef.current = true;
+      setIsAiThinking(true);
+    });
 
     socket.on("collab:error", (data: { message: string }) => {
       const msg = data?.message || "Collaboration error occurred.";
       setError(msg);
       onError?.(msg);
+      setLoading(false);
     });
 
     return () => {
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      socket.removeAllListeners(); // remove all handlers before disconnecting
       socket.disconnect();
       socketRef.current = null;
     };
@@ -148,6 +155,8 @@ export function useCollaboration({
     [roomId]
   );
 
+  const TYPING_STOP_DELAY_MS = 2000; // standard debounce: stop after 2s of inactivity
+
   const emitTyping = useCallback(() => {
     if (!socketRef.current || !roomId) return;
     socketRef.current.emit("collab:typing", { roomId });
@@ -155,7 +164,7 @@ export function useCollaboration({
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     typingTimerRef.current = setTimeout(() => {
       socketRef.current?.emit("collab:stop_typing", { roomId });
-    }, 300);
+    }, TYPING_STOP_DELAY_MS);
   }, [roomId]);
 
   const stopTyping = useCallback(() => {
@@ -166,6 +175,7 @@ export function useCollaboration({
 
   const requestAiContinue = useCallback(() => {
     if (!socketRef.current || !roomId) return;
+    if (isAiThinkingRef.current) return; // prevent duplicate AI requests
     socketRef.current.emit("collab:ai_continue", { roomId });
   }, [roomId]);
 

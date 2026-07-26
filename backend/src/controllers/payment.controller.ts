@@ -3,6 +3,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { User } from "../app/modules/user/user.model";
 import { Order } from "../app/modules/payment/order.model";
+import { IOrder } from "../app/modules/payment/order.interface";
 
 let razorpayInstance: any = null;
 const getRazorpay = () => {
@@ -94,6 +95,68 @@ export const createOrder = async (
     next(error);
   }
 };
+
+/**
+ * Grants the subscription for an order that has already been atomically
+ * claimed (status === "paid_pending_entitlement"), then flips the order to
+ * its terminal "paid" state. Safe to call multiple times for the same order
+ * — findByIdAndUpdate on the User is naturally idempotent (same end state
+ * every time), and the final Order transition is guarded by status.
+ *
+ * Used both by the initial verifyPayment call and by the reconciliation job.
+ */
+async function grantEntitlementAndRespond(
+  order: IOrder,
+  res: Response,
+  { respond }: { respond: boolean }
+): Promise<void> {
+  const selectedPlan = PLANS[order.plan];
+  const subscriptionExpiry = new Date(
+    Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
+  );
+
+  const updatedUser = await User.findByIdAndUpdate(
+    order.userId,
+    {
+      subscriptionType: "premium",
+      subscriptionExpiry,
+      lastPaymentId: order.razorpayPaymentId,
+      lastOrderId: order.razorpayOrderId,
+    },
+    { new: true, select: "email subscriptionType subscriptionExpiry" }
+  );
+
+  if (!updatedUser) {
+    // User genuinely doesn't exist — revert the claim so the order isn't
+    // stuck in limbo forever, and this is a legitimate "created" retry state.
+    await Order.findOneAndUpdate(
+      { _id: order._id, status: "paid_pending_entitlement" },
+      { status: "created", razorpayPaymentId: null }
+    );
+    if (respond) {
+      res.status(404).json({ success: false, error: "User not found." });
+    }
+    return;
+  }
+
+  // Finalize — only transitions if still pending, so a concurrent/retried
+  // call (or the reconciliation job) racing this one is a safe no-op.
+  await Order.findOneAndUpdate(
+    { _id: order._id, status: "paid_pending_entitlement" },
+    { status: "paid" }
+  );
+
+  if (respond) {
+    res.status(200).json({
+      success: true,
+      message: `Subscription upgraded to ${selectedPlan.label} successfully.`,
+      subscription: {
+        type: updatedUser.subscriptionType,
+        expiry: updatedUser.subscriptionExpiry,
+      },
+    });
+  }
+}
 
 export const verifyPayment = async (
   req: Request,
@@ -216,6 +279,14 @@ export const verifyPayment = async (
 
     const selectedPlan = PLANS[plan];
 
+    if (Number(localOrder.amount) !== selectedPlan.amountPaise) {
+      res.status(400).json({
+        success: false,
+        error: "Stored order amount does not match the selected plan.",
+      });
+      return;
+    }
+
     if (Number(razorpayOrder.amount) !== selectedPlan.amountPaise) {
       res.status(400).json({
         success: false,
@@ -224,56 +295,40 @@ export const verifyPayment = async (
       return;
     }
 
-    const subscriptionExpiry = new Date(
-      Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
-    );
+    // ── If a previous attempt already claimed this order but crashed before
+    // granting the subscription, don't try to re-claim (the status guard
+    // below would just fail) — retry entitlement on the existing claim.
+    if (localOrder.status === "paid_pending_entitlement") {
+      await grantEntitlementAndRespond(localOrder, res, { respond: true });
+      return;
+    }
 
-    const fulfilledOrder = await Order.findOneAndUpdate(
+    // ── Step 1: atomically claim the order for fulfillment. This is the
+    // ONLY state transition guarded on "created", so it can only happen once.
+    const claimedOrder = await Order.findOneAndUpdate(
       {
         razorpayOrderId: razorpay_order_id,
         userId,
         status: "created",
       },
       {
-        status: "paid",
+        status: "paid_pending_entitlement",
         razorpayPaymentId: razorpay_payment_id,
       },
       { new: true }
     );
 
-    if (!fulfilledOrder) {
+    if (!claimedOrder) {
+      // Raced with another request that claimed it between our read above
+      // and this write. Re-read and let the normal status branches handle it.
       res.status(409).json({ success: false, error: "Order already fulfilled." });
       return;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        subscriptionType: "premium",
-        subscriptionExpiry,
-        lastPaymentId: razorpay_payment_id,
-        lastOrderId: razorpay_order_id,
-      },
-      { new: true, select: "email subscriptionType subscriptionExpiry" }
-    );
-
-    if (!updatedUser) {
-      await Order.findOneAndUpdate(
-        { razorpayOrderId: razorpay_order_id },
-        { status: "created", razorpayPaymentId: null }
-      );
-      res.status(404).json({ success: false, error: "User not found." });
-      return;
-    }
-
-    res.status(200).json({
-      success: true,
-      message: `Subscription upgraded to ${selectedPlan.label} successfully.`,
-      subscription: {
-        type: updatedUser.subscriptionType,
-        expiry: updatedUser.subscriptionExpiry,
-      },
-    });
+    // ── Step 2: grant the subscription. If the process dies here, the order
+    // is left at "paid_pending_entitlement" — recoverable by a retried
+    // verifyPayment call (branch above) or by the reconciliation job below.
+    await grantEntitlementAndRespond(claimedOrder, res, { respond: true });
   } catch (error) {
     next(error);
   }
@@ -318,3 +373,6 @@ export const getSubscriptionStatus = async (
     next(error);
   }
 };
+
+// Exported for the reconciliation job — keeps the entitlement logic in one place.
+export { grantEntitlementAndRespond as grantEntitlementForOrder };

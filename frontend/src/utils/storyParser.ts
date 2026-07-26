@@ -68,6 +68,9 @@ const scoreContext = (context: string): number => {
 };
 
 export function parseStory(content: string): IStoryGraph {
+  if (!content) {
+    return { nodes: [], links: [] };
+  }
   const nodes: IStoryNode[] = [];
   const links: IStoryLink[] = [];
   const lowerContent = content.toLowerCase();
