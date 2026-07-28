@@ -95,13 +95,7 @@ const modules = [
     path: "/story",
     router: StoryVersionRouter,
   },
-  {
-    // NEW — same "/story" prefix, different sub-paths (/generate, /continue,
-    // /continuations). Express tries routers in array order, so this is safe
-    // to add right after StoryVersionRouter above.
-    path: "/story",
-    router: StoryRouter,
-  },
+
   {
     path: "/analytics",
     router: AnalyticsRouter,

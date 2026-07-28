@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { Character } from '../models/Character.model';
+import { Character } from '../Character.model';
 import ApiError from '../errors/api_error';
 import httpStatus from 'http-status';
 import catchAsync from '../shared/catch_async';

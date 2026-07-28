@@ -38,7 +38,7 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
       statusCode: httpStatus.ACCEPTED,
       success: true,
-      message: result.message,
+      message: (result as { pendingEmail: string; message: string }).message,
       data: { pendingEmail: result.pendingEmail },
     });
     return;

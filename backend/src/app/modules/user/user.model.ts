@@ -103,18 +103,19 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
 
 UserSchema.pre("save", async function (next) {
   const user = this;
-  if (!user.isModified("password")) {
+if (!user.isModified("password")) {
     return next();
   }
 
-  // Only hash password if it exists, is not empty, and has been modified (for password-based auth)
-  // Skip for Google OAuth users who don't have passwords
-  if (user.isModified("password") && user.password && user.password.trim() !== "") {
-    user.password = await bcrypt.hash(
-      user.password,
-      Number(config.bcrypt_salt_rounds)
-    );
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date(Date.now() - 1000);
   }
+
+  user.password = await bcrypt.hash(
+    user.password,
+    Number(config.bcrypt_salt_rounds)
+  );
+
 
   next();
 });
