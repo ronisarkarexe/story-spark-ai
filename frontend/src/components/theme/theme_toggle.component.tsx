@@ -24,7 +24,7 @@ const ThemeToggle: React.FC = () => {
           opacity: 1,
           duration: 0.6,
           ease: "back.out(1.7)",
-        }
+        },
       );
     }
   }, [isDark]);
@@ -36,9 +36,12 @@ const ThemeToggle: React.FC = () => {
         finished: Promise<void>;
       };
     };
-    
+
     // Check if the browser supports View Transitions API and user respects motion
-    if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      !doc.startViewTransition ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       toggleTheme();
       return;
     }
@@ -47,11 +50,11 @@ const ThemeToggle: React.FC = () => {
     const y = e.clientY;
     const endRadius = Math.hypot(
       Math.max(x, window.innerWidth - x),
-      Math.max(y, window.innerHeight - y)
+      Math.max(y, window.innerHeight - y),
     );
 
     const isDarkCurrent = isDark;
-    
+
     // Add a class for scoping theme transition styles
     document.documentElement.classList.add("theme-transitioning");
 
@@ -77,7 +80,7 @@ const ThemeToggle: React.FC = () => {
           pseudoElement: isDarkCurrent
             ? "::view-transition-new(root)"
             : "::view-transition-old(root)",
-        }
+        },
       );
     });
 
@@ -96,11 +99,7 @@ const ThemeToggle: React.FC = () => {
       className="rounded-full p-2 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 transition-all duration-300 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
     >
       <div ref={iconRef}>
-        {isDark ? (
-          <Sun className="h-4 w-4" />
-        ) : (
-          <Moon className="h-4 w-4" />
-        )}
+        {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
       </div>
     </button>
   );

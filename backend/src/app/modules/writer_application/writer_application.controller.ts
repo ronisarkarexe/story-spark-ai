@@ -8,13 +8,24 @@ import ApiError from "../../../errors/api_error";
 
 const submitApplication = catchAsync(async (req: Request, res: Response) => {
   const tokenPayload = getToken(req);
-  const userId = tokenPayload._id || tokenPayload.userId || (req as any).user?._id || (req as any).user?.userId || (req as any).user?.id;
-  
+  const userId =
+    tokenPayload._id ||
+    tokenPayload.userId ||
+    (req as any).user?._id ||
+    (req as any).user?.userId ||
+    (req as any).user?.id;
+
   if (!userId) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "User ID could not be extracted from your session. Please try logging out and logging back in.");
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "User ID could not be extracted from your session. Please try logging out and logging back in.",
+    );
   }
-  
-  const result = await WriterApplicationService.submitApplication(userId, req.body);
+
+  const result = await WriterApplicationService.submitApplication(
+    userId,
+    req.body,
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
@@ -35,26 +46,40 @@ const getAllApplications = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateApplicationStatus = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { status } = req.body;
-  
-  const tokenPayload = getToken(req);
-  const adminId = tokenPayload._id || tokenPayload.userId || (req as any).user?._id || (req as any).user?.userId || (req as any).user?.id;
+const updateApplicationStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body;
 
-  if (!adminId) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Admin ID could not be extracted.");
-  }
+    const tokenPayload = getToken(req);
+    const adminId =
+      tokenPayload._id ||
+      tokenPayload.userId ||
+      (req as any).user?._id ||
+      (req as any).user?.userId ||
+      (req as any).user?.id;
 
-  const result = await WriterApplicationService.updateApplicationStatus(id as string, status as "approved" | "rejected", adminId as string);
+    if (!adminId) {
+      throw new ApiError(
+        httpStatus.UNAUTHORIZED,
+        "Admin ID could not be extracted.",
+      );
+    }
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: `Writer application ${status} successfully`,
-    data: result,
-  });
-});
+    const result = await WriterApplicationService.updateApplicationStatus(
+      id as string,
+      status as "approved" | "rejected",
+      adminId as string,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: `Writer application ${status} successfully`,
+      data: result,
+    });
+  },
+);
 
 export const WriterApplicationController = {
   submitApplication,

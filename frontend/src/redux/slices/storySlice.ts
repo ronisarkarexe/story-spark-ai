@@ -19,7 +19,7 @@ const loadStoryFromStorage = (): Story | null => {
 const initialState: StoryState = {
   currentStory: loadStoryFromStorage(),
   versions: [],
-}; 
+};
 
 const storySlice = createSlice({
   name: "story",
@@ -32,12 +32,12 @@ const storySlice = createSlice({
       try {
         const userId = action.payload.userId || "guest";
         const storageKey = `story_${userId}`;
-        
+
         const safeData = {
           version: "1.0",
-          data: action.payload
+          data: action.payload,
         };
-        
+
         localStorage.setItem(storageKey, JSON.stringify(safeData));
       } catch (error: any) {
         if (error.name === "QuotaExceededError") {
@@ -63,12 +63,12 @@ const storySlice = createSlice({
       try {
         const userId = state.currentStory.userId || "guest";
         const storageKey = `story_${userId}`;
-        
+
         const safeData = {
           version: "1.0",
-          data: state.currentStory
+          data: state.currentStory,
         };
-        
+
         localStorage.setItem(storageKey, JSON.stringify(safeData));
       } catch (error: any) {
         if (error.name === "QuotaExceededError") {
@@ -92,6 +92,7 @@ const storySlice = createSlice({
   },
 });
 
-export const { setStory, addChapter, restoreVersion, deleteVersion } = storySlice.actions;
+export const { setStory, addChapter, restoreVersion, deleteVersion } =
+  storySlice.actions;
 
 export default storySlice.reducer;

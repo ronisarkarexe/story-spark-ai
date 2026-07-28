@@ -10,9 +10,13 @@ import useKeyboardShortcuts from "../useKeyboardShortcuts";
  * shiftKey, etc.) are read-only getters, so we create a plain object.
  */
 const makeKeyboardEvent = (
-  overrides: Partial<KeyboardEvent> & { preventDefault?: ReturnType<typeof vi.fn> }
+  overrides: Partial<KeyboardEvent> & {
+    preventDefault?: ReturnType<typeof vi.fn>;
+  },
 ): KeyboardEvent => {
-  const defaults: Partial<KeyboardEvent> & { preventDefault?: ReturnType<typeof vi.fn> } = {
+  const defaults: Partial<KeyboardEvent> & {
+    preventDefault?: ReturnType<typeof vi.fn>;
+  } = {
     key: "",
     code: "",
     shiftKey: false,
@@ -50,7 +54,9 @@ describe("useKeyboardShortcuts", () => {
     const realRemove = document.removeEventListener.bind(document) as any;
 
     addEventListenerSpy = vi.spyOn(document, "addEventListener");
-    removeEventListenerSpy = vi.spyOn(document, "removeEventListener").mockImplementation(realRemove);
+    removeEventListenerSpy = vi
+      .spyOn(document, "removeEventListener")
+      .mockImplementation(realRemove);
 
     onOpenHelp = vi.fn();
     onCloseHelp = vi.fn();
@@ -69,7 +75,7 @@ describe("useKeyboardShortcuts", () => {
 
   const getKeydownHandler = (): ((e: KeyboardEvent) => void) | undefined => {
     const keydownCall = addEventListenerSpy.mock.calls.find(
-      (call) => call[0] === "keydown"
+      (call) => call[0] === "keydown",
     );
     return keydownCall?.[1] as ((e: KeyboardEvent) => void) | undefined;
   };
@@ -83,7 +89,7 @@ describe("useKeyboardShortcuts", () => {
         onPublish,
         focusPrompt,
         hasStory,
-      })
+      }),
     );
     // Flush effects so the keydown handler is registered before we return.
     await new Promise((resolve) => setTimeout(resolve, 0));

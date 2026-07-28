@@ -1,6 +1,7 @@
 .branch-statistics-container {
   margin: 2rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .branch-statistics-container h2 {
@@ -32,13 +33,19 @@
 }
 
 .stat-card {
-  background: linear-gradient(135deg, var(--color-primary, #0ea5e9), var(--color-primary-dark, #0284c7));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #0ea5e9),
+    var(--color-primary-dark, #0284c7)
+  );
   color: white;
   padding: 1.5rem;
   border-radius: 8px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .stat-card:hover {

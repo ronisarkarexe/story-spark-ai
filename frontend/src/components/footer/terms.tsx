@@ -59,15 +59,20 @@ const Terms = () => {
           Terms & <span className="text-blue-500">Conditions</span>
         </h1>
         <p className="text-gray-300 text-base sm:text-lg leading-7 sm:leading-8 max-w-2xl mx-auto lg:mx-0 mb-3">
-          These terms define acceptable use, content responsibilities, ownership expectations, and account rules for the StorySparkAI community.
+          These terms define acceptable use, content responsibilities, ownership
+          expectations, and account rules for the StorySparkAI community.
         </p>
         <p className="text-sm text-gray-500 mb-8">Last Updated: July 2026</p>
 
         <div className="bg-zinc-900/80 border border-zinc-800 shadow-2xl rounded-3xl p-6 sm:p-8 sm:px-10 backdrop-blur-sm transition-all duration-300 hover:border-blue-500/40 text-left">
           {termsSections.map((section) => (
             <section key={section.title} className="mb-8 last:mb-2">
-              <h2 className="text-2xl font-semibold mb-3 text-blue-400">{section.title}</h2>
-              <p className="text-gray-300 text-base leading-relaxed">{section.body}</p>
+              <h2 className="text-2xl font-semibold mb-3 text-blue-400">
+                {section.title}
+              </h2>
+              <p className="text-gray-300 text-base leading-relaxed">
+                {section.body}
+              </p>
             </section>
           ))}
         </div>

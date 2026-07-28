@@ -20,17 +20,15 @@ export const menuItems: MenuItem[] = [
       USER_ROLE.WRITER,
     ],
   },
-  
+
   {
     name: "Analytics",
     icon: "fas fa-chart-line",
     path: "/dashboard/analytics",
-    roles: [
-      USER_ROLE.WRITER,
-    ],
+    roles: [USER_ROLE.WRITER],
   },
   {
-     // Fix #2926: Removed duplicate "Published Stories" entry; unified roles to include all four roles
+    // Fix #2926: Removed duplicate "Published Stories" entry; unified roles to include all four roles
     name: "Published Stories",
     icon: "fas fa-book-open",
     path: "/dashboard/published-stories",
@@ -45,20 +43,13 @@ export const menuItems: MenuItem[] = [
     name: "Post Lists",
     icon: "fas fa-puzzle-piece",
     path: "/dashboard/post-lists",
-    roles: [
-      USER_ROLE.ADMIN,
-      USER_ROLE.SUPER_ADMIN,
-      USER_ROLE.WRITER,
-    ],
+    roles: [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER],
   },
   {
     name: "Users",
     icon: "fas fa-users",
     path: "/dashboard/users",
-    roles: [
-      USER_ROLE.ADMIN,
-      USER_ROLE.SUPER_ADMIN,
-    ],
+    roles: [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN],
   },
   {
     name: "Settings",

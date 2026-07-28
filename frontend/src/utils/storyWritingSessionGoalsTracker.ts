@@ -25,34 +25,21 @@ export interface SessionHistory {
 export function calculateSessionProgress(
   story: string,
   goals: WritingGoals,
-  startTime: number
+  startTime: number,
 ): SessionProgress {
-  const wordCount = story
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const wordCount = story.trim().split(/\s+/).filter(Boolean).length;
 
-  const chapterCount = story
-    .split(/\n{2,}/)
-    .filter(Boolean).length;
+  const chapterCount = story.split(/\n{2,}/).filter(Boolean).length;
 
-  const minutes = Math.floor(
-    (Date.now() - startTime) / 60000
-  );
+  const minutes = Math.floor((Date.now() - startTime) / 60000);
 
-  const wordProgress = Math.min(
-    (wordCount / goals.targetWords) * 100,
-    100
-  );
+  const wordProgress = Math.min((wordCount / goals.targetWords) * 100, 100);
 
-  const timeProgress = Math.min(
-    (minutes / goals.targetMinutes) * 100,
-    100
-  );
+  const timeProgress = Math.min((minutes / goals.targetMinutes) * 100, 100);
 
   const chapterProgress = Math.min(
     (chapterCount / goals.targetChapters) * 100,
-    100
+    100,
   );
 
   let milestone = "Keep Writing!";
@@ -77,16 +64,9 @@ export function calculateSessionProgress(
 }
 
 export function getSessionHistory(): SessionHistory[] {
-  return JSON.parse(
-    localStorage.getItem("writing-session-history") || "[]"
-  );
+  return JSON.parse(localStorage.getItem("writing-session-history") || "[]");
 }
 
-export function saveSessionHistory(
-  history: SessionHistory[]
-) {
-  localStorage.setItem(
-    "writing-session-history",
-    JSON.stringify(history)
-  );
+export function saveSessionHistory(history: SessionHistory[]) {
+  localStorage.setItem("writing-session-history", JSON.stringify(history));
 }

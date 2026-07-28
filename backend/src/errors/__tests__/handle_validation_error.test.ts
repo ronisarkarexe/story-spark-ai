@@ -6,7 +6,10 @@ describe("handleValidationError", () => {
     const err = new mongoose.Error.ValidationError();
     err.addError(
       "email",
-      new mongoose.Error.ValidatorError({ message: "email is invalid", path: "email" })
+      new mongoose.Error.ValidatorError({
+        message: "email is invalid",
+        path: "email",
+      }),
     );
 
     const result = handleValidationError(err);
@@ -24,15 +27,24 @@ describe("handleValidationError", () => {
     const err = new mongoose.Error.ValidationError();
     err.addError(
       "name",
-      new mongoose.Error.ValidatorError({ message: "name is required", path: "name" })
+      new mongoose.Error.ValidatorError({
+        message: "name is required",
+        path: "name",
+      }),
     );
     err.addError(
       "email",
-      new mongoose.Error.ValidatorError({ message: "email must be valid", path: "email" })
+      new mongoose.Error.ValidatorError({
+        message: "email must be valid",
+        path: "email",
+      }),
     );
     err.addError(
       "age",
-      new mongoose.Error.ValidatorError({ message: "age must be positive", path: "age" })
+      new mongoose.Error.ValidatorError({
+        message: "age must be positive",
+        path: "age",
+      }),
     );
 
     const result = handleValidationError(err);
@@ -58,7 +70,10 @@ describe("handleValidationError", () => {
     const err = new mongoose.Error.ValidationError();
     err.addError(
       "field",
-      new mongoose.Error.ValidatorError({ message: "some error", path: "field" })
+      new mongoose.Error.ValidatorError({
+        message: "some error",
+        path: "field",
+      }),
     );
 
     const result = handleValidationError(err);
@@ -73,7 +88,7 @@ describe("handleValidationError", () => {
       new mongoose.Error.ValidatorError({
         message: "age must be a number",
         path: "profile.age",
-      })
+      }),
     );
 
     const result = handleValidationError(err);

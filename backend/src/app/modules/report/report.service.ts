@@ -12,7 +12,7 @@ const createReport = async (payload: IReport) => {
     if (error.code === 11000) {
       throw new ApiError(
         httpStatus.CONFLICT,
-        "You have already reported this content"
+        "You have already reported this content",
       );
     }
     throw error;
@@ -36,7 +36,7 @@ const reviewReport = async (reportId: string) => {
     {
       status: ReportStatus.REVIEWED,
     },
-    { new: true }
+    { new: true },
   );
 
   if (!report) {
@@ -52,7 +52,7 @@ const dismissReport = async (reportId: string) => {
     {
       status: ReportStatus.DISMISSED,
     },
-    { new: true }
+    { new: true },
   );
 
   if (!report) {
@@ -61,8 +61,6 @@ const dismissReport = async (reportId: string) => {
 
   return report;
 };
-
-
 
 export const ReportService = {
   createReport,

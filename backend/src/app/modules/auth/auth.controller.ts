@@ -5,7 +5,10 @@ import { AuthService } from "./auth.service";
 import sendResponse from "../../../shared/send_response";
 import { IUser } from "../user/user.interface";
 import catchAsync from "../../../shared/catch_async";
-import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../../utils/cookie.util";
+import {
+  setRefreshTokenCookie,
+  clearRefreshTokenCookie,
+} from "../../../utils/cookie.util";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 
 const login = catchAsync(async (req: Request, res: Response) => {
@@ -72,7 +75,7 @@ const logout = catchAsync(async (req: Request, res: Response) => {
   clearRefreshTokenCookie(res);
 
   res.status(httpStatus.OK).json({
-    message: "Logged out successfully. Session revoked securely."
+    message: "Logged out successfully. Session revoked securely.",
   });
 });
 
@@ -95,14 +98,18 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
   const { oldPassword, newPassword } = req.body;
 
-  const { accessToken, refreshToken } = await AuthService.changePassword(user, { oldPassword, newPassword });
+  const { accessToken, refreshToken } = await AuthService.changePassword(user, {
+    oldPassword,
+    newPassword,
+  });
 
   setRefreshTokenCookie(res, refreshToken);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Password changed successfully. All previous sessions have been invalidated.",
+    message:
+      "Password changed successfully. All previous sessions have been invalidated.",
     data: { accessToken },
   });
 });

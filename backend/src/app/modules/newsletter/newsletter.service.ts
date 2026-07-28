@@ -12,10 +12,12 @@ export const subscribeNewsletter = async (
   name?: string,
   source?: string,
   userId?: string,
-  baseUrl?: string
+  baseUrl?: string,
 ) => {
   const normalizedEmail = email.trim().toLowerCase();
-  const existing = await NewsletterSubscriber.findOne({ email: normalizedEmail });
+  const existing = await NewsletterSubscriber.findOne({
+    email: normalizedEmail,
+  });
 
   if (existing) {
     if (existing.status === "active") {
@@ -25,7 +27,9 @@ export const subscribeNewsletter = async (
       existing.status = "pending";
       existing.unsubscribedAt = undefined;
       existing.verificationToken = crypto.randomBytes(32).toString("hex");
-      existing.verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      existing.verificationTokenExpires = new Date(
+        Date.now() + 24 * 60 * 60 * 1000,
+      );
       if (!existing.unsubscribeToken) {
         existing.unsubscribeToken = crypto.randomBytes(32).toString("hex");
       }
@@ -34,10 +38,13 @@ export const subscribeNewsletter = async (
       await sendVerificationEmail(
         normalizedEmail,
         existing.verificationToken,
-        buildUnsubscribeUrl(baseUrl, existing.unsubscribeToken)
+        buildUnsubscribeUrl(baseUrl, existing.unsubscribeToken),
       );
 
-      return { message: "Re-subscribed. Please verify your email.", subscriber: existing };
+      return {
+        message: "Re-subscribed. Please verify your email.",
+        subscriber: existing,
+      };
     }
   }
 
@@ -59,7 +66,7 @@ export const subscribeNewsletter = async (
   await sendVerificationEmail(
     normalizedEmail,
     token,
-    buildUnsubscribeUrl(baseUrl, unsubscribeToken)
+    buildUnsubscribeUrl(baseUrl, unsubscribeToken),
   );
 
   return { message: "Subscribed! Please verify your email.", subscriber };

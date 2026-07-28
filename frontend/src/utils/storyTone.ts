@@ -45,16 +45,10 @@ export const tonePresets: TonePreset[] = [
   },
 ];
 
-export const buildTonePrompt = (
-  tone: StoryTone,
-  story: string
-) => {
+export const buildTonePrompt = (tone: StoryTone, story: string) => {
   return `Rewrite the following story using a ${tone} tone:\n\n${story}`;
 };
 
-export const regenerateWithTone = (
-  tone: StoryTone,
-  story: string
-) => {
+export const regenerateWithTone = (tone: StoryTone, story: string) => {
   return buildTonePrompt(tone, story);
 };

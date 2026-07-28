@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface Props {
   text: string;
@@ -8,11 +8,11 @@ export const NarrationControls: React.FC<Props> = ({ text }) => {
   const handlePlay = () => {
     // Agar pehle se kuch bol raha hai toh use stop karo
     window.speechSynthesis.cancel();
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
     // Voice settings (Optional: tum yahan pitch/rate adjust kar sakti ho)
-    utterance.rate = 1; 
-    
+    utterance.rate = 1;
+
     window.speechSynthesis.speak(utterance);
   };
 

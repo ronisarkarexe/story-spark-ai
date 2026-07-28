@@ -8,11 +8,27 @@ import {
 const buildEngagementFallback = (): EngagementAnalysisResponse => ({
   engagementScore: 50,
   chapterStrengthScore: 50,
-  pacing: { score: 50, label: "Well-Paced", feedback: "Unable to analyze pacing automatically." },
-  dialogueQuality: { score: 50, feedback: "Unable to analyze dialogue quality automatically." },
-  emotionalIntensity: { score: 50, feedback: "Unable to analyze emotional intensity automatically." },
-  suspenseLevel: { score: 50, feedback: "Unable to analyze suspense level automatically." },
-  readability: { score: 50, feedback: "Unable to analyze readability automatically." },
+  pacing: {
+    score: 50,
+    label: "Well-Paced",
+    feedback: "Unable to analyze pacing automatically.",
+  },
+  dialogueQuality: {
+    score: 50,
+    feedback: "Unable to analyze dialogue quality automatically.",
+  },
+  emotionalIntensity: {
+    score: 50,
+    feedback: "Unable to analyze emotional intensity automatically.",
+  },
+  suspenseLevel: {
+    score: 50,
+    feedback: "Unable to analyze suspense level automatically.",
+  },
+  readability: {
+    score: 50,
+    feedback: "Unable to analyze readability automatically.",
+  },
   dropOffSections: [],
   improvementSuggestions: [
     "We couldn't parse the AI analysis. Try rephrasing your chapter or try again later.",
@@ -21,7 +37,7 @@ const buildEngagementFallback = (): EngagementAnalysisResponse => ({
 
 export async function analyzeEngagement(
   chapterText: string,
-  title?: string
+  title?: string,
 ): Promise<EngagementAnalysisResponse> {
   const prompt = `You are an expert literary editor. Analyze the following chapter${title ? ` titled "${title}"` : ""} and respond ONLY with a valid JSON object — no markdown, no explanation.
 
@@ -48,6 +64,6 @@ ${chapterText.slice(0, 6000)}
     result.story,
     EngagementAnalysisResponseSchema,
     buildEngagementFallback(),
-    { label: "engagement analysis" }
+    { label: "engagement analysis" },
   );
 }

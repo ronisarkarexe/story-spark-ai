@@ -25,12 +25,16 @@ jest.mock("../../user/user.model", () => ({
 }));
 
 const mockedChat = chatWithGemini as jest.MockedFunction<typeof chatWithGemini>;
-const mockedRace = raceGenerationWithTimeout as jest.MockedFunction<typeof raceGenerationWithTimeout>;
+const mockedRace = raceGenerationWithTimeout as jest.MockedFunction<
+  typeof raceGenerationWithTimeout
+>;
 
 describe("AiModelService - Chat", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedRace.mockImplementation(async (operation) => operation({} as AbortSignal));
+    mockedRace.mockImplementation(async (operation) =>
+      operation({} as AbortSignal),
+    );
   });
 
   it("returns chat response on success for authenticated user", async () => {
@@ -38,7 +42,7 @@ describe("AiModelService - Chat", () => {
 
     const result = await AiModelService.aiModelChat(
       { message: "Hi", history: [] },
-      { _id: "test-user-id" } as any
+      { _id: "test-user-id" } as any,
     );
 
     expect(result).toBe("Hello there!");
@@ -48,7 +52,10 @@ describe("AiModelService - Chat", () => {
   it("returns chat response for guest user", async () => {
     mockedChat.mockResolvedValue("Hi guest!");
 
-    const result = await AiModelService.aiModelChat({ message: "Hi", history: [] });
+    const result = await AiModelService.aiModelChat({
+      message: "Hi",
+      history: [],
+    });
 
     expect(result).toBe("Hi guest!");
     expect(mockedChat).toHaveBeenCalledWith("Hi", [], expect.any(Object));
@@ -58,7 +65,7 @@ describe("AiModelService - Chat", () => {
     mockedRace.mockRejectedValue(new GenerationTimeoutError());
 
     await expect(
-      AiModelService.aiModelChat({ message: "Hi", history: [] })
+      AiModelService.aiModelChat({ message: "Hi", history: [] }),
     ).rejects.toMatchObject({ statusCode: httpStatus.GATEWAY_TIMEOUT });
   });
 });

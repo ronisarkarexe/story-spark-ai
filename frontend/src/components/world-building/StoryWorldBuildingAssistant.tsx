@@ -12,9 +12,7 @@ export interface WorldBuildingData {
   historicalEvents: string[];
 }
 
-export function analyzeWorldBuilding(
-  story: string
-): WorldBuildingData {
+export function analyzeWorldBuilding(story: string): WorldBuildingData {
   if (!story.trim()) {
     return {
       locations: [],
@@ -27,35 +25,15 @@ export function analyzeWorldBuilding(
   }
 
   return {
-    locations: [
-      "Silverwood Forest",
-      "Crystal Harbor",
-    ],
-    cultures: [
-      "Sky Nomads",
-      "Moon Clan",
-    ],
-    organizations: [
-      "Council of Elders",
-      "Order of Guardians",
-    ],
-    magicSystems: [
-      "Rune Magic",
-      "Elemental Binding",
-    ],
-    technologies: [
-      "Steam Airships",
-      "Crystal Engines",
-    ],
-    historicalEvents: [
-      "The Great Eclipse",
-      "Dragon War",
-    ],
+    locations: ["Silverwood Forest", "Crystal Harbor"],
+    cultures: ["Sky Nomads", "Moon Clan"],
+    organizations: ["Council of Elders", "Order of Guardians"],
+    magicSystems: ["Rune Magic", "Elemental Binding"],
+    technologies: ["Steam Airships", "Crystal Engines"],
+    historicalEvents: ["The Great Eclipse", "Dragon War"],
   };
 }
 
-export function refreshWorldBuilding(
-  story: string
-) {
+export function refreshWorldBuilding(story: string) {
   return analyzeWorldBuilding(story);
 }

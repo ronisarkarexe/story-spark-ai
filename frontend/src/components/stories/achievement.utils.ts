@@ -38,76 +38,52 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
 ];
 
-
 // Get unlocked achievements
 export const getUnlockedAchievements = (totalStories: number) => {
   return ACHIEVEMENTS.filter(
-    (achievement) => totalStories >= achievement.target
+    (achievement) => totalStories >= achievement.target,
   );
 };
-
 
 // Get next achievement progress
 export const getNextAchievement = (totalStories: number) => {
-  return ACHIEVEMENTS.find(
-    (achievement) => totalStories < achievement.target
-  );
+  return ACHIEVEMENTS.find((achievement) => totalStories < achievement.target);
 };
 
-
 // Calculate progress percentage
-export const calculateAchievementProgress = (
-  totalStories: number
-) => {
+export const calculateAchievementProgress = (totalStories: number) => {
   const nextAchievement = getNextAchievement(totalStories);
 
   if (!nextAchievement) {
     return 100;
   }
 
-  return Math.min(
-    (totalStories / nextAchievement.target) * 100,
-    100
-  );
+  return Math.min((totalStories / nextAchievement.target) * 100, 100);
 };
-
 
 // Update writing streak
 export const updateWritingStreak = () => {
   const today = new Date().toDateString();
 
-  const lastDate =
-    localStorage.getItem("last-writing-date");
+  const lastDate = localStorage.getItem("last-writing-date");
 
-  let currentStreak = Number(
-    localStorage.getItem("current-writing-streak")
-  ) || 0;
+  let currentStreak =
+    Number(localStorage.getItem("current-writing-streak")) || 0;
 
-  let longestStreak = Number(
-    localStorage.getItem("longest-writing-streak")
-  ) || 0;
-
+  let longestStreak =
+    Number(localStorage.getItem("longest-writing-streak")) || 0;
 
   if (lastDate !== today) {
     currentStreak += 1;
 
-    localStorage.setItem(
-      "last-writing-date",
-      today
-    );
+    localStorage.setItem("last-writing-date", today);
 
-    localStorage.setItem(
-      "current-writing-streak",
-      currentStreak.toString()
-    );
+    localStorage.setItem("current-writing-streak", currentStreak.toString());
 
     if (currentStreak > longestStreak) {
       longestStreak = currentStreak;
 
-      localStorage.setItem(
-        "longest-writing-streak",
-        longestStreak.toString()
-      );
+      localStorage.setItem("longest-writing-streak", longestStreak.toString());
     }
   }
 
@@ -117,14 +93,11 @@ export const updateWritingStreak = () => {
   };
 };
 
-
 // Get stored streak values
 export const getWritingStreak = () => {
   return {
-    currentStreak:
-      Number(localStorage.getItem("current-writing-streak")) || 0,
+    currentStreak: Number(localStorage.getItem("current-writing-streak")) || 0,
 
-    longestStreak:
-      Number(localStorage.getItem("longest-writing-streak")) || 0,
+    longestStreak: Number(localStorage.getItem("longest-writing-streak")) || 0,
   };
 };

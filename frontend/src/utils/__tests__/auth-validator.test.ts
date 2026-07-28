@@ -53,60 +53,60 @@ describe("validateTokenPayload", () => {
 
   it("should throw when payload is null", () => {
     expect(() => validateTokenPayload(null)).toThrow(
-      "Token payload is not a valid object."
+      "Token payload is not a valid object.",
     );
   });
 
   it("should throw when payload is undefined", () => {
     expect(() => validateTokenPayload(undefined)).toThrow(
-      "Token payload is not a valid object."
+      "Token payload is not a valid object.",
     );
   });
 
   it("should throw when payload is not an object", () => {
     expect(() => validateTokenPayload("string" as unknown as object)).toThrow(
-      "Token payload is not a valid object."
+      "Token payload is not a valid object.",
     );
     expect(() => validateTokenPayload(123 as unknown as object)).toThrow(
-      "Token payload is not a valid object."
+      "Token payload is not a valid object.",
     );
     expect(() => validateTokenPayload([] as unknown as object)).toThrow(
-      "Token payload is not a valid object."
+      "Token payload is not a valid object.",
     );
   });
 
   it("should throw when userId, _id, and sub are all missing", () => {
     const payload = { ...validPayload, _id: undefined };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid user identifier ('userId', '_id', or 'sub')."
+      "Token is missing a valid user identifier ('userId', '_id', or 'sub').",
     );
   });
 
   it("should throw when userId is an empty string", () => {
     const payload = { ...validPayload, userId: "", _id: undefined };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid user identifier ('userId', '_id', or 'sub')."
+      "Token is missing a valid user identifier ('userId', '_id', or 'sub').",
     );
   });
 
   it("should throw when userId is whitespace-only", () => {
     const payload = { ...validPayload, userId: "   ", _id: undefined };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid user identifier ('userId', '_id', or 'sub')."
+      "Token is missing a valid user identifier ('userId', '_id', or 'sub').",
     );
   });
 
   it("should throw when email is missing", () => {
     const payload = { ...validPayload, email: undefined };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid 'email' claim."
+      "Token is missing a valid 'email' claim.",
     );
   });
 
   it("should throw when email is an empty string", () => {
     const payload = { ...validPayload, email: "" };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid 'email' claim."
+      "Token is missing a valid 'email' claim.",
     );
   });
 
@@ -121,46 +121,58 @@ describe("validateTokenPayload", () => {
     for (const email of invalidEmails) {
       const payload = { ...validPayload, email };
       expect(() => validateTokenPayload(payload)).toThrow(
-        "Token 'email' claim is not a valid email address."
+        "Token 'email' claim is not a valid email address.",
       );
     }
   });
 
   it("should throw when role is missing", () => {
-    const payload: Record<string, unknown> = { ...validPayload, role: undefined };
+    const payload: Record<string, unknown> = {
+      ...validPayload,
+      role: undefined,
+    };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid 'role' claim."
+      "Token is missing a valid 'role' claim.",
     );
   });
 
   it("should throw when role is empty string", () => {
     const payload = { ...validPayload, role: "" };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid 'role' claim."
+      "Token is missing a valid 'role' claim.",
     );
   });
 
   it("should throw when role is not a valid role", () => {
-    const invalidRoles = ["admin2", "superuser", "reader", "editor", "moderator"];
+    const invalidRoles = [
+      "admin2",
+      "superuser",
+      "reader",
+      "editor",
+      "moderator",
+    ];
     for (const role of invalidRoles) {
       const payload = { ...validPayload, role };
       expect(() => validateTokenPayload(payload)).toThrow(
-        `Token 'role' claim must be one of: admin, super_admin, user, writer, guest`
+        `Token 'role' claim must be one of: admin, super_admin, user, writer, guest`,
       );
     }
   });
 
   it("should throw when subscriptionType is missing", () => {
-    const payload: Record<string, unknown> = { ...validPayload, subscriptionType: undefined };
+    const payload: Record<string, unknown> = {
+      ...validPayload,
+      subscriptionType: undefined,
+    };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid 'subscriptionType' claim."
+      "Token is missing a valid 'subscriptionType' claim.",
     );
   });
 
   it("should throw when subscriptionType is empty string", () => {
     const payload = { ...validPayload, subscriptionType: "" };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid 'subscriptionType' claim."
+      "Token is missing a valid 'subscriptionType' claim.",
     );
   });
 
@@ -169,64 +181,73 @@ describe("validateTokenPayload", () => {
     for (const sub of invalidSubs) {
       const payload = { ...validPayload, subscriptionType: sub };
       expect(() => validateTokenPayload(payload)).toThrow(
-        `Token 'subscriptionType' claim must be one of: free, pro, premium`
+        `Token 'subscriptionType' claim must be one of: free, pro, premium`,
       );
     }
   });
 
   it("should throw when exp is missing", () => {
-    const payload: Record<string, unknown> = { ...validPayload, exp: undefined };
+    const payload: Record<string, unknown> = {
+      ...validPayload,
+      exp: undefined,
+    };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid numeric 'exp' claim."
+      "Token is missing a valid numeric 'exp' claim.",
     );
   });
 
   it("should throw when exp is not a number", () => {
     const payload: Record<string, unknown> = { ...validPayload, exp: "12345" };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid numeric 'exp' claim."
+      "Token is missing a valid numeric 'exp' claim.",
     );
   });
 
   it("should throw when exp is NaN", () => {
     const payload = { ...validPayload, exp: NaN };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid numeric 'exp' claim."
+      "Token is missing a valid numeric 'exp' claim.",
     );
   });
 
   it("should throw when iat is missing", () => {
-    const payload: Record<string, unknown> = { ...validPayload, iat: undefined };
+    const payload: Record<string, unknown> = {
+      ...validPayload,
+      iat: undefined,
+    };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid numeric 'iat' claim."
+      "Token is missing a valid numeric 'iat' claim.",
     );
   });
 
   it("should throw when iat is not a number", () => {
     const payload: Record<string, unknown> = { ...validPayload, iat: "12345" };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid numeric 'iat' claim."
+      "Token is missing a valid numeric 'iat' claim.",
     );
   });
 
   it("should throw when iat is NaN", () => {
     const payload = { ...validPayload, iat: NaN };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token is missing a valid numeric 'iat' claim."
+      "Token is missing a valid numeric 'iat' claim.",
     );
   });
 
   it("should throw when optional name is not a string", () => {
     const payload: Record<string, unknown> = { ...validPayload, name: 123 };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token 'name' claim must be a string."
+      "Token 'name' claim must be a string.",
     );
   });
 
   it("should throw when optional postsCount is not a number", () => {
-    const payload: Record<string, unknown> = { ...validPayload, postsCount: "10" };
+    const payload: Record<string, unknown> = {
+      ...validPayload,
+      postsCount: "10",
+    };
     expect(() => validateTokenPayload(payload)).toThrow(
-      "Token 'postsCount' claim must be a number."
+      "Token 'postsCount' claim must be a number.",
     );
   });
 

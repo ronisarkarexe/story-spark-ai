@@ -259,7 +259,7 @@ export async function generateWithGeminiStories(
       text,
       GeminiStoriesWrapperSchema,
       [] as Story[],
-      { label: "Gemini story generation" }
+      { label: "Gemini story generation" },
     );
 
     if (!Array.isArray(stories) || stories.length === 0) {
@@ -882,7 +882,10 @@ Return only valid JSON with this exact structure:
     }
 
     const isValid = parsed.every(
-      (item: any) => item && typeof item === "object" && typeof item.continuation === "string"
+      (item: any) =>
+        item &&
+        typeof item === "object" &&
+        typeof item.continuation === "string",
     );
 
     if (!isValid) {

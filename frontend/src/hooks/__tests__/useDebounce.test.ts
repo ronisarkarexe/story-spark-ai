@@ -25,7 +25,7 @@ describe("useDebounce hook", () => {
     const { result, rerender } = renderHook(
       ({ value, delay }: { value: string; delay: number }) =>
         useDebounce(value, delay),
-      { initialProps: { value: "initial", delay: 300 } }
+      { initialProps: { value: "initial", delay: 300 } },
     );
 
     expect(result.current).toBe("initial");
@@ -48,7 +48,7 @@ describe("useDebounce hook", () => {
     const { result, rerender } = renderHook(
       ({ value, delay }: { value: string; delay: number }) =>
         useDebounce(value, delay),
-      { initialProps: { value: "first", delay: 500 } }
+      { initialProps: { value: "first", delay: 500 } },
     );
 
     expect(result.current).toBe("first");
@@ -83,7 +83,7 @@ describe("useDebounce hook", () => {
   it("should use the default delay of 300ms", () => {
     const { result, rerender } = renderHook(
       ({ value }: { value: string }) => useDebounce(value),
-      { initialProps: { value: "start" } }
+      { initialProps: { value: "start" } },
     );
 
     expect(result.current).toBe("start");
@@ -101,7 +101,7 @@ describe("useDebounce hook", () => {
     const { result, rerender } = renderHook(
       ({ value, delay }: { value: number; delay: number }) =>
         useDebounce(value, delay),
-      { initialProps: { value: 100, delay: 1000 } }
+      { initialProps: { value: 100, delay: 1000 } },
     );
 
     expect(result.current).toBe(100);
@@ -124,7 +124,7 @@ describe("useDebounce hook", () => {
   it("should debounce with a short delay of 100ms", () => {
     const { result, rerender } = renderHook(
       ({ value }: { value: string }) => useDebounce(value, 100),
-      { initialProps: { value: "a" } }
+      { initialProps: { value: "a" } },
     );
 
     expect(result.current).toBe("a");
@@ -144,7 +144,7 @@ describe("useDebounce hook", () => {
   it("should debounce with a long delay of 1000ms", () => {
     const { result, rerender } = renderHook(
       ({ value }: { value: string }) => useDebounce(value, 1000),
-      { initialProps: { value: "long" } }
+      { initialProps: { value: "long" } },
     );
 
     expect(result.current).toBe("long");
@@ -164,7 +164,7 @@ describe("useDebounce hook", () => {
   it("should handle null and undefined values", () => {
     const { result: result1, rerender: rerender1 } = renderHook(
       ({ value }: { value: string | null }) => useDebounce(value, 300),
-      { initialProps: { value: "has value" } }
+      { initialProps: { value: "has value" } },
     );
 
     expect(result1.current).toBe("has value");
@@ -182,7 +182,7 @@ describe("useDebounce hook", () => {
     const obj = { key: "value" };
     const { result, rerender } = renderHook(
       ({ value }: { value: object }) => useDebounce(value, 300),
-      { initialProps: { value: obj } }
+      { initialProps: { value: obj } },
     );
 
     expect(result.current).toBe(obj);

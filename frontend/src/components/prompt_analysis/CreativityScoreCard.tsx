@@ -68,7 +68,10 @@ const CreativityScoreCard: React.FC<CreativityScoreCardProps> = ({
 
         {/* Score Visualization */}
         <div className="relative h-24 w-24">
-          <svg className="h-full w-full transform -rotate-90" viewBox="0 0 100 100">
+          <svg
+            className="h-full w-full transform -rotate-90"
+            viewBox="0 0 100 100"
+          >
             {/* Background circle */}
             <circle
               cx="50"
@@ -93,7 +96,13 @@ const CreativityScoreCard: React.FC<CreativityScoreCardProps> = ({
               strokeLinecap="round"
             />
             <defs>
-              <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient
+                id="scoreGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#06b6d4" />
                 <stop offset="100%" stopColor="#0ea5e9" />
               </linearGradient>
@@ -112,7 +121,9 @@ const CreativityScoreCard: React.FC<CreativityScoreCardProps> = ({
         {/* Complexity */}
         <div className="rounded-lg bg-white/5 p-3">
           <p className="mb-1 text-xs font-medium text-slate-400">Complexity</p>
-          <div className={`inline-block rounded-full border px-3 py-1 text-xs font-semibold capitalize ${getComplexityColor()}`}>
+          <div
+            className={`inline-block rounded-full border px-3 py-1 text-xs font-semibold capitalize ${getComplexityColor()}`}
+          >
             {complexity}
           </div>
         </div>
@@ -120,13 +131,17 @@ const CreativityScoreCard: React.FC<CreativityScoreCardProps> = ({
         {/* Prompt Length */}
         <div className="rounded-lg bg-white/5 p-3">
           <p className="mb-1 text-xs font-medium text-slate-400">Length</p>
-          <div className="text-sm font-semibold text-cyan-300">{promptLength} chars</div>
+          <div className="text-sm font-semibold text-cyan-300">
+            {promptLength} chars
+          </div>
         </div>
 
         {/* Est. Generation Time */}
         <div className="rounded-lg bg-white/5 p-3">
           <p className="mb-1 text-xs font-medium text-slate-400">Est. Time</p>
-          <div className="text-sm font-semibold text-cyan-300">{estimatedGenerationTime}s</div>
+          <div className="text-sm font-semibold text-cyan-300">
+            {estimatedGenerationTime}s
+          </div>
         </div>
       </div>
 

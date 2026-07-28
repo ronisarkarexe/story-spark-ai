@@ -17,13 +17,13 @@ const gamificationApi = baseApi.injectEndpoints({
         url: "/users/me/achievements",
         method: "GET",
       }),
-      transformResponse: (response: { data: { achievements: Achievement[] } }) => response.data,
+      transformResponse: (response: {
+        data: { achievements: Achievement[] };
+      }) => response.data,
       providesTags: [tagTypes.user, tagTypes.post],
     }),
   }),
 });
 
-export const {
-  useGetWritingStreakQuery,
-  useGetAchievementsQuery,
-} = gamificationApi;
+export const { useGetWritingStreakQuery, useGetAchievementsQuery } =
+  gamificationApi;

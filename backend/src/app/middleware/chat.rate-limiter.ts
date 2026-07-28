@@ -16,25 +16,38 @@ const MAX_REQUESTS = 10; // max free chat messages per hour
 const BLOCK_TIME_MS = 60 * 60 * 1000; // block 1 hour when exceeded
 
 // Cleanup old keys periodically
-const cleanupInterval = setInterval(() => {
-  const now = Date.now();
-  for (const [key, rec] of store.entries()) {
-    const age = now - rec.firstRequestAt;
-    if ((rec.blockedUntil && rec.blockedUntil < now) || age > WINDOW_MS + BLOCK_TIME_MS) {
-      store.delete(key);
+const cleanupInterval = setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, rec] of store.entries()) {
+      const age = now - rec.firstRequestAt;
+      if (
+        (rec.blockedUntil && rec.blockedUntil < now) ||
+        age > WINDOW_MS + BLOCK_TIME_MS
+      ) {
+        store.delete(key);
+      }
     }
-  }
-}, 60 * 60 * 1000); // every hour
+  },
+  60 * 60 * 1000,
+); // every hour
 cleanupInterval.unref();
 
-export const chatRateLimiter = (req: Request, res: Response, next: NextFunction) => {
+export const chatRateLimiter = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const ip = req.ip;
-    
+
     if (!ip) {
-      throw new ApiError(httpStatus.FORBIDDEN, "Could not determine client IP address.");
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        "Could not determine client IP address.",
+      );
     }
-    
+
     const now = Date.now();
     const key = `chat_${ip}`;
 
@@ -51,7 +64,7 @@ export const chatRateLimiter = (req: Request, res: Response, next: NextFunction)
       res.setHeader("Retry-After", String(retryAfter));
       throw new ApiError(
         httpStatus.TOO_MANY_REQUESTS,
-        `Hourly chat limit for guest sessions reached. Try again in ${Math.ceil(retryAfter / 60)} minutes or sign in for unlimited access.`
+        `Hourly chat limit for guest sessions reached. Try again in ${Math.ceil(retryAfter / 60)} minutes or sign in for unlimited access.`,
       );
     }
 
@@ -73,7 +86,7 @@ export const chatRateLimiter = (req: Request, res: Response, next: NextFunction)
       res.setHeader("Retry-After", String(retryAfter));
       throw new ApiError(
         httpStatus.TOO_MANY_REQUESTS,
-        "Hourly chat limit for guest sessions reached. Please sign in to continue chatting with your Co-Pilot."
+        "Hourly chat limit for guest sessions reached. Please sign in to continue chatting with your Co-Pilot.",
       );
     }
 

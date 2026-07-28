@@ -61,7 +61,7 @@ describe("decodedToken", () => {
 
   it("throws for invalid format (not 3 parts)", () => {
     expect(() => decodedToken("not-a-jwt")).toThrow(
-      "Token format is invalid. A JWT must consist of three dot-separated segments."
+      "Token format is invalid. A JWT must consist of three dot-separated segments.",
     );
     expect(mockedJwtDecode).not.toHaveBeenCalled();
   });
@@ -74,7 +74,7 @@ describe("decodedToken", () => {
     } as any);
 
     expect(() => decodedToken(FAKE_TOKEN)).toThrow(
-      "Token is missing a valid 'userId' or '_id' claim."
+      "Token is missing a valid 'userId' or '_id' claim.",
     );
   });
 
@@ -85,7 +85,7 @@ describe("decodedToken", () => {
     } as any);
 
     expect(() => decodedToken(FAKE_TOKEN)).toThrow(
-      "Token 'email' claim is not a valid email address."
+      "Token 'email' claim is not a valid email address.",
     );
   });
 
@@ -96,7 +96,7 @@ describe("decodedToken", () => {
     } as any);
 
     expect(() => decodedToken(FAKE_TOKEN)).toThrow(
-      "Token is missing a valid 'email' claim."
+      "Token is missing a valid 'email' claim.",
     );
   });
 
@@ -107,7 +107,7 @@ describe("decodedToken", () => {
     } as any);
 
     expect(() => decodedToken(FAKE_TOKEN)).toThrow(
-      "Token 'role' claim must be one of: user, admin, super_admin, writer, guest"
+      "Token 'role' claim must be one of: user, admin, super_admin, writer, guest",
     );
   });
 
@@ -118,7 +118,7 @@ describe("decodedToken", () => {
     } as any);
 
     expect(() => decodedToken(FAKE_TOKEN)).toThrow(
-      "Token is missing a valid 'role' claim."
+      "Token is missing a valid 'role' claim.",
     );
   });
 
@@ -129,7 +129,7 @@ describe("decodedToken", () => {
     } as any);
 
     expect(() => decodedToken(FAKE_TOKEN)).toThrow(
-      "Token 'subscriptionType' claim must be one of: free, pro, premium"
+      "Token 'subscriptionType' claim must be one of: free, pro, premium",
     );
   });
 
@@ -149,7 +149,7 @@ describe("decodedToken", () => {
     } as any);
 
     expect(() => decodedToken(FAKE_TOKEN)).toThrow(
-      "Token is missing a valid numeric 'exp' claim."
+      "Token is missing a valid numeric 'exp' claim.",
     );
   });
 
@@ -160,7 +160,7 @@ describe("decodedToken", () => {
     } as any);
 
     expect(() => decodedToken(FAKE_TOKEN)).toThrow(
-      "Token is missing a valid numeric 'iat' claim."
+      "Token is missing a valid numeric 'iat' claim.",
     );
   });
 

@@ -5,7 +5,7 @@ export interface ContinuationSuggestion {
 }
 
 export function generateContinuationSuggestions(
-  story: string
+  story: string,
 ): ContinuationSuggestion[] {
   if (!story.trim()) return [];
 
@@ -32,7 +32,7 @@ export function generateContinuationSuggestions(
 }
 
 export function regenerateContinuationSuggestions(
-  story: string
+  story: string,
 ): ContinuationSuggestion[] {
   return generateContinuationSuggestions(story);
 }

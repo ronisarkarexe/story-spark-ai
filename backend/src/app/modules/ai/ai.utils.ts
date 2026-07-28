@@ -67,7 +67,7 @@ export function safeParseAIResponse<T>(
   rawText: string,
   schema: ZodSchema<T>,
   fallback: T,
-  options: SafeParseOptions = {}
+  options: SafeParseOptions = {},
 ): T {
   const { label = "AI response", allowCleanup = true } = options;
 
@@ -93,7 +93,9 @@ export function safeParseAIResponse<T>(
     if (extracted && extracted !== cleaned) {
       const extractedResult = tryParse(stripMarkdownCodeBlocks(extracted));
       if (extractedResult !== null) {
-        logger.warn(`[${label}] Full response invalid, recovered from embedded JSON block.`);
+        logger.warn(
+          `[${label}] Full response invalid, recovered from embedded JSON block.`,
+        );
         return extractedResult;
       }
     }
@@ -121,11 +123,17 @@ export function safeParseAIResponse<T>(
 export function parseAIResponseOrThrow<T>(
   rawText: string,
   schema: ZodSchema<T>,
-  options: SafeParseOptions & { errorMessage?: string } = {}
+  options: SafeParseOptions & { errorMessage?: string } = {},
 ): T {
-  const { label = "AI response", errorMessage = "AI returned invalid JSON" } = options;
+  const { label = "AI response", errorMessage = "AI returned invalid JSON" } =
+    options;
 
-  const result = safeParseAIResponse<T>(rawText, schema, null as unknown as T, options);
+  const result = safeParseAIResponse<T>(
+    rawText,
+    schema,
+    null as unknown as T,
+    options,
+  );
 
   if (result === null) {
     logger.error(`[${label}] ${errorMessage}`);

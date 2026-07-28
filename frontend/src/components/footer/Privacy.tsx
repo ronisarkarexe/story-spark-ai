@@ -64,16 +64,23 @@ const PrivacyPolicy: React.FC = () => {
           <p className="text-blue-300 text-sm font-semibold uppercase tracking-[0.28em] mb-3">
             Legal Center
           </p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Privacy Policy
+          </h1>
           <p className="text-gray-300 text-lg max-w-3xl mx-auto leading-8">
-            This policy explains how StorySparkAI collects, uses, stores, and protects information while users create, save, and share AI-assisted stories.
+            This policy explains how StorySparkAI collects, uses, stores, and
+            protects information while users create, save, and share AI-assisted
+            stories.
           </p>
           <p className="text-sm text-gray-500 mt-3">Last Updated: July 2026</p>
         </div>
 
         <div className="grid gap-6">
           {privacySections.map((section) => (
-            <section key={section.title} className="bg-[#1e293b] rounded-2xl p-6 sm:p-8 shadow-lg border border-white/5">
+            <section
+              key={section.title}
+              className="bg-[#1e293b] rounded-2xl p-6 sm:p-8 shadow-lg border border-white/5"
+            >
               <h2 className="text-2xl font-semibold mb-4">{section.title}</h2>
               <ul className="list-disc pl-5 text-gray-300 space-y-3 leading-7">
                 {section.body.map((item) => (
@@ -86,13 +93,21 @@ const PrivacyPolicy: React.FC = () => {
           <section className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 shadow-lg text-center">
             <h2 className="text-3xl font-bold mb-4">Contact and Support</h2>
             <p className="text-lg text-white/90 mb-5 leading-8">
-              For privacy questions, account requests, or data concerns, contact the StorySparkAI team through the support page or email support@storyspark.ai.
+              For privacy questions, account requests, or data concerns, contact
+              the StorySparkAI team through the support page or email
+              support@storyspark.ai.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Link to="/contact-us" className="rounded-full bg-white text-slate-900 px-5 py-2.5 font-semibold hover:bg-blue-50 transition-colors">
+              <Link
+                to="/contact-us"
+                className="rounded-full bg-white text-slate-900 px-5 py-2.5 font-semibold hover:bg-blue-50 transition-colors"
+              >
                 Contact Support
               </Link>
-              <Link to="/terms" className="rounded-full border border-white/50 px-5 py-2.5 font-semibold hover:bg-white/10 transition-colors">
+              <Link
+                to="/terms"
+                className="rounded-full border border-white/50 px-5 py-2.5 font-semibold hover:bg-white/10 transition-colors"
+              >
                 View Terms
               </Link>
             </div>

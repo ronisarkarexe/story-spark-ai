@@ -68,7 +68,7 @@ export const StorySegmentSchema = new Schema<IStorySegment, StorySegmentModel>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for performance
@@ -80,7 +80,10 @@ StorySegmentSchema.index({ storyId: 1, branchDepth: 1 });
 /**
  * UserChoiceProgress Schema - Tracks user's journey through branching stories
  */
-export const UserChoiceProgressSchema = new Schema<IUserChoiceProgress, UserChoiceProgressModel>(
+export const UserChoiceProgressSchema = new Schema<
+  IUserChoiceProgress,
+  UserChoiceProgressModel
+>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -129,7 +132,7 @@ export const UserChoiceProgressSchema = new Schema<IUserChoiceProgress, UserChoi
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for user journey tracking
@@ -140,7 +143,10 @@ UserChoiceProgressSchema.index({ storyId: 1, isActive: 1 });
 /**
  * BranchStatistics Schema - Tracks popular choices and user behavior
  */
-export const BranchStatisticsSchema = new Schema<IBranchStatistics, BranchStatisticsModel>(
+export const BranchStatisticsSchema = new Schema<
+  IBranchStatistics,
+  BranchStatisticsModel
+>(
   {
     storyId: {
       type: Schema.Types.ObjectId,
@@ -174,11 +180,14 @@ export const BranchStatisticsSchema = new Schema<IBranchStatistics, BranchStatis
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for statistics queries
-BranchStatisticsSchema.index({ storyId: 1, segmentId: 1, choiceId: 1 }, { unique: true });
+BranchStatisticsSchema.index(
+  { storyId: 1, segmentId: 1, choiceId: 1 },
+  { unique: true },
+);
 BranchStatisticsSchema.index({ storyId: 1, totalSelections: -1 });
 
 /**
@@ -186,15 +195,15 @@ BranchStatisticsSchema.index({ storyId: 1, totalSelections: -1 });
  */
 export const StorySegment = model<IStorySegment, StorySegmentModel>(
   "StorySegment",
-  StorySegmentSchema
+  StorySegmentSchema,
 );
 
-export const UserChoiceProgress = model<IUserChoiceProgress, UserChoiceProgressModel>(
-  "UserChoiceProgress",
-  UserChoiceProgressSchema
-);
+export const UserChoiceProgress = model<
+  IUserChoiceProgress,
+  UserChoiceProgressModel
+>("UserChoiceProgress", UserChoiceProgressSchema);
 
 export const BranchStatistics = model<IBranchStatistics, BranchStatisticsModel>(
   "BranchStatistics",
-  BranchStatisticsSchema
+  BranchStatisticsSchema,
 );

@@ -13,15 +13,22 @@ interface Props {
   onClose: () => void;
 }
 
-const AddToCollectionModal: React.FC<Props> = ({ storyId, userId, onClose }) => {
+const AddToCollectionModal: React.FC<Props> = ({
+  storyId,
+  userId,
+  onClose,
+}) => {
   const { data: collections, isLoading } = useGetUserCollectionsQuery(userId);
   const [addStory, { isLoading: isAdding }] = useAddStoryToCollectionMutation();
-  const [createCollection, { isLoading: isCreating }] = useCreateCollectionMutation();
+  const [createCollection, { isLoading: isCreating }] =
+    useCreateCollectionMutation();
 
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
-  const [newVisibility, setNewVisibility] = useState<"public" | "private">("public");
+  const [newVisibility, setNewVisibility] = useState<"public" | "private">(
+    "public",
+  );
 
   const handleAdd = async (collectionId: string) => {
     try {
@@ -94,7 +101,9 @@ const AddToCollectionModal: React.FC<Props> = ({ storyId, userId, onClose }) => 
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white text-sm truncate">{col.title}</p>
+                    <p className="font-semibold text-white text-sm truncate">
+                      {col.title}
+                    </p>
                     <p className="text-xs text-slate-400">
                       {col.storyIds?.length ?? 0} stories · {col.visibility}
                     </p>
@@ -122,7 +131,9 @@ const AddToCollectionModal: React.FC<Props> = ({ storyId, userId, onClose }) => 
               </button>
             ) : (
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-slate-300">New Collection</h3>
+                <h3 className="text-sm font-bold text-slate-300">
+                  New Collection
+                </h3>
                 <input
                   type="text"
                   placeholder="Collection title *"
@@ -141,7 +152,9 @@ const AddToCollectionModal: React.FC<Props> = ({ storyId, userId, onClose }) => 
                 />
                 <select
                   value={newVisibility}
-                  onChange={(e) => setNewVisibility(e.target.value as "public" | "private")}
+                  onChange={(e) =>
+                    setNewVisibility(e.target.value as "public" | "private")
+                  }
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
                 >
                   <option value="public">🌐 Public</option>

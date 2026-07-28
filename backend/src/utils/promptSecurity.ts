@@ -80,7 +80,9 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
   // Semantic filtering against expanded pattern set
   for (const pattern of FORBIDDEN_PATTERNS) {
     if (pattern.test(canonical)) {
-      throw new Error("Security Violation: Malicious prompt injection detected.");
+      throw new Error(
+        "Security Violation: Malicious prompt injection detected.",
+      );
     }
   }
 
@@ -105,7 +107,9 @@ export const validateOutput = (aiResponse: string): string => {
     canonical.includes("system prompt") ||
     canonical.includes("developer instructions")
   ) {
-    throw new Error("Security Violation: AI output leaked system instructions.");
+    throw new Error(
+      "Security Violation: AI output leaked system instructions.",
+    );
   }
 
   const lowerResponse = aiResponse.toLowerCase();
@@ -127,7 +131,9 @@ export const validateOutput = (aiResponse: string): string => {
 
   for (const pattern of leakPatterns) {
     if (lowerResponse.includes(pattern)) {
-      throw new Error("Security Violation: AI output leaked system instructions.");
+      throw new Error(
+        "Security Violation: AI output leaked system instructions.",
+      );
     }
   }
 

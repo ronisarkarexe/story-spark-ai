@@ -8,20 +8,12 @@ interface Props {
   story: string;
 }
 
-export default function StoryChapterGenerator({
-  story,
-}: Props) {
-  const initialChapters = useMemo(
-    () => generateChapters(story),
-    [story]
-  );
+export default function StoryChapterGenerator({ story }: Props) {
+  const initialChapters = useMemo(() => generateChapters(story), [story]);
 
   const [chapters, setChapters] = useState(initialChapters);
 
-  const handleTitleChange = (
-    index: number,
-    value: string
-  ) => {
+  const handleTitleChange = (index: number, value: string) => {
     const updated = [...chapters];
     updated[index].title = value;
     setChapters(updated);
@@ -35,7 +27,6 @@ export default function StoryChapterGenerator({
 
   return (
     <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 mb-6">
-
       <h2 className="text-2xl font-bold text-white mb-6">
         📚 AI Chapter Generator
       </h2>
@@ -47,15 +38,11 @@ export default function StoryChapterGenerator({
         >
           <input
             value={chapter.title}
-            onChange={(e) =>
-              handleTitleChange(index, e.target.value)
-            }
+            onChange={(e) => handleTitleChange(index, e.target.value)}
             className="w-full bg-zinc-800 text-white rounded p-2 mb-3"
           />
 
-          <p className="text-gray-300 whitespace-pre-line">
-            {chapter.content}
-          </p>
+          <p className="text-gray-300 whitespace-pre-line">{chapter.content}</p>
 
           <button
             onClick={() => handleRegenerate(index)}

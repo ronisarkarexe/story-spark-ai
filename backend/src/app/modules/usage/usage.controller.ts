@@ -7,25 +7,18 @@ import { getToken } from "../../middleware/token";
 
 import { UsageService } from "./usage.service";
 
+const getMyUsage = catchAsync(async (req: Request, res: Response) => {
+  const token = await getToken(req);
 
-const getMyUsage = catchAsync(
-  async (req: Request, res: Response) => {
+  const result = await UsageService.getMyUsage(token);
 
-    const token = await getToken(req);
-
-    const result = await UsageService.getMyUsage(token);
-
-
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Usage fetched successfully!",
-      data: result,
-    });
-
-  }
-);
-
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Usage fetched successfully!",
+    data: result,
+  });
+});
 
 export const UsageController = {
   getMyUsage,

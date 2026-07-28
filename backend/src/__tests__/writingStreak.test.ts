@@ -105,7 +105,7 @@ describe("WritingStreakService Unit Tests", () => {
       (Post.find as jest.Mock).mockResolvedValue(
         Array(10).fill({
           content: "word ".repeat(150),
-        })
+        }),
       );
 
       // User already unlocked "First Story"
@@ -118,10 +118,22 @@ describe("WritingStreakService Unit Tests", () => {
       // Verify that AchievementUnlock.create was called for new milestone unlocks
       // New unlocks expected: streak_1, streak_3, streak_7, story_10, words_1000, productivity_7
       expect(AchievementUnlock.create).toHaveBeenCalled();
-      expect(GamificationService.awardBadge).toHaveBeenCalledWith(userId, "10 Stories");
-      expect(GamificationService.awardBadge).toHaveBeenCalledWith(userId, "7-Day Streak");
-      expect(GamificationService.awardBadge).toHaveBeenCalledWith(userId, "1,000 Words");
-      expect(GamificationService.awardBadge).toHaveBeenCalledWith(userId, "7 Active Days");
+      expect(GamificationService.awardBadge).toHaveBeenCalledWith(
+        userId,
+        "10 Stories",
+      );
+      expect(GamificationService.awardBadge).toHaveBeenCalledWith(
+        userId,
+        "7-Day Streak",
+      );
+      expect(GamificationService.awardBadge).toHaveBeenCalledWith(
+        userId,
+        "1,000 Words",
+      );
+      expect(GamificationService.awardBadge).toHaveBeenCalledWith(
+        userId,
+        "7 Active Days",
+      );
     });
   });
 });

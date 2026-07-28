@@ -57,7 +57,7 @@ export class BranchingService {
     storyId: string,
     initialContent: string,
     choices: Array<{ text: string }>,
-    genre?: string
+    genre?: string,
   ): Promise<StorySegment> {
     const response = await axios.post(`${BASE_URL}`, {
       storyId,
@@ -75,7 +75,7 @@ export class BranchingService {
     storyId: string,
     parentSegmentId: string,
     content: string,
-    choices: Array<{ text: string }>
+    choices: Array<{ text: string }>,
   ): Promise<StorySegment> {
     const response = await axios.post(`${BASE_URL}/segments`, {
       storyId,
@@ -104,7 +104,7 @@ export class BranchingService {
     storyId: string,
     currentSegmentId: string,
     choiceId: string,
-    choiceText: string
+    choiceText: string,
   ): Promise<UserChoiceProgress> {
     const response = await axios.post(`${BASE_URL}/choices/record`, {
       storyId,
@@ -118,7 +118,9 @@ export class BranchingService {
   /**
    * Get user's progress through a branching story
    */
-  static async getUserProgress(storyId: string): Promise<UserChoiceProgress | null> {
+  static async getUserProgress(
+    storyId: string,
+  ): Promise<UserChoiceProgress | null> {
     const response = await axios.get(`${BASE_URL}/${storyId}/progress`);
     return response.data.data;
   }
@@ -126,7 +128,9 @@ export class BranchingService {
   /**
    * Get choice statistics for a story
    */
-  static async getChoiceStatistics(storyId: string): Promise<BranchStatistics[]> {
+  static async getChoiceStatistics(
+    storyId: string,
+  ): Promise<BranchStatistics[]> {
     const response = await axios.get(`${BASE_URL}/${storyId}/statistics`);
     return response.data.data;
   }
@@ -135,14 +139,20 @@ export class BranchingService {
    * Get choice statistics summary
    */
   static async getStatisticsSummary(storyId: string) {
-    const response = await axios.get(`${BASE_URL}/${storyId}/statistics/summary`);
+    const response = await axios.get(
+      `${BASE_URL}/${storyId}/statistics/summary`,
+    );
     return response.data.data;
   }
 
   /**
    * Validate branch integrity
    */
-  static async validateBranchIntegrity(storyId: string, checkCircular = true, checkOrphaned = true) {
+  static async validateBranchIntegrity(
+    storyId: string,
+    checkCircular = true,
+    checkOrphaned = true,
+  ) {
     const response = await axios.post(`${BASE_URL}/validate`, {
       storyId,
       checkCircular,

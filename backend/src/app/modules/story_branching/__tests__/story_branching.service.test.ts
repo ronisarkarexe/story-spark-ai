@@ -1,6 +1,10 @@
 import { describe, test, expect, beforeEach, afterEach } from "@jest/globals";
 import { StoryBranchingService } from "../story_branching.service";
-import { StorySegment, UserChoiceProgress, BranchStatistics } from "../story_branching.model";
+import {
+  StorySegment,
+  UserChoiceProgress,
+  BranchStatistics,
+} from "../story_branching.model";
 import { Types } from "mongoose";
 import httpStatus from "http-status";
 

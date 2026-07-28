@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useBlocker } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useBlocker } from "react-router-dom";
 
-import { getBaseUrl } from '../../helpers/config';
-import StoryGeneratingAnimation from '../loading/story-generating-animation.component';
+import { getBaseUrl } from "../../helpers/config";
+import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 
 const StoryInspirationPage: React.FC = () => {
-  const [intro, setIntro] = useState('');
+  const [intro, setIntro] = useState("");
   const [ideas, setIdeas] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const isDirty = intro.trim().length > 0;
 
@@ -25,13 +25,13 @@ const StoryInspirationPage: React.FC = () => {
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
+      isDirty && currentLocation.pathname !== nextLocation.pathname,
   );
 
   useEffect(() => {
     if (blocker.state === "blocked") {
       const proceed = window.confirm(
-        "You have unsaved content in the intro field. Are you sure you want to leave?"
+        "You have unsaved content in the intro field. Are you sure you want to leave?",
       );
       if (proceed) {
         blocker.proceed();
@@ -43,15 +43,15 @@ const StoryInspirationPage: React.FC = () => {
 
   const fetchIdeas = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     setIdeas([]);
     try {
       const response = await fetch(`${getBaseUrl()}/story-inspiration`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ intro }),
       });
-      if (!response.ok) throw new Error('Failed to fetch ideas');
+      if (!response.ok) throw new Error("Failed to fetch ideas");
       const data = await response.json();
       setIdeas(data.data?.ideas || data.ideas || []);
     } catch (err: unknown) {
@@ -69,33 +69,33 @@ const StoryInspirationPage: React.FC = () => {
         rows={4}
         placeholder="Enter your story intro..."
         value={intro}
-        onChange={e => setIntro(e.target.value)}
+        onChange={(e) => setIntro(e.target.value)}
         disabled={loading}
       />
 
-    <div className="flex gap-2">
-  <button
-    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    onClick={fetchIdeas}
-    disabled={loading || !intro.trim()}
-  >
-    {loading ? 'Generating...' : 'Get Ideas'}
-  </button>
+      <div className="flex gap-2">
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={fetchIdeas}
+          disabled={loading || !intro.trim()}
+        >
+          {loading ? "Generating..." : "Get Ideas"}
+        </button>
 
-  {intro.trim() && (
-    <button
-      type="button"
-      onClick={() => {
-        setIntro('');
-        setIdeas([]);
-        setError('');
-      }}
-      className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-    >
-      Clear Prompt
-    </button>
-  )}
-</div>
+        {intro.trim() && (
+          <button
+            type="button"
+            onClick={() => {
+              setIntro("");
+              setIdeas([]);
+              setError("");
+            }}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Clear Prompt
+          </button>
+        )}
+      </div>
 
       {error && <div className="text-red-600 mt-4">{error}</div>}
 
@@ -104,7 +104,9 @@ const StoryInspirationPage: React.FC = () => {
           <h3 className="text-xl font-semibold mb-2">Story Ideas:</h3>
           <ul className="list-disc pl-6">
             {ideas.map((idea, idx) => (
-              <li key={idx} className="mb-2">{idea}</li>
+              <li key={idx} className="mb-2">
+                {idea}
+              </li>
             ))}
           </ul>
         </div>
@@ -114,4 +116,3 @@ const StoryInspirationPage: React.FC = () => {
 };
 
 export default StoryInspirationPage;
-

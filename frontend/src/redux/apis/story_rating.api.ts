@@ -1,12 +1,19 @@
 import baseApi from "../base_api/base.api";
 import { STORY_RATING_URL } from "../base_api/base.endpoints";
 import { tagTypes } from "../tag-types";
-import { IStoryRating, IRatingResponse, IRateStoryPayload } from "../../models/story_rating";
+import {
+  IStoryRating,
+  IRatingResponse,
+  IRateStoryPayload,
+} from "../../models/story_rating";
 import { IMeta } from "../../types";
 
 const storyRatingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    rateStory: build.mutation<{ message: string; data: IStoryRating }, IRateStoryPayload>({
+    rateStory: build.mutation<
+      { message: string; data: IStoryRating },
+      IRateStoryPayload
+    >({
       query: (data) => ({
         url: `/${STORY_RATING_URL}`,
         method: "POST",
@@ -15,7 +22,10 @@ const storyRatingApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.post],
     }),
 
-    getStoryRatings: build.query<{ data: IStoryRating[]; meta: IMeta }, { storyId: string; page?: number; limit?: number }>({
+    getStoryRatings: build.query<
+      { data: IStoryRating[]; meta: IMeta },
+      { storyId: string; page?: number; limit?: number }
+    >({
       query: ({ storyId, page = 1, limit = 10 }) => ({
         url: `/${STORY_RATING_URL}/${storyId}/ratings`,
         method: "GET",

@@ -19,7 +19,10 @@ describe("checkCharacterConsistency", () => {
   it("returns empty array when character has consistent hair color across chapters", () => {
     const chapters = [
       { content: "Arthur had black hair and wielded a sword." },
-      { content: "Arthur walked through the forest with his black hair shining." },
+      {
+        content:
+          "Arthur walked through the forest with his black hair shining.",
+      },
     ];
     const result = checkCharacterConsistency(chapters);
     expect(result).toEqual([]);

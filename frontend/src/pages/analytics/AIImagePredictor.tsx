@@ -39,10 +39,13 @@ const NeuralBackground: FC = () => {
     const CONNECTION_DIST = 160;
 
     interface Particle {
-      x: number; y: number;
-      vx: number; vy: number;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
       r: number;
-      pulse: number; pulseSpeed: number;
+      pulse: number;
+      pulseSpeed: number;
       hue: number;
     }
 
@@ -53,14 +56,18 @@ const NeuralBackground: FC = () => {
       H = canvas!.height = canvas!.offsetHeight;
     }
 
-    function rand(a: number, b: number) { return a + Math.random() * (b - a); }
+    function rand(a: number, b: number) {
+      return a + Math.random() * (b - a);
+    }
 
     function initParticles() {
       particles.length = 0;
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         particles.push({
-          x: rand(0, W), y: rand(0, H),
-          vx: rand(-0.3, 0.3), vy: rand(-0.3, 0.3),
+          x: rand(0, W),
+          y: rand(0, H),
+          vx: rand(-0.3, 0.3),
+          vy: rand(-0.3, 0.3),
           r: rand(1.5, 3.5),
           pulse: rand(0, Math.PI * 2),
           pulseSpeed: rand(0.01, 0.03),
@@ -75,15 +82,29 @@ const NeuralBackground: FC = () => {
       const gridSize = 52;
       const offset = (t * 0.008) % gridSize;
       ctx.lineWidth = 0.4;
-      for (let x = -gridSize + (offset % gridSize); x < W + gridSize; x += gridSize) {
+      for (
+        let x = -gridSize + (offset % gridSize);
+        x < W + gridSize;
+        x += gridSize
+      ) {
         const alpha = 0.025 + 0.01 * Math.sin(t * 0.001 + x * 0.01);
         ctx.strokeStyle = `rgba(94,246,255,${alpha})`;
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
       }
-      for (let y = -gridSize + (offset % gridSize); y < H + gridSize; y += gridSize) {
+      for (
+        let y = -gridSize + (offset % gridSize);
+        y < H + gridSize;
+        y += gridSize
+      ) {
         const alpha = 0.025 + 0.01 * Math.sin(t * 0.001 + y * 0.01);
         ctx.strokeStyle = `rgba(94,246,255,${alpha})`;
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
       }
 
       for (let i = 0; i < particles.length; i++) {
@@ -95,8 +116,10 @@ const NeuralBackground: FC = () => {
             const alpha = (1 - dist / CONNECTION_DIST) * 0.35;
             const mixHue = (particles[i].hue + particles[j].hue) / 2;
             const grd = ctx.createLinearGradient(
-              particles[i].x, particles[i].y,
-              particles[j].x, particles[j].y,
+              particles[i].x,
+              particles[i].y,
+              particles[j].x,
+              particles[j].y,
             );
             grd.addColorStop(0, `hsla(${particles[i].hue},100%,70%,${alpha})`);
             grd.addColorStop(1, `hsla(${particles[j].hue},100%,70%,${alpha})`);
@@ -118,7 +141,14 @@ const NeuralBackground: FC = () => {
         const glow = 0.5 + 0.5 * Math.sin(p.pulse);
         const radius = p.r + glow * 1.5;
 
-        const glowGrd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 4);
+        const glowGrd = ctx.createRadialGradient(
+          p.x,
+          p.y,
+          0,
+          p.x,
+          p.y,
+          radius * 4,
+        );
         glowGrd.addColorStop(0, `hsla(${p.hue},100%,75%,${0.25 * glow})`);
         glowGrd.addColorStop(1, `hsla(${p.hue},100%,75%,0)`);
         ctx.beginPath();
@@ -134,7 +164,8 @@ const NeuralBackground: FC = () => {
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        p.x += p.vx; p.y += p.vy;
+        p.x += p.vx;
+        p.y += p.vy;
         if (p.x < -10) p.x = W + 10;
         if (p.x > W + 10) p.x = -10;
         if (p.y < -10) p.y = H + 10;
@@ -148,27 +179,91 @@ const NeuralBackground: FC = () => {
     initParticles();
     animId = requestAnimationFrame(draw);
 
-    const ro = new ResizeObserver(() => { resize(); initParticles(); });
+    const ro = new ResizeObserver(() => {
+      resize();
+      initParticles();
+    });
     ro.observe(canvas);
 
-    return () => { cancelAnimationFrame(animId); ro.disconnect(); };
+    return () => {
+      cancelAnimationFrame(animId);
+      ro.disconnect();
+    };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
     />
   );
 };
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 function extractKeywords(text: string): string[] {
-  const common = new Set(["a","an","the","is","are","in","on","at","of","and","or","with","to","that","this","it","its","as","for","by","from","into","over","under","near","has","have","was","were","be","been","being","some","which","who","there","their","they","them","not","but","so","if","when","also"]);
+  const common = new Set([
+    "a",
+    "an",
+    "the",
+    "is",
+    "are",
+    "in",
+    "on",
+    "at",
+    "of",
+    "and",
+    "or",
+    "with",
+    "to",
+    "that",
+    "this",
+    "it",
+    "its",
+    "as",
+    "for",
+    "by",
+    "from",
+    "into",
+    "over",
+    "under",
+    "near",
+    "has",
+    "have",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "some",
+    "which",
+    "who",
+    "there",
+    "their",
+    "they",
+    "them",
+    "not",
+    "but",
+    "so",
+    "if",
+    "when",
+    "also",
+  ]);
   const words = text.toLowerCase().match(/\b[a-z]{4,}\b/g) ?? [];
   const freq: Record<string, number> = {};
-  words.forEach(w => { if (!common.has(w)) freq[w] = (freq[w] ?? 0) + 1; });
-  return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([w]) => w);
+  words.forEach((w) => {
+    if (!common.has(w)) freq[w] = (freq[w] ?? 0) + 1;
+  });
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([w]) => w);
 }
 
 function formatBytes(bytes: number): string {
@@ -459,13 +554,25 @@ export default function AIImagePredictor() {
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const MAX = 1024;
-        let w = img.width, h = img.height;
-        if (w > MAX) { h *= MAX / w; w = MAX; }
-        canvas.width = w; canvas.height = h;
+        let w = img.width,
+          h = img.height;
+        if (w > MAX) {
+          h *= MAX / w;
+          w = MAX;
+        }
+        canvas.width = w;
+        canvas.height = h;
         canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
         const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
-        setImage({ dataUrl, name: file.name, size: Math.round((dataUrl.length * 3) / 4), type: "image/jpeg" });
-        setStatus("idle"); setResult(""); setTags([]);
+        setImage({
+          dataUrl,
+          name: file.name,
+          size: Math.round((dataUrl.length * 3) / 4),
+          type: "image/jpeg",
+        });
+        setStatus("idle");
+        setResult("");
+        setTags([]);
       };
       img.src = e.target!.result as string;
     };
@@ -473,44 +580,70 @@ export default function AIImagePredictor() {
   }, []);
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); setDragOver(false);
+    e.preventDefault();
+    setDragOver(false);
     handleFile(e.dataTransfer.files[0]);
   };
 
   const handleAnalyze = async () => {
     if (!image) return;
     const url = ollamaUrl.trim().replace(/\/$/, "");
-    if (!url) { setResult("Please enter your Ollama connection URL."); setStatus("error"); return; }
-    setStatus("loading"); setResult(""); setTags([]);
+    if (!url) {
+      setResult("Please enter your Ollama connection URL.");
+      setStatus("error");
+      return;
+    }
+    setStatus("loading");
+    setResult("");
+    setTags([]);
     try {
       const base64 = image.dataUrl.split(",")[1];
       const res = await fetch(`${url}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "moondream", prompt: "Describe this image in detail.", stream: false, images: [base64] }),
+        body: JSON.stringify({
+          model: "moondream",
+          prompt: "Describe this image in detail.",
+          stream: false,
+          images: [base64],
+        }),
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
       const text: string = data.response ?? "";
-      setResult(text); setTags(extractKeywords(text)); setStatus("done");
+      setResult(text);
+      setTags(extractKeywords(text));
+      setStatus("done");
     } catch (err) {
-      setResult((err as Error).message || "Failed to connect to Ollama."); setStatus("error");
+      setResult((err as Error).message || "Failed to connect to Ollama.");
+      setStatus("error");
     }
   };
 
-  const handleReset = () => { setImage(null); setStatus("idle"); setResult(""); setTags([]); };
+  const handleReset = () => {
+    setImage(null);
+    setStatus("idle");
+    setResult("");
+    setTags([]);
+  };
 
   const cardClass = [
     "vl-output-card",
     status === "done" ? "is-done" : "",
     status === "error" ? "is-error" : "",
     status === "loading" ? "is-loading" : "",
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const statusLabel =
-    status === "loading" ? "Processing" :
-    status === "done"    ? "Description" :
-    status === "error"   ? "Error" : "Waiting";
+    status === "loading"
+      ? "Processing"
+      : status === "done"
+        ? "Description"
+        : status === "error"
+          ? "Error"
+          : "Waiting";
 
   return (
     <>
@@ -540,18 +673,39 @@ export default function AIImagePredictor() {
 
             {/* Dropzone */}
             <div
-              className={["vl-dropzone", dragOver ? "drag-over" : "", image ? "has-image" : ""].filter(Boolean).join(" ")}
+              className={[
+                "vl-dropzone",
+                dragOver ? "drag-over" : "",
+                image ? "has-image" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               onClick={() => !image && inputRef.current?.click()}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
             >
               {image ? (
                 <div className="vl-preview-wrapper">
-                  <img src={image.dataUrl} alt="Preview" className="vl-preview-img" />
+                  <img
+                    src={image.dataUrl}
+                    alt="Preview"
+                    className="vl-preview-img"
+                  />
                   <div className="vl-preview-overlay">
                     <span className="vl-preview-badge">ready</span>
-                    <button className="vl-remove-btn" onClick={(e) => { e.stopPropagation(); handleReset(); }}>✕</button>
+                    <button
+                      className="vl-remove-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReset();
+                      }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -563,15 +717,25 @@ export default function AIImagePredictor() {
                   </div>
                 </>
               )}
-              <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
-                onChange={(e) => handleFile(e.target.files?.[0])} />
+              <input
+                ref={inputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
             </div>
 
             {/* URL input */}
             <div className="vl-url-group">
               <label className="vl-url-label">Ollama Endpoint</label>
-              <input className="vl-url-input" type="text" placeholder="http://localhost:11434"
-                value={ollamaUrl} onChange={(e) => setOllamaUrl(e.target.value)} />
+              <input
+                className="vl-url-input"
+                type="text"
+                placeholder="http://localhost:11434"
+                value={ollamaUrl}
+                onChange={(e) => setOllamaUrl(e.target.value)}
+              />
             </div>
 
             {/* Actions */}
@@ -581,24 +745,35 @@ export default function AIImagePredictor() {
                 disabled={!image || status === "loading"}
                 onClick={handleAnalyze}
               >
-                {status === "loading"
-                  ? <><span className="vl-spinner" />Inferring…</>
-                  : "✦ Analyze Image"}
+                {status === "loading" ? (
+                  <>
+                    <span className="vl-spinner" />
+                    Inferring…
+                  </>
+                ) : (
+                  "✦ Analyze Image"
+                )}
               </button>
-              {image && <button className="vl-btn-secondary" onClick={handleReset}>Reset</button>}
+              {image && (
+                <button className="vl-btn-secondary" onClick={handleReset}>
+                  Reset
+                </button>
+              )}
             </div>
 
             {/* Info blocks */}
             <div className="vl-info-grid">
               {[
-                { label: "Model",   value: "moondream", sub: "vision · local" },
-                { label: "Engine",  value: "Ollama",    sub: "ollama.com" },
-                { label: "Privacy", value: "100%",      sub: "no cloud upload" },
-                { label: "Max Size",value: "1024px",    sub: "auto-resized" },
+                { label: "Model", value: "moondream", sub: "vision · local" },
+                { label: "Engine", value: "Ollama", sub: "ollama.com" },
+                { label: "Privacy", value: "100%", sub: "no cloud upload" },
+                { label: "Max Size", value: "1024px", sub: "auto-resized" },
               ].map(({ label, value, sub }) => (
                 <div key={label} className="vl-info-block">
                   <div className="vl-info-block-label">{label}</div>
-                  <div className="vl-info-block-value" style={{ fontSize: 14 }}>{value}</div>
+                  <div className="vl-info-block-value" style={{ fontSize: 14 }}>
+                    {value}
+                  </div>
                   <div className="vl-info-block-sub">{sub}</div>
                 </div>
               ))}
@@ -636,14 +811,24 @@ export default function AIImagePredictor() {
                     <div className="vl-shimmer" />
                   </div>
                 )}
-                {status === "done"  && <p className="vl-output-text">{result}</p>}
-                {status === "error" && <p className="vl-output-error">⚠ {result}</p>}
+                {status === "done" && (
+                  <p className="vl-output-text">{result}</p>
+                )}
+                {status === "error" && (
+                  <p className="vl-output-error">⚠ {result}</p>
+                )}
               </div>
 
               {status === "done" && tags.length > 0 && (
                 <div className="vl-card-tags">
                   {tags.map((t, i) => (
-                    <span key={i} className="vl-tag" style={{ animationDelay: `${i * 0.07}s` }}>#{t}</span>
+                    <span
+                      key={i}
+                      className="vl-tag"
+                      style={{ animationDelay: `${i * 0.07}s` }}
+                    >
+                      #{t}
+                    </span>
                   ))}
                 </div>
               )}
@@ -661,8 +846,13 @@ export default function AIImagePredictor() {
 
         {/* Footer */}
         <footer className="vl-footer-bar">
-          <span className="vl-footer-text">powered by <span className="vl-footer-accent">ollama</span> · local inference engine</span>
-          <span className="vl-footer-text">VisionLocal <span className="vl-footer-accent">v2.0</span></span>
+          <span className="vl-footer-text">
+            powered by <span className="vl-footer-accent">ollama</span> · local
+            inference engine
+          </span>
+          <span className="vl-footer-text">
+            VisionLocal <span className="vl-footer-accent">v2.0</span>
+          </span>
         </footer>
       </div>
     </>

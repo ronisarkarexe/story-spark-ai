@@ -20,7 +20,7 @@ describe("cookie.util.ts", () => {
     beforeEach(() => {
       jest.resetModules();
       process.env.NODE_ENV = "development";
-      
+
       // Import after setting environment
       const module = require("../cookie.util");
       cookieOptions = module.cookieOptions;
@@ -56,7 +56,7 @@ describe("cookie.util.ts", () => {
           expect.objectContaining({
             ...cookieOptions,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-          })
+          }),
         );
       });
     });
@@ -68,7 +68,7 @@ describe("cookie.util.ts", () => {
         expect(mockRes.clearCookie).toHaveBeenCalledTimes(1);
         expect(mockRes.clearCookie).toHaveBeenCalledWith(
           "refreshToken",
-          cookieOptions
+          cookieOptions,
         );
       });
     });
@@ -85,7 +85,7 @@ describe("cookie.util.ts", () => {
           expect.objectContaining({
             ...cookieOptions,
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-          })
+          }),
         );
       });
     });
@@ -100,7 +100,7 @@ describe("cookie.util.ts", () => {
     beforeEach(() => {
       jest.resetModules();
       process.env.NODE_ENV = "production";
-      
+
       // Import after setting environment
       const module = require("../cookie.util");
       cookieOptions = module.cookieOptions;

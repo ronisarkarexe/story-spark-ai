@@ -26,11 +26,15 @@ const GenreCard: React.FC<IGenreCardProps> = ({
       ></div>
 
       <div className="relative z-10">
-        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${color} bg-opacity-20 text-slate-900 mb-6 group-hover:scale-110 transition-transform dark:text-white`}>
+        <div
+          className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${color} bg-opacity-20 text-slate-900 mb-6 group-hover:scale-110 transition-transform dark:text-white`}
+        >
           <i className={`fa-solid ${icon} text-xl`}></i>
         </div>
-        
-        <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors dark:text-white dark:group-hover:text-blue-400">{title}</h3>
+
+        <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors dark:text-white dark:group-hover:text-blue-400">
+          {title}
+        </h3>
         <p className="text-slate-600 text-sm leading-relaxed mb-6 dark:text-gray-400">
           {description}
         </p>

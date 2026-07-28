@@ -19,7 +19,9 @@ describe("getSafeFileName", () => {
   });
 
   it("handles title with unicode characters", () => {
-    expect(getSafeFileName("My Dragon Story", "pdf")).toBe("my_dragon_story.pdf");
+    expect(getSafeFileName("My Dragon Story", "pdf")).toBe(
+      "my_dragon_story.pdf",
+    );
   });
 
   it("handles title with mixed case", () => {
@@ -31,7 +33,9 @@ describe("getSafeFileName", () => {
   });
 
   it("handles title with multiple spaces between words", () => {
-    expect(getSafeFileName("The   Quick   Brown   Fox", "md")).toBe("the_quick_brown_fox.md");
+    expect(getSafeFileName("The   Quick   Brown   Fox", "md")).toBe(
+      "the_quick_brown_fox.md",
+    );
   });
 
   it("returns correct extension for each supported type", () => {

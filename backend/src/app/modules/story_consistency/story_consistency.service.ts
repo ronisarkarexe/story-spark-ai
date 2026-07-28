@@ -29,7 +29,7 @@ export interface IConsistencyResult {
 }
 
 export const analyzeConsistency = async (
-  storyText: string
+  storyText: string,
 ): Promise<IConsistencyResult> => {
   const prompt = `You are an expert story editor. Analyze the following story for narrative consistency issues.
 
@@ -90,7 +90,7 @@ export interface IFactTrackingResult {
 }
 
 export const trackStoryFacts = async (
-  storyText: string
+  storyText: string,
 ): Promise<IFactTrackingResult> => {
   const prompt = `You are a professional narrative continuity editor. Analyze the following story to build a chronological timeline of key facts and identify any time-based/logical contradictions.
 
@@ -132,4 +132,3 @@ ${storyText}
   const clean = text.replace(/```json|```/g, "").trim();
   return JSON.parse(clean) as IFactTrackingResult;
 };
-

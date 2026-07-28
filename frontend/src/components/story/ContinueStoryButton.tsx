@@ -22,7 +22,7 @@ const ContinueStoryButton = () => {
   const dispatch = useDispatch();
 
   const currentStory = useSelector(
-    (state: RootState) => state.story.currentStory
+    (state: RootState) => state.story.currentStory,
   );
 
   const [loading, setLoading] = useState(false);
@@ -40,7 +40,8 @@ const ContinueStoryButton = () => {
       toast.success("New chapter generated successfully!");
     } catch (error: any) {
       console.error(error);
-      const errorMsg = error?.message || "Failed to continue story. Please try again.";
+      const errorMsg =
+        error?.message || "Failed to continue story. Please try again.";
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -65,7 +66,11 @@ const ContinueStoryButton = () => {
           className="w-full sm:w-56 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200 outline-none transition-all focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/20"
         >
           {TONE_OPTIONS.map((tone) => (
-            <option key={tone} value={tone} className="bg-slate-900 text-slate-100">
+            <option
+              key={tone}
+              value={tone}
+              className="bg-slate-900 text-slate-100"
+            >
               {tone}
             </option>
           ))}

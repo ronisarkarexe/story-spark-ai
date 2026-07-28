@@ -24,28 +24,19 @@ const STOP_WORDS = [
   "from",
 ];
 
-export function extractStoryKeywords(
-  story: string
-): Keyword[] {
+export function extractStoryKeywords(story: string): Keyword[] {
   if (!story.trim()) return [];
 
   const words = story
     .toLowerCase()
     .replace(/[^\w\s]/g, "")
     .split(/\s+/)
-    .filter(
-      (word) =>
-        word &&
-        !STOP_WORDS.includes(word)
-    );
+    .filter((word) => word && !STOP_WORDS.includes(word));
 
   const frequency = new Map<string, number>();
 
   words.forEach((word) => {
-    frequency.set(
-      word,
-      (frequency.get(word) || 0) + 1
-    );
+    frequency.set(word, (frequency.get(word) || 0) + 1);
   });
 
   return [...frequency.entries()]
@@ -59,8 +50,6 @@ export function extractStoryKeywords(
     }));
 }
 
-export function refreshKeywordCloud(
-  story: string
-) {
+export function refreshKeywordCloud(story: string) {
   return extractStoryKeywords(story);
 }

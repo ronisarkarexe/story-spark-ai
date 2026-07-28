@@ -89,7 +89,9 @@ describe("PostService", () => {
       mockedUser.findOne.mockResolvedValue(user as any);
       mockedPost.findOne.mockResolvedValue(post as any);
 
-      await expect(PostService.deletePost(postId, { email: "a@a.com" } as any)).resolves.not.toThrow();
+      await expect(
+        PostService.deletePost(postId, { email: "a@a.com" } as any),
+      ).resolves.not.toThrow();
     });
 
     it("should allow admin to delete any post", async () => {
@@ -98,7 +100,9 @@ describe("PostService", () => {
       mockedUser.findOne.mockResolvedValue(user as any);
       mockedPost.findOne.mockResolvedValue(post as any);
 
-      await expect(PostService.deletePost(postId, { email: "admin@a.com" } as any)).resolves.not.toThrow();
+      await expect(
+        PostService.deletePost(postId, { email: "admin@a.com" } as any),
+      ).resolves.not.toThrow();
     });
 
     it("should allow super_admin to delete any post", async () => {
@@ -107,7 +111,9 @@ describe("PostService", () => {
       mockedUser.findOne.mockResolvedValue(user as any);
       mockedPost.findOne.mockResolvedValue(post as any);
 
-      await expect(PostService.deletePost(postId, { email: "sa@a.com" } as any)).resolves.not.toThrow();
+      await expect(
+        PostService.deletePost(postId, { email: "sa@a.com" } as any),
+      ).resolves.not.toThrow();
     });
 
     it("should forbid a non-author user from deleting another user's post", async () => {
@@ -116,7 +122,9 @@ describe("PostService", () => {
       mockedUser.findOne.mockResolvedValue(user as any);
       mockedPost.findOne.mockResolvedValue(post as any);
 
-      await expect(PostService.deletePost(postId, { email: "b@b.com" } as any)).rejects.toMatchObject({
+      await expect(
+        PostService.deletePost(postId, { email: "b@b.com" } as any),
+      ).rejects.toMatchObject({
         statusCode: 403,
       });
     });
@@ -147,7 +155,9 @@ describe("PostService", () => {
     it("should throw error if user is not found", async () => {
       mockedUser.findOne.mockResolvedValue(null as any);
       await expect(
-        PostService.bulkDeletePosts(["507f1f77bcf86cd799439011"], { email: "a@a.com" } as any)
+        PostService.bulkDeletePosts(["507f1f77bcf86cd799439011"], {
+          email: "a@a.com",
+        } as any),
       ).rejects.toThrow("User not found!");
     });
 
@@ -155,7 +165,7 @@ describe("PostService", () => {
       mockedUser.findOne.mockResolvedValue({ _id: "admin123" } as any);
       const ids = Array(51).fill("507f1f77bcf86cd799439011");
       await expect(
-        PostService.bulkDeletePosts(ids, { email: "admin@a.com" } as any)
+        PostService.bulkDeletePosts(ids, { email: "admin@a.com" } as any),
       ).rejects.toThrow("Maximum 50 story IDs allowed.");
     });
 
@@ -164,8 +174,16 @@ describe("PostService", () => {
       mockedUser.findOne.mockResolvedValue(adminUser as any);
 
       const existingPosts = [
-        { _id: "507f1f77bcf86cd799439011", author: "author1", isPublished: true },
-        { _id: "507f1f77bcf86cd799439012", author: "author2", isPublished: false },
+        {
+          _id: "507f1f77bcf86cd799439011",
+          author: "author1",
+          isPublished: true,
+        },
+        {
+          _id: "507f1f77bcf86cd799439012",
+          author: "author2",
+          isPublished: false,
+        },
       ];
 
       mockedPost.find.mockResolvedValue(existingPosts as any);
@@ -178,7 +196,9 @@ describe("PostService", () => {
         "invalid-id",
       ];
 
-      const result = await PostService.bulkDeletePosts(ids, { email: "admin@a.com" } as any);
+      const result = await PostService.bulkDeletePosts(ids, {
+        email: "admin@a.com",
+      } as any);
 
       expect(result).toEqual({
         deleted: 2,
@@ -188,10 +208,11 @@ describe("PostService", () => {
   });
 });
 
-
 describe("escapeRegex", () => {
   it("escapes all regex metacharacters", () => {
-    expect(escapeRegex(".*+?^${}()|[]\\")).toBe("\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\");
+    expect(escapeRegex(".*+?^${}()|[]\\")).toBe(
+      "\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\",
+    );
   });
 
   it("leaves plain alphanumeric strings unchanged", () => {

@@ -8,7 +8,7 @@ const sourceFile = ts.createSourceFile(
   appSource,
   ts.ScriptTarget.Latest,
   true,
-  ts.ScriptKind.TS
+  ts.ScriptKind.TS,
 );
 
 const countMiddlewareRegistrations = (middlewareName: string): number => {
@@ -44,6 +44,6 @@ describe("middleware registration", () => {
     "registers %s exactly once",
     (middlewareName) => {
       expect(countMiddlewareRegistrations(middlewareName)).toBe(1);
-    }
+    },
   );
 });

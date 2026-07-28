@@ -60,7 +60,8 @@ const HelpHero: FC<HelpHeroProps> = ({
           </h1>
 
           <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-400 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
-            Find answers, troubleshoot workspace issues, and get started with StorySparkAI.
+            Find answers, troubleshoot workspace issues, and get started with
+            StorySparkAI.
           </p>
 
           <div className="mt-8 w-full">

@@ -5,16 +5,8 @@ import sendResponse from "../../../shared/send_response";
 import { SearchService } from "./search.service";
 
 const search = catchAsync(async (req: Request, res: Response) => {
-  const {
-    q,
-    type,
-    genre,
-    sortBy,
-    page,
-    limit,
-    dateFrom,
-    dateTo,
-  } = req.query as Record<string, string>;
+  const { q, type, genre, sortBy, page, limit, dateFrom, dateTo } =
+    req.query as Record<string, string>;
 
   if (!q || !q.trim()) {
     return sendResponse(res, {

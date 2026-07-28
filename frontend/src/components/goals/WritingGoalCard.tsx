@@ -11,52 +11,31 @@ export interface WritingGoal {
   promptsCompleted: number;
 }
 
-export const calculateWordProgress = (
-  current: number,
-  target: number
-) => {
+export const calculateWordProgress = (current: number, target: number) => {
   return Math.min((current / target) * 100, 100);
 };
 
-export const calculateStoryProgress = (
-  current: number,
-  target: number
-) => {
+export const calculateStoryProgress = (current: number, target: number) => {
   return Math.min((current / target) * 100, 100);
 };
 
-export const calculatePromptProgress = (
-  current: number,
-  target: number
-) => {
+export const calculatePromptProgress = (current: number, target: number) => {
   return Math.min((current / target) * 100, 100);
 };
 
-export const isGoalCompleted = (
-  current: number,
-  target: number
-) => {
+export const isGoalCompleted = (current: number, target: number) => {
   return current >= target;
 };
 
-export const getRemainingWords = (
-  current: number,
-  target: number
-) => {
+export const getRemainingWords = (current: number, target: number) => {
   return Math.max(target - current, 0);
 };
 
-export const getRemainingStories = (
-  current: number,
-  target: number
-) => {
+export const getRemainingStories = (current: number, target: number) => {
   return Math.max(target - current, 0);
 };
 
-export const getRemainingPrompts = (
-  current: number,
-  target: number
-) => {
+export const getRemainingPrompts = (current: number, target: number) => {
   return Math.max(target - current, 0);
 };
 
@@ -67,9 +46,7 @@ export const getProgressColor = (progress: number) => {
   return "red";
 };
 
-export const resetGoal = (
-  goal: WritingGoal
-): WritingGoal => ({
+export const resetGoal = (goal: WritingGoal): WritingGoal => ({
   ...goal,
   wordsWritten: 0,
   storiesWritten: 0,

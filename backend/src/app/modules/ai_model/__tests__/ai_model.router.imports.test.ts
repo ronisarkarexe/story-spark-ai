@@ -20,11 +20,11 @@ describe("AI model router middleware imports", () => {
         {
           moduleResolution: ts.ModuleResolutionKind.Node10,
         },
-        ts.sys
+        ts.sys,
       ).resolvedModule;
 
       expect(path.normalize(resolved?.resolvedFileName || "")).toContain(
-        path.normalize("backend/src/app/middleware/")
+        path.normalize("backend/src/app/middleware/"),
       );
     }
   });

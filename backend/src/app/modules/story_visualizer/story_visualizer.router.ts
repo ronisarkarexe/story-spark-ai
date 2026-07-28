@@ -10,7 +10,7 @@ router.post(
   "/generate",
   freeAiRateLimiter,
   validateRequest(StoryVisualizerValidator.generateStoryboard),
-  StoryVisualizerController.generateStoryboard
+  StoryVisualizerController.generateStoryboard,
 );
 
 export const StoryVisualizerRouter = router;

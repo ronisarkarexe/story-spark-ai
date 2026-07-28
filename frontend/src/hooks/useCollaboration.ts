@@ -51,7 +51,9 @@ export function useCollaboration({
   const socketRef = useRef<Socket | null>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onErrorRef = useRef(onError);
-  useEffect(() => { onErrorRef.current = onError; }, [onError]);
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
   const isAiThinkingRef = useRef(false);
 
   const [room, setRoom] = useState<CollabRoom | null>(null);
@@ -84,7 +86,10 @@ export function useCollaboration({
     const joinRoom = () => socket.emit("collab:join_room", { roomId });
     socket.on("connect", joinRoom);
 
-    const handleJoined = (response: { room?: CollabRoom; message?: string }) => {
+    const handleJoined = (response: {
+      room?: CollabRoom;
+      message?: string;
+    }) => {
       if (response?.room) {
         setRoom(response.room);
         setError(null);
@@ -102,22 +107,19 @@ export function useCollaboration({
       if (data?.room) setRoom(data.room);
     });
 
-    socket.on(
-      "collab:story_updated",
-      (data: { story?: StoryChunk[] }) => {
-        if (data?.story) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story! } : null));
-        }
-        isAiThinkingRef.current = false;
-        setIsAiThinking(false);
+    socket.on("collab:story_updated", (data: { story?: StoryChunk[] }) => {
+      if (data?.story) {
+        setRoom((prev) => (prev ? { ...prev, story: data.story! } : null));
       }
-    );
+      isAiThinkingRef.current = false;
+      setIsAiThinking(false);
+    });
 
     socket.on(
       "collab:user_typing",
       (data: { userId: string; username: string }) => {
         setTypingUsers((prev) => ({ ...prev, [data.userId]: data.username }));
-      }
+      },
     );
 
     socket.on("collab:user_stop_typing", (data: { userId: string }) => {
@@ -154,7 +156,7 @@ export function useCollaboration({
       socketRef.current.emit("collab:add_text", { roomId, text: text.trim() });
       socketRef.current.emit("collab:stop_typing", { roomId });
     },
-    [roomId]
+    [roomId],
   );
 
   const TYPING_STOP_DELAY_MS = 2000; // standard debounce: stop after 2s of inactivity

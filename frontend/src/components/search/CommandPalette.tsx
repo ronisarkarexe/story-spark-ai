@@ -17,11 +17,17 @@ const getRecent = (): string[] => {
 
 const saveRecent = (q: string) => {
   const prev = getRecent().filter((s) => s !== q);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([q, ...prev].slice(0, MAX_RECENT)));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify([q, ...prev].slice(0, MAX_RECENT)),
+  );
 };
 
 const removeRecent = (q: string) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(getRecent().filter((s) => s !== q)));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(getRecent().filter((s) => s !== q)),
+  );
 };
 
 interface Props {
@@ -60,10 +66,17 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
     setLoading(true);
     searchApi({ q: debouncedQuery, type: "all", limit: 5 })
       .then((data) => {
-        if (!cancelled) { setResults(data); setLoading(false); }
+        if (!cancelled) {
+          setResults(data);
+          setLoading(false);
+        }
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedQuery]);
 
   const handleSubmit = (q: string) => {
@@ -75,8 +88,14 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") { onClose(); return; }
-    if (e.key === "Enter") { handleSubmit(query); return; }
+    if (e.key === "Escape") {
+      onClose();
+      return;
+    }
+    if (e.key === "Enter") {
+      handleSubmit(query);
+      return;
+    }
     if (e.key === "ArrowDown") setActiveIdx((i) => i + 1);
     if (e.key === "ArrowUp") setActiveIdx((i) => Math.max(0, i - 1));
   };
@@ -107,7 +126,10 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
             ref={inputRef}
             type="search"
             value={query}
-            onChange={(e) => { setQuery(e.target.value); setActiveIdx(0); }}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setActiveIdx(0);
+            }}
             onKeyDown={handleKeyDown}
             placeholder="Search stories, authors, tags…"
             className="flex-1 bg-transparent text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none dark:text-white dark:placeholder:text-slate-500"
@@ -122,7 +144,10 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
           {loading && (
             <div className="space-y-3 p-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-4 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
+                <div
+                  key={i}
+                  className="h-4 animate-pulse rounded bg-slate-100 dark:bg-slate-800"
+                />
               ))}
             </div>
           )}
@@ -132,18 +157,27 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
             <>
               {allStories.length > 0 && (
                 <section className="p-2">
-                  <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Stories</p>
+                  <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                    Stories
+                  </p>
                   {allStories.slice(0, 4).map((story) => (
                     <Link
                       key={story._id}
                       to={`/post/${story._id}`}
-                      onClick={() => { saveRecent(query); onClose(); }}
+                      onClick={() => {
+                        saveRecent(query);
+                        onClose();
+                      }}
                       className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-white/5"
                     >
                       <span className="text-base">📖</span>
-                      <span className="truncate font-medium">{story.title}</span>
+                      <span className="truncate font-medium">
+                        {story.title}
+                      </span>
                       {story.author && (
-                        <span className="ml-auto shrink-0 text-xs text-slate-400">{story.author.name}</span>
+                        <span className="ml-auto shrink-0 text-xs text-slate-400">
+                          {story.author.name}
+                        </span>
                       )}
                     </Link>
                   ))}
@@ -151,9 +185,14 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
               )}
               {allUsers.length > 0 && (
                 <section className="border-t border-slate-100 p-2 dark:border-white/5">
-                  <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Authors</p>
+                  <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                    Authors
+                  </p>
                   {allUsers.slice(0, 3).map((user) => (
-                    <div key={user._id} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200">
+                    <div
+                      key={user._id}
+                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200"
+                    >
                       <span className="text-base">👤</span>
                       <span className="font-medium">{user.name}</span>
                     </div>
@@ -161,7 +200,9 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
                 </section>
               )}
               {!allStories.length && !allUsers.length && (
-                <p className="p-6 text-center text-sm text-slate-500">No results for "{query}"</p>
+                <p className="p-6 text-center text-sm text-slate-500">
+                  No results for "{query}"
+                </p>
               )}
             </>
           )}
@@ -169,9 +210,14 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
           {/* Recent searches */}
           {!query && recent.length > 0 && (
             <section className="p-2">
-              <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Recent</p>
+              <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                Recent
+              </p>
               {recent.map((term) => (
-                <div key={term} className="group flex items-center gap-3 rounded-xl px-3 py-2.5">
+                <div
+                  key={term}
+                  className="group flex items-center gap-3 rounded-xl px-3 py-2.5"
+                >
                   <Clock className="h-4 w-4 shrink-0 text-slate-400" />
                   <button
                     type="button"

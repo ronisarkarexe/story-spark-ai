@@ -12,7 +12,9 @@ export class CircuitBreaker {
   public check() {
     if (this.failures >= this.threshold) {
       if (Date.now() - this.lastFailureTime < this.cooldownMs) {
-        const error: any = new Error("AI API Circuit Breaker open: Too many failures");
+        const error: any = new Error(
+          "AI API Circuit Breaker open: Too many failures",
+        );
         error.status = 503;
         throw error;
       } else {

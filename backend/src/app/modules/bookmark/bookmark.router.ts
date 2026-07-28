@@ -12,9 +12,9 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  BookmarkController.toggleBookmark
+  BookmarkController.toggleBookmark,
 );
 
 // Get user's bookmarked stories
@@ -24,9 +24,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  BookmarkController.getBookmarks
+  BookmarkController.getBookmarks,
 );
 
 // Check if a specific story is bookmarked
@@ -36,9 +36,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  BookmarkController.checkBookmarkStatus
+  BookmarkController.checkBookmarkStatus,
 );
 
 // Delete bookmark directly
@@ -48,9 +48,9 @@ router.delete(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  BookmarkController.deleteBookmark
+  BookmarkController.deleteBookmark,
 );
 
 export const BookmarkRouter = router;

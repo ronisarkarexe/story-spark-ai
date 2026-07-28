@@ -1,8 +1,4 @@
-import {
-  stripHtmlTags,
-  truncate,
-  normalizeWhitespace,
-} from "../sanitization";
+import { stripHtmlTags, truncate, normalizeWhitespace } from "../sanitization";
 
 describe("stripHtmlTags", () => {
   it("removes complete HTML tags", () => {
@@ -14,9 +10,7 @@ describe("stripHtmlTags", () => {
   });
 
   it("removes script tags", () => {
-    expect(stripHtmlTags("<script>alert('xss')</script>")).toBe(
-      "alert('xss')"
-    );
+    expect(stripHtmlTags("<script>alert('xss')</script>")).toBe("alert('xss')");
   });
 
   it("removes incomplete tag openers", () => {

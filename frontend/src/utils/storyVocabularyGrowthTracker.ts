@@ -33,9 +33,7 @@ const ALTERNATIVES: Record<string, string[]> = {
   small: ["tiny", "compact", "miniature"],
 };
 
-export function analyzeVocabulary(
-  story: string
-): VocabularyStats {
+export function analyzeVocabulary(story: string): VocabularyStats {
   if (!story.trim()) {
     return {
       totalWords: 0,
@@ -50,10 +48,7 @@ export function analyzeVocabulary(
     .toLowerCase()
     .replace(/[^\w\s]/g, "")
     .split(/\s+/)
-    .filter(
-      (word) =>
-        word && !STOP_WORDS.includes(word)
-    );
+    .filter((word) => word && !STOP_WORDS.includes(word));
 
   const frequency = new Map<string, number>();
 
@@ -74,9 +69,7 @@ export function analyzeVocabulary(
   return {
     totalWords: words.length,
     uniqueWords: frequency.size,
-    diversityScore: Math.round(
-      (frequency.size / words.length) * 100
-    ),
+    diversityScore: Math.round((frequency.size / words.length) * 100),
     overusedWords,
     growthHistory: [
       {
@@ -95,8 +88,6 @@ export function analyzeVocabulary(
   };
 }
 
-export function refreshVocabularyAnalysis(
-  story: string
-) {
+export function refreshVocabularyAnalysis(story: string) {
   return analyzeVocabulary(story);
 }

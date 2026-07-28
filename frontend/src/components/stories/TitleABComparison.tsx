@@ -41,7 +41,11 @@ const TitleABComparison: React.FC<TitleABComparisonProps> = ({
   };
 
   const averageScore = (o: TitleOption) =>
-    (o.scores.creativity + o.scores.relevance + o.scores.memorability + o.scores.emotionalAppeal) / 4;
+    (o.scores.creativity +
+      o.scores.relevance +
+      o.scores.memorability +
+      o.scores.emotionalAppeal) /
+    4;
 
   return (
     <div className="w-full rounded-xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm p-4 mb-4">
@@ -55,7 +59,11 @@ const TitleABComparison: React.FC<TitleABComparisonProps> = ({
           disabled={loading || !storyContent}
           className="text-[10px] px-3 py-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-lg font-semibold transition-colors"
         >
-          {loading ? "Generating..." : options.length ? "Regenerate" : "Generate Titles"}
+          {loading
+            ? "Generating..."
+            : options.length
+              ? "Regenerate"
+              : "Generate Titles"}
         </button>
       </div>
 
@@ -73,12 +81,20 @@ const TitleABComparison: React.FC<TitleABComparisonProps> = ({
                   : "border-slate-700 hover:border-slate-600"
               }`}
             >
-              <p className="text-sm text-white font-semibold mb-2">{opt.title}</p>
+              <p className="text-sm text-white font-semibold mb-2">
+                {opt.title}
+              </p>
               <div className="space-y-1 text-[10px] text-slate-400">
                 <ScoreBar label="Creativity" value={opt.scores.creativity} />
                 <ScoreBar label="Relevance" value={opt.scores.relevance} />
-                <ScoreBar label="Memorability" value={opt.scores.memorability} />
-                <ScoreBar label="Emotional appeal" value={opt.scores.emotionalAppeal} />
+                <ScoreBar
+                  label="Memorability"
+                  value={opt.scores.memorability}
+                />
+                <ScoreBar
+                  label="Emotional appeal"
+                  value={opt.scores.emotionalAppeal}
+                />
               </div>
               <p className="text-[10px] text-slate-500 mt-2">
                 Avg: {averageScore(opt).toFixed(1)} / 10
@@ -101,7 +117,10 @@ const TitleABComparison: React.FC<TitleABComparisonProps> = ({
   );
 };
 
-const ScoreBar: React.FC<{ label: string; value: number }> = ({ label, value }) => (
+const ScoreBar: React.FC<{ label: string; value: number }> = ({
+  label,
+  value,
+}) => (
   <div className="flex items-center gap-2">
     <span className="w-24 shrink-0">{label}</span>
     <div className="flex-1 bg-slate-900 rounded-full h-1.5 overflow-hidden">

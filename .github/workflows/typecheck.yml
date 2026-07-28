@@ -54,7 +54,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true' || steps.changes.outputs.recommendation_only == 'true'
         with:
-          node-version: '20'
+          node-version: "20"
           cache: pnpm
 
       - name: Install dependencies

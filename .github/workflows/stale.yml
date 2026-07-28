@@ -2,7 +2,7 @@ name: 🗓️ Stale Issues & PRs
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+    - cron: "0 2 * * *" # Daily at 2 AM UTC
   workflow_dispatch:
 
 permissions:
@@ -36,7 +36,7 @@ jobs:
             🔒 Closing this issue due to inactivity. Feel free to reopen if you'd like to work on it!
           close-pr-message: |
             🔒 Closing this PR due to inactivity. Feel free to reopen and rebase onto `main` if you'd like to continue!
-          stale-issue-label: 'needs investigation'
-          stale-pr-label: 'needs-fixes'
-          exempt-issue-labels: 'pinned,security,priority: high'
-          exempt-pr-labels: 'merge-ready,gssoc:approved'
+          stale-issue-label: "needs investigation"
+          stale-pr-label: "needs-fixes"
+          exempt-issue-labels: "pinned,security,priority: high"
+          exempt-pr-labels: "merge-ready,gssoc:approved"

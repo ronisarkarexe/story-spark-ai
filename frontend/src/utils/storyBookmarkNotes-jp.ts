@@ -24,13 +24,10 @@ export function saveBookmarkNotes(notes: BookmarkNote[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
 }
 
-export function searchBookmarkNotes(
-  notes: BookmarkNote[],
-  keyword: string
-) {
+export function searchBookmarkNotes(notes: BookmarkNote[], keyword: string) {
   return notes.filter(
     (item) =>
       item.title.toLowerCase().includes(keyword.toLowerCase()) ||
-      item.note.toLowerCase().includes(keyword.toLowerCase())
+      item.note.toLowerCase().includes(keyword.toLowerCase()),
   );
 }

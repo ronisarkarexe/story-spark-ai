@@ -12,7 +12,7 @@ const createOrUpdateRating = catchAsync(async (req: Request, res: Response) => {
     userId,
     storyId,
     rating,
-    review
+    review,
   );
 
   sendResponse(res, {

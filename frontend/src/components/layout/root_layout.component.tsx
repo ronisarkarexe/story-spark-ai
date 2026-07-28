@@ -24,8 +24,9 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 
   return (
     <div
-      className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${!isAuthPage ? "pb-20 lg:pb-0" : ""
-        }`}
+      className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${
+        !isAuthPage ? "pb-20 lg:pb-0" : ""
+      }`}
       style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
     >
       {!hideHeader && <NavListComponent />}

@@ -13,14 +13,22 @@ interface Props {
   onDelete?: () => void;
 }
 
-const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }) => {
+const CollectionDetailCard: React.FC<Props> = ({
+  collection,
+  isOwner,
+  onDelete,
+}) => {
   const navigate = useNavigate();
-  const [deleteCollection, { isLoading: isDeleting }] = useDeleteCollectionMutation();
+  const [deleteCollection, { isLoading: isDeleting }] =
+    useDeleteCollectionMutation();
   const [removeStory] = useRemoveStoryFromCollectionMutation();
   const [updateCollection] = useUpdateCollectionMutation();
 
   const handleDelete = async () => {
-    if (!window.confirm("Delete this collection? The stories won't be removed.")) return;
+    if (
+      !window.confirm("Delete this collection? The stories won't be removed.")
+    )
+      return;
     try {
       await deleteCollection(collection._id).unwrap();
       toast.success("Collection deleted.");
@@ -41,7 +49,8 @@ const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }
   };
 
   const handleToggleVisibility = async () => {
-    const newVisibility = collection.visibility === "public" ? "private" : "public";
+    const newVisibility =
+      collection.visibility === "public" ? "private" : "public";
     try {
       await updateCollection({
         id: collection._id,
@@ -60,7 +69,11 @@ const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }
         className="relative w-full h-64 bg-gradient-to-br from-indigo-700 via-purple-800 to-slate-900 overflow-hidden flex items-end"
         style={
           collection.coverImageUrl
-            ? { backgroundImage: `url(${collection.coverImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+            ? {
+                backgroundImage: `url(${collection.coverImageUrl})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
             : {}
         }
       >
@@ -76,7 +89,9 @@ const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }
                     : "bg-slate-700/60 text-slate-300 border border-slate-600"
                 }`}
               >
-                {collection.visibility === "public" ? "🌐 Public" : "🔒 Private"}
+                {collection.visibility === "public"
+                  ? "🌐 Public"
+                  : "🔒 Private"}
               </span>
             </div>
             <h1 className="text-3xl font-extrabold text-white drop-shadow-lg leading-tight">
@@ -98,7 +113,9 @@ const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }
                 onClick={handleToggleVisibility}
                 className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white border border-white/20 transition cursor-pointer"
               >
-                {collection.visibility === "public" ? "Make Private" : "Make Public"}
+                {collection.visibility === "public"
+                  ? "Make Private"
+                  : "Make Public"}
               </button>
               <button
                 onClick={handleDelete}

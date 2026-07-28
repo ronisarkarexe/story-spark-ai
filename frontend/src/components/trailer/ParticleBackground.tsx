@@ -4,21 +4,64 @@ interface Props {
   genre: string;
 }
 
-const GENRE_THEMES: Record<string, {
-  bg: string;
-  particles: string;
-  particleCount: number;
-}> = {
-  Horror:    { bg: "radial-gradient(ellipse at center, #1a0000 0%, #0a0000 100%)", particles: "#ff0000", particleCount: 30 },
-  Romance:   { bg: "radial-gradient(ellipse at center, #2d0a1a 0%, #0f0008 100%)", particles: "#ff69b4", particleCount: 40 },
-  Fantasy:   { bg: "radial-gradient(ellipse at center, #0f0a2e 0%, #050010 100%)", particles: "#a855f7", particleCount: 50 },
-  "Sci-Fi":  { bg: "radial-gradient(ellipse at center, #000a1a 0%, #000508 100%)", particles: "#00ffff", particleCount: 60 },
-  Adventure: { bg: "radial-gradient(ellipse at center, #1a0f00 0%, #0a0500 100%)", particles: "#f97316", particleCount: 35 },
-  Mystery:   { bg: "radial-gradient(ellipse at center, #0a0a1a 0%, #050508 100%)", particles: "#6366f1", particleCount: 25 },
-  Comedy:    { bg: "radial-gradient(ellipse at center, #1a1a00 0%, #0a0a00 100%)", particles: "#eab308", particleCount: 45 },
-  Drama:     { bg: "radial-gradient(ellipse at center, #0a1a0f 0%, #050a08 100%)", particles: "#14b8a6", particleCount: 30 },
-  Thriller:  { bg: "radial-gradient(ellipse at center, #000a14 0%, #000508 100%)", particles: "#3b82f6", particleCount: 25 },
-  default:   { bg: "radial-gradient(ellipse at center, #0f0a1a 0%, #050008 100%)", particles: "#6366f1", particleCount: 40 },
+const GENRE_THEMES: Record<
+  string,
+  {
+    bg: string;
+    particles: string;
+    particleCount: number;
+  }
+> = {
+  Horror: {
+    bg: "radial-gradient(ellipse at center, #1a0000 0%, #0a0000 100%)",
+    particles: "#ff0000",
+    particleCount: 30,
+  },
+  Romance: {
+    bg: "radial-gradient(ellipse at center, #2d0a1a 0%, #0f0008 100%)",
+    particles: "#ff69b4",
+    particleCount: 40,
+  },
+  Fantasy: {
+    bg: "radial-gradient(ellipse at center, #0f0a2e 0%, #050010 100%)",
+    particles: "#a855f7",
+    particleCount: 50,
+  },
+  "Sci-Fi": {
+    bg: "radial-gradient(ellipse at center, #000a1a 0%, #000508 100%)",
+    particles: "#00ffff",
+    particleCount: 60,
+  },
+  Adventure: {
+    bg: "radial-gradient(ellipse at center, #1a0f00 0%, #0a0500 100%)",
+    particles: "#f97316",
+    particleCount: 35,
+  },
+  Mystery: {
+    bg: "radial-gradient(ellipse at center, #0a0a1a 0%, #050508 100%)",
+    particles: "#6366f1",
+    particleCount: 25,
+  },
+  Comedy: {
+    bg: "radial-gradient(ellipse at center, #1a1a00 0%, #0a0a00 100%)",
+    particles: "#eab308",
+    particleCount: 45,
+  },
+  Drama: {
+    bg: "radial-gradient(ellipse at center, #0a1a0f 0%, #050a08 100%)",
+    particles: "#14b8a6",
+    particleCount: 30,
+  },
+  Thriller: {
+    bg: "radial-gradient(ellipse at center, #000a14 0%, #000508 100%)",
+    particles: "#3b82f6",
+    particleCount: 25,
+  },
+  default: {
+    bg: "radial-gradient(ellipse at center, #0f0a1a 0%, #050008 100%)",
+    particles: "#6366f1",
+    particleCount: 40,
+  },
 };
 
 export default function ParticleBackground({ genre }: Props) {
@@ -35,8 +78,13 @@ export default function ParticleBackground({ genre }: Props) {
     canvas.height = window.innerHeight;
 
     const particles: {
-      x: number; y: number; vx: number; vy: number;
-      size: number; opacity: number; fadeDir: number;
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      opacity: number;
+      fadeDir: number;
     }[] = [];
 
     for (let i = 0; i < theme.particleCount; i++) {
@@ -68,7 +116,11 @@ export default function ParticleBackground({ genre }: Props) {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = theme.particles + Math.floor(p.opacity * 255).toString(16).padStart(2, "0");
+        ctx.fillStyle =
+          theme.particles +
+          Math.floor(p.opacity * 255)
+            .toString(16)
+            .padStart(2, "0");
         ctx.fill();
       });
 
@@ -81,11 +133,13 @@ export default function ParticleBackground({ genre }: Props) {
 
   return (
     <>
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        background: theme.bg,
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: theme.bg,
+        }}
+      />
       <canvas
         ref={canvasRef}
         style={{

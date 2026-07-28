@@ -16,14 +16,19 @@ export interface IRefreshSession {
 const refreshSessionSchema = new Schema<IRefreshSession>(
   {
     jti: { type: String, required: true, unique: true },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     used: { type: Boolean, default: false },
     revoked: { type: Boolean, default: false },
     expiresAt: { type: Date, required: true },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // TTL index: Mongo removes a session once it expires, so used and revoked
@@ -32,5 +37,5 @@ refreshSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const RefreshSession = model<IRefreshSession>(
   "RefreshSession",
-  refreshSessionSchema
+  refreshSessionSchema,
 );

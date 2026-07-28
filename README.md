@@ -27,6 +27,7 @@
 ---
 
 ## 📚 Table of Contents
+
 - [About 🚀](#about-)
 - [Features 💪](#features-)
 - [Feature Documentation 📄](#feature-documentation-)
@@ -80,15 +81,15 @@
 
 Some features have dedicated, deeper-dive documentation beyond this README. Start here if you want implementation details, checklists, or a quick-start for a specific system:
 
-| Feature | Docs |
-|---------|------|
+| Feature                                         | Docs                                                                                                                                                                                                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | AI Prompt Enhancement & Creativity Score System | [AI_PROMPT_ENHANCEMENT_COMPLETE.md](./AI_PROMPT_ENHANCEMENT_COMPLETE.md) · [QUICK_START.md](./QUICK_START.md) · [FEATURE_IMPLEMENTATION_CHECKLIST.md](./FEATURE_IMPLEMENTATION_CHECKLIST.md) · [FILE_MANIFEST.md](./FILE_MANIFEST.md) |
-| Story Comparison & Diff Visualization | [STORY_COMPARISON_IMPLEMENTATION.md](./STORY_COMPARISON_IMPLEMENTATION.md) · [COMPARISON_QUICK_REFERENCE.md](./COMPARISON_QUICK_REFERENCE.md) |
-| System Architecture | [ARCHITECTURE.md](./ARCHITECTURE.md) |
-| Local Setup & Onboarding | [DEVELOPMENT.md](./DEVELOPMENT.md) · [SETUP.md](./SETUP.md) |
-| Password Visibility & Accessibility | [PASSWORD_VISIBILITY_ACCESSIBILITY.md](./PASSWORD_VISIBILITY_ACCESSIBILITY.md) · [PASSWORD_VISIBILITY_CODE_REFERENCE.md](./PASSWORD_VISIBILITY_CODE_REFERENCE.md) |
-| Security Policy | [SECURITY.md](./SECURITY.md) |
-| Version History | [CHANGELOG.md](./CHANGELOG.md) |
+| Story Comparison & Diff Visualization           | [STORY_COMPARISON_IMPLEMENTATION.md](./STORY_COMPARISON_IMPLEMENTATION.md) · [COMPARISON_QUICK_REFERENCE.md](./COMPARISON_QUICK_REFERENCE.md)                                                                                         |
+| System Architecture                             | [ARCHITECTURE.md](./ARCHITECTURE.md)                                                                                                                                                                                                  |
+| Local Setup & Onboarding                        | [DEVELOPMENT.md](./DEVELOPMENT.md) · [SETUP.md](./SETUP.md)                                                                                                                                                                           |
+| Password Visibility & Accessibility             | [PASSWORD_VISIBILITY_ACCESSIBILITY.md](./PASSWORD_VISIBILITY_ACCESSIBILITY.md) · [PASSWORD_VISIBILITY_CODE_REFERENCE.md](./PASSWORD_VISIBILITY_CODE_REFERENCE.md)                                                                     |
+| Security Policy                                 | [SECURITY.md](./SECURITY.md)                                                                                                                                                                                                          |
+| Version History                                 | [CHANGELOG.md](./CHANGELOG.md)                                                                                                                                                                                                        |
 
 > 💡 If you add a new standalone doc file to the repo root, please add a row here so it stays discoverable.
 
@@ -108,7 +109,7 @@ Disable the Generate button and show a loading spinner while a request is in fli
 const [isLoading, setIsLoading] = useState(false);
 
 const handleGenerate = async () => {
-  if (isLoading) return;           // guard against duplicate clicks
+  if (isLoading) return; // guard against duplicate clicks
   setIsLoading(true);
   try {
     const res = await fetch(`${import.meta.env.VITE_BASE_URL}/story/generate`, {
@@ -122,17 +123,18 @@ const handleGenerate = async () => {
     const data = await res.json();
     setStories(data.stories);
   } finally {
-    setIsLoading(false);           // always re-enable the button
+    setIsLoading(false); // always re-enable the button
   }
 };
 
 // In JSX:
 <button onClick={handleGenerate} disabled={isLoading}>
   {isLoading ? "Generating…" : "Generate Story"}
-</button>
+</button>;
 ```
 
 **Why this matters:**
+
 - Prevents duplicate API calls that increase operational costs.
 - Gives users clear feedback that the app is working, especially on slow connections.
 - Generated stories are held in component state; a browser refresh clears them — consider persisting results to `localStorage` or the backend history endpoint as a follow-up improvement.
@@ -146,16 +148,19 @@ const handleGenerate = async () => {
 **Prerequisites:** Node.js **18.18+**, pnpm **8+**, MongoDB URI for the API.
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/<your-github-username>/story-spark-ai.git
    ```
 
 2. **Navigate to the project directory**
+
    ```bash
    cd story-spark-ai
    ```
 
 3. **Install dependencies** (single install at the repo root — pnpm workspaces)
+
    ```bash
    pnpm install
    ```
@@ -169,13 +174,16 @@ const handleGenerate = async () => {
 5. **First-Time Setup (Admin Seeding)**
 
    Before starting the server for the first time, create an admin user:
+
    ```bash
    cd backend
    npx ts-node scripts/seed-admin.ts
    ```
+
    Make sure `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in `backend/.env`.
 
 6. **Run apps**
+
    ```bash
    pnpm dev                  # Both frontend & backend
    pnpm dev:backend          # API only (default port 5000)
@@ -193,12 +201,13 @@ const handleGenerate = async () => {
 
 Use **two** Vercel projects from this monorepo:
 
-| Project | Root directory | Example domain |
-|---------|----------------|----------------|
-| Frontend | `frontend` | `storysparkai.vercel.app` |
-| Backend API | `backend` | `apistorysparkai.vercel.app` |
+| Project     | Root directory | Example domain               |
+| ----------- | -------------- | ---------------------------- |
+| Frontend    | `frontend`     | `storysparkai.vercel.app`    |
+| Backend API | `backend`      | `apistorysparkai.vercel.app` |
 
 **Frontend environment variables:**
+
 - `VITE_BASE_URL` = `https://<your-api>.vercel.app/api/v1`
 - `VITE_SOCKET_URL` = `https://notification-socket-io.onrender.com` (do **not** point this at your Vercel API URL — Vercel serverless cannot run Socket.IO)
 
@@ -218,67 +227,76 @@ cp frontend/.env.example frontend/.env
 ### Backend (`backend/.env`)
 
 #### 🖥️ Server Configuration
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `NODE_ENV` | `development` | ✅ Yes | Environment mode |
-| `PORT` | `5000` | ✅ Yes | Backend server port |
+
+| Variable       | Example                           | Required    | Description                                                   |
+| -------------- | --------------------------------- | ----------- | ------------------------------------------------------------- |
+| `NODE_ENV`     | `development`                     | ✅ Yes      | Environment mode                                              |
+| `PORT`         | `5000`                            | ✅ Yes      | Backend server port                                           |
 | `FRONTEND_URL` | `https://storysparkai.vercel.app` | ⚠️ Optional | Primary frontend URL (used in production for CORS/WebSockets) |
-| `CORS_ORIGINS` | `http://localhost:4001` | ✅ Yes | Allowed frontend origin |
+| `CORS_ORIGINS` | `http://localhost:4001`           | ✅ Yes      | Allowed frontend origin                                       |
 
 #### 🗄️ Database
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `DATABASE_URL` | `mongodb://127.0.0.1:27017/story_spark_ai` | ✅ Yes | MongoDB connection string |
+
+| Variable       | Example                                    | Required | Description               |
+| -------------- | ------------------------------------------ | -------- | ------------------------- |
+| `DATABASE_URL` | `mongodb://127.0.0.1:27017/story_spark_ai` | ✅ Yes   | MongoDB connection string |
 
 #### 🔐 Authentication
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `SALT_ROUNDS` | `10` | ✅ Yes | bcrypt hashing rounds |
-| `JWT_SECRET` | `any_random_string` | ✅ Yes | Access token signing secret |
-| `JWT_REFRESH_SECRET` | `another_random_string` | ✅ Yes | Refresh token signing secret |
-| `JWT_EXPIRES_IN` | `60d` | ✅ Yes | Access token expiry |
-| `JWT_REFRESH_EXPIRES_IN` | `120d` | ✅ Yes | Refresh token expiry |
-| `ADMIN_EMAIL` | `admin@example.com` | ✅ Yes | Admin account email |
-| `ADMIN_PASSWORD` | `secure-password` | ✅ Yes | Admin account password |
-| `DEFAULT_ADMIN_PASSWORD` | `admin123` | ✅ Yes | Initial admin password for seeding |
+
+| Variable                 | Example                 | Required | Description                        |
+| ------------------------ | ----------------------- | -------- | ---------------------------------- |
+| `SALT_ROUNDS`            | `10`                    | ✅ Yes   | bcrypt hashing rounds              |
+| `JWT_SECRET`             | `any_random_string`     | ✅ Yes   | Access token signing secret        |
+| `JWT_REFRESH_SECRET`     | `another_random_string` | ✅ Yes   | Refresh token signing secret       |
+| `JWT_EXPIRES_IN`         | `60d`                   | ✅ Yes   | Access token expiry                |
+| `JWT_REFRESH_EXPIRES_IN` | `120d`                  | ✅ Yes   | Refresh token expiry               |
+| `ADMIN_EMAIL`            | `admin@example.com`     | ✅ Yes   | Admin account email                |
+| `ADMIN_PASSWORD`         | `secure-password`       | ✅ Yes   | Admin account password             |
+| `DEFAULT_ADMIN_PASSWORD` | `admin123`              | ✅ Yes   | Initial admin password for seeding |
 
 #### 🤖 AI Providers
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `OPEN_AI_KEY` | `sk-...` | ⚠️ Optional | Required for OpenAI story generation |
-| `GEMINI_API_KEY` | `AIza...` | ⚠️ Optional | Required for Gemini story generation |
-| `AI_API_KEYS` | `key1,key2,key3` | ⚠️ Optional | Comma-separated keys for round-robin rotation |
-| `AI_CONCURRENCY` | `3` | ⚠️ Optional | Max simultaneous AI calls (default: 3) |
+
+| Variable         | Example          | Required    | Description                                   |
+| ---------------- | ---------------- | ----------- | --------------------------------------------- |
+| `OPEN_AI_KEY`    | `sk-...`         | ⚠️ Optional | Required for OpenAI story generation          |
+| `GEMINI_API_KEY` | `AIza...`        | ⚠️ Optional | Required for Gemini story generation          |
+| `AI_API_KEYS`    | `key1,key2,key3` | ⚠️ Optional | Comma-separated keys for round-robin rotation |
+| `AI_CONCURRENCY` | `3`              | ⚠️ Optional | Max simultaneous AI calls (default: 3)        |
 
 > ℹ️ You need **at least one** of `OPEN_AI_KEY`, `GEMINI_API_KEY`, or `AI_API_KEYS` for story generation to work.
 
 #### 🖼️ Image Provider (Unsplash)
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `UNSPLASH_KEY_API` | `your_access_key` | ⚠️ Optional | Required for story cover images |
-| `UNSPLASH_KEY_API_SECRET` | `your_secret` | ⚠️ Optional | Unsplash API secret |
+
+| Variable                  | Example           | Required    | Description                     |
+| ------------------------- | ----------------- | ----------- | ------------------------------- |
+| `UNSPLASH_KEY_API`        | `your_access_key` | ⚠️ Optional | Required for story cover images |
+| `UNSPLASH_KEY_API_SECRET` | `your_secret`     | ⚠️ Optional | Unsplash API secret             |
 
 #### 📧 Email Verification
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `VERIFY_EMAIL` | `noreply@example.com` | ⚠️ Optional | Sender email for verification emails |
-| `VERIFY_PASSWORD` | `app_password` | ⚠️ Optional | Email app password |
+
+| Variable          | Example               | Required    | Description                          |
+| ----------------- | --------------------- | ----------- | ------------------------------------ |
+| `VERIFY_EMAIL`    | `noreply@example.com` | ⚠️ Optional | Sender email for verification emails |
+| `VERIFY_PASSWORD` | `app_password`        | ⚠️ Optional | Email app password                   |
 
 #### 🔑 Google OAuth
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
+
+| Variable           | Example                           | Required    | Description               |
+| ------------------ | --------------------------------- | ----------- | ------------------------- |
 | `GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ⚠️ Optional | Required for Google Login |
 
 ### Frontend (`frontend/.env`)
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `VITE_BASE_URL` | `http://localhost:5000/api/v1` | ✅ Yes | Backend API base URL |
-| `VITE_SOCKET_URL` | `http://localhost:5000` | ⚠️ Optional | WebSocket server URL |
-| `VITE_GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ✅ Yes | Google OAuth Client ID |
+
+| Variable                | Example                           | Required    | Description            |
+| ----------------------- | --------------------------------- | ----------- | ---------------------- |
+| `VITE_BASE_URL`         | `http://localhost:5000/api/v1`    | ✅ Yes      | Backend API base URL   |
+| `VITE_SOCKET_URL`       | `http://localhost:5000`           | ⚠️ Optional | WebSocket server URL   |
+| `VITE_GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ✅ Yes      | Google OAuth Client ID |
 
 ### ⚡ Minimum Setup for Local Development
 
 **`backend/.env`**
+
 ```env
 NODE_ENV=development
 PORT=5000
@@ -296,6 +314,7 @@ DEFAULT_ADMIN_PASSWORD=admin123
 ```
 
 **`frontend/.env`**
+
 ```env
 VITE_BASE_URL=http://localhost:5000/api/v1
 VITE_SOCKET_URL=http://localhost:5000
@@ -315,13 +334,22 @@ curl -X POST http://localhost:5000/api/v1/story/generate \
 ```
 
 **Example response:**
+
 ```json
 {
   "success": true,
   "storyId": "64fabc1234...",
   "stories": [
-    { "title": "Echoes of Memory", "content": "Far beyond the Orion belt...", "variation": 1 },
-    { "title": "The Memory Planet", "content": "In the silence of space...", "variation": 2 }
+    {
+      "title": "Echoes of Memory",
+      "content": "Far beyond the Orion belt...",
+      "variation": 1
+    },
+    {
+      "title": "The Memory Planet",
+      "content": "In the silence of space...",
+      "variation": 2
+    }
   ]
 }
 ```
@@ -335,81 +363,90 @@ curl -X POST http://localhost:5000/api/v1/story/generate \
 The backend exposes RESTful API endpoints under the `/api` prefix. Below is a summary of the available endpoints.
 
 ### Authentication
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| POST | `/api/auth/register` | Register a new user account | No |
-| POST | `/api/auth/login` | Login and receive access/refresh tokens | No |
-| POST | `/api/auth/refresh` | Refresh an expired access token | No |
-| POST | `/api/auth/logout` | Invalidate the current session | Yes |
-| POST | `/api/otp_validation/verify` | Verify email with OTP code | No |
+
+| Method | Endpoint                     | Description                             | Auth Required |
+| ------ | ---------------------------- | --------------------------------------- | :-----------: |
+| POST   | `/api/auth/register`         | Register a new user account             |      No       |
+| POST   | `/api/auth/login`            | Login and receive access/refresh tokens |      No       |
+| POST   | `/api/auth/refresh`          | Refresh an expired access token         |      No       |
+| POST   | `/api/auth/logout`           | Invalidate the current session          |      Yes      |
+| POST   | `/api/otp_validation/verify` | Verify email with OTP code              |      No       |
 
 ### Users
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| GET | `/api/user/profile` | Get current user profile | Yes |
-| PATCH | `/api/user/profile` | Update user profile | Yes |
-| GET | `/api/users/:id` | Get a user's public profile | No |
+
+| Method | Endpoint            | Description                 | Auth Required |
+| ------ | ------------------- | --------------------------- | :-----------: |
+| GET    | `/api/user/profile` | Get current user profile    |      Yes      |
+| PATCH  | `/api/user/profile` | Update user profile         |      Yes      |
+| GET    | `/api/users/:id`    | Get a user's public profile |      No       |
 
 ### Stories
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| POST | `/api/stories/generate` | Generate a story from a prompt | Yes |
-| GET | `/api/stories` | List stories (with pagination) | No |
-| GET | `/api/stories/:id` | Get a single story | No |
-| PATCH | `/api/stories/:id` | Update a story | Yes |
-| DELETE | `/api/stories/:id` | Delete a story | Yes |
+
+| Method | Endpoint                | Description                    | Auth Required |
+| ------ | ----------------------- | ------------------------------ | :-----------: |
+| POST   | `/api/stories/generate` | Generate a story from a prompt |      Yes      |
+| GET    | `/api/stories`          | List stories (with pagination) |      No       |
+| GET    | `/api/stories/:id`      | Get a single story             |      No       |
+| PATCH  | `/api/stories/:id`      | Update a story                 |      Yes      |
+| DELETE | `/api/stories/:id`      | Delete a story                 |      Yes      |
 
 ### AI Features
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| POST | `/api/ai_model/generate` | Generate story with AI model | Yes |
-| POST | `/api/analysis` | Analyze a story (summary, critique) | Yes |
-| POST | `/api/ai-editor/suggest` | Get AI editing suggestions | Yes |
-| POST | `/api/prompt-analysis` | Analyze and enhance a prompt | Yes |
+
+| Method | Endpoint                 | Description                         | Auth Required |
+| ------ | ------------------------ | ----------------------------------- | :-----------: |
+| POST   | `/api/ai_model/generate` | Generate story with AI model        |      Yes      |
+| POST   | `/api/analysis`          | Analyze a story (summary, critique) |      Yes      |
+| POST   | `/api/ai-editor/suggest` | Get AI editing suggestions          |      Yes      |
+| POST   | `/api/prompt-analysis`   | Analyze and enhance a prompt        |      Yes      |
 
 ### Social Features
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| GET | `/api/post` | List community posts | No |
-| POST | `/api/post` | Create a new post | Yes |
-| POST | `/api/review` | Submit a review | Yes |
-| GET | `/api/review` | List reviews | No |
-| POST | `/api/comment` | Add a comment | Yes |
-| POST | `/api/reaction` | React to a story/post | Yes |
+
+| Method | Endpoint        | Description           | Auth Required |
+| ------ | --------------- | --------------------- | :-----------: |
+| GET    | `/api/post`     | List community posts  |      No       |
+| POST   | `/api/post`     | Create a new post     |      Yes      |
+| POST   | `/api/review`   | Submit a review       |      Yes      |
+| GET    | `/api/review`   | List reviews          |      No       |
+| POST   | `/api/comment`  | Add a comment         |      Yes      |
+| POST   | `/api/reaction` | React to a story/post |      Yes      |
 
 ### Bookmarks and Collections
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| POST | `/api/bookmarks` | Bookmark a story | Yes |
-| GET | `/api/bookmarks` | List user bookmarks | Yes |
-| DELETE | `/api/bookmarks/:id` | Remove a bookmark | Yes |
-| GET | `/api/collections` | List user collections | Yes |
-| POST | `/api/collections` | Create a collection | Yes |
+
+| Method | Endpoint             | Description           | Auth Required |
+| ------ | -------------------- | --------------------- | :-----------: |
+| POST   | `/api/bookmarks`     | Bookmark a story      |      Yes      |
+| GET    | `/api/bookmarks`     | List user bookmarks   |      Yes      |
+| DELETE | `/api/bookmarks/:id` | Remove a bookmark     |      Yes      |
+| GET    | `/api/collections`   | List user collections |      Yes      |
+| POST   | `/api/collections`   | Create a collection   |      Yes      |
 
 ### Search and Discovery
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| GET | `/api/search` | Search stories and users | No |
-| GET | `/api/recommendations` | Get personalized recommendations | Yes |
-| GET | `/api/story-inspiration` | Get writing inspiration prompts | No |
+
+| Method | Endpoint                 | Description                      | Auth Required |
+| ------ | ------------------------ | -------------------------------- | :-----------: |
+| GET    | `/api/search`            | Search stories and users         |      No       |
+| GET    | `/api/recommendations`   | Get personalized recommendations |      Yes      |
+| GET    | `/api/story-inspiration` | Get writing inspiration prompts  |      No       |
 
 ### Story Tools
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| POST | `/api/story-consistency` | Check story consistency | Yes |
-| POST | `/api/story-rating` | Rate a story | Yes |
-| POST | `/api/plot-holes` | Detect plot holes | Yes |
-| GET | `/api/characters` | List characters in a story | No |
-| GET | `/api/story-visualizer` | Visualize story structure | Yes |
+
+| Method | Endpoint                 | Description                | Auth Required |
+| ------ | ------------------------ | -------------------------- | :-----------: |
+| POST   | `/api/story-consistency` | Check story consistency    |      Yes      |
+| POST   | `/api/story-rating`      | Rate a story               |      Yes      |
+| POST   | `/api/plot-holes`        | Detect plot holes          |      Yes      |
+| GET    | `/api/characters`        | List characters in a story |      No       |
+| GET    | `/api/story-visualizer`  | Visualize story structure  |      Yes      |
 
 ### Other Endpoints
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:------------:|
-| POST | `/api/newsletter` | Subscribe to newsletter | No |
-| POST | `/api/contact` | Send a contact message | No |
-| POST | `/api/bug-reports` | Submit a bug report | Yes |
-| GET | `/api/notifications` | Get user notifications | Yes |
-| POST | `/api/writer-applications` | Apply as a writer | Yes |
+
+| Method | Endpoint                   | Description             | Auth Required |
+| ------ | -------------------------- | ----------------------- | :-----------: |
+| POST   | `/api/newsletter`          | Subscribe to newsletter |      No       |
+| POST   | `/api/contact`             | Send a contact message  |      No       |
+| POST   | `/api/bug-reports`         | Submit a bug report     |      Yes      |
+| GET    | `/api/notifications`       | Get user notifications  |      Yes      |
+| POST   | `/api/writer-applications` | Apply as a writer       |      Yes      |
 
 > **Note:** All authenticated endpoints require a valid `Authorization: Bearer <token>` header. Some endpoints may require specific subscription plans (e.g., AI features on paid plans).
 
@@ -449,10 +486,12 @@ The backend exposes RESTful API endpoints under the `/api` prefix. Below is a su
 
 **Port conflicts?**
 → Frontend uses **4001**, backend uses **5000**. Find and stop conflicting processes:
+
 - Linux/macOS: `lsof -i :5000` then `kill -9 <PID>`
 - Windows: `netstat -ano | findstr :5000` then `taskkill /PID <PID> /F`
 
 **`pnpm install` failures after switching branches?**
+
 ```bash
 rm -rf node_modules   # Linux/macOS
 pnpm install
@@ -467,6 +506,7 @@ pnpm install
 > 💡 **Still stuck?** Open an issue or check existing ones — your problem may already have a solution!
 
 ---
+
 ## Architecture
 
 ```mermaid
@@ -492,12 +532,14 @@ flowchart TB
     Payments --> Razorpay
     Backend --> Notify
 ```
+
 ## Contributing 👨‍💻
 
 Contributions make the open source community such an amazing place to learn, inspire, and create.
 **Any contributions you make are truly appreciated!**
 
 **Contributing workflow:**
+
 1. Fork the repository and clone your fork.
 2. Create a branch: `git checkout -b your-feature-branch`
 3. Install with `pnpm install` at the repo root and configure `.env` files.

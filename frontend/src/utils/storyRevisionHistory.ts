@@ -10,9 +10,7 @@ export interface StoryDiff {
   modifications: number;
 }
 
-export function createRevision(
-  content: string
-): StoryRevision {
+export function createRevision(content: string): StoryRevision {
   return {
     id: Date.now(),
     timestamp: new Date().toLocaleString(),
@@ -22,7 +20,7 @@ export function createRevision(
 
 export function compareRevisions(
   oldContent: string,
-  newContent: string
+  newContent: string,
 ): StoryDiff {
   const oldWords = oldContent.split(/\s+/);
   const newWords = newContent.split(/\s+/);
@@ -34,8 +32,6 @@ export function compareRevisions(
   };
 }
 
-export function restoreRevision(
-  revision: StoryRevision
-): string {
+export function restoreRevision(revision: StoryRevision): string {
   return revision.content;
 }

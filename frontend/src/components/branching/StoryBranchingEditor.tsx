@@ -45,8 +45,8 @@ export default function StoryBranchingEditor() {
                 },
               ],
             }
-          : branch
-      )
+          : branch,
+      ),
     );
   };
 
@@ -54,9 +54,7 @@ export default function StoryBranchingEditor() {
     <div>
       <h2>🌳 Story Branching Editor</h2>
 
-      <button onClick={addBranch}>
-        Add Branch
-      </button>
+      <button onClick={addBranch}>Add Branch</button>
 
       {branches.map((branch) => (
         <div
@@ -67,21 +65,12 @@ export default function StoryBranchingEditor() {
             marginTop: 15,
           }}
         >
-          <input
-            value={branch.title}
-            onChange={() => {}}
-          />
+          <input value={branch.title} onChange={() => {}} />
 
-          <button
-            onClick={() => addChoice(branch.id)}
-          >
-            Add Choice
-          </button>
+          <button onClick={() => addChoice(branch.id)}>Add Choice</button>
 
           {branch.choices.map((choice) => (
-            <div key={choice.id}>
-              • {choice.text}
-            </div>
+            <div key={choice.id}>• {choice.text}</div>
           ))}
         </div>
       ))}

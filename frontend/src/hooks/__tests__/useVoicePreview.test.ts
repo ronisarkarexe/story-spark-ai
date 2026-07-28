@@ -80,7 +80,8 @@ beforeEach(() => {
   const globalAny = global as typeof globalThis & {
     SpeechSynthesisUtterance: typeof SpeechSynthesisUtterance;
   };
-  globalAny.SpeechSynthesisUtterance = MockSpeechSynthesisUtterance as unknown as typeof SpeechSynthesisUtterance;
+  globalAny.SpeechSynthesisUtterance =
+    MockSpeechSynthesisUtterance as unknown as typeof SpeechSynthesisUtterance;
 });
 
 afterEach(() => {

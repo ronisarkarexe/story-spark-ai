@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useAutoSave, loadDraft, clearDraft, offlineQueue } from "../useAutoSave";
+import {
+  useAutoSave,
+  loadDraft,
+  clearDraft,
+  offlineQueue,
+} from "../useAutoSave";
 
 const DRAFT_KEY = "story_draft_";
 
@@ -27,7 +32,9 @@ describe("useAutoSave", () => {
     });
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    const { result } = renderHook(() => useAutoSave("draft-1", "Hello", "World"));
+    const { result } = renderHook(() =>
+      useAutoSave("draft-1", "Hello", "World"),
+    );
 
     await act(async () => {
       vi.advanceTimersByTime(1500);
@@ -39,13 +46,19 @@ describe("useAutoSave", () => {
       "/api/v1/stories/save",
       expect.objectContaining({
         method: "PUT",
-        body: JSON.stringify({ draftId: "draft-1", title: "Hello", content: "World" }),
-      })
+        body: JSON.stringify({
+          draftId: "draft-1",
+          title: "Hello",
+          content: "World",
+        }),
+      }),
     );
   });
 
   it("queues offline edits and flushes them once after reconnect", async () => {
-    const onlineSpy = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    const onlineSpy = vi
+      .spyOn(navigator, "onLine", "get")
+      .mockReturnValue(false);
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ success: true }),
@@ -53,9 +66,16 @@ describe("useAutoSave", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const { result, rerender } = renderHook(
-      ({ id, title, content }: { id: string; title: string; content: string }) =>
-        useAutoSave(id, title, content),
-      { initialProps: { id: "draft-2", title: "A", content: "B" } }
+      ({
+        id,
+        title,
+        content,
+      }: {
+        id: string;
+        title: string;
+        content: string;
+      }) => useAutoSave(id, title, content),
+      { initialProps: { id: "draft-2", title: "A", content: "B" } },
     );
 
     rerender({ id: "draft-2", title: "A", content: "Offline edit" });
@@ -79,14 +99,20 @@ describe("useAutoSave", () => {
       "/api/v1/stories/save",
       expect.objectContaining({
         method: "PUT",
-        body: JSON.stringify({ draftId: "draft-2", title: "A", content: "Offline edit" }),
-      })
+        body: JSON.stringify({
+          draftId: "draft-2",
+          title: "A",
+          content: "Offline edit",
+        }),
+      }),
     );
     expect(result.current.pendingCount).toBe(0);
   });
 
   it("flushes the queue only once when multiple hook instances are mounted", async () => {
-    const onlineSpy = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    const onlineSpy = vi
+      .spyOn(navigator, "onLine", "get")
+      .mockReturnValue(false);
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ success: true }),
@@ -137,7 +163,10 @@ describe("loadDraft", () => {
 
 describe("clearDraft", () => {
   it("removes the draft from localStorage", () => {
-    localStorage.setItem(DRAFT_KEY + "draft-6", JSON.stringify({ title: "A", content: "B", savedAt: "" }));
+    localStorage.setItem(
+      DRAFT_KEY + "draft-6",
+      JSON.stringify({ title: "A", content: "B", savedAt: "" }),
+    );
     clearDraft("draft-6");
     expect(localStorage.getItem(DRAFT_KEY + "draft-6")).toBeNull();
   });

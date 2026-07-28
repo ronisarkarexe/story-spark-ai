@@ -1,10 +1,5 @@
 export type EntityType =
-  | "Character"
-  | "City"
-  | "Kingdom"
-  | "Artifact"
-  | "Organization"
-  | "Planet";
+  "Character" | "City" | "Kingdom" | "Artifact" | "Organization" | "Planet";
 
 export interface NameSuggestion {
   id: number;
@@ -33,10 +28,9 @@ const nameDatabase: Record<string, Record<EntityType, string[]>> = {
 
 export function generateNames(
   genre: string,
-  entityType: EntityType
+  entityType: EntityType,
 ): NameSuggestion[] {
-  const names =
-    nameDatabase[genre]?.[entityType] ?? [];
+  const names = nameDatabase[genre]?.[entityType] ?? [];
 
   return names.map((name, index) => ({
     id: index + 1,

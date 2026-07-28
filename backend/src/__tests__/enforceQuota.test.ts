@@ -29,10 +29,10 @@ describe("enforceQuota Middleware Unit Tests", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     statusMock = jest.fn().mockReturnThis();
     jsonMock = jest.fn();
-    
+
     req = {
       user: {
         _id: "user-123",
@@ -79,7 +79,7 @@ describe("enforceQuota Middleware Unit Tests", () => {
     expect(UsageRecord.findOneAndUpdate).toHaveBeenCalled();
     expect(UsageRecord.updateOne).toHaveBeenCalledWith(
       expect.objectContaining({ userId: "user-123", action: "story_generate" }),
-      { $inc: { count: -1 } }
+      { $inc: { count: -1 } },
     );
     expect(statusMock).toHaveBeenCalledWith(httpStatus.TOO_MANY_REQUESTS);
     expect(jsonMock).toHaveBeenCalledWith(
@@ -88,7 +88,7 @@ describe("enforceQuota Middleware Unit Tests", () => {
         plan: "free",
         limit: 5,
         used: 5,
-      })
+      }),
     );
     expect(next).not.toHaveBeenCalled();
   });
@@ -114,7 +114,7 @@ describe("enforceQuota Middleware Unit Tests", () => {
     expect(jsonMock).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-      })
+      }),
     );
     expect(next).not.toHaveBeenCalled();
   });

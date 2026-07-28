@@ -114,14 +114,22 @@ const EnhancedPromptCard: React.FC<EnhancedPromptCardProps> = ({
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {/* Original */}
               <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-3">
-                <p className="mb-2 text-xs font-semibold text-red-300">Original</p>
-                <p className="text-xs leading-relaxed text-slate-300">{originalPrompt}</p>
+                <p className="mb-2 text-xs font-semibold text-red-300">
+                  Original
+                </p>
+                <p className="text-xs leading-relaxed text-slate-300">
+                  {originalPrompt}
+                </p>
               </div>
 
               {/* Enhanced */}
               <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
-                <p className="mb-2 text-xs font-semibold text-emerald-300">Enhanced</p>
-                <p className="text-xs leading-relaxed text-slate-300">{enhancedPrompt}</p>
+                <p className="mb-2 text-xs font-semibold text-emerald-300">
+                  Enhanced
+                </p>
+                <p className="text-xs leading-relaxed text-slate-300">
+                  {enhancedPrompt}
+                </p>
               </div>
             </div>
           </motion.div>

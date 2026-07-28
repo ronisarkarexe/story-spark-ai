@@ -8,7 +8,6 @@ import {
   DEFAULT_MAX_PROMPT_LENGTH,
 } from "../genreBlend";
 
-
 describe("blendGenres", () => {
   it("returns selectedGenres and blendedPrompt unchanged", () => {
     const request = { genres: ["fantasy", "sci-fi"], prompt: "write a story" };
@@ -46,7 +45,9 @@ describe("validateGenres", () => {
   });
 
   it("returns true for array with more than 2 genres", () => {
-    expect(validateGenres(["fantasy", "sci-fi", "horror", "romance"])).toBe(true);
+    expect(validateGenres(["fantasy", "sci-fi", "horror", "romance"])).toBe(
+      true,
+    );
   });
 
   it("returns false for empty array", () => {
@@ -68,7 +69,10 @@ describe("validateGenres", () => {
 
 describe("regenerateBlend", () => {
   it("returns the same shape as blendGenres", () => {
-    const request = { genres: ["mystery", "thriller"], prompt: "solve the case" };
+    const request = {
+      genres: ["mystery", "thriller"],
+      prompt: "solve the case",
+    };
     const result = regenerateBlend(request);
     expect(result).toHaveProperty("selectedGenres");
     expect(result).toHaveProperty("blendedPrompt");

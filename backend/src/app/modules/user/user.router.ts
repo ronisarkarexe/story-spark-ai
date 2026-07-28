@@ -8,7 +8,11 @@ import { UserValidator } from "./user.validation";
 const router = express.Router();
 
 // User List
-router.get("/lists", auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN), UserController.getAllUsers);
+router.get(
+  "/lists",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  UserController.getAllUsers,
+);
 
 // Profile
 router.get(
@@ -17,7 +21,7 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   UserController.getProfileInfo,
 );
@@ -26,14 +30,11 @@ router.get(
 router.get(
   "/writer-application-list",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
-  UserController.getAllWriterApplicationUsers
+  UserController.getAllWriterApplicationUsers,
 );
 
 // Get Single User
-router.get(
-  "/:id",
-  UserController.getUser
-);
+router.get("/:id", UserController.getUser);
 
 // Update Single User
 router.patch(
@@ -42,10 +43,10 @@ router.patch(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   validateRequest(UserValidator.updateUser),
-  UserController.updateUser
+  UserController.updateUser,
 );
 
 // Delete Single User
@@ -55,23 +56,23 @@ router.delete(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  UserController.deleteUser
+  UserController.deleteUser,
 );
 
 // Apply for Writer
 router.post(
   "/apply-for-writer",
   auth(ENUM_USER_ROLE.USER),
-  UserController.applyForWriter
+  UserController.applyForWriter,
 );
 
 // Apply for Writer
 router.post(
   "/approve-writer-application",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
-  UserController.approveWriterApplication
+  UserController.approveWriterApplication,
 );
 
 // Follow / Unfollow
@@ -81,9 +82,9 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  UserController.toggleFollow
+  UserController.toggleFollow,
 );
 
 // Get Follow Status
@@ -93,9 +94,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  UserController.getFollowStatus
+  UserController.getFollowStatus,
 );
 
 // Streaks and Achievements routes
@@ -105,9 +106,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  UserController.getWritingStreak
+  UserController.getWritingStreak,
 );
 
 router.get(
@@ -116,11 +117,10 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  UserController.getAchievements
+  UserController.getAchievements,
 );
-
 
 // Note: the standalone "/me/streak/update" endpoint has been removed.
 // Writing streak updates now happen server-side as a side effect of

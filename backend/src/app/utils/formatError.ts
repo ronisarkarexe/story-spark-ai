@@ -18,7 +18,10 @@ export const formatError = (err: unknown): FormattedError => {
       statusCode: 400,
       message: "Validation Error",
       errorMessages: err.issues.map((issue) => ({
-        path: issue.path.length > 0 ? String(issue.path[issue.path.length - 1]) : "",
+        path:
+          issue.path.length > 0
+            ? String(issue.path[issue.path.length - 1])
+            : "",
         message: issue.message,
       })),
     };
@@ -28,9 +31,7 @@ export const formatError = (err: unknown): FormattedError => {
     return {
       statusCode: err.statusCode,
       message: err.message || "An error occurred",
-      errorMessages: err.message
-        ? [{ path: "", message: err.message }]
-        : [],
+      errorMessages: err.message ? [{ path: "", message: err.message }] : [],
     };
   }
 
@@ -38,9 +39,7 @@ export const formatError = (err: unknown): FormattedError => {
     return {
       statusCode: 500,
       message: err.message || "Something went wrong",
-      errorMessages: err.message
-        ? [{ path: "", message: err.message }]
-        : [],
+      errorMessages: err.message ? [{ path: "", message: err.message }] : [],
     };
   }
 

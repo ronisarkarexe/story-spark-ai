@@ -11,26 +11,20 @@ export interface PacingAnalysis {
   overallScore: number;
 }
 
-export const analyzePacing = (
-  story: string
-): PacingAnalysis => {
+export const analyzePacing = (story: string): PacingAnalysis => {
   return {
     overallScore: 85,
     issues: [],
   };
 };
 
-export const getOverallRating = (
-  score: number
-) => {
+export const getOverallRating = (score: number) => {
   if (score >= 80) return "Excellent";
   if (score >= 60) return "Good";
   if (score >= 40) return "Average";
   return "Needs Improvement";
 };
 
-export const refreshAnalysis = (
-  story: string
-): PacingAnalysis => {
+export const refreshAnalysis = (story: string): PacingAnalysis => {
   return analyzePacing(story);
 };

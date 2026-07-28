@@ -8,12 +8,8 @@ interface Props {
   story: string;
 }
 
-export default function StoryKeywordExtractor({
-  story,
-}: Props) {
-  const [result, setResult] = useState(
-    extractKeywords(story)
-  );
+export default function StoryKeywordExtractor({ story }: Props) {
+  const [result, setResult] = useState(extractKeywords(story));
 
   useEffect(() => {
     setResult(extractKeywords(story));
@@ -22,16 +18,12 @@ export default function StoryKeywordExtractor({
   const deleteKeyword = (keyword: string) => {
     setResult({
       ...result,
-      keywords: removeKeyword(
-        result.keywords,
-        keyword
-      ),
+      keywords: removeKeyword(result.keywords, keyword),
     });
   };
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-
       <h2 className="text-2xl font-bold text-white mb-6">
         🔑 AI Story Keyword Extractor
       </h2>
@@ -49,11 +41,8 @@ export default function StoryKeywordExtractor({
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-
         <div>
-          <h3 className="font-semibold text-white">
-            Themes
-          </h3>
+          <h3 className="font-semibold text-white">Themes</h3>
           <ul className="text-gray-300 mt-2">
             {result.themes.map((item) => (
               <li key={item}>• {item}</li>
@@ -62,9 +51,7 @@ export default function StoryKeywordExtractor({
         </div>
 
         <div>
-          <h3 className="font-semibold text-white">
-            Characters
-          </h3>
+          <h3 className="font-semibold text-white">Characters</h3>
           <ul className="text-gray-300 mt-2">
             {result.characters.map((item) => (
               <li key={item}>• {item}</li>
@@ -73,9 +60,7 @@ export default function StoryKeywordExtractor({
         </div>
 
         <div>
-          <h3 className="font-semibold text-white">
-            Locations
-          </h3>
+          <h3 className="font-semibold text-white">Locations</h3>
           <ul className="text-gray-300 mt-2">
             {result.locations.map((item) => (
               <li key={item}>• {item}</li>
@@ -84,16 +69,13 @@ export default function StoryKeywordExtractor({
         </div>
 
         <div>
-          <h3 className="font-semibold text-white">
-            Concepts
-          </h3>
+          <h3 className="font-semibold text-white">Concepts</h3>
           <ul className="text-gray-300 mt-2">
             {result.concepts.map((item) => (
               <li key={item}>• {item}</li>
             ))}
           </ul>
         </div>
-
       </div>
     </div>
   );

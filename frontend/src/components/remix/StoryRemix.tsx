@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { useRemixStoryMutation, useRemixFreeStoryMutation } from "../../redux/apis/ai.model.api";
+import {
+  useRemixStoryMutation,
+  useRemixFreeStoryMutation,
+} from "../../redux/apis/ai.model.api";
 import { IStories } from "../stories/stories.view.component";
 
 interface Props {
@@ -14,25 +17,52 @@ const REMIX_OPTIONS = [
     type: "setting",
     label: "🌍 Change Setting",
     description: "Same plot, different world",
-    options: ["Space Station", "Medieval Fantasy", "Cyberpunk City", "Wild West", "Underwater Kingdom", "Post-Apocalyptic Earth"],
+    options: [
+      "Space Station",
+      "Medieval Fantasy",
+      "Cyberpunk City",
+      "Wild West",
+      "Underwater Kingdom",
+      "Post-Apocalyptic Earth",
+    ],
   },
   {
     type: "perspective",
     label: "👁️ Perspective Shift",
     description: "Retell from a different viewpoint",
-    options: ["The Villain", "A Side Character", "An Animal", "An Omniscient Narrator", "A Child"],
+    options: [
+      "The Villain",
+      "A Side Character",
+      "An Animal",
+      "An Omniscient Narrator",
+      "A Child",
+    ],
   },
   {
     type: "time_period",
     label: "⏰ Time Period",
     description: "Same story, different era",
-    options: ["Ancient Rome", "Victorian England", "1920s Jazz Era", "Far Future 2500", "Renaissance Italy", "1980s America"],
+    options: [
+      "Ancient Rome",
+      "Victorian England",
+      "1920s Jazz Era",
+      "Far Future 2500",
+      "Renaissance Italy",
+      "1980s America",
+    ],
   },
   {
     type: "tone",
     label: "🎭 Tone Shift",
     description: "Change the emotional feel",
-    options: ["Comedy", "Dark Thriller", "Romance", "Horror", "Inspirational", "Satirical"],
+    options: [
+      "Comedy",
+      "Dark Thriller",
+      "Romance",
+      "Horror",
+      "Inspirational",
+      "Satirical",
+    ],
   },
   {
     type: "gender_swap",
@@ -42,7 +72,12 @@ const REMIX_OPTIONS = [
   },
 ];
 
-export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }: Props) {
+export default function StoryRemix({
+  story,
+  isLogin,
+  onRemixComplete,
+  onClose,
+}: Props) {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isRemixing, setIsRemixing] = useState(false);
@@ -51,7 +86,7 @@ export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }:
   const [remixStory] = useRemixStoryMutation();
   const [remixFreeStory] = useRemixFreeStoryMutation();
 
-  const selectedRemix = REMIX_OPTIONS.find(r => r.type === selectedType);
+  const selectedRemix = REMIX_OPTIONS.find((r) => r.type === selectedType);
 
   const handleRemix = async () => {
     if (!selectedType || !selectedOption) return;
@@ -91,26 +126,38 @@ export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }:
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-center justify-center p-4">
       <div className="w-full max-w-2xl bg-[#0f1117] rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <div>
-            <h2 className="text-xl font-bold text-purple-400">🔀 Remix This Story</h2>
-            <p className="text-xs text-white/40 mt-0.5 truncate max-w-xs">{story.title}</p>
+            <h2 className="text-xl font-bold text-purple-400">
+              🔀 Remix This Story
+            </h2>
+            <p className="text-xs text-white/40 mt-0.5 truncate max-w-xs">
+              {story.title}
+            </p>
           </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition text-xl">✕</button>
+          <button
+            onClick={onClose}
+            className="text-white/40 hover:text-white transition text-xl"
+          >
+            ✕
+          </button>
         </div>
 
         <div className="px-6 py-5">
           {/* Step 1: Choose remix type */}
-          <p className="text-sm text-white/60 mb-3 font-medium">Step 1 — Choose how to remix:</p>
+          <p className="text-sm text-white/60 mb-3 font-medium">
+            Step 1 — Choose how to remix:
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             {REMIX_OPTIONS.map((remix) => (
               <button
                 key={remix.type}
                 onClick={() => {
                   setSelectedType(remix.type);
-                  setSelectedOption(remix.type === "gender_swap" ? "Gender Swap" : null);
+                  setSelectedOption(
+                    remix.type === "gender_swap" ? "Gender Swap" : null,
+                  );
                 }}
                 className={`text-left p-4 rounded-xl border transition-all ${
                   selectedType === remix.type
@@ -118,8 +165,12 @@ export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }:
                     : "border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/5"
                 }`}
               >
-                <div className="font-semibold text-white text-sm">{remix.label}</div>
-                <div className="text-xs text-white/40 mt-0.5">{remix.description}</div>
+                <div className="font-semibold text-white text-sm">
+                  {remix.label}
+                </div>
+                <div className="text-xs text-white/40 mt-0.5">
+                  {remix.description}
+                </div>
               </button>
             ))}
           </div>
@@ -127,7 +178,9 @@ export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }:
           {/* Step 2: Choose option */}
           {selectedRemix && selectedRemix.type !== "gender_swap" && (
             <div className="mb-6">
-              <p className="text-sm text-white/60 mb-3 font-medium">Step 2 — Choose an option:</p>
+              <p className="text-sm text-white/60 mb-3 font-medium">
+                Step 2 — Choose an option:
+              </p>
               <div className="flex flex-wrap gap-2">
                 {selectedRemix.options.map((option) => (
                   <button
@@ -146,14 +199,16 @@ export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }:
             </div>
           )}
 
-          {error && (
-            <p className="text-red-400 text-sm mb-4">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
           {/* Remix Button */}
           <button
             onClick={handleRemix}
-            disabled={!selectedType || (!selectedOption && selectedType !== "gender_swap") || isRemixing}
+            disabled={
+              !selectedType ||
+              (!selectedOption && selectedType !== "gender_swap") ||
+              isRemixing
+            }
             className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-lg transition-all"
           >
             {isRemixing ? (

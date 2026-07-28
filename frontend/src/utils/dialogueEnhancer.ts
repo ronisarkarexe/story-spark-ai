@@ -10,29 +10,23 @@ export interface DialogueAnalysis {
   suggestions: DialogueSuggestion[];
 }
 
-export const analyzeDialogue = (
-  story: string
-): DialogueAnalysis => {
+export const analyzeDialogue = (story: string): DialogueAnalysis => {
   return {
     suggestions: [],
   };
 };
 
-export const refreshDialogueAnalysis = (
-  story: string
-): DialogueAnalysis => {
+export const refreshDialogueAnalysis = (story: string): DialogueAnalysis => {
   return analyzeDialogue(story);
 };
 
 export const acceptSuggestion = (
   story: string,
-  suggestionId: string
+  suggestionId: string,
 ): string => {
   return story;
 };
 
-export const ignoreSuggestion = (
-  suggestionId: string
-) => {
+export const ignoreSuggestion = (suggestionId: string) => {
   return true;
 };

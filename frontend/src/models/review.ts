@@ -13,4 +13,3 @@ export interface Review {
   rejectedAt?: Date;
   createdAt?: Date;
 }
-

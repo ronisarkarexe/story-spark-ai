@@ -8,7 +8,7 @@ describe("useStoryMeta hook", () => {
     // Reset document state before each test
     document.title = "";
     const metas = document.querySelectorAll(
-      'meta[name="description"], meta[property="og:description"], meta[name="twitter:description"], meta[property="og:title"], meta[name="twitter:title"], meta[property="og:image"], meta[name="twitter:image"]'
+      'meta[name="description"], meta[property="og:description"], meta[name="twitter:description"], meta[property="og:title"], meta[name="twitter:title"], meta[property="og:image"], meta[name="twitter:image"]',
     );
     metas.forEach((m) => m.remove());
     // Add fresh meta elements for testing
@@ -47,26 +47,36 @@ describe("useStoryMeta hook", () => {
     renderHook(() => useStoryMeta({ title: "Test Title" }));
     const ogTitle = document.querySelector('meta[property="og:title"]');
     expect(ogTitle).toBeDefined();
-    expect((ogTitle as HTMLMetaElement).content).toBe("Test Title \u2013 Story Spark AI");
+    expect((ogTitle as HTMLMetaElement).content).toBe(
+      "Test Title \u2013 Story Spark AI",
+    );
   });
 
   it("sets twitter:title meta tag", () => {
     renderHook(() => useStoryMeta({ title: "Test Title" }));
     const twitterTitle = document.querySelector('meta[name="twitter:title"]');
     expect(twitterTitle).toBeDefined();
-    expect((twitterTitle as HTMLMetaElement).content).toBe("Test Title \u2013 Story Spark AI");
+    expect((twitterTitle as HTMLMetaElement).content).toBe(
+      "Test Title \u2013 Story Spark AI",
+    );
   });
 
   it("sets og:description when description prop is provided", () => {
-    renderHook(() => useStoryMeta({ title: "T", description: "A great story" }));
+    renderHook(() =>
+      useStoryMeta({ title: "T", description: "A great story" }),
+    );
     const ogDesc = document.querySelector('meta[property="og:description"]');
     expect(ogDesc).toBeDefined();
     expect((ogDesc as HTMLMetaElement).content).toBe("A great story");
   });
 
   it("sets twitter:description when description prop is provided", () => {
-    renderHook(() => useStoryMeta({ title: "T", description: "A great story" }));
-    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+    renderHook(() =>
+      useStoryMeta({ title: "T", description: "A great story" }),
+    );
+    const twitterDesc = document.querySelector(
+      'meta[name="twitter:description"]',
+    );
     expect(twitterDesc).toBeDefined();
     expect((twitterDesc as HTMLMetaElement).content).toBe("A great story");
   });
@@ -82,7 +92,7 @@ describe("useStoryMeta hook", () => {
   it("updates meta tags when title changes", () => {
     const { rerender } = renderHook(
       ({ title }: { title: string }) => useStoryMeta({ title }),
-      { initialProps: { title: "First Title" } }
+      { initialProps: { title: "First Title" } },
     );
 
     expect(document.title).toBe("First Title \u2013 Story Spark AI");

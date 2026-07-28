@@ -28,7 +28,7 @@ const getPendingCommentReports = catchAsync(
       message: "Pending comment reports fetched successfully",
       data: result,
     });
-  }
+  },
 );
 
 const getAllReports = catchAsync(async (req: Request, res: Response) => {

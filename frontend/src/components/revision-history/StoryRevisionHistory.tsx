@@ -10,10 +10,7 @@ interface Props {
   onRestore?: (content: string) => void;
 }
 
-export default function StoryRevisionHistory({
-  revisions,
-  onRestore,
-}: Props) {
+export default function StoryRevisionHistory({ revisions, onRestore }: Props) {
   const [selected, setSelected] = useState(0);
 
   const current = revisions[selected];
@@ -27,15 +24,11 @@ export default function StoryRevisionHistory({
         modifications: 0,
       };
 
-    return compareRevisions(
-      previous.content,
-      current.content
-    );
+    return compareRevisions(previous.content, current.content);
   }, [current, previous]);
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-
       <h2 className="text-2xl font-bold text-white mb-6">
         🕒 Story Revision History
       </h2>
@@ -51,30 +44,20 @@ export default function StoryRevisionHistory({
                 : "border-zinc-700"
             }`}
           >
-            <div className="font-semibold text-white">
-              Revision {index + 1}
-            </div>
+            <div className="font-semibold text-white">Revision {index + 1}</div>
 
-            <div className="text-sm text-gray-400">
-              {revision.timestamp}
-            </div>
+            <div className="text-sm text-gray-400">{revision.timestamp}</div>
           </button>
         ))}
       </div>
 
       {previous && current && (
         <div className="rounded-lg border border-zinc-700 p-4 mb-6">
-          <h3 className="font-semibold text-white mb-4">
-            Visual Diff Summary
-          </h3>
+          <h3 className="font-semibold text-white mb-4">Visual Diff Summary</h3>
 
-          <p className="text-green-400">
-            ➕ Additions: {diff.additions}
-          </p>
+          <p className="text-green-400">➕ Additions: {diff.additions}</p>
 
-          <p className="text-red-400">
-            ➖ Deletions: {diff.deletions}
-          </p>
+          <p className="text-red-400">➖ Deletions: {diff.deletions}</p>
 
           <p className="text-yellow-400">
             ✏️ Modifications: {diff.modifications}
@@ -84,15 +67,12 @@ export default function StoryRevisionHistory({
 
       {current && (
         <button
-          onClick={() =>
-            onRestore?.(restoreRevision(current))
-          }
+          onClick={() => onRestore?.(restoreRevision(current))}
           className="rounded bg-indigo-600 px-4 py-2 text-white"
         >
           Restore This Version
         </button>
       )}
-
     </div>
   );
 }

@@ -38,9 +38,21 @@ export function countTokens(text: string): number {
 
 const CHARACTER_RE = /\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\b/g;
 const SETTING_KEYWORDS = [
-  "forest", "castle", "city", "village", "mountain", "ocean",
-  "realm", "kingdom", "dungeon", "tower", "market", "desert",
-  "cave", "ship", "island",
+  "forest",
+  "castle",
+  "city",
+  "village",
+  "mountain",
+  "ocean",
+  "realm",
+  "kingdom",
+  "dungeon",
+  "tower",
+  "market",
+  "desert",
+  "cave",
+  "ship",
+  "island",
 ];
 
 export function extractLore(nodes: StoryNode[]): LorePayload {
@@ -101,9 +113,10 @@ export function serializeLore(lore: LorePayload): string {
 
 export function compressContext(
   nodes: StoryNode[],
-  maxTokens?: number
+  maxTokens?: number,
 ): CompressedContext {
-  const MAX = maxTokens ?? parseInt(process.env.MAX_CONTEXT_TOKENS ?? "4096", 10);
+  const MAX =
+    maxTokens ?? parseInt(process.env.MAX_CONTEXT_TOKENS ?? "4096", 10);
 
   const lore = extractLore(nodes);
   const loreSummary = serializeLore(lore);

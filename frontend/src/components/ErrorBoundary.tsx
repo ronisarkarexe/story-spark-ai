@@ -30,9 +30,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   private clearExpiredLogs(): void {
     try {
-      const existing = JSON.parse(
-        localStorage.getItem(ERROR_LOG_KEY) || "[]"
-      );
+      const existing = JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || "[]");
       const now = Date.now();
       const fresh = existing.filter((log: { timestamp: string }) => {
         return now - new Date(log.timestamp).getTime() < LOG_EXPIRY_MS;
@@ -40,15 +38,13 @@ class ErrorBoundary extends Component<Props, State> {
       if (fresh.length !== existing.length) {
         localStorage.setItem(ERROR_LOG_KEY, JSON.stringify(fresh));
       }
-    } catch {
-    }
+    } catch {}
   }
 
   static clearAllLogs(): void {
     try {
       localStorage.removeItem(ERROR_LOG_KEY);
-    } catch {
-    }
+    } catch {}
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
@@ -78,16 +74,13 @@ class ErrorBoundary extends Component<Props, State> {
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       };
       this.clearExpiredLogs();
-      const existing = JSON.parse(
-        localStorage.getItem(ERROR_LOG_KEY) || "[]"
-      );
+      const existing = JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || "[]");
       existing.unshift(errorLog);
       localStorage.setItem(
         ERROR_LOG_KEY,
-        JSON.stringify(existing.slice(0, MAX_ERROR_LOGS))
+        JSON.stringify(existing.slice(0, MAX_ERROR_LOGS)),
       );
-    } catch {
-    }
+    } catch {}
 
     this.setState({ errorInfo });
   }

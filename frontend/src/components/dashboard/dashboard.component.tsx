@@ -10,19 +10,24 @@ import { USER_ROLE } from "../../constants/role";
 import StreakCard from "../StreakCard";
 import AchievementsGrid from "../AchievementsGrid";
 import WritingStatsPanel from "../WritingStatsPanel";
-import { useGetWritingStreakQuery, useGetAchievementsQuery } from "../../redux/apis/gamification.api";
+import {
+  useGetWritingStreakQuery,
+  useGetAchievementsQuery,
+} from "../../redux/apis/gamification.api";
 
 const DashboardComponent = () => {
   const { data, isLoading } = useGetDashboardAnalysisQuery(undefined);
   const userInfo = getUserInfo();
   const role = userInfo?.role;
 
-  const { data: streakData, isLoading: isStreakLoading } = useGetWritingStreakQuery(undefined, {
-    skip: role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN,
-  });
-  const { data: achievementsData, isLoading: isAchievementsLoading } = useGetAchievementsQuery(undefined, {
-    skip: role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN,
-  });
+  const { data: streakData, isLoading: isStreakLoading } =
+    useGetWritingStreakQuery(undefined, {
+      skip: role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN,
+    });
+  const { data: achievementsData, isLoading: isAchievementsLoading } =
+    useGetAchievementsQuery(undefined, {
+      skip: role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN,
+    });
 
   if (isLoading) {
     return <LoadingAnimation />;
@@ -62,7 +67,9 @@ const DashboardComponent = () => {
         },
         {
           title: "Subscriptions",
-          value: (data.subscriptionTypes?.pro || 0) + (data.subscriptionTypes?.premium || 0),
+          value:
+            (data.subscriptionTypes?.pro || 0) +
+            (data.subscriptionTypes?.premium || 0),
           icon: "fa-credit-card",
           gradient: "from-emerald-600 to-teal-500",
           glow: "shadow-emerald-500/5 dark:shadow-emerald-500/20",
@@ -198,8 +205,8 @@ const DashboardComponent = () => {
                 {role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN
                   ? "Platform Manager Dashboard"
                   : role === USER_ROLE.WRITER
-                  ? "Creator Dashboard"
-                  : "Member Dashboard"}
+                    ? "Creator Dashboard"
+                    : "Member Dashboard"}
               </span>
             </div>
 
@@ -211,32 +218,44 @@ const DashboardComponent = () => {
               {role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN
                 ? "Monitor platform growth, track engagement, and manage your ecosystem through a modern analytics experience."
                 : role === USER_ROLE.WRITER
-                ? "View your creative reach, write new posts, and customize your workspace using premium AI assistant features."
-                : "Explore rich content, upgrade your reading plan, or apply to join our community of writers."}
+                  ? "View your creative reach, write new posts, and customize your workspace using premium AI assistant features."
+                  : "Explore rich content, upgrade your reading plan, or apply to join our community of writers."}
             </p>
           </div>
         </div>
       </div>
 
       {/* STATS GRID */}
-      <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 ${role === USER_ROLE.USER ? "xl:grid-cols-2" : "xl:grid-cols-4"}`}>
+      <div
+        className={`grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 ${role === USER_ROLE.USER ? "xl:grid-cols-2" : "xl:grid-cols-4"}`}
+      >
         {stats.map((item) => (
           <div
             key={item.title}
             className={`min-w-0 rounded-2xl border ${item.border} ${item.bg} p-5 shadow-xl ${item.glow}`}
           >
             <div className="mb-4 flex items-start justify-between gap-3">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${item.iconBg}`}>
+              <div
+                className={`flex items-center justify-center w-10 h-10 rounded-xl ${item.iconBg}`}
+              >
                 <i className={`fas ${item.icon} ${item.iconColor} text-sm`}></i>
               </div>
 
-              <span className={`text-right text-[10px] leading-4 ${item.badgeColor}`}>{item.badge}</span>
+              <span
+                className={`text-right text-[10px] leading-4 ${item.badgeColor}`}
+              >
+                {item.badge}
+              </span>
             </div>
 
-            <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">{item.title}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">
+              {item.title}
+            </p>
 
             <h2 className="break-words text-2xl font-black text-slate-800 dark:text-white sm:text-3xl">
-              {typeof item.value === "number" ? item.value.toLocaleString() : item.value}
+              {typeof item.value === "number"
+                ? item.value.toLocaleString()
+                : item.value}
             </h2>
           </div>
         ))}
@@ -261,22 +280,30 @@ const DashboardComponent = () => {
           {(role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN) && (
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
               <div className="min-w-0 rounded-2xl border border-blue-100 bg-slate-50/50 p-5 dark:border-blue-500/15 dark:bg-white/[0.02] sm:p-6">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Users Distribution</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
+                  Users Distribution
+                </h2>
                 <UsersPieChart data={data.users!} />
               </div>
 
               <div className="min-w-0 rounded-2xl border border-emerald-100 bg-slate-50/50 p-5 dark:border-emerald-500/15 dark:bg-white/[0.02] sm:p-6">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Subscription Overview</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
+                  Subscription Overview
+                </h2>
                 <SubscriptionChart data={data.subscriptionTypes!} />
               </div>
 
               <div className="min-w-0 rounded-2xl border border-violet-100 bg-slate-50/50 p-5 dark:border-violet-500/15 dark:bg-white/[0.02] sm:p-6">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Monthly Posts</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
+                  Monthly Posts
+                </h2>
                 <PostsPerMonthChart perMonth={data.posts!.perMonth} />
               </div>
 
               <div className="min-w-0 rounded-2xl border border-amber-100 bg-slate-50/50 p-5 dark:border-amber-500/15 dark:bg-white/[0.02] sm:p-6">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Topics Analytics</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
+                  Topics Analytics
+                </h2>
                 <TopicsChart topics={data.posts!.topics} />
               </div>
             </div>
@@ -292,8 +319,16 @@ const DashboardComponent = () => {
                 </div>
                 <div className="min-w-0 lg:col-span-2">
                   <WritingStatsPanel
-                    totalStories={achievementsData?.achievements.find((a) => a.id === "story_1")?.progress || 0}
-                    totalWords={achievementsData?.achievements.find((a) => a.id === "words_1000")?.progress || 0}
+                    totalStories={
+                      achievementsData?.achievements.find(
+                        (a) => a.id === "story_1",
+                      )?.progress || 0
+                    }
+                    totalWords={
+                      achievementsData?.achievements.find(
+                        (a) => a.id === "words_1000",
+                      )?.progress || 0
+                    }
                     activeDays={streakData?.totalWritingDays || 0}
                     longestStreak={streakData?.longestStreak || 0}
                     monthlyActivity={data.posts?.perMonth}
@@ -304,32 +339,53 @@ const DashboardComponent = () => {
 
               {/* Achievements Showcase */}
               <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/[0.06] dark:bg-white/[0.01] sm:p-6">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4">Writing Achievements</h3>
-                <AchievementsGrid achievements={achievementsData?.achievements} isLoading={isAchievementsLoading} />
+                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4">
+                  Writing Achievements
+                </h3>
+                <AchievementsGrid
+                  achievements={achievementsData?.achievements}
+                  isLoading={isAchievementsLoading}
+                />
               </div>
-               
+
               {/* Writer Charts */}
               <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
                 <div className="min-w-0 rounded-2xl border border-violet-100 bg-slate-50/50 p-5 dark:border-violet-500/15 dark:bg-white/[0.02] sm:p-6">
-                  <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Monthly Posts Activity</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Track how many stories you have published month by month.</p>
-                  {data.posts?.perMonth && Object.keys(data.posts.perMonth).length > 0 ? (
+                  <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-2">
+                    Monthly Posts Activity
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
+                    Track how many stories you have published month by month.
+                  </p>
+                  {data.posts?.perMonth &&
+                  Object.keys(data.posts.perMonth).length > 0 ? (
                     <PostsPerMonthChart perMonth={data.posts.perMonth} />
                   ) : (
                     <div className="text-center py-10">
-                      <p className="text-slate-500">No posts written yet. Start your writing journey!</p>
+                      <p className="text-slate-500">
+                        No posts written yet. Start your writing journey!
+                      </p>
                     </div>
                   )}
                 </div>
 
                 <div className="min-w-0 rounded-2xl border border-amber-100 bg-slate-50/50 p-5 dark:border-amber-500/15 dark:bg-white/[0.02] sm:p-6">
-                  <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Topics Analytics</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Explore the frequency of genres and topics you have published.</p>
-                  {data.posts?.topics && Object.keys(data.posts.topics).length > 0 ? (
+                  <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-2">
+                    Topics Analytics
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
+                    Explore the frequency of genres and topics you have
+                    published.
+                  </p>
+                  {data.posts?.topics &&
+                  Object.keys(data.posts.topics).length > 0 ? (
                     <TopicsChart topics={data.posts.topics} />
                   ) : (
                     <div className="text-center py-10">
-                      <p className="text-slate-500">No topic data yet. Topics will show here once you publish posts!</p>
+                      <p className="text-slate-500">
+                        No topic data yet. Topics will show here once you
+                        publish posts!
+                      </p>
                     </div>
                   )}
                 </div>
@@ -341,16 +397,22 @@ const DashboardComponent = () => {
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 mb-4 font-bold">
                     <i className="fas fa-users text-xl"></i>
                   </div>
-                  <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">Real-Time Collab Workspace</h3>
+                  <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">
+                    Real-Time Collab Workspace
+                  </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Co-write stories with other authors in real-time! Create or join active collaboration rooms, share live feedback, and brainstorm ideas simultaneously on our interactive writing canvases.
+                    Co-write stories with other authors in real-time! Create or
+                    join active collaboration rooms, share live feedback, and
+                    brainstorm ideas simultaneously on our interactive writing
+                    canvases.
                   </p>
                 </div>
                 <a
                   href="/collab"
                   className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 px-8 py-4 font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] hover:from-indigo-600 hover:to-blue-700 sm:w-auto"
                 >
-                  <i className="fas fa-satellite-dish animate-pulse"></i> Open Collab Space
+                  <i className="fas fa-satellite-dish animate-pulse"></i> Open
+                  Collab Space
                 </a>
               </div>
             </div>
@@ -366,8 +428,16 @@ const DashboardComponent = () => {
                 </div>
                 <div className="min-w-0 lg:col-span-2">
                   <WritingStatsPanel
-                    totalStories={achievementsData?.achievements.find((a) => a.id === "story_1")?.progress || 0}
-                    totalWords={achievementsData?.achievements.find((a) => a.id === "words_1000")?.progress || 0}
+                    totalStories={
+                      achievementsData?.achievements.find(
+                        (a) => a.id === "story_1",
+                      )?.progress || 0
+                    }
+                    totalWords={
+                      achievementsData?.achievements.find(
+                        (a) => a.id === "words_1000",
+                      )?.progress || 0
+                    }
                     activeDays={streakData?.totalWritingDays || 0}
                     longestStreak={streakData?.longestStreak || 0}
                     monthlyActivity={data.posts?.perMonth}
@@ -378,49 +448,62 @@ const DashboardComponent = () => {
 
               {/* Achievements Showcase */}
               <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/[0.06] dark:bg-white/[0.01] sm:p-6">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4">Writing Achievements</h3>
-                <AchievementsGrid achievements={achievementsData?.achievements} isLoading={isAchievementsLoading} />
+                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4">
+                  Writing Achievements
+                </h3>
+                <AchievementsGrid
+                  achievements={achievementsData?.achievements}
+                  isLoading={isAchievementsLoading}
+                />
               </div>
 
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 sm:gap-6">
-              {/* Creator Card */}
-              <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-amber-100 bg-slate-50/50 p-6 dark:border-amber-500/10 dark:bg-white/[0.02] sm:p-8">
-                <div>
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 mb-4">
-                    <i className="fas fa-pen-nib text-xl"></i>
+                {/* Creator Card */}
+                <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-amber-100 bg-slate-50/50 p-6 dark:border-amber-500/10 dark:bg-white/[0.02] sm:p-8">
+                  <div>
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 mb-4">
+                      <i className="fas fa-pen-nib text-xl"></i>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
+                      Join our Creator Circle
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+                      Have stories you want to share with our global reading
+                      community? Apply to become a verified Writer on StorySpark
+                      AI to start drafting and publishing your content today!
+                    </p>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Join our Creator Circle</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
-                    Have stories you want to share with our global reading community? Apply to become a verified Writer on StorySpark AI to start drafting and publishing your content today!
-                  </p>
+                  <a
+                    href="/dashboard/profile"
+                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-lg shadow-amber-500/15 transition-all hover:scale-[1.02]"
+                  >
+                    <i className="fas fa-file-alt"></i> Apply Now
+                  </a>
                 </div>
-                <a
-                  href="/dashboard/profile"
-                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-lg shadow-amber-500/15 transition-all hover:scale-[1.02]"
-                >
-                  <i className="fas fa-file-alt"></i> Apply Now
-                </a>
-              </div>
 
-              {/* Pro Upgrade Card */}
-              <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-indigo-100 bg-slate-50/50 p-6 dark:border-indigo-500/10 dark:bg-white/[0.02] sm:p-8">
-                <div>
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 mb-4">
-                    <i className="fas fa-gem text-xl"></i>
+                {/* Pro Upgrade Card */}
+                <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-indigo-100 bg-slate-50/50 p-6 dark:border-indigo-500/10 dark:bg-white/[0.02] sm:p-8">
+                  <div>
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 mb-4">
+                      <i className="fas fa-gem text-xl"></i>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
+                      Unlock Unlimited Potential
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+                      Ready to take your reading and creation to the next tier?
+                      Unlock high-capacity premium AI templates, infinite
+                      bookmarks, and early access features today.
+                    </p>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Unlock Unlimited Potential</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
-                    Ready to take your reading and creation to the next tier? Unlock high-capacity premium AI templates, infinite bookmarks, and early access features today.
-                  </p>
+                  <a
+                    href="/pricing"
+                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-500/15 transition-all hover:scale-[1.02]"
+                  >
+                    <i className="fas fa-shopping-cart"></i> View Premium Plans
+                  </a>
                 </div>
-                <a
-                  href="/pricing"
-                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-500/15 transition-all hover:scale-[1.02]"
-                >
-                  <i className="fas fa-shopping-cart"></i> View Premium Plans
-                </a>
               </div>
-            </div>
             </div>
           )}
         </div>

@@ -5,30 +5,12 @@ export interface StoryTag {
 }
 
 const tagDatabase = {
-  Fantasy: [
-    "Magic",
-    "Kingdom",
-    "Adventure",
-    "Dragons",
-    "Hero",
-  ],
-  Mystery: [
-    "Crime",
-    "Detective",
-    "Suspense",
-    "Investigation",
-  ],
-  Romance: [
-    "Love",
-    "Friendship",
-    "Heartbreak",
-    "Soulmate",
-  ],
+  Fantasy: ["Magic", "Kingdom", "Adventure", "Dragons", "Hero"],
+  Mystery: ["Crime", "Detective", "Suspense", "Investigation"],
+  Romance: ["Love", "Friendship", "Heartbreak", "Soulmate"],
 };
 
-export function generateTags(
-  story: string
-): StoryTag[] {
+export function generateTags(story: string): StoryTag[] {
   if (!story.trim()) return [];
 
   return [
@@ -55,16 +37,10 @@ export function generateTags(
   ];
 }
 
-export function addTag(
-  tags: StoryTag[],
-  tag: StoryTag
-) {
+export function addTag(tags: StoryTag[], tag: StoryTag) {
   return [...tags, tag];
 }
 
-export function removeTag(
-  tags: StoryTag[],
-  id: number
-) {
-  return tags.filter(tag => tag.id !== id);
+export function removeTag(tags: StoryTag[], id: number) {
+  return tags.filter((tag) => tag.id !== id);
 }

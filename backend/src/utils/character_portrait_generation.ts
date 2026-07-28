@@ -11,23 +11,17 @@ export interface CharacterPortraitInput {
 }
 
 export const buildCharacterPortraitPrompt = (
-  character: CharacterPortraitInput
+  character: CharacterPortraitInput,
 ): string => {
   const details = [
     character.role ? `Role: ${character.role}` : undefined,
     character.age !== undefined ? `Age: ${character.age}` : undefined,
-    character.appearance
-      ? `Appearance: ${character.appearance}`
-      : undefined,
-    character.personality
-      ? `Personality: ${character.personality}`
-      : undefined,
+    character.appearance ? `Appearance: ${character.appearance}` : undefined,
+    character.personality ? `Personality: ${character.personality}` : undefined,
     character.traits?.length
       ? `Traits: ${character.traits.join(", ")}`
       : undefined,
-    character.background
-      ? `Background: ${character.background}`
-      : undefined,
+    character.background ? `Background: ${character.background}` : undefined,
   ].filter((detail): detail is string => Boolean(detail));
 
   return [
@@ -39,7 +33,7 @@ export const buildCharacterPortraitPrompt = (
 
 export const generateCharacterPortrait = async (
   character: CharacterPortraitInput,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string | null> => {
   const prompt = buildCharacterPortraitPrompt(character);
   return generateStoryboardImage(prompt, signal);

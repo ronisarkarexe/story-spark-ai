@@ -20,12 +20,12 @@ export interface IConsistencyResult {
 }
 
 export const analyzeStoryConsistency = async (
-  storyText: string
+  storyText: string,
 ): Promise<IConsistencyResult> => {
   const response = await axios.post(
     `${API_BASE}/story-consistency/analyze`,
     { storyText },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data.data;
 };
@@ -50,12 +50,12 @@ export interface IFactTrackingResult {
 }
 
 export const trackStoryFacts = async (
-  storyText: string
+  storyText: string,
 ): Promise<IFactTrackingResult> => {
   const response = await axios.post(
     `${API_BASE}/story-consistency/track-facts`,
     { storyText },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data.data;
-};
+};

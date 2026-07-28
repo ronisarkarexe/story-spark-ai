@@ -11,12 +11,12 @@ const ReactionSchema: Schema<IReaction> = new Schema<IReaction, ReactionModel>(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 ReactionSchema.index({ postId: 1, userId: 1, type: 1 }, { unique: true });
 
 export const Reaction = model<IReaction, ReactionModel>(
   "Reaction",
-  ReactionSchema
+  ReactionSchema,
 );

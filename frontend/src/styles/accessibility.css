@@ -13,7 +13,8 @@
   outline-offset: 2px;
 }
 
-button, a {
+button,
+a {
   min-width: 44px;
   min-height: 44px;
 }

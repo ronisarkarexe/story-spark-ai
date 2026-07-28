@@ -66,13 +66,10 @@ describe("Character portrait controller", () => {
 
     mockFindOne.mockResolvedValue(character as any);
     mockGenerateCharacterPortrait.mockResolvedValue(
-      "data:image/png;base64,new-portrait"
+      "data:image/png;base64,new-portrait",
     );
 
-    await generatePortrait(
-      req as Request,
-      res as Response
-    );
+    await generatePortrait(req as Request, res as Response);
 
     expect(mockFindOne).toHaveBeenCalledWith({
       _id: "507f1f77bcf86cd799439011",
@@ -89,9 +86,7 @@ describe("Character portrait controller", () => {
       traits: ["loyal"],
     });
 
-    expect(character.portraitUrl).toBe(
-      "data:image/png;base64,new-portrait"
-    );
+    expect(character.portraitUrl).toBe("data:image/png;base64,new-portrait");
     expect(saveMock).toHaveBeenCalledTimes(1);
 
     expect(statusMock).toHaveBeenCalledWith(200);
@@ -100,17 +95,14 @@ describe("Character portrait controller", () => {
         success: true,
         message: "Character portrait generated successfully",
         data: character,
-      })
+      }),
     );
   });
 
   it("returns 401 when authentication is missing", async () => {
     req.user = undefined;
 
-    await generatePortrait(
-      req as Request,
-      res as Response
-    );
+    await generatePortrait(req as Request, res as Response);
 
     expect(statusMock).toHaveBeenCalledWith(401);
     expect(mockFindOne).not.toHaveBeenCalled();
@@ -122,10 +114,7 @@ describe("Character portrait controller", () => {
       id: "invalid-character-id",
     };
 
-    await generatePortrait(
-      req as Request,
-      res as Response
-    );
+    await generatePortrait(req as Request, res as Response);
 
     expect(statusMock).toHaveBeenCalledWith(400);
     expect(mockFindOne).not.toHaveBeenCalled();
@@ -134,10 +123,7 @@ describe("Character portrait controller", () => {
   it("returns 404 when the owned character does not exist", async () => {
     mockFindOne.mockResolvedValue(null);
 
-    await generatePortrait(
-      req as Request,
-      res as Response
-    );
+    await generatePortrait(req as Request, res as Response);
 
     expect(statusMock).toHaveBeenCalledWith(404);
     expect(mockGenerateCharacterPortrait).not.toHaveBeenCalled();
@@ -153,24 +139,16 @@ describe("Character portrait controller", () => {
     mockFindOne.mockResolvedValue(character as any);
     mockGenerateCharacterPortrait.mockResolvedValue(null);
 
-    await generatePortrait(
-      req as Request,
-      res as Response
-    );
+    await generatePortrait(req as Request, res as Response);
 
     expect(statusMock).toHaveBeenCalledWith(503);
     expect(character.save).not.toHaveBeenCalled();
   });
 
   it("returns 500 when an unexpected error occurs", async () => {
-    mockFindOne.mockRejectedValue(
-      new Error("Database unavailable")
-    );
+    mockFindOne.mockRejectedValue(new Error("Database unavailable"));
 
-    await generatePortrait(
-      req as Request,
-      res as Response
-    );
+    await generatePortrait(req as Request, res as Response);
 
     expect(statusMock).toHaveBeenCalledWith(500);
     expect(jsonMock).toHaveBeenCalledWith({

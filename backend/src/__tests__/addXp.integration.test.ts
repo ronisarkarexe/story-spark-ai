@@ -46,7 +46,7 @@ describe("addXp integration test (data loss verification)", () => {
 
     console.log(
       "TEST 1 - SIBLINGS INTACT:",
-      JSON.stringify(updatedUser?.gamification, null, 2)
+      JSON.stringify(updatedUser?.gamification, null, 2),
     );
 
     expect(updatedUser).not.toBeNull();
@@ -54,9 +54,9 @@ describe("addXp integration test (data loss verification)", () => {
     expect(updatedUser?.gamification?.level).toBe(2);
     expect(updatedUser?.gamification?.streak).toBe(5);
     expect(updatedUser?.gamification?.badges).toEqual(["starter"]);
-    expect(
-      updatedUser?.gamification?.lastActiveDate?.toISOString()
-    ).toBe(lastActiveDate.toISOString());
+    expect(updatedUser?.gamification?.lastActiveDate?.toISOString()).toBe(
+      lastActiveDate.toISOString(),
+    );
   });
 
   it("Test Case 1: should initialize gamification when it is missing", async () => {
@@ -72,7 +72,7 @@ describe("addXp integration test (data loss verification)", () => {
 
     console.log(
       "TEST 2 - MISSING GAMIFICATION INITIALIZED:",
-      JSON.stringify(updatedUser?.gamification, null, 2)
+      JSON.stringify(updatedUser?.gamification, null, 2),
     );
 
     expect(updatedUser).not.toBeNull();
@@ -97,7 +97,7 @@ describe("addXp integration test (data loss verification)", () => {
 
     console.log(
       "TEST 3 - MISSING XP, SIBLINGS INTACT:",
-      JSON.stringify(updatedUser?.gamification, null, 2)
+      JSON.stringify(updatedUser?.gamification, null, 2),
     );
 
     expect(updatedUser).not.toBeNull();
@@ -123,7 +123,7 @@ describe("addXp integration test (data loss verification)", () => {
 
     console.log(
       "TEST 4 - LEVEL UP SCENARIO:",
-      JSON.stringify(updatedUser?.gamification, null, 2)
+      JSON.stringify(updatedUser?.gamification, null, 2),
     );
 
     expect(updatedUser).not.toBeNull();

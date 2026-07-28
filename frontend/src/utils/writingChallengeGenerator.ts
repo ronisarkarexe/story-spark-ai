@@ -13,8 +13,7 @@ export function generateChallenges(): WritingChallenge[] {
     {
       id: 1,
       title: "Mystery Monday",
-      prompt:
-        "Write a mystery story where the detective is the real culprit.",
+      prompt: "Write a mystery story where the detective is the real culprit.",
       type: "Daily",
       genre: "Mystery",
       wordLimit: 500,
@@ -23,8 +22,7 @@ export function generateChallenges(): WritingChallenge[] {
     {
       id: 2,
       title: "Fantasy Quest",
-      prompt:
-        "Create a fantasy adventure with only two named characters.",
+      prompt: "Create a fantasy adventure with only two named characters.",
       type: "Weekly",
       genre: "Fantasy",
       wordLimit: 1500,
@@ -45,18 +43,14 @@ export function generateChallenges(): WritingChallenge[] {
 
 export function completeChallenge(
   challenges: WritingChallenge[],
-  id: number
+  id: number,
 ): WritingChallenge[] {
   return challenges.map((challenge) =>
-    challenge.id === id
-      ? { ...challenge, completed: true }
-      : challenge
+    challenge.id === id ? { ...challenge, completed: true } : challenge,
   );
 }
 
-export function earnedBadges(
-  challenges: WritingChallenge[]
-): string[] {
+export function earnedBadges(challenges: WritingChallenge[]): string[] {
   const completed = challenges.filter((c) => c.completed).length;
 
   if (completed >= 10) return ["🏆 Master Writer"];

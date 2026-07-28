@@ -37,10 +37,10 @@ const SELF_HARM_PATTERNS: RegExp[] = [
 ];
 
 const ALL_CATEGORIES: Array<{ patterns: RegExp[]; label: string }> = [
-  { patterns: CSAM_PATTERNS,       label: "content involving minors" },
+  { patterns: CSAM_PATTERNS, label: "content involving minors" },
   { patterns: HATE_SPEECH_PATTERNS, label: "hate speech" },
-  { patterns: VIOLENCE_PATTERNS,   label: "violent instructions" },
-  { patterns: SELF_HARM_PATTERNS,  label: "self-harm instructions" },
+  { patterns: VIOLENCE_PATTERNS, label: "violent instructions" },
+  { patterns: SELF_HARM_PATTERNS, label: "self-harm instructions" },
 ];
 
 // ── Public API ─────────────────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ export function assertContentSafe(text: string): void {
   const result = checkContent(text);
   if (result.blocked) {
     throw new Error(
-      `Content moderation: your request was blocked because it contains ${result.reason}. Please revise your content.`
+      `Content moderation: your request was blocked because it contains ${result.reason}. Please revise your content.`,
     );
   }
 }

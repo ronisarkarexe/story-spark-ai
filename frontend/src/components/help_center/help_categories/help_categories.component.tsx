@@ -8,7 +8,10 @@ interface HelpCategoriesProps {
 
 const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
   return (
-    <section id="help-categories" className="scroll-mt-28 transition-colors duration-300">
+    <section
+      id="help-categories"
+      className="scroll-mt-28 transition-colors duration-300"
+    >
       <div className="mb-10 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-300 mb-4">
           <i className="fa-solid fa-layer-group"></i>

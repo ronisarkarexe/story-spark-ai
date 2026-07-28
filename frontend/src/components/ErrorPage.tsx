@@ -5,7 +5,6 @@ import { AUTH_KEY } from "../constants/storage-key";
 const ErrorPage = () => {
   const navigate = useNavigate();
   const [isReloading, setIsReloading] = useState(false);
-  
 
   const handleReload = () => {
     setIsReloading(true);
@@ -144,18 +143,18 @@ const ErrorPage = () => {
           </button>
           <button
             onClick={() => {
-  sessionStorage.setItem(
-    "error-report",
-    JSON.stringify({
-      message: "Application crashed",
-      url: window.location.href,
-      stack: "Captured from ErrorBoundary",
-      timestamp: new Date().toISOString(),
-    })
-  );
+              sessionStorage.setItem(
+                "error-report",
+                JSON.stringify({
+                  message: "Application crashed",
+                  url: window.location.href,
+                  stack: "Captured from ErrorBoundary",
+                  timestamp: new Date().toISOString(),
+                }),
+              );
 
-  navigate("/report-bug");
-}}
+              navigate("/report-bug");
+            }}
             className="w-full px-6 py-3 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 font-semibold rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
             aria-label="Report this error"
           >

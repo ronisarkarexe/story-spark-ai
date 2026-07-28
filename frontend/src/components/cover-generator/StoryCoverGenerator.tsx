@@ -19,7 +19,7 @@ const StoryCoverGenerator: React.FC<StoryCoverGeneratorProps> = ({
       genre,
       theme,
       characters,
-    })
+    }),
   );
 
   const [selectedCover, setSelectedCover] = useState<number | null>(null);
@@ -31,7 +31,7 @@ const StoryCoverGenerator: React.FC<StoryCoverGeneratorProps> = ({
         genre,
         theme,
         characters,
-      })
+      }),
     );
   };
 
@@ -84,7 +84,7 @@ const StoryCoverGenerator: React.FC<StoryCoverGeneratorProps> = ({
           <button
             onClick={() =>
               handleDownload(
-                covers.find((c) => c.id === selectedCover)?.image || ""
+                covers.find((c) => c.id === selectedCover)?.image || "",
               )
             }
             className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white"

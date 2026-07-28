@@ -11,7 +11,14 @@ interface GraphFiltersProps {
 }
 
 const RELATIONSHIP_TYPES = [
-  "Friend", "Family", "Rival", "Mentor", "Ally", "Enemy", "Romantic Interest", "Unknown"
+  "Friend",
+  "Family",
+  "Rival",
+  "Mentor",
+  "Ally",
+  "Enemy",
+  "Romantic Interest",
+  "Unknown",
 ];
 
 const GraphFilters = ({
@@ -44,7 +51,9 @@ const GraphFilters = ({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-semibold text-slate-400">Search Character</label>
+        <label className="text-xs font-semibold text-slate-400">
+          Search Character
+        </label>
         <div className="relative">
           <input
             type="text"
@@ -58,7 +67,9 @@ const GraphFilters = ({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold text-slate-400">Relationship Types</label>
+        <label className="text-xs font-semibold text-slate-400">
+          Relationship Types
+        </label>
         <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto pr-1">
           {RELATIONSHIP_TYPES.map((type) => {
             const isChecked = selectedTypes.includes(type);
@@ -86,8 +97,12 @@ const GraphFilters = ({
 
       <div className="flex flex-col gap-1.5">
         <div className="flex justify-between items-center">
-          <label className="text-xs font-semibold text-slate-400">Min Relationship Strength</label>
-          <span className="text-xs font-bold text-indigo-400">{minStrength}</span>
+          <label className="text-xs font-semibold text-slate-400">
+            Min Relationship Strength
+          </label>
+          <span className="text-xs font-bold text-indigo-400">
+            {minStrength}
+          </span>
         </div>
         <input
           type="range"

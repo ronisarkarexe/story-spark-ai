@@ -16,10 +16,16 @@ const aiModel = z.object({
       .trim()
       .min(3, "Prompt must be at least 3 characters!")
       .max(1000, "Prompt must not exceed 1000 characters.")
-      .refine((val) => {
-        const stripped = val.replace(/^\[Genre:.*?\]\s*/, "").trim();
-        return stripped.length > 0;
-      }, { message: "Prompt must contain actual story content, not just a genre." }),
+      .refine(
+        (val) => {
+          const stripped = val.replace(/^\[Genre:.*?\]\s*/, "").trim();
+          return stripped.length > 0;
+        },
+        {
+          message:
+            "Prompt must contain actual story content, not just a genre.",
+        },
+      ),
 
     wordLength: z
       .number()
@@ -52,8 +58,11 @@ const aiModel = z.object({
         z.object({
           name: z.string({ required_error: "Name is required" }).trim().min(1),
           role: z.string({ required_error: "Role is required" }).trim().min(1),
-          personality: z.string({ required_error: "Personality/Traits are required" }).trim().min(1),
-        })
+          personality: z
+            .string({ required_error: "Personality/Traits are required" })
+            .trim()
+            .min(1),
+        }),
       )
       .optional(),
   }),
@@ -97,7 +106,7 @@ const aiChat = z.object({
           parts: z
             .string()
             .max(2000, "Each history message must not exceed 2000 characters."),
-        })
+        }),
       )
       .max(20, "Chat history must not exceed 20 messages.")
       .optional(),
@@ -111,7 +120,9 @@ const aiRemix = z.object({
     title: z.string({ required_error: "Title is required!" }),
     content: z.string().min(10).max(10000),
     tag: z.string({ required_error: "Tag is required!" }),
-    remixType: z.enum(REMIX_TYPES, { required_error: "Remix type is required!" }),
+    remixType: z.enum(REMIX_TYPES, {
+      required_error: "Remix type is required!",
+    }),
     remixOption: z.string().max(200).optional(),
     language: z.string().max(50).optional(),
   }),
@@ -121,18 +132,23 @@ const aiTranslate = z.object({
   body: z.object({
     title: z.string({ required_error: "Title is required!" }),
     content: z.string().min(10).max(10000),
-    targetLanguage: z.string({ required_error: "Target language is required!" }).min(1).max(50),
+    targetLanguage: z
+      .string({ required_error: "Target language is required!" })
+      .min(1)
+      .max(50),
   }),
 });
 
 const aiStoryGenerate = z.object({
-  body: z.object({
-    prompt: z
-      .string({ required_error: "Prompt is required!" })
-      .trim()
-      .min(1, "Prompt is required!")
-      .max(2000, "Prompt must not exceed 2000 characters"),
-  }).passthrough(),
+  body: z
+    .object({
+      prompt: z
+        .string({ required_error: "Prompt is required!" })
+        .trim()
+        .min(1, "Prompt is required!")
+        .max(2000, "Prompt must not exceed 2000 characters"),
+    })
+    .passthrough(),
 });
 
 export const AIModelValidator = {

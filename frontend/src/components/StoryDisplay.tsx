@@ -1,15 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 
 // --- Sample Generated Stories (Mock Data for demonstration) ---
 const MOCK_STORIES: string[] = [
   "The neon signs of Neo-Paris buzzed softly through the heavy downpour. Kaelen pulled his synth-leather jacket tighter around his shoulders, his eyes locked on the encrypted data drive humming in his palm. The corporate syndicate was hunting him now, and time was running out.",
   "Deep beneath the ocean's surface, the exploratory vessel Vanguard illuminated a sprawling reef of glowing cobalt crystals. Dr. Sarah Vance leaned closer to the viewing port, captivated by a rhythmic pulsing light from the trench below—it wasn't natural; it was a signal.",
-  "A gentle breeze rolled over the emerald hills of Aveloria, carrying the sweet scent of sun-warmed lavender. Master Elion watched his young apprentice try to conjure a simple spark. With a sudden crackle, the spark erupted into a harmless but magnificent fireworks display."
+  "A gentle breeze rolled over the emerald hills of Aveloria, carrying the sweet scent of sun-warmed lavender. Master Elion watched his young apprentice try to conjure a simple spark. With a sudden crackle, the spark erupted into a harmless but magnificent fireworks display.",
 ];
 
 export const StoryAnalyticsDashboard: React.FC = () => {
   const [storyContent, setStoryContent] = useState<string>(
-    "Type your story here or click 'Generate New Story' below to see the statistics update instantly!"
+    "Type your story here or click 'Generate New Story' below to see the statistics update instantly!",
   );
 
   // --- Acceptance Criteria Rule Logic ---
@@ -21,7 +21,9 @@ export const StoryAnalyticsDashboard: React.FC = () => {
     const characterCount = trimmedText.length;
 
     // 2. Word count safely splitting on arbitrary whitespaces/newlines
-    const wordsArray = trimmedText.split(/\s+/).filter(word => word.length > 0);
+    const wordsArray = trimmedText
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
     const wordCount = wordsArray.length;
 
     // 3. Reading time calculated using the standard formula (words / 200)
@@ -31,7 +33,7 @@ export const StoryAnalyticsDashboard: React.FC = () => {
     return {
       wordCount,
       characterCount,
-      readingTime
+      readingTime,
     };
   }, [storyContent]);
 
@@ -150,7 +152,9 @@ export const StoryAnalyticsDashboard: React.FC = () => {
 
       <header className="header-section">
         <h2>Story Space</h2>
-        <p>Your workspace analytics update automatically as new text displays.</p>
+        <p>
+          Your workspace analytics update automatically as new text displays.
+        </p>
       </header>
 
       {/* Story Output / Input Box */}
@@ -167,19 +171,28 @@ export const StoryAnalyticsDashboard: React.FC = () => {
       </button>
 
       {/* Acceptance Criteria Met: Stats panel near the story output */}
-      <section className="stats-panel" aria-label="Story Readability Statistics">
+      <section
+        className="stats-panel"
+        aria-label="Story Readability Statistics"
+      >
         <div className="stat-card">
           <span className="stat-label">Word Count</span>
-          <span className="stat-value">{metrics.wordCount.toLocaleString()}</span>
+          <span className="stat-value">
+            {metrics.wordCount.toLocaleString()}
+          </span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Character Count</span>
-          <span className="stat-value">{metrics.characterCount.toLocaleString()}</span>
+          <span className="stat-value">
+            {metrics.characterCount.toLocaleString()}
+          </span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Est. Reading Time</span>
           <span className="stat-value">
-            {metrics.readingTime === 1 ? '1 min' : `${metrics.readingTime} mins`}
+            {metrics.readingTime === 1
+              ? "1 min"
+              : `${metrics.readingTime} mins`}
           </span>
         </div>
       </section>

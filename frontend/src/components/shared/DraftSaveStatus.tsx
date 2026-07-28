@@ -16,8 +16,13 @@ function formatRelative(date: Date): string {
   return `${mins}m ago`;
 }
 
-export const DraftSaveStatus: React.FC<Props> = ({ status, lastSaved, isOnline = true, pendingCount = 0 }) => {
-  const [, forceUpdate] = useReducer(x => x + 1, 0);
+export const DraftSaveStatus: React.FC<Props> = ({
+  status,
+  lastSaved,
+  isOnline = true,
+  pendingCount = 0,
+}) => {
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   useEffect(() => {
     if (!lastSaved) return;
@@ -50,7 +55,9 @@ export const DraftSaveStatus: React.FC<Props> = ({ status, lastSaved, isOnline =
       {!isOnline && (
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 text-xs font-medium animate-pulse">
           <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-          <span>Offline — {pendingCount} pending save{pendingCount !== 1 ? "s" : ""}</span>
+          <span>
+            Offline — {pendingCount} pending save{pendingCount !== 1 ? "s" : ""}
+          </span>
         </div>
       )}
     </div>

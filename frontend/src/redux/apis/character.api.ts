@@ -24,14 +24,20 @@ interface CharacterApiResponse {
 
 const characterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getCharacters: build.query<{ success: boolean; data: CharacterResponse[] }, void>({
+    getCharacters: build.query<
+      { success: boolean; data: CharacterResponse[] },
+      void
+    >({
       query: () => ({
         url: `/${CHARACTER_URL}`,
         method: "GET",
       }),
       providesTags: [tagTypes.character],
     }),
-    saveCharacter: build.mutation<{ success: boolean; data: CharacterResponse }, SaveCharacterParams>({
+    saveCharacter: build.mutation<
+      { success: boolean; data: CharacterResponse },
+      SaveCharacterParams
+    >({
       query: (data) => ({
         url: `/${CHARACTER_URL}`,
         method: "POST",
@@ -46,7 +52,10 @@ const characterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.character],
     }),
-    deleteCharacter: build.mutation<{ success: boolean; message: string }, string>({
+    deleteCharacter: build.mutation<
+      { success: boolean; message: string },
+      string
+    >({
       query: (id) => ({
         url: `/${CHARACTER_URL}/${id}`,
         method: "DELETE",

@@ -2,7 +2,11 @@
  * email.util.test.ts
  * Unit tests for backend/src/utils/email.util.ts
  */
-import { escapeHtml, sendVerificationEmail, sendContactEmail } from "../email.util";
+import {
+  escapeHtml,
+  sendVerificationEmail,
+  sendContactEmail,
+} from "../email.util";
 
 // Mock nodemailer
 const mockSendMail = jest.fn();
@@ -53,7 +57,7 @@ describe("escapeHtml", () => {
 
   it("handles mixed safe and unsafe characters", () => {
     expect(escapeHtml("Hello <b>world</b> & friends")).toBe(
-      "Hello &lt;b&gt;world&lt;/b&gt; &amp; friends"
+      "Hello &lt;b&gt;world&lt;/b&gt; &amp; friends",
     );
   });
 });
@@ -69,14 +73,20 @@ describe("sendVerificationEmail", () => {
   });
 
   it("includes unsubscribe footer when unsubscribeUrl is provided", async () => {
-    await sendVerificationEmail("user@example.com", "token", "http://example.com/unsubscribe");
+    await sendVerificationEmail(
+      "user@example.com",
+      "token",
+      "http://example.com/unsubscribe",
+    );
     const mailOptions = mockSendMail.mock.calls[0][0];
     expect(mailOptions.html).toContain("Unsubscribe");
   });
 
   it("does not throw when sendMail fails", async () => {
     mockSendMail.mockRejectedValue(new Error("SMTP error"));
-    await expect(sendVerificationEmail("user@example.com", "token")).resolves.toBeUndefined();
+    await expect(
+      sendVerificationEmail("user@example.com", "token"),
+    ).resolves.toBeUndefined();
   });
 });
 

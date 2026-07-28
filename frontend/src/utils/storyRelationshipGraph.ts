@@ -6,13 +6,7 @@ export interface CharacterNode {
 export interface RelationshipEdge {
   source: string;
   target: string;
-  label:
-    | "Family"
-    | "Friend"
-    | "Rival"
-    | "Romance"
-    | "Mentor"
-    | "Alliance";
+  label: "Family" | "Friend" | "Rival" | "Romance" | "Mentor" | "Alliance";
 }
 
 export interface RelationshipGraph {
@@ -20,9 +14,7 @@ export interface RelationshipGraph {
   edges: RelationshipEdge[];
 }
 
-export function generateRelationshipGraph(
-  story: string
-): RelationshipGraph {
+export function generateRelationshipGraph(story: string): RelationshipGraph {
   if (!story.trim()) {
     return {
       nodes: [],

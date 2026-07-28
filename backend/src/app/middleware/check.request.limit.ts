@@ -1,4 +1,3 @@
-
 import { Request, Response, NextFunction } from "express";
 import httpStatus from "http-status";
 import ApiError from "../../errors/api_error";
@@ -21,8 +20,7 @@ const resolveAuthToken = (req: Request): string | null => {
   }
 
   const cookieToken =
-    (req as any).cookies?.accessToken ||
-    (req as any).cookies?.token;
+    (req as any).cookies?.accessToken || (req as any).cookies?.token;
 
   if (!cookieToken) {
     return null;
@@ -32,16 +30,19 @@ const resolveAuthToken = (req: Request): string | null => {
   if (!allowCookieAuth) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Cookie-based authentication is disabled. Use the Authorization header or enable secure cookie auth explicitly."
+      "Cookie-based authentication is disabled. Use the Authorization header or enable secure cookie auth explicitly.",
     );
   }
 
-  const forwardedProto = String(req.headers["x-forwarded-proto"] || "").toLowerCase();
-  const isSecureRequest = req.secure || req.protocol === "https" || forwardedProto === "https";
+  const forwardedProto = String(
+    req.headers["x-forwarded-proto"] || "",
+  ).toLowerCase();
+  const isSecureRequest =
+    req.secure || req.protocol === "https" || forwardedProto === "https";
   if (!isSecureRequest) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Cookie-based authentication requires a secure and trusted request context."
+      "Cookie-based authentication requires a secure and trusted request context.",
     );
   }
 
@@ -63,13 +64,13 @@ const checkRequestLimit =
         if (!token) {
           throw new ApiError(
             httpStatus.UNAUTHORIZED,
-            "You are not authorized to access"
+            "You are not authorized to access",
           );
         }
 
         const verifiedUser = JwtHelpers.verifyToken(
           token,
-          config.jwt.secret as Secret
+          config.jwt.secret as Secret,
         );
 
         userEmail = (verifiedUser as any)?.email;
@@ -78,14 +79,13 @@ const checkRequestLimit =
       if (!userEmail) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
-          "Unable to resolve authenticated user email"
+          "Unable to resolve authenticated user email",
         );
       }
 
       await reserveUserQuota(userEmail);
 
-      res.locals.quotaRefundGuard =
-        createUserQuotaGuard(userEmail);
+      res.locals.quotaRefundGuard = createUserQuotaGuard(userEmail);
 
       return next();
     } catch (err) {
@@ -94,4 +94,3 @@ const checkRequestLimit =
   };
 
 export default checkRequestLimit;
-

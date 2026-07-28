@@ -4,12 +4,8 @@ export interface StoryEvent {
   content: string;
 }
 
-export function extractStoryEvents(
-  story: string
-): StoryEvent[] {
-  const paragraphs = story
-    .split(/\n\s*\n/)
-    .filter((p) => p.trim() !== "");
+export function extractStoryEvents(story: string): StoryEvent[] {
+  const paragraphs = story.split(/\n\s*\n/).filter((p) => p.trim() !== "");
 
   return paragraphs.map((paragraph, index) => ({
     id: index + 1,

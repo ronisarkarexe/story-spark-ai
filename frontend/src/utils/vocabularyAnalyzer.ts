@@ -12,9 +12,7 @@ export interface VocabularyAnalysis {
   suggestions: VocabularySuggestion[];
 }
 
-export const analyzeVocabulary = (
-  story: string
-): VocabularyAnalysis => {
+export const analyzeVocabulary = (story: string): VocabularyAnalysis => {
   return {
     readabilityScore: 82,
     diversityScore: 74,
@@ -24,14 +22,12 @@ export const analyzeVocabulary = (
 };
 
 export const refreshVocabularyAnalysis = (
-  story: string
+  story: string,
 ): VocabularyAnalysis => {
   return analyzeVocabulary(story);
 };
 
-export const getReadabilityLevel = (
-  score: number
-): string => {
+export const getReadabilityLevel = (score: number): string => {
   if (score >= 90) return "Excellent";
   if (score >= 75) return "Good";
   if (score >= 60) return "Average";

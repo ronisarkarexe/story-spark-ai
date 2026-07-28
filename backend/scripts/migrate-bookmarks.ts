@@ -38,7 +38,7 @@ const migrateBookmarks = async () => {
         ...new Set(
           rawBookmarks
             .map((id) => toValidObjectIdString(id))
-            .filter((id): id is string => Boolean(id))
+            .filter((id): id is string => Boolean(id)),
         ),
       ].map((id) => new mongoose.Types.ObjectId(id));
 
@@ -59,7 +59,7 @@ const migrateBookmarks = async () => {
               upsert: true,
             },
           })),
-          { ordered: false }
+          { ordered: false },
         );
 
         createdBookmarks += result.upsertedCount || 0;
@@ -72,14 +72,14 @@ const migrateBookmarks = async () => {
         {
           $set: { bookmarksCount: count },
           $unset: { bookmarks: "" },
-        }
+        },
       );
 
       updatedPosts += 1;
     }
 
     console.log(
-      `Migration complete. Posts updated: ${updatedPosts}, bookmarks created: ${createdBookmarks}.`
+      `Migration complete. Posts updated: ${updatedPosts}, bookmarks created: ${createdBookmarks}.`,
     );
   } finally {
     await mongoose.disconnect();

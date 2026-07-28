@@ -10,7 +10,7 @@ router.post(
   "/",
   freeAiRateLimiter,
   validateRequest(StoryInspirationValidation.createStoryInspirationSchema),
-  StoryInspirationController.createStoryInspiration
+  StoryInspirationController.createStoryInspiration,
 );
 
 export const StoryInspirationRouter = router;

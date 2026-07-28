@@ -10,7 +10,7 @@ const toggleBookmark = catchAsync(async (req: Request, res: Response) => {
   const storyId = routeParam(req.params.storyId);
   const token = await getToken(req);
   const result = await BookmarkService.toggleBookmark(storyId, token);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

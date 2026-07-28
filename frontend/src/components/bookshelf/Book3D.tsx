@@ -10,7 +10,10 @@ export default function Book3D({ story, onClick }: Props) {
   const [hovered, setHovered] = useState(false);
   const colors = getGenreColor(story.tag);
 
-  const height = Math.min(180, Math.max(120, 120 + story.content.split(/\s+/).length / 20));
+  const height = Math.min(
+    180,
+    Math.max(120, 120 + story.content.split(/\s+/).length / 20),
+  );
   const width = Math.min(60, Math.max(35, 35 + story.title.length / 3));
 
   return (
@@ -58,22 +61,26 @@ export default function Book3D({ story, onClick }: Props) {
           }}
         >
           {/* Decorative lines */}
-          <div style={{
-            position: "absolute",
-            top: "8px",
-            left: "4px",
-            right: "4px",
-            height: "1px",
-            background: `${colors.glow}40`,
-          }} />
-          <div style={{
-            position: "absolute",
-            bottom: "8px",
-            left: "4px",
-            right: "4px",
-            height: "1px",
-            background: `${colors.glow}40`,
-          }} />
+          <div
+            style={{
+              position: "absolute",
+              top: "8px",
+              left: "4px",
+              right: "4px",
+              height: "1px",
+              background: `${colors.glow}40`,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "8px",
+              left: "4px",
+              right: "4px",
+              height: "1px",
+              background: `${colors.glow}40`,
+            }}
+          />
 
           {/* Title (vertical) */}
           <div
@@ -96,15 +103,17 @@ export default function Book3D({ story, onClick }: Props) {
           </div>
 
           {/* Genre dot */}
-          <div style={{
-            position: "absolute",
-            bottom: "16px",
-            width: "6px",
-            height: "6px",
-            borderRadius: "50%",
-            background: colors.glow,
-            boxShadow: `0 0 6px ${colors.glow}`,
-          }} />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "16px",
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: colors.glow,
+              boxShadow: `0 0 6px ${colors.glow}`,
+            }}
+          />
         </div>
 
         {/* Book side (right face for 3D effect) */}

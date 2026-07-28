@@ -66,7 +66,9 @@ export interface DocumentStats {
  * that needs normalized (lowercased, punctuation-stripped) tokens that
  * getWordCount intentionally does not produce.
  */
-export const computeDocumentStats = (content: string | undefined): DocumentStats => {
+export const computeDocumentStats = (
+  content: string | undefined,
+): DocumentStats => {
   const totalWords = getWordCount(content);
   const tokens = tokenizeWords(content);
   const uniqueWords = new Set(tokens).size;
@@ -75,7 +77,10 @@ export const computeDocumentStats = (content: string | undefined): DocumentStats
     totalWords,
     uniqueWords,
     vocabularyRichness: totalWords === 0 ? 0 : uniqueWords / totalWords,
-    readingTimeMin: totalWords === 0 ? 0 : Math.ceil(totalWords / DASHBOARD_READING_SPEED_WPM),
+    readingTimeMin:
+      totalWords === 0
+        ? 0
+        : Math.ceil(totalWords / DASHBOARD_READING_SPEED_WPM),
     estimatedPages: totalWords / PUBLISHING_WORDS_PER_PAGE,
   };
 };
@@ -86,7 +91,10 @@ export const computeDocumentStats = (content: string | undefined): DocumentStats
  * longest → red (0). Pass the document's max chapter word count as
  * `maxWordCount`.
  */
-export const chapterHeatHue = (wordCount: number, maxWordCount: number): number => {
+export const chapterHeatHue = (
+  wordCount: number,
+  maxWordCount: number,
+): number => {
   if (maxWordCount <= 0) return 210;
   const ratio = Math.min(wordCount / maxWordCount, 1);
   return Math.round(210 - ratio * 210);

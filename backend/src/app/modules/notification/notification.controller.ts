@@ -13,7 +13,11 @@ const getUserNotifications = catchAsync(async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 20;
 
-  const result = await NotificationService.getUserNotifications(token, page, limit);
+  const result = await NotificationService.getUserNotifications(
+    token,
+    page,
+    limit,
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -28,37 +32,44 @@ const markNotificationAsRead = catchAsync(
   async (req: Request, res: Response) => {
     const notificationId = routeParam(req.params.id);
     const token = req.user as ITokenPayload;
-    const result = await NotificationService.markNotificationAsRead(notificationId, token);
+    const result = await NotificationService.markNotificationAsRead(
+      notificationId,
+      token,
+    );
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Notification marked as read successfully!",
       data: result,
     });
-  }
+  },
 );
 
-const markAllNotificationsAsRead = catchAsync(async (req: Request, res: Response) => {
-  const token = req.user as ITokenPayload;
-  const result = await NotificationService.markAllNotificationsAsRead(token);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "All notifications marked as read successfully!",
-    data: result,
-  });
-});
+const markAllNotificationsAsRead = catchAsync(
+  async (req: Request, res: Response) => {
+    const token = req.user as ITokenPayload;
+    const result = await NotificationService.markAllNotificationsAsRead(token);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "All notifications marked as read successfully!",
+      data: result,
+    });
+  },
+);
 
-const deleteAllNotifications = catchAsync(async (req: Request, res: Response) => {
-  const token = req.user as ITokenPayload;
-  const result = await NotificationService.deleteAllNotifications(token);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "All notifications cleared successfully!",
-    data: result,
-  });
-});
+const deleteAllNotifications = catchAsync(
+  async (req: Request, res: Response) => {
+    const token = req.user as ITokenPayload;
+    const result = await NotificationService.deleteAllNotifications(token);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "All notifications cleared successfully!",
+      data: result,
+    });
+  },
+);
 
 export const NotificationController = {
   getUserNotifications,

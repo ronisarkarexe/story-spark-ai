@@ -25,21 +25,17 @@ const HelpCenterComponent = () => {
           category.title,
           category.description,
           ...category.keywords,
-        ])
+        ]),
       ),
-    [searchQuery]
+    [searchQuery],
   );
 
   const filteredFaqs = useMemo(
     () =>
       FAQ_ITEMS.filter((faq) =>
-        matchesSearch(searchQuery, [
-          faq.question,
-          faq.answer,
-          ...faq.keywords,
-        ])
+        matchesSearch(searchQuery, [faq.question, faq.answer, ...faq.keywords]),
       ),
-    [searchQuery]
+    [searchQuery],
   );
 
   const filteredTroubleshoot = useMemo(
@@ -50,9 +46,9 @@ const HelpCenterComponent = () => {
           item.symptoms,
           item.solution,
           ...item.keywords,
-        ])
+        ]),
       ),
-    [searchQuery]
+    [searchQuery],
   );
 
   const resultCount = useMemo(() => {

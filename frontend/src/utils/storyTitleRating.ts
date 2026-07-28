@@ -9,13 +9,10 @@ export interface TitleAnalysis {
   suggestions: string[];
 }
 
-export function analyzeTitle(
-  title: string
-): TitleAnalysis {
+export function analyzeTitle(title: string): TitleAnalysis {
   const length = title.trim().length;
 
-  const score =
-    length > 10 && length < 50 ? 88 : 70;
+  const score = length > 10 && length < 50 ? 88 : 70;
 
   return {
     score,
@@ -24,14 +21,9 @@ export function analyzeTitle(
     clarity: 87,
     appeal: 89,
 
-    strengths: [
-      "Clear and memorable title",
-      "Relevant to the story",
-    ],
+    strengths: ["Clear and memorable title", "Relevant to the story"],
 
-    weaknesses: [
-      "Could be slightly more unique",
-    ],
+    weaknesses: ["Could be slightly more unique"],
 
     suggestions: [
       `${title} Chronicles`,
@@ -41,8 +33,6 @@ export function analyzeTitle(
   };
 }
 
-export function replaceTitle(
-  title: string
-) {
+export function replaceTitle(title: string) {
   return title;
 }

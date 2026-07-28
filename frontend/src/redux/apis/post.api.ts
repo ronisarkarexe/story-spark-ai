@@ -37,7 +37,6 @@ const postApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.post, tagTypes.user],
     }),
 
-
     getPostLists: build.query({
       query: (arg: Record<string, string | number>) => ({
         url: `/${POST_URL}/lists`,
@@ -50,7 +49,7 @@ const postApi = baseApi.injectEndpoints({
         delete newArgs.page;
         return { endpointName, ...newArgs };
       },
-      
+
       merge: (currentCache, newItems) => {
         if (!newItems.meta || newItems.meta.page === 1) {
           return newItems;
@@ -58,7 +57,7 @@ const postApi = baseApi.injectEndpoints({
         currentCache.posts.push(...newItems.posts);
         currentCache.meta = newItems.meta;
       },
-      
+
       forceRefetch({ currentArg, previousArg }) {
         return currentArg?.page !== previousArg?.page;
       },
@@ -97,7 +96,7 @@ const postApi = baseApi.injectEndpoints({
         delete newArgs.page;
         return { endpointName, ...newArgs };
       },
-      
+
       merge: (currentCache, newItems) => {
         if (!newItems.meta || newItems.meta.page === 1) {
           return newItems;
@@ -105,7 +104,7 @@ const postApi = baseApi.injectEndpoints({
         currentCache.posts.push(...newItems.posts);
         currentCache.meta = newItems.meta;
       },
-      
+
       forceRefetch({ currentArg, previousArg }) {
         return currentArg?.page !== previousArg?.page;
       },

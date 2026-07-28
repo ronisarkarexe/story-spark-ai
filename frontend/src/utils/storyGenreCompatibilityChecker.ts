@@ -15,7 +15,7 @@ export interface GenreAnalysis {
 
 export function analyzeGenreCompatibility(
   story: string,
-  genre: string
+  genre: string,
 ): GenreAnalysis {
   if (!story.trim()) {
     return {
@@ -34,10 +34,8 @@ export function analyzeGenreCompatibility(
         section: "Opening Chapter",
         category: "Tone",
         compatibility: 92,
-        explanation:
-          "The opening establishes the selected genre effectively.",
-        suggestion:
-          "Maintain this tone consistently throughout the story.",
+        explanation: "The opening establishes the selected genre effectively.",
+        suggestion: "Maintain this tone consistently throughout the story.",
       },
       {
         id: 2,
@@ -46,16 +44,14 @@ export function analyzeGenreCompatibility(
         compatibility: 70,
         explanation:
           "The pacing slows and feels inconsistent with the chosen genre.",
-        suggestion:
-          "Increase tension or action to match reader expectations.",
+        suggestion: "Increase tension or action to match reader expectations.",
       },
       {
         id: 3,
         section: "Ending",
         category: "Theme",
         compatibility: 80,
-        explanation:
-          "The conclusion partially aligns with the genre themes.",
+        explanation: "The conclusion partially aligns with the genre themes.",
         suggestion:
           "Strengthen genre-specific elements for a more satisfying ending.",
       },
@@ -63,9 +59,6 @@ export function analyzeGenreCompatibility(
   };
 }
 
-export function refreshGenreAnalysis(
-  story: string,
-  genre: string
-) {
+export function refreshGenreAnalysis(story: string, genre: string) {
   return analyzeGenreCompatibility(story, genre);
 }

@@ -24,7 +24,7 @@ export default function StoryBookmarkNotes({ storyId }: Props) {
 
   const filteredNotes = useMemo(
     () => searchBookmarkNotes(notes, search),
-    [notes, search]
+    [notes, search],
   );
 
   const addNote = () => {
@@ -71,17 +71,10 @@ export default function StoryBookmarkNotes({ storyId }: Props) {
 
       <div className="space-y-4">
         {filteredNotes.map((note) => (
-          <div
-            key={note.id}
-            className="rounded-lg border border-zinc-700 p-4"
-          >
-            <h3 className="font-semibold text-white">
-              {note.title}
-            </h3>
+          <div key={note.id} className="rounded-lg border border-zinc-700 p-4">
+            <h3 className="font-semibold text-white">{note.title}</h3>
 
-            <p className="mt-2 text-gray-300">
-              {note.note}
-            </p>
+            <p className="mt-2 text-gray-300">{note.note}</p>
 
             <p className="mt-3 text-xs text-gray-500">
               {new Date(note.createdAt).toLocaleString()}

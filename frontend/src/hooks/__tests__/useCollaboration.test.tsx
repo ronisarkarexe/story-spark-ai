@@ -33,7 +33,12 @@ const mockRoom = {
   roomId: "room-1",
   createdBy: "user-1",
   participants: [
-    { userId: "user-1", username: "Alice", color: "#ff0000", socketId: "sock-1" },
+    {
+      userId: "user-1",
+      username: "Alice",
+      color: "#ff0000",
+      socketId: "sock-1",
+    },
   ],
   story: [
     {
@@ -59,7 +64,7 @@ describe("useCollaboration", () => {
 
   it("initializes with loading=true, error=null, room=null", () => {
     const { result } = renderHook(() =>
-      useCollaboration({ roomId: undefined })
+      useCollaboration({ roomId: undefined }),
     );
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
@@ -75,19 +80,19 @@ describe("useCollaboration", () => {
 
   it("socket connects and joins room when roomId is provided", async () => {
     const { result, unmount } = renderHook(() =>
-      useCollaboration({ roomId: "room-1" })
+      useCollaboration({ roomId: "room-1" }),
     );
 
     await act(async () => {});
 
     expect(mockSocket.emit).toHaveBeenCalledWith(
       "collab:join_room",
-      expect.objectContaining({ roomId: "room-1" })
+      expect.objectContaining({ roomId: "room-1" }),
     );
     expect(mockSocket.emit).toHaveBeenCalledWith(
       "collab:get_room",
       expect.objectContaining({ roomId: "room-1" }),
-      expect.any(Function)
+      expect.any(Function),
     );
 
     expect(result.current.loading).toBe(false);
@@ -98,7 +103,7 @@ describe("useCollaboration", () => {
 
   it("socket disconnect is called on unmount", async () => {
     const { unmount } = renderHook(() =>
-      useCollaboration({ roomId: "room-1" })
+      useCollaboration({ roomId: "room-1" }),
     );
 
     await act(async () => {});
@@ -110,7 +115,7 @@ describe("useCollaboration", () => {
 
   it("addText emits collab:add_text and collab:stop_typing", async () => {
     const { result, unmount } = renderHook(() =>
-      useCollaboration({ roomId: "room-1" })
+      useCollaboration({ roomId: "room-1" }),
     );
 
     await act(async () => {});
@@ -121,11 +126,11 @@ describe("useCollaboration", () => {
 
     expect(mockSocket.emit).toHaveBeenCalledWith(
       "collab:add_text",
-      expect.objectContaining({ roomId: "room-1", text: "New story text" })
+      expect.objectContaining({ roomId: "room-1", text: "New story text" }),
     );
     expect(mockSocket.emit).toHaveBeenCalledWith(
       "collab:stop_typing",
-      expect.objectContaining({ roomId: "room-1" })
+      expect.objectContaining({ roomId: "room-1" }),
     );
 
     unmount();
@@ -133,7 +138,7 @@ describe("useCollaboration", () => {
 
   it("emitTyping emits collab:typing event", async () => {
     const { result, unmount } = renderHook(() =>
-      useCollaboration({ roomId: "room-1" })
+      useCollaboration({ roomId: "room-1" }),
     );
 
     await act(async () => {});
@@ -144,7 +149,7 @@ describe("useCollaboration", () => {
 
     expect(mockSocket.emit).toHaveBeenCalledWith(
       "collab:typing",
-      expect.objectContaining({ roomId: "room-1" })
+      expect.objectContaining({ roomId: "room-1" }),
     );
 
     unmount();
@@ -152,7 +157,7 @@ describe("useCollaboration", () => {
 
   it("stopTyping emits collab:stop_typing event", async () => {
     const { result, unmount } = renderHook(() =>
-      useCollaboration({ roomId: "room-1" })
+      useCollaboration({ roomId: "room-1" }),
     );
 
     await act(async () => {});
@@ -163,7 +168,7 @@ describe("useCollaboration", () => {
 
     expect(mockSocket.emit).toHaveBeenCalledWith(
       "collab:stop_typing",
-      expect.objectContaining({ roomId: "room-1" })
+      expect.objectContaining({ roomId: "room-1" }),
     );
 
     unmount();
@@ -171,7 +176,7 @@ describe("useCollaboration", () => {
 
   it("requestAiContinue emits collab:ai_continue", async () => {
     const { result, unmount } = renderHook(() =>
-      useCollaboration({ roomId: "room-1" })
+      useCollaboration({ roomId: "room-1" }),
     );
 
     await act(async () => {});
@@ -182,7 +187,7 @@ describe("useCollaboration", () => {
 
     expect(mockSocket.emit).toHaveBeenCalledWith(
       "collab:ai_continue",
-      expect.objectContaining({ roomId: "room-1" })
+      expect.objectContaining({ roomId: "room-1" }),
     );
 
     unmount();
@@ -190,7 +195,7 @@ describe("useCollaboration", () => {
 
   it("typingUsers is initially empty object", async () => {
     const { result, unmount } = renderHook(() =>
-      useCollaboration({ roomId: "room-1" })
+      useCollaboration({ roomId: "room-1" }),
     );
 
     await act(async () => {});
@@ -201,7 +206,7 @@ describe("useCollaboration", () => {
 
   it("isAiThinking is initially false", async () => {
     const { result, unmount } = renderHook(() =>
-      useCollaboration({ roomId: "room-1" })
+      useCollaboration({ roomId: "room-1" }),
     );
 
     await act(async () => {});

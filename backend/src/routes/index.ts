@@ -29,8 +29,6 @@ import characterRouter from "./character.routes";
 import { CodeAnalysisRouter } from "../app/modules/code_analysis/code_analysis.router";
 import { KotlinAnalysisRouter } from "../app/modules/kotlin_analysis/kotlin_analysis.router";
 
-
-
 const router = express.Router();
 
 const modules = [

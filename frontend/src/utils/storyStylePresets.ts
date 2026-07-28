@@ -50,14 +50,10 @@ export const storyStyles: StoryStyle[] = [
   },
 ];
 
-export const getStylePrompt = (
-  style: StoryStyle
-) => {
+export const getStylePrompt = (style: StoryStyle) => {
   return `Generate the story in ${style.name} style.`;
 };
 
-export const regenerateWithStyle = (
-  style: StoryStyle
-) => {
+export const regenerateWithStyle = (style: StoryStyle) => {
   return getStylePrompt(style);
 };

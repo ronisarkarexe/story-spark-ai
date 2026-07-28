@@ -11,19 +11,13 @@ import { ReviewValidator } from "./review.validation";
 const router = express.Router();
 
 // Public published reviews
-router.get(
-  "/lists",
-  ReviewController.getPublishedReviews
-);
+router.get("/lists", ReviewController.getPublishedReviews);
 
 // Pending reviews (Admin only)
 router.get(
   "/pending",
-  auth(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
-  ),
-  ReviewController.getPendingReviews
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  ReviewController.getPendingReviews,
 );
 
 // Create review
@@ -33,20 +27,17 @@ router.post(
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER
+    ENUM_USER_ROLE.USER,
   ),
   validateRequest(ReviewValidator.createReview),
-  ReviewController.createReview
+  ReviewController.createReview,
 );
 
 // Approve review (Admin only)
 router.patch(
   "/:id",
-  auth(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
-  ),
-  ReviewController.approveReview
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  ReviewController.approveReview,
 );
 
 export const ReviewRouter = router;

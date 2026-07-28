@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface ICharacter extends Document {
   userId: mongoose.Types.ObjectId;
@@ -19,7 +19,7 @@ const CharacterSchema = new Schema<ICharacter>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     name: {
@@ -58,7 +58,10 @@ const CharacterSchema = new Schema<ICharacter>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export const Character = mongoose.model<ICharacter>('Character', CharacterSchema);
+export const Character = mongoose.model<ICharacter>(
+  "Character",
+  CharacterSchema,
+);

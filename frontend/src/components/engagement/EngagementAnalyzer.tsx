@@ -50,18 +50,20 @@ export default function EngagementAnalyzer() {
       />
 
       {isError && (
-        <p className="text-red-500 text-sm">Analysis failed. Please try again.</p>
+        <p className="text-red-500 text-sm">
+          Analysis failed. Please try again.
+        </p>
       )}
 
       <button
-        onClick={() => analyzeEngagement({
-          chapterText: text.trim(),
-          title: title.trim(),
-        })}
+        onClick={() =>
+          analyzeEngagement({
+            chapterText: text.trim(),
+            title: title.trim(),
+          })
+        }
         disabled={
-          isLoading ||
-          text.trim().length < 100 ||
-          text.trim().length > 50000
+          isLoading || text.trim().length < 100 || text.trim().length > 50000
         }
         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg disabled:opacity-50 transition"
       >
@@ -78,12 +80,13 @@ export default function EngagementAnalyzer() {
               <div key={label} className="border rounded-xl p-4 text-center">
                 <p className="text-xs text-gray-500">{label}</p>
                 <p
-                  className={`text-4xl font-bold mt-1 ${val >= 70
+                  className={`text-4xl font-bold mt-1 ${
+                    val >= 70
                       ? "text-green-500"
                       : val >= 40
                         ? "text-yellow-500"
                         : "text-red-500"
-                    }`}
+                  }`}
                 >
                   {val}
                 </p>
@@ -93,21 +96,37 @@ export default function EngagementAnalyzer() {
 
           <div className="border rounded-xl p-4">
             <h3 className="font-semibold mb-3">Dimension Breakdown</h3>
-            <ScoreBar label={`Pacing — ${result.pacing.label}`} score={result.pacing.score} />
-            <ScoreBar label="Dialogue Quality" score={result.dialogueQuality.score} />
-            <ScoreBar label="Emotional Intensity" score={result.emotionalIntensity.score} />
-            <ScoreBar label="Suspense Level" score={result.suspenseLevel.score} />
+            <ScoreBar
+              label={`Pacing — ${result.pacing.label}`}
+              score={result.pacing.score}
+            />
+            <ScoreBar
+              label="Dialogue Quality"
+              score={result.dialogueQuality.score}
+            />
+            <ScoreBar
+              label="Emotional Intensity"
+              score={result.emotionalIntensity.score}
+            />
+            <ScoreBar
+              label="Suspense Level"
+              score={result.suspenseLevel.score}
+            />
             <ScoreBar label="Readability" score={result.readability.score} />
           </div>
 
           {result.dropOffSections?.length > 0 && (
             <div className="border rounded-xl p-4">
-              <h3 className="font-semibold mb-3">⚠️ Potential Drop-off Sections</h3>
+              <h3 className="font-semibold mb-3">
+                ⚠️ Potential Drop-off Sections
+              </h3>
               {result.dropOffSections.map((s: any, i: number) => (
                 <div key={i} className="border-l-4 border-red-400 pl-3 mb-3">
                   <p className="text-sm italic text-gray-500">"{s.excerpt}"</p>
                   <p className="text-sm text-red-500 mt-1">🔴 {s.reason}</p>
-                  <p className="text-sm text-green-600 mt-1">💡 {s.suggestion}</p>
+                  <p className="text-sm text-green-600 mt-1">
+                    💡 {s.suggestion}
+                  </p>
                 </div>
               ))}
             </div>

@@ -93,7 +93,6 @@ const applicationSteps = [
 const Career = () => {
   return (
     <div className="relative overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#050816] dark:text-white">
-
       {/* BACKGROUND BLURS */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
@@ -101,7 +100,6 @@ const Career = () => {
       {/* HERO SECTION */}
       <section className="relative px-6 pt-20 pb-20 sm:pt-28 sm:pb-28">
         <div className="mx-auto max-w-7xl grid gap-16 lg:grid-cols-2 items-center">
-
           {/* LEFT CONTENT */}
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300 mb-6 backdrop-blur-md">
@@ -117,8 +115,8 @@ const Career = () => {
             </h1>
 
             <p className="mt-8 max-w-2xl text-lg sm:text-xl leading-8 text-slate-600 dark:text-slate-300">
-              Join a passionate team building modern tools that empower creators,
-              storytellers, and dreamers worldwide.
+              Join a passionate team building modern tools that empower
+              creators, storytellers, and dreamers worldwide.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">
@@ -144,7 +142,6 @@ const Career = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl rounded-full"></div>
 
             <div className="relative rounded-[2rem] border border-white/10 bg-white/70 dark:bg-slate-900/70 p-8 shadow-2xl backdrop-blur-xl">
-
               <div className="flex items-center justify-between mb-8">
                 <div className="rounded-2xl bg-blue-500/10 p-4 text-blue-600 dark:text-blue-300">
                   <Briefcase size={32} />
@@ -156,9 +153,7 @@ const Career = () => {
                 </span>
               </div>
 
-              <h2 className="text-2xl font-bold">
-                Find your place to create
-              </h2>
+              <h2 className="text-2xl font-bold">Find your place to create</h2>
 
               <p className="mt-4 text-slate-600 dark:text-slate-300 leading-7">
                 Technology, storytelling, and creativity come together here.
@@ -206,9 +201,7 @@ const Career = () => {
 
               <h3 className="text-4xl font-bold">{value}</h3>
 
-              <p className="mt-2 text-slate-600 dark:text-slate-300">
-                {title}
-              </p>
+              <p className="mt-2 text-slate-600 dark:text-slate-300">{title}</p>
             </div>
           ))}
         </div>
@@ -220,7 +213,6 @@ const Career = () => {
         className="px-6 py-20 bg-slate-50/70 dark:bg-white/[0.02]"
       >
         <div className="mx-auto max-w-6xl">
-
           <div className="text-center mb-14">
             <p className="text-sm font-bold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-300 mb-3">
               Open Opportunities
@@ -231,7 +223,8 @@ const Career = () => {
             </h2>
 
             <p className="mt-5 max-w-2xl mx-auto text-lg text-slate-600 dark:text-slate-300 leading-8">
-              Work on meaningful products with creators, developers, and storytellers.
+              Work on meaningful products with creators, developers, and
+              storytellers.
             </p>
           </div>
 
@@ -239,9 +232,9 @@ const Career = () => {
             {opportunities.map(
               ({ title, icon: Icon, type, focus, description, skills }) => (
                 <article
-  key={title}
-  className="group flex h-full flex-col rounded-[2rem] border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-7 shadow-lg hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
->
+                  key={title}
+                  className="group flex h-full flex-col rounded-[2rem] border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-7 shadow-lg hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
+                >
                   <div className="flex items-start justify-between mb-7">
                     <div className="rounded-2xl bg-blue-500/10 p-4 text-blue-600 dark:text-blue-300 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                       <Icon size={30} />
@@ -274,17 +267,17 @@ const Career = () => {
                     ))}
                   </div>
 
-                <a
-  href={`mailto:ronichandrasarkar@gmail.com?subject=Application%3A%20${encodeURIComponent(
-    title
-  )}`}
-  className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-white font-semibold shadow-lg hover:scale-[1.02] hover:shadow-blue-500/25 transition-all duration-300"
->
+                  <a
+                    href={`mailto:ronichandrasarkar@gmail.com?subject=Application%3A%20${encodeURIComponent(
+                      title,
+                    )}`}
+                    className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-white font-semibold shadow-lg hover:scale-[1.02] hover:shadow-blue-500/25 transition-all duration-300"
+                  >
                     Apply Now
                     <ArrowRight size={17} />
                   </a>
                 </article>
-              )
+              ),
             )}
           </div>
         </div>
@@ -293,15 +286,12 @@ const Career = () => {
       {/* VALUES SECTION */}
       <section className="px-6 py-20">
         <div className="mx-auto max-w-6xl">
-
           <div className="text-center mb-14">
             <p className="text-sm font-bold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-300 mb-3">
               Why Work With Us
             </p>
 
-            <h2 className="text-4xl font-bold">
-              A team built for creators
-            </h2>
+            <h2 className="text-4xl font-bold">A team built for creators</h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
@@ -315,9 +305,7 @@ const Career = () => {
                   className="mb-5 text-blue-600 dark:text-blue-300"
                 />
 
-                <h3 className="text-xl font-bold">
-                  {title}
-                </h3>
+                <h3 className="text-xl font-bold">{title}</h3>
 
                 <p className="mt-4 leading-7 text-slate-600 dark:text-slate-300">
                   {description}
@@ -331,9 +319,7 @@ const Career = () => {
       {/* CTA SECTION */}
       <section className="px-6 pb-24">
         <div className="mx-auto max-w-6xl rounded-[2.5rem] bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-10 sm:p-14 text-white shadow-2xl">
-
           <div className="grid gap-10 lg:grid-cols-2 items-center">
-
             <div>
               <p className="text-sm uppercase tracking-[0.22em] text-blue-200 font-bold mb-3">
                 Ready to contribute?

@@ -17,15 +17,15 @@
 type Task<T> = () => Promise<T>;
 
 interface QueueStats {
-  waiting   : number;
-  active    : number;
+  waiting: number;
+  active: number;
   concurrency: number;
 }
 
 class StoryRequestQueue {
-  private readonly _concurrency : number;
-  private _running              : number = 0;
-  private readonly _queue       : Array<() => void> = [];
+  private readonly _concurrency: number;
+  private _running: number = 0;
+  private readonly _queue: Array<() => void> = [];
 
   constructor(concurrency: number = 3) {
     if (concurrency < 1) throw new RangeError("concurrency must be >= 1");
@@ -68,14 +68,18 @@ class StoryRequestQueue {
   /** Live queue statistics */
   stats(): QueueStats {
     return {
-      waiting    : this._queue.length,
-      active     : this._running,
+      waiting: this._queue.length,
+      active: this._running,
       concurrency: this._concurrency,
     };
   }
 
-  get size()   : number { return this._queue.length; }
-  get active() : number { return this._running; }
+  get size(): number {
+    return this._queue.length;
+  }
+  get active(): number {
+    return this._running;
+  }
 }
 
 /**
@@ -83,5 +87,5 @@ class StoryRequestQueue {
  * Concurrency controlled by AI_CONCURRENCY env var (default 3).
  */
 export const storyQueue = new StoryRequestQueue(
-  Math.max(1, Number(process.env.AI_CONCURRENCY ?? 3))
+  Math.max(1, Number(process.env.AI_CONCURRENCY ?? 3)),
 );

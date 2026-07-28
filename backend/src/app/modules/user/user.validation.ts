@@ -6,23 +6,25 @@ const passwordSchema = z
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
   .regex(/[a-z]/, "Password must contain at least one lowercase letter")
   .regex(/[0-9]/, "Password must contain at least one number")
-  .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character");
+  .regex(
+    /[^A-Za-z0-9]/,
+    "Password must contain at least one special character",
+  );
 
-
-  const register = z.object({
-    body: z.object({
-      email: z
-        .string({ required_error: "Email is required" })
-        .email("Invalid email address"),
-      name: z
-        .string({ required_error: "Name is required" })
-        .min(2, "Name must be at least 2 characters long"),
-      password: passwordSchema,
-      verificationToken: z.string({
-        required_error: "Verification token is required",
-      }),
+const register = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
+    name: z
+      .string({ required_error: "Name is required" })
+      .min(2, "Name must be at least 2 characters long"),
+    password: passwordSchema,
+    verificationToken: z.string({
+      required_error: "Verification token is required",
     }),
-  });
+  }),
+});
 
 const login = z.object({
   body: z.object({
@@ -33,16 +35,24 @@ const login = z.object({
 
 const forgotPassword = z.object({
   body: z.object({
-    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
   }),
 });
 
 const resetPassword = z.object({
   body: z.object({
-    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
     password: passwordSchema,
-    confirmPassword: z.string({ required_error: "Confirm password is required" }),
-    verificationToken: z.string({ required_error: "Verification token is required" }),
+    confirmPassword: z.string({
+      required_error: "Confirm password is required",
+    }),
+    verificationToken: z.string({
+      required_error: "Verification token is required",
+    }),
   }),
 });
 
@@ -50,11 +60,19 @@ const updateUser = z.object({
   body: z
     .object({
       email: z.string().email("Invalid email address").optional(),
-      name: z.string().trim().min(5, "Name must be at least 5 characters long").max(100).optional(),
+      name: z
+        .string()
+        .trim()
+        .min(5, "Name must be at least 5 characters long")
+        .max(100)
+        .optional(),
       profile: z
         .object({
           avatar: z.string().max(2000).optional(),
-          bio: z.string().max(1000, "Bio cannot exceed 1000 characters").optional(),
+          bio: z
+            .string()
+            .max(1000, "Bio cannot exceed 1000 characters")
+            .optional(),
           social: z
             .object({
               facebook: z.string().max(200).optional(),
@@ -92,14 +110,18 @@ const changePassword = z.object({
 });
 const sendOtp = z.object({
   body: z.object({
-    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
   }),
 });
 
 const verifyEmailChange = z.object({
   body: z.object({
     token: z.string({ required_error: "Verification token is required" }),
-    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
   }),
 });
 

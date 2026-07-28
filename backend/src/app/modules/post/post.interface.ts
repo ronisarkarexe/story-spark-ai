@@ -53,7 +53,7 @@ export interface IEngagementStats {
 
 export type PostModel = Model<IPost, object> & {
   getEngagementStats(
-    postId: string | Types.ObjectId
+    postId: string | Types.ObjectId,
   ): Promise<IEngagementStats | null>;
 };
 

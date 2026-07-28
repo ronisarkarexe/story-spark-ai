@@ -7,7 +7,9 @@ import { renderHook } from "@testing-library/react";
 import useKeyboardShortcuts from "../useKeyboardShortcuts";
 
 const fireKeyDown = (partialProps: Partial<KeyboardEventInit> = {}) => {
-  document.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, ...partialProps }));
+  document.dispatchEvent(
+    new KeyboardEvent("keydown", { bubbles: true, ...partialProps }),
+  );
 };
 
 describe("useKeyboardShortcuts", () => {
@@ -28,7 +30,13 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: false,
+      }),
     );
 
     fireKeyDown({ shiftKey: true, code: "Slash" });
@@ -43,7 +51,13 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: false,
+      }),
     );
 
     fireKeyDown({ key: "Escape" });
@@ -58,7 +72,13 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: false,
+      }),
     );
 
     fireKeyDown({ key: "/" });
@@ -72,7 +92,13 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: false,
+      }),
     );
 
     const input = document.createElement("input");
@@ -94,7 +120,13 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: true })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: true,
+      }),
     );
 
     fireKeyDown({ ctrlKey: true, key: "s" });
@@ -108,7 +140,13 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: false,
+      }),
     );
 
     fireKeyDown({ ctrlKey: true, key: "s" });
@@ -122,12 +160,25 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: true })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: true,
+      }),
     );
 
-    const event = new KeyboardEvent("keydown", { bubbles: true, shiftKey: true, code: "Slash" });
+    const event = new KeyboardEvent("keydown", {
+      bubbles: true,
+      shiftKey: true,
+      code: "Slash",
+    });
     const preventDefault = vi.fn();
-    Object.defineProperty(event, "preventDefault", { value: preventDefault, configurable: true });
+    Object.defineProperty(event, "preventDefault", {
+      value: preventDefault,
+      configurable: true,
+    });
 
     document.dispatchEvent(event);
     expect(preventDefault).toHaveBeenCalled();
@@ -140,7 +191,13 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: false,
+      }),
     );
 
     // "/" alone should not trigger help
@@ -155,7 +212,13 @@ describe("useKeyboardShortcuts", () => {
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({
+        onOpenHelp,
+        onCloseHelp,
+        focusPrompt,
+        onPublish,
+        hasStory: false,
+      }),
     );
 
     fireKeyDown({ key: "Escape" });

@@ -23,7 +23,7 @@ export const chatWithSparky = async (messages: ISparkyMessage[]) => {
       {
         headers: token ? { Authorization: token } : {},
         withCredentials: true,
-      }
+      },
     );
 
     return response.data.data;
@@ -35,7 +35,7 @@ export const chatWithSparky = async (messages: ISparkyMessage[]) => {
 
 export const chatWithAI = async (
   message: string,
-  history: IChatMessage[] = []
+  history: IChatMessage[] = [],
 ) => {
   try {
     const response = await axios.post(
@@ -46,7 +46,7 @@ export const chatWithAI = async (
       },
       {
         withCredentials: true,
-      }
+      },
     );
 
     return response.data.data;
@@ -58,7 +58,7 @@ export const chatWithAI = async (
 
 export const chatWithAIFree = async (
   message: string,
-  history: IChatMessage[] = []
+  history: IChatMessage[] = [],
 ) => {
   try {
     const response = await axios.post(
@@ -69,7 +69,7 @@ export const chatWithAIFree = async (
       },
       {
         withCredentials: true,
-      }
+      },
     );
 
     return response.data.data;

@@ -8,9 +8,7 @@ const createCharacter = z.object({
       .min(1, "Name cannot be empty"),
     role: z.string().trim().optional(),
     age: z.string().trim().optional(),
-    personality: z
-      .string({ required_error: "Personality is required" })
-      .trim(),
+    personality: z.string({ required_error: "Personality is required" }).trim(),
     appearance: z.string().trim().optional(),
     background: z.string().trim().optional(),
     traits: z.array(z.string()).optional(),

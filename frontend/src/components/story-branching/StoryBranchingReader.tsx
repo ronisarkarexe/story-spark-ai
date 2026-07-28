@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { BranchingService, StorySegment, UserChoiceProgress } from "../../services/branching.service";
+import {
+  BranchingService,
+  StorySegment,
+  UserChoiceProgress,
+} from "../../services/branching.service";
 import "./StoryBranchingReader.css";
 
 interface Props {
@@ -7,9 +11,16 @@ interface Props {
   onChoiceMade?: (choice: string) => void;
 }
 
-export const StoryBranchingReader: React.FC<Props> = ({ storyId, onChoiceMade }) => {
-  const [currentSegment, setCurrentSegment] = useState<StorySegment | null>(null);
-  const [userProgress, setUserProgress] = useState<UserChoiceProgress | null>(null);
+export const StoryBranchingReader: React.FC<Props> = ({
+  storyId,
+  onChoiceMade,
+}) => {
+  const [currentSegment, setCurrentSegment] = useState<StorySegment | null>(
+    null,
+  );
+  const [userProgress, setUserProgress] = useState<UserChoiceProgress | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,14 +62,16 @@ export const StoryBranchingReader: React.FC<Props> = ({ storyId, onChoiceMade })
         storyId,
         currentSegment._id,
         choiceId,
-        choiceText
+        choiceText,
       );
 
       setUserProgress(progress);
       onChoiceMade?.(choiceText);
 
       // Navigate to next segment
-      const selectedChoice = currentSegment.choices.find((c) => c.id === choiceId);
+      const selectedChoice = currentSegment.choices.find(
+        (c) => c.id === choiceId,
+      );
       if (selectedChoice?.nextSegmentId) {
         // Load next segment
       }
@@ -103,7 +116,10 @@ export const StoryBranchingReader: React.FC<Props> = ({ storyId, onChoiceMade })
           <div className="progress-info">
             <p>Choices made: {userProgress.choiceHistory.length}</p>
             {userProgress.completedAt && (
-              <p>Story completed on {new Date(userProgress.completedAt).toLocaleDateString()}</p>
+              <p>
+                Story completed on{" "}
+                {new Date(userProgress.completedAt).toLocaleDateString()}
+              </p>
             )}
           </div>
         )}

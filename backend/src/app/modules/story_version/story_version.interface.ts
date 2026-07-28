@@ -7,7 +7,7 @@ export interface IStoryVersion {
   generationType: string; // e.g., 'initial', 'regenerated', 'edited', 'alternate-ending', 'restored'
   versionNumber: number;
   createdBy: Types.ObjectId;
-  
+
   /*** Branching metadata*/
   parentVersionId?: Types.ObjectId | null;
   branchName?: string | null;

@@ -7,7 +7,10 @@ export class MemoryExtractorService {
    * @param knownEntities An array of registered string names representing lore, characters, or locations.
    * @returns An array of entity names that were explicitly mentioned in the prompt.
    */
-  public static extractRelevantEntities(userPrompt: string, knownEntities: string[]): string[] {
+  public static extractRelevantEntities(
+    userPrompt: string,
+    knownEntities: string[],
+  ): string[] {
     if (!userPrompt || !knownEntities || knownEntities.length === 0) {
       return [];
     }
@@ -16,11 +19,11 @@ export class MemoryExtractorService {
 
     for (const entity of knownEntities) {
       // Escape special regex characters in the entity name to avoid compilation syntax faults
-      const escapedEntity = entity.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      
+      const escapedEntity = entity.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+
       // Use \b (word boundary) flags to ensure accurate exact-word matching
       // e.g., matching "Avalon" but ignoring "Avalonians"
-      const regex = new RegExp(`\\b${escapedEntity}\\b`, 'i');
+      const regex = new RegExp(`\\b${escapedEntity}\\b`, "i");
 
       if (regex.test(userPrompt)) {
         matchedEntities.push(entity);

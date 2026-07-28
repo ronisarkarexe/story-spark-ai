@@ -9,9 +9,7 @@ export interface StoryOutline {
   conclusion: string;
 }
 
-export const generateOutline = (
-  prompt: StoryPrompt
-): StoryOutline => {
+export const generateOutline = (prompt: StoryPrompt): StoryOutline => {
   return {
     introduction: "",
     plotPoints: [],
@@ -20,15 +18,11 @@ export const generateOutline = (
   };
 };
 
-export const regenerateOutline = (
-  prompt: StoryPrompt
-): StoryOutline => {
+export const regenerateOutline = (prompt: StoryPrompt): StoryOutline => {
   return generateOutline(prompt);
 };
 
-export const isOutlineComplete = (
-  outline: StoryOutline
-): boolean => {
+export const isOutlineComplete = (outline: StoryOutline): boolean => {
   return (
     outline.introduction.length > 0 &&
     outline.plotPoints.length > 0 &&

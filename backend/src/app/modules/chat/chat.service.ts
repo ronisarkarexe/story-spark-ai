@@ -1,4 +1,8 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} from "@google/generative-ai";
 import config from "../../../config";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
@@ -52,7 +56,7 @@ const chatWithAi = async (messages: IChatMessage[]) => {
   if (!geminiApiKey) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Gemini API key is not configured."
+      "Gemini API key is not configured.",
     );
   }
 
@@ -88,8 +92,8 @@ const chatWithAi = async (messages: IChatMessage[]) => {
     const result = await chatSession.sendMessage(lastMessage);
     const replyText = result.response.text();
     const safeReply =
-  replyText?.trim() ||
-  "Hi! I'm Sparky, StorySparkAI's assistant. How can I help with storytelling today?";
+      replyText?.trim() ||
+      "Hi! I'm Sparky, StorySparkAI's assistant. How can I help with storytelling today?";
 
     return {
       role: "model" as const,
@@ -99,7 +103,7 @@ const chatWithAi = async (messages: IChatMessage[]) => {
     const errorMsg = error instanceof Error ? error.message : String(error);
     throw new ApiError(
       httpStatus.BAD_GATEWAY,
-      `AI chat interaction failed: ${errorMsg}`
+      `AI chat interaction failed: ${errorMsg}`,
     );
   }
 };

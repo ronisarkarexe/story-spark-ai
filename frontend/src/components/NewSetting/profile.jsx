@@ -13,7 +13,7 @@ export const Profile = () => {
     linkedin: "",
     instagram: "",
     github: "",
-    discord: ""
+    discord: "",
   });
 
   const handleChange = (e) => {
@@ -24,17 +24,20 @@ export const Profile = () => {
   return (
     <div className="profile-card">
       <h2 className="card-title">Welcome back User!</h2>
-      <p className="card-subtitle">Manage your profile and social media links here.</p>
-      
+      <p className="card-subtitle">
+        Manage your profile and social media links here.
+      </p>
+
       <hr className="section-divider" />
 
       <form onSubmit={(e) => e.preventDefault()} className="profile-form">
-        
         <div className="form-grid">
           {/* Full Name */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>Full Name</strong></label>
+              <label className="field-label">
+                <strong>Full Name</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -50,7 +53,9 @@ export const Profile = () => {
           {/* Email Address */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>Email Address</strong></label>
+              <label className="field-label">
+                <strong>Email Address</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -66,7 +71,9 @@ export const Profile = () => {
           {/* Mobile Number */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>Mobile Number</strong></label>
+              <label className="field-label">
+                <strong>Mobile Number</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -83,7 +90,9 @@ export const Profile = () => {
           {/* Skills */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>Skills</strong></label>
+              <label className="field-label">
+                <strong>Skills</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -100,7 +109,9 @@ export const Profile = () => {
           {/* Biography Textarea */}
           <div className="form-field col-span-2">
             <div className="field-header">
-              <label className="field-label"><strong>Bio</strong></label>
+              <label className="field-label">
+                <strong>Bio</strong>
+              </label>
             </div>
             <textarea
               name="bio"
@@ -115,13 +126,17 @@ export const Profile = () => {
 
         <hr className="section-divider" />
 
-        <div className="form-section-title"><strong>Social Media Links</strong></div>
-        
+        <div className="form-section-title">
+          <strong>Social Media Links</strong>
+        </div>
+
         <div className="form-grid">
           {/* Facebook */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>Facebook</strong></label>
+              <label className="field-label">
+                <strong>Facebook</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -138,7 +153,9 @@ export const Profile = () => {
           {/* X */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>X</strong></label>
+              <label className="field-label">
+                <strong>X</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -155,7 +172,9 @@ export const Profile = () => {
           {/* LinkedIn */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>LinkedIn</strong></label>
+              <label className="field-label">
+                <strong>LinkedIn</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -172,7 +191,9 @@ export const Profile = () => {
           {/* Instagram */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>Instagram</strong></label>
+              <label className="field-label">
+                <strong>Instagram</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -189,7 +210,9 @@ export const Profile = () => {
           {/* GitHub */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>GitHub</strong></label>
+              <label className="field-label">
+                <strong>GitHub</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -206,7 +229,9 @@ export const Profile = () => {
           {/* Discord */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>Discord</strong></label>
+              <label className="field-label">
+                <strong>Discord</strong>
+              </label>
             </div>
             <div className="input-wrapper">
               <input
@@ -222,9 +247,10 @@ export const Profile = () => {
         </div>
 
         <div className="form-actions-footer">
-          <button type="submit" className="save-form-btn">Save Changes</button>
+          <button type="submit" className="save-form-btn">
+            Save Changes
+          </button>
         </div>
-
       </form>
     </div>
   );

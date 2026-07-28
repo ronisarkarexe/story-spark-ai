@@ -1,27 +1,28 @@
-import React from 'react';
+import React from "react";
 
 interface StarRatingDisplayProps {
   rating: number;
   totalRatings?: number;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showCount?: boolean;
 }
 
-const StarRatingDisplay: React.FC<StarRatingDisplayProps> = ({ 
-  rating, 
-  totalRatings = 0, 
-  size = 'md',
-  showCount = true 
+const StarRatingDisplay: React.FC<StarRatingDisplayProps> = ({
+  rating,
+  totalRatings = 0,
+  size = "md",
+  showCount = true,
 }) => {
   const sizeClasses = {
-    sm: 'text-xs',
-    md: 'text-sm',
-    lg: 'text-lg'
+    sm: "text-xs",
+    md: "text-sm",
+    lg: "text-lg",
   };
 
   const renderStarIcon = (index: number) => {
     if (rating >= index) return <i className="fa-solid fa-star" />;
-    if (rating >= index - 0.5) return <i className="fa-solid fa-star-half-stroke" />;
+    if (rating >= index - 0.5)
+      return <i className="fa-solid fa-star-half-stroke" />;
     return <i className="fa-regular fa-star" />;
   };
 
@@ -34,8 +35,10 @@ const StarRatingDisplay: React.FC<StarRatingDisplayProps> = ({
       </div>
       {showCount && (
         <span className="text-slate-500 font-medium ml-1">
-          {rating > 0 ? Number(rating).toFixed(1) : "New"} 
-          {totalRatings > 0 && <span className="text-slate-400 ml-1">({totalRatings})</span>}
+          {rating > 0 ? Number(rating).toFixed(1) : "New"}
+          {totalRatings > 0 && (
+            <span className="text-slate-400 ml-1">({totalRatings})</span>
+          )}
         </span>
       )}
     </div>

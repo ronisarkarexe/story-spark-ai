@@ -1,4 +1,7 @@
-import { scrubPII, piiScrubberMiddleware } from "../app/middleware/pii_scrubber";
+import {
+  scrubPII,
+  piiScrubberMiddleware,
+} from "../app/middleware/pii_scrubber";
 import type { Request, Response, NextFunction } from "express";
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
@@ -7,7 +10,9 @@ jest.mock("compromise", () => {
     people: () => ({
       out: () => {
         const matches = String(text).match(/\[NAME:([^\]]+)\]/g) ?? [];
-        return matches.map((m) => m.replace("[NAME:", "").replace("]", "").trim());
+        return matches.map((m) =>
+          m.replace("[NAME:", "").replace("]", "").trim(),
+        );
       },
     }),
   }));
@@ -88,9 +93,7 @@ describe("scrubPII — address redaction", () => {
   });
 });
 
-
 describe("scrubPII — ReDoS regression fix", () => {
-
   const TIMEOUT_MS = 100;
 
   it("completes in under 100ms when NLP returns (a+)+", () => {
@@ -123,10 +126,10 @@ describe("scrubPII — ReDoS regression fix", () => {
 
   it("still redacts the name correctly after escaping", () => {
     const input = "Say hello to [NAME:Merlin].";
-  const result = scrubPII(input);
-  expect(result).not.toContain("Merlin");
-  expect(result).toContain("[REDACTED_NAME]");
-});
+    const result = scrubPII(input);
+    expect(result).not.toContain("Merlin");
+    expect(result).toContain("[REDACTED_NAME]");
+  });
 });
 
 describe("scrubPII — edge cases", () => {
@@ -149,13 +152,13 @@ describe("scrubPII — idempotency", () => {
   });
 
   it("does not further change already-redacted tokens", () => {
-    const input = "Already scrubbed: [REDACTED_EMAIL] [REDACTED_PHONE] [REDACTED_NAME]";
+    const input =
+      "Already scrubbed: [REDACTED_EMAIL] [REDACTED_PHONE] [REDACTED_NAME]";
     const once = scrubPII(input);
     const twice = scrubPII(once);
     expect(twice).toBe(once);
   });
 });
-
 
 describe("piiScrubberMiddleware — body fields", () => {
   beforeEach(() => {
@@ -218,7 +221,7 @@ describe("scrubPII — expanded test matrix", () => {
     const inputs = [
       "No PII here, just a story about a wizard.",
       "Already scrubbed: [REDACTED_EMAIL] [REDACTED_PHONE] [REDACTED_NAME]",
-      "Hello [REDACTED_NAME], contact me at [REDACTED_EMAIL] or call [REDACTED_PHONE]"
+      "Hello [REDACTED_NAME], contact me at [REDACTED_EMAIL] or call [REDACTED_PHONE]",
     ];
     for (const input of inputs) {
       const once = scrubPII(input);
@@ -228,21 +231,28 @@ describe("scrubPII — expanded test matrix", () => {
   });
 
   it("scrubs mixed redacted and raw PII correctly", () => {
-    const input = "Hello [REDACTED_NAME], contact me at alice@example.com and phone 555-867-5309";
+    const input =
+      "Hello [REDACTED_NAME], contact me at alice@example.com and phone 555-867-5309";
     const result = scrubPII(input);
-    expect(result).toBe("Hello [REDACTED_NAME], contact me at [REDACTED_EMAIL] and phone [REDACTED_PHONE]");
+    expect(result).toBe(
+      "Hello [REDACTED_NAME], contact me at [REDACTED_EMAIL] and phone [REDACTED_PHONE]",
+    );
   });
 
   it("scrubs UK and international mobile phone formats", () => {
     const input = "UK number is +44 7911 123456 and local is 07911123456";
     const result = scrubPII(input);
-    expect(result).toBe("UK number is [REDACTED_PHONE] and local is [REDACTED_PHONE]");
+    expect(result).toBe(
+      "UK number is [REDACTED_PHONE] and local is [REDACTED_PHONE]",
+    );
   });
 
   it("scrubs local US 7-digit phone numbers with separators", () => {
     const input = "Call me at 867-5309 or 867.5309 or 867 5309";
     const result = scrubPII(input);
-    expect(result).toBe("Call me at [REDACTED_PHONE] or [REDACTED_PHONE] or [REDACTED_PHONE]");
+    expect(result).toBe(
+      "Call me at [REDACTED_PHONE] or [REDACTED_PHONE] or [REDACTED_PHONE]",
+    );
   });
 
   it("scrubs credit cards adjacent to phone-like numbers", () => {
@@ -309,13 +319,18 @@ describe("scrubPII — expanded test matrix", () => {
   });
 
   it("scrubs complete addresses with unit, city, state, zip", () => {
-    const input = "My address is 123 Main St Apt 4B, New York, NY 10001 or 456 S. 2nd Ave Suite 100, San Jose, CA 95112";
+    const input =
+      "My address is 123 Main St Apt 4B, New York, NY 10001 or 456 S. 2nd Ave Suite 100, San Jose, CA 95112";
     const result = scrubPII(input);
-    expect(result).toBe("My address is [REDACTED_ADDRESS] or [REDACTED_ADDRESS]");
+    expect(result).toBe(
+      "My address is [REDACTED_ADDRESS] or [REDACTED_ADDRESS]",
+    );
   });
 
   it("redacts bank account numbers when labeled", () => {
-    const result = scrubPII("Bank account number 1234567890123456 is confidential.");
+    const result = scrubPII(
+      "Bank account number 1234567890123456 is confidential.",
+    );
     expect(result).not.toContain("1234567890123456");
     expect(result).toContain("[REDACTED_ACCOUNT_NUMBER]");
   });

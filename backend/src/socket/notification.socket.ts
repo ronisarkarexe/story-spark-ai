@@ -20,7 +20,7 @@ export const emitNotificationToUser = (userId: string, payload: unknown) => {
 export const emitNotificationStateToUser = (
   userId: string,
   eventName: string,
-  payload: unknown
+  payload: unknown,
 ) => {
   if (!io) {
     return;

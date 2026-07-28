@@ -32,7 +32,9 @@ describe("useRetry", () => {
   });
 
   it("handleRetry increments retryCount", () => {
-    const { result } = renderHook(() => useRetry({ maxRetries: 3, baseDelay: 0 }));
+    const { result } = renderHook(() =>
+      useRetry({ maxRetries: 3, baseDelay: 0 }),
+    );
     const triggerFn = vi.fn();
 
     act(() => {
@@ -44,7 +46,9 @@ describe("useRetry", () => {
   });
 
   it("handleRetry increments retryCount and resets isTimeout", () => {
-    const { result } = renderHook(() => useRetry({ maxRetries: 3, baseDelay: 0 }));
+    const { result } = renderHook(() =>
+      useRetry({ maxRetries: 3, baseDelay: 0 }),
+    );
     const triggerFn = vi.fn();
 
     act(() => {
@@ -55,7 +59,9 @@ describe("useRetry", () => {
   });
 
   it("handleRetry with baseDelay=0 executes trigger immediately without countdown", () => {
-    const { result } = renderHook(() => useRetry({ maxRetries: 3, baseDelay: 0 }));
+    const { result } = renderHook(() =>
+      useRetry({ maxRetries: 3, baseDelay: 0 }),
+    );
     const triggerFn = vi.fn();
 
     act(() => {
@@ -69,7 +75,9 @@ describe("useRetry", () => {
   });
 
   it("handleRetry with baseDelay>0 starts countdown and executes after delay", () => {
-    const { result } = renderHook(() => useRetry({ maxRetries: 3, baseDelay: 2 }));
+    const { result } = renderHook(() =>
+      useRetry({ maxRetries: 3, baseDelay: 2 }),
+    );
     const triggerFn = vi.fn();
 
     act(() => {
@@ -93,7 +101,9 @@ describe("useRetry", () => {
   });
 
   it("handleRetry does not trigger while countdown is active", () => {
-    const { result } = renderHook(() => useRetry({ maxRetries: 3, baseDelay: 5 }));
+    const { result } = renderHook(() =>
+      useRetry({ maxRetries: 3, baseDelay: 5 }),
+    );
     const triggerFn = vi.fn();
 
     act(() => {
@@ -110,7 +120,9 @@ describe("useRetry", () => {
   });
 
   it("resetRetry clears all state", () => {
-    const { result } = renderHook(() => useRetry({ maxRetries: 3, baseDelay: 2 }));
+    const { result } = renderHook(() =>
+      useRetry({ maxRetries: 3, baseDelay: 2 }),
+    );
     const triggerFn = vi.fn();
 
     act(() => {
@@ -148,7 +160,9 @@ describe("useRetry", () => {
   });
 
   it("countdown decrements via setInterval", () => {
-    const { result } = renderHook(() => useRetry({ maxRetries: 3, baseDelay: 3 }));
+    const { result } = renderHook(() =>
+      useRetry({ maxRetries: 3, baseDelay: 3 }),
+    );
     const triggerFn = vi.fn();
 
     act(() => {

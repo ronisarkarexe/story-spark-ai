@@ -19,7 +19,6 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   isLoading,
   searchQuery,
 }) => {
-
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
@@ -68,7 +67,10 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-transparent to-transparent opacity-100 pointer-events-none dark:from-slate-900/90 dark:via-transparent dark:to-transparent"></div>
 
-                <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="absolute top-4 right-4 z-10"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <BookmarkButton
                     storyId={story._id}
                     className="backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 hover:bg-white/30 p-2 !rounded-full shadow-lg hover:scale-110 transition-all duration-300"
@@ -99,7 +101,10 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                 <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-auto">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-start gap-3">
-                      <SSProfile name={story.author?.name || "Unknown"} size="h-8 w-8" />
+                      <SSProfile
+                        name={story.author?.name || "Unknown"}
+                        size="h-8 w-8"
+                      />
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold text-slate-900 dark:text-gray-200">
                           {story.author?.name || "Unknown"}
@@ -122,21 +127,28 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 
                   {story.averageRating > 0 && (
                     <div className="mb-3 flex items-center justify-between">
-                      <StarRatingDisplay rating={story.averageRating} totalRatings={story.totalRatings} size="sm" />
+                      <StarRatingDisplay
+                        rating={story.averageRating}
+                        totalRatings={story.totalRatings}
+                        size="sm"
+                      />
                     </div>
                   )}
 
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                     <div className="flex gap-4">
                       <span className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
-                        <i className="fas fa-heart text-red-400/80"></i> {story.likesCount || 0}
+                        <i className="fas fa-heart text-red-400/80"></i>{" "}
+                        {story.likesCount || 0}
                       </span>
                       <span className="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
-                        <i className="fas fa-comment text-blue-400/80"></i> {story.commentsCount || 0}
+                        <i className="fas fa-comment text-blue-400/80"></i>{" "}
+                        {story.commentsCount || 0}
                       </span>
                     </div>
                     <span className="flex items-center gap-1.5 hover:text-green-500 transition-colors">
-                      <i className="fas fa-eye text-green-400/80"></i> {story.viewsCount || 0}
+                      <i className="fas fa-eye text-green-400/80"></i>{" "}
+                      {story.viewsCount || 0}
                     </span>
                   </div>
                 </div>
@@ -149,7 +161,9 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
               <i className="fas fa-book-open text-4xl text-slate-300 dark:text-slate-600"></i>
             </div>
             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-              {searchQuery ? `No stories found for "${searchQuery}"` : "No posts available"}
+              {searchQuery
+                ? `No stories found for "${searchQuery}"`
+                : "No posts available"}
             </h3>
             <p className="text-slate-500 dark:text-slate-400 max-w-sm">
               {searchQuery

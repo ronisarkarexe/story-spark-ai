@@ -16,7 +16,9 @@ const TopHeaderComponent = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const [isLogin, setIsLogin] = useState(false);
-  const [user, setUser] = useState<ReturnType<typeof getUserInfo> & { avatar?: string } | null>(null);
+  const [user, setUser] = useState<
+    (ReturnType<typeof getUserInfo> & { avatar?: string }) | null
+  >(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,12 +50,19 @@ const TopHeaderComponent = () => {
               to="/"
               className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-lg p-1"
             >
-              <img src={logo} alt="Story Spark AI Logo" className="h-8 w-auto" />
+              <img
+                src={logo}
+                alt="Story Spark AI Logo"
+                className="h-8 w-auto"
+              />
             </Link>
 
             <nav className="hidden md:flex items-center gap-1 relative">
               {navLinks.map((link) => {
-                const isActive = location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path));
+                const isActive =
+                  location.pathname === link.path ||
+                  (link.path !== "/" &&
+                    location.pathname.startsWith(link.path));
                 return (
                   <NavLink
                     key={link.name}
@@ -85,7 +94,7 @@ const TopHeaderComponent = () => {
           {/* Right side actions */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            
+
             <div className="hidden sm:flex items-center gap-3">
               <Link
                 to="/search"
@@ -109,9 +118,16 @@ const TopHeaderComponent = () => {
                     className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-300 dark:border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 hover:ring-2 hover:ring-indigo-400 transition-all"
                   >
                     {user?.avatar ? (
-                      <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />
+                      <img
+                        src={user.avatar}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
-                      <User size={16} className="text-slate-500 dark:text-slate-400" />
+                      <User
+                        size={16}
+                        className="text-slate-500 dark:text-slate-400"
+                      />
                     )}
                   </Link>
                 </>

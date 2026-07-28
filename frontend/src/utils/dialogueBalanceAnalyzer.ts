@@ -6,9 +6,7 @@ export interface DialogueBalanceReport {
   suggestion: string;
 }
 
-export function analyzeDialogueBalance(
-  story: string
-): DialogueBalanceReport {
+export function analyzeDialogueBalance(story: string): DialogueBalanceReport {
   if (!story.trim()) {
     return {
       dialoguePercentage: 0,
@@ -29,8 +27,6 @@ export function analyzeDialogueBalance(
   };
 }
 
-export function refreshDialogueBalance(
-  story: string
-) {
+export function refreshDialogueBalance(story: string) {
   return analyzeDialogueBalance(story);
 }

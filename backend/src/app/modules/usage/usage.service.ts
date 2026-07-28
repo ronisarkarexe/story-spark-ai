@@ -10,10 +10,7 @@ const getMyUsage = async (token: ITokenPayload) => {
   });
 
   if (!user) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "User not found!"
-    );
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
   let limit = REQUEST_LIMITS.free;
@@ -29,7 +26,7 @@ const getMyUsage = async (token: ITokenPayload) => {
   const billingPeriodStart = new Date(
     new Date().getFullYear(),
     new Date().getMonth(),
-    1
+    1,
   );
 
   const billingPeriodEnd = new Date(
@@ -39,7 +36,7 @@ const getMyUsage = async (token: ITokenPayload) => {
     23,
     59,
     59,
-    999
+    999,
   );
 
   return {
@@ -58,7 +55,6 @@ const getMyUsage = async (token: ITokenPayload) => {
     },
   };
 };
-
 
 export const UsageService = {
   getMyUsage,

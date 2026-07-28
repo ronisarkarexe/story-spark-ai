@@ -29,9 +29,6 @@ const HelpCategoryCard: FC<HelpCategoryCardProps> = ({ category }) => {
       </div>
       <div className="inline-flex items-center gap-1.5 mt-5 text-xs sm:text-sm text-blue-600 dark:text-blue-400 group-hover:text-blue-500 dark:group-hover:text-blue-300 font-bold tracking-tight select-none">
         Browse Section
-
-
-
         <i
           className="fa-solid fa-arrow-right text-[10px] sm:text-xs transition-transform group-hover:translate-x-1 shrink-0"
           aria-hidden="true"

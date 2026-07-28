@@ -8,4 +8,3 @@
 - [ ] Run backend tests (at least `piiScrubber.test.ts`) and ensure they pass.
 - [ ] Commit changes on branch `blackboxai/#3651-pii-scrubber`.
 - [ ] Open PR on GitHub.
-

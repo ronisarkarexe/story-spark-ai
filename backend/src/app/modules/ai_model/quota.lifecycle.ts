@@ -34,21 +34,20 @@ export const createGuestQuotaGuard = (guestId: string): QuotaRefundGuard =>
  */
 
 export const runWithQuotaCleanup = async <T>(
-    guard: QuotaRefundGuard,
-    operation: () => Promise<T>
+  guard: QuotaRefundGuard,
+  operation: () => Promise<T>,
 ): Promise<T> => {
-    try {
-        return await operation();
-    } catch (error) {
-        await guard.refundOnce();
-        throw error;
-    }
+  try {
+    return await operation();
+  } catch (error) {
+    await guard.refundOnce();
+    throw error;
+  }
 };
-
 
 export const assertSuccessfulGeneration = (
   result: unknown,
-  message: string
+  message: string,
 ): void => {
   if (!Array.isArray(result) || result.length === 0) {
     throw new ApiError(httpStatus.BAD_GATEWAY, message);

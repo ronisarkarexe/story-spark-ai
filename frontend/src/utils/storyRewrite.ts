@@ -1,8 +1,4 @@
-export type CreativityLevel =
-  | "Low"
-  | "Balanced"
-  | "High"
-  | "Experimental";
+export type CreativityLevel = "Low" | "Balanced" | "High" | "Experimental";
 
 export interface RewriteRequest {
   story: string;
@@ -13,17 +9,13 @@ export interface RewriteResponse {
   rewrittenStory: string;
 }
 
-export const rewriteStory = (
-  request: RewriteRequest
-): RewriteResponse => {
+export const rewriteStory = (request: RewriteRequest): RewriteResponse => {
   return {
     rewrittenStory: request.story,
   };
 };
 
-export const getCreativityDescription = (
-  level: CreativityLevel
-) => {
+export const getCreativityDescription = (level: CreativityLevel) => {
   switch (level) {
     case "Low":
       return "Preserves most of the original wording.";

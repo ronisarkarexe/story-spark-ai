@@ -9,17 +9,12 @@ interface StoryGenreTransformationProps {
   onClose: () => void;
 }
 
-const genres = [
-  "Fantasy",
-  "Horror",
-  "Mystery",
-  "Romance",
-  "Science Fiction",
-];
+const genres = ["Fantasy", "Horror", "Mystery", "Romance", "Science Fiction"];
 
-const StoryGenreTransformation: React.FC<
-  StoryGenreTransformationProps
-> = ({ story, onClose }) => {
+const StoryGenreTransformation: React.FC<StoryGenreTransformationProps> = ({
+  story,
+  onClose,
+}) => {
   const [selectedGenre, setSelectedGenre] = useState<string>("");
   const [transformedStory, setTransformedStory] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -70,12 +65,9 @@ ${story.content}
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-slate-900 text-white rounded-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto">
-
         {/* Header */}
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-2xl font-bold">
-            🎭 AI Genre Transformation
-          </h2>
+          <h2 className="text-2xl font-bold">🎭 AI Genre Transformation</h2>
 
           <button
             onClick={onClose}
@@ -87,18 +79,14 @@ ${story.content}
 
         {/* Genre Selection */}
         <div className="mb-5">
-          <label className="block mb-2 font-semibold">
-            Select Genre
-          </label>
+          <label className="block mb-2 font-semibold">Select Genre</label>
 
           <select
             value={selectedGenre}
             onChange={(e) => setSelectedGenre(e.target.value)}
             className="w-full p-3 rounded-lg bg-slate-800 border border-slate-600"
           >
-            <option value="">
-              Choose a genre
-            </option>
+            <option value="">Choose a genre</option>
 
             {genres.map((genre) => (
               <option key={genre} value={genre}>
@@ -120,22 +108,15 @@ ${story.content}
         {/* Comparison Section */}
         {transformedStory && (
           <div className="grid md:grid-cols-2 gap-5 mt-6">
-
             <div className="bg-slate-800 p-4 rounded-xl">
-              <h3 className="font-bold mb-3 text-blue-400">
-                Original Story
-              </h3>
+              <h3 className="font-bold mb-3 text-blue-400">Original Story</h3>
 
-              <p className="whitespace-pre-wrap text-sm">
-                {story.content}
-              </p>
+              <p className="whitespace-pre-wrap text-sm">{story.content}</p>
             </div>
 
             <div className="bg-slate-800 p-4 rounded-xl">
               <div className="flex justify-between mb-3">
-                <h3 className="font-bold text-purple-400">
-                  Transformed Story
-                </h3>
+                <h3 className="font-bold text-purple-400">Transformed Story</h3>
 
                 <button
                   onClick={handleCopy}
@@ -145,14 +126,10 @@ ${story.content}
                 </button>
               </div>
 
-              <p className="whitespace-pre-wrap text-sm">
-                {transformedStory}
-              </p>
+              <p className="whitespace-pre-wrap text-sm">{transformedStory}</p>
             </div>
-
           </div>
         )}
-
       </div>
     </div>
   );

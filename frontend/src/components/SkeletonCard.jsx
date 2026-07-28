@@ -1,12 +1,9 @@
-import React from 'react';
-import '../styles/skeleton.css'; // Adjust path based on your styling folder setup
+import React from "react";
+import "../styles/skeleton.css"; // Adjust path based on your styling folder setup
 
 const SkeletonCard = () => {
   return (
-    <div 
-      className="skeleton-card" 
-      aria-hidden="true"
-    >
+    <div className="skeleton-card" aria-hidden="true">
       {/* 1. Placeholder Rectangle for the Story Image (Aspect Ratio 16:9) */}
       <div className="shimmer-anim w-full aspect-video rounded-xl" />
 

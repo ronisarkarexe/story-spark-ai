@@ -9,32 +9,36 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'android-chrome-192x192.png', 'android-chrome-512x512.png'],
+      registerType: "autoUpdate",
+      includeAssets: [
+        "favicon.svg",
+        "android-chrome-192x192.png",
+        "android-chrome-512x512.png",
+      ],
       manifest: {
-        name: 'Story Spark AI',
-        short_name: 'StorySpark',
-        description: 'Story Spark AI Application',
-        theme_color: '#ffffff',
-        display: 'standalone',
+        name: "Story Spark AI",
+        short_name: "StorySpark",
+        description: "Story Spark AI Application",
+        theme_color: "#ffffff",
+        display: "standalone",
         icons: [
           {
-            src: 'android-chrome-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
+            src: "android-chrome-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
           },
           {
-            src: 'android-chrome-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
+            src: "android-chrome-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+        ],
       },
       workbox: {
         // Caches all static assets, ensuring index.css and tokens.css are reliably stored offline
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
-      }
-    })
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+      },
+    }),
   ],
   test: {
     globals: true,

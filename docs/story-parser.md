@@ -8,10 +8,10 @@ The story parser (`frontend/src/utils/storyParser.ts`) extracts a graph-based re
 
 ```typescript
 export interface IStoryNode {
-  id: string;        // e.g. "char_Alice" or "loc_forest"
-  name: string;      // Display name, e.g. "Alice" or "Forest"
+  id: string; // e.g. "char_Alice" or "loc_forest"
+  name: string; // Display name, e.g. "Alice" or "Forest"
   type: "location" | "character";
-  excerpt: string;   // Context snippet around the first occurrence
+  excerpt: string; // Context snippet around the first occurrence
   occurrenceCount?: number; // Number of times the location appears
 }
 ```
@@ -20,8 +20,8 @@ export interface IStoryNode {
 
 ```typescript
 export interface IStoryLink {
-  source: string;  // IStoryNode id
-  target: string;  // IStoryNode id
+  source: string; // IStoryNode id
+  target: string; // IStoryNode id
 }
 ```
 
@@ -58,6 +58,7 @@ The parser maintains a list of ~50 common location keywords (forest, castle, cit
 ### Character Detection
 
 Characters are identified as capitalized words that:
+
 - Appear at least twice in the text
 - Are not in the skip list (common words, location names, pronouns)
 - Start with a capital letter and have at least 3 characters
@@ -67,6 +68,7 @@ Up to 6 characters are kept, sorted by frequency of occurrence.
 ### Link Generation
 
 Two types of links are created:
+
 1. **Character-to-location**: A character node is linked to a location node if they appear within 200 characters of each other.
 2. **Location-to-location**: Consecutive locations in the text are linked in order, reflecting the story's movement.
 

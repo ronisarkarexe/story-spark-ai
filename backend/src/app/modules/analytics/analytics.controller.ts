@@ -6,14 +6,14 @@ import httpStatus from "http-status";
 import { AnalyticsService } from "./analytics.service";
 
 const getAnalyticsOverview = catchAsync(async (req: Request, res: Response) => {
-let token = null;
+  let token = null;
 
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-} 
- const result = await AnalyticsService.getOverview(token);
+  try {
+    token = getToken(req);
+  } catch (error) {
+    token = null;
+  }
+  const result = await AnalyticsService.getOverview(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -23,13 +23,13 @@ try {
 });
 
 const getHeatmap = catchAsync(async (req: Request, res: Response) => {
-let token = null;
+  let token = null;
 
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
+  try {
+    token = getToken(req);
+  } catch (error) {
+    token = null;
+  }
   const result = await AnalyticsService.getHeatmap(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -40,13 +40,13 @@ try {
 });
 
 const getGenreDistribution = catchAsync(async (req: Request, res: Response) => {
-let token = null;
+  let token = null;
 
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
+  try {
+    token = getToken(req);
+  } catch (error) {
+    token = null;
+  }
   const result = await AnalyticsService.getGenreDistribution(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -57,13 +57,13 @@ try {
 });
 
 const getWordCloud = catchAsync(async (req: Request, res: Response) => {
-let token = null;
+  let token = null;
 
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
+  try {
+    token = getToken(req);
+  } catch (error) {
+    token = null;
+  }
   const result = await AnalyticsService.getWordCloud(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -74,13 +74,13 @@ try {
 });
 
 const getProductiveHours = catchAsync(async (req: Request, res: Response) => {
-let token = null;
+  let token = null;
 
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
+  try {
+    token = getToken(req);
+  } catch (error) {
+    token = null;
+  }
   const result = await AnalyticsService.getProductiveHours(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -90,31 +90,33 @@ try {
   });
 });
 
-const getEmotionDistribution = catchAsync(async (req: Request, res: Response) => {
-let token = null;
+const getEmotionDistribution = catchAsync(
+  async (req: Request, res: Response) => {
+    let token = null;
 
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
-  const result = await AnalyticsService.getEmotionDistribution(token);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Emotion distribution fetched successfully!",
-    data: result,
-  });
-});
+    try {
+      token = getToken(req);
+    } catch (error) {
+      token = null;
+    }
+    const result = await AnalyticsService.getEmotionDistribution(token);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Emotion distribution fetched successfully!",
+      data: result,
+    });
+  },
+);
 
 const getMoodTimeline = catchAsync(async (req: Request, res: Response) => {
-let token = null;
+  let token = null;
 
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
+  try {
+    token = getToken(req);
+  } catch (error) {
+    token = null;
+  }
   const result = await AnalyticsService.getMoodTimeline(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,

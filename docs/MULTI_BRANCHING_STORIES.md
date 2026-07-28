@@ -9,6 +9,7 @@ This document describes the implementation of multi-branching story logic that e
 ### 1. **Data Models & Database**
 
 #### StorySegment Schema
+
 - Represents individual segments/nodes in a branching story tree
 - Stores content, choices, and metadata
 - Supports parent-child relationships for tree structure
@@ -18,6 +19,7 @@ This document describes the implementation of multi-branching story logic that e
   - `{storyId, branchDepth}` - tree level queries
 
 **Key Fields:**
+
 - `storyId` - Reference to the main story (Post)
 - `parentSegmentId` - Reference to parent segment (null for root)
 - `content` - Story text for this segment
@@ -27,12 +29,14 @@ This document describes the implementation of multi-branching story logic that e
 - `isLeaf` - Whether segment is a terminal node
 
 #### UserChoiceProgress Schema
+
 - Tracks individual user's journey through a branching story
 - Records choice history with timestamps
 - Manages story completion status
 - One entry per user-story combination
 
 **Key Fields:**
+
 - `userId` - Reference to user
 - `storyId` - Reference to story
 - `currentSegmentId` - Current position in story
@@ -41,11 +45,13 @@ This document describes the implementation of multi-branching story logic that e
 - `isActive` - Whether journey is ongoing
 
 #### BranchStatistics Schema
+
 - Aggregates choice popularity metrics
 - Enables analytics on user behavior
 - Tracks selection frequency and percentage
 
 **Key Fields:**
+
 - `storyId` - Reference to story
 - `segmentId` - Which segment contains choice
 - `choiceId` - Which choice
@@ -55,9 +61,11 @@ This document describes the implementation of multi-branching story logic that e
 ### 2. **Backend API Endpoints**
 
 #### POST `/api/v1/story-branches`
+
 Create a new branching story with root segment.
 
 **Request:**
+
 ```json
 {
   "storyId": "507f1f77bcf86cd799439011",
@@ -72,6 +80,7 @@ Create a new branching story with root segment.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -94,30 +103,32 @@ Create a new branching story with root segment.
 ```
 
 #### POST `/api/v1/story-branches/segments`
+
 Create a new segment branching from a parent.
 
 **Request:**
+
 ```json
 {
   "storyId": "507f1f77bcf86cd799439011",
   "parentSegmentId": "507f1f77bcf86cd799439020",
   "content": "You walk down the left path...",
-  "choices": [
-    { "text": "Continue forward" },
-    { "text": "Turn back" }
-  ]
+  "choices": [{ "text": "Continue forward" }, { "text": "Turn back" }]
 }
 ```
 
 **Response:** Returns the newly created segment.
 
 #### GET `/api/v1/story-branches/:storyId/tree`
+
 Retrieve complete branch tree for visualization.
 
 **Query Parameters:**
+
 - `maxDepth` (optional) - Limit tree depth
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -144,9 +155,11 @@ Retrieve complete branch tree for visualization.
 ```
 
 #### POST `/api/v1/story-branches/choices/record`
+
 Record user choice and advance progress.
 
 **Request:**
+
 ```json
 {
   "storyId": "507f1f77bcf86cd799439011",
@@ -159,9 +172,11 @@ Record user choice and advance progress.
 **Response:** Returns updated user progress.
 
 #### GET `/api/v1/story-branches/:storyId/progress`
+
 Get user's progress through a branching story.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -184,9 +199,11 @@ Get user's progress through a branching story.
 ```
 
 #### GET `/api/v1/story-branches/:storyId/statistics`
+
 Get choice statistics for a story.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -203,9 +220,11 @@ Get choice statistics for a story.
 ```
 
 #### GET `/api/v1/story-branches/:storyId/statistics/summary`
+
 Get comprehensive statistics summary.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -220,9 +239,11 @@ Get comprehensive statistics summary.
 ```
 
 #### POST `/api/v1/story-branches/validate`
+
 Validate branch integrity.
 
 **Request:**
+
 ```json
 {
   "storyId": "507f1f77bcf86cd799439011",
@@ -232,6 +253,7 @@ Validate branch integrity.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -250,9 +272,11 @@ Validate branch integrity.
 ```
 
 #### DELETE `/api/v1/story-branches/segments/:segmentId`
+
 Delete a segment and its children (cascade delete).
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -277,9 +301,11 @@ The `StoryBranchingService` class provides the core business logic:
 ### 4. **Frontend Components**
 
 #### StoryBranchingReader
+
 Main component for reading/playing branching stories.
 
 **Props:**
+
 ```typescript
 interface Props {
   storyId: string;
@@ -288,6 +314,7 @@ interface Props {
 ```
 
 **Features:**
+
 - Displays current segment content
 - Shows available choices as interactive buttons
 - Tracks progress
@@ -295,17 +322,20 @@ interface Props {
 - Indicates story completion
 
 **Usage:**
+
 ```tsx
-<StoryBranchingReader 
+<StoryBranchingReader
   storyId="story-123"
   onChoiceMade={(choice) => console.log(`User chose: ${choice}`)}
 />
 ```
 
 #### BranchTree
+
 Visualizes the complete story tree structure.
 
 **Props:**
+
 ```typescript
 interface Props {
   storyId: string;
@@ -315,6 +345,7 @@ interface Props {
 ```
 
 **Features:**
+
 - Expandable/collapsible tree nodes
 - Shows branch paths and statistics
 - Marks leaf (end) nodes
@@ -322,9 +353,11 @@ interface Props {
 - Scrollable with large trees
 
 #### BranchStatistics
+
 Displays choice analytics and popular paths.
 
 **Props:**
+
 ```typescript
 interface Props {
   storyId: string;
@@ -332,6 +365,7 @@ interface Props {
 ```
 
 **Features:**
+
 - Total segments, choices, and selections
 - Average path length
 - Top 10 most popular choices
@@ -354,10 +388,10 @@ const tree = await BranchingService.getBranchTree(storyId, maxDepth);
 
 // Record choice
 const progress = await BranchingService.recordUserChoice(
-  storyId, 
-  segmentId, 
-  choiceId, 
-  choiceText
+  storyId,
+  segmentId,
+  choiceId,
+  choiceText,
 );
 
 // Get progress
@@ -377,53 +411,67 @@ await BranchingService.deleteSegment(segmentId);
 ## Edge Cases Handled
 
 ### 1. **Circular References**
+
 The system detects circular parent-child relationships using depth-first search (DFS) and prevents them from being created.
 
 ### 2. **Orphaned Segments**
+
 Validates that all segments have valid parent references except the root.
 
 ### 3. **Dead Ends**
+
 Identifies leaf segments with unlinked choices and reports them in validation.
 
 ### 4. **Maximum Branch Depth**
+
 Optional depth limiting prevents extremely deep trees from overwhelming the database.
 
 ### 5. **Concurrent Modifications**
+
 Database indexes and unique constraints prevent race conditions during simultaneous choice recordings.
 
 ### 6. **Cascade Deletion**
+
 When a segment is deleted, all children are recursively deleted and associated statistics are cleaned up.
 
 ### 7. **User Authorization**
+
 Only the creator of a segment can delete it. Non-creators receive a 403 Forbidden error.
 
 ### 8. **Large Content**
+
 Content length validation prevents excessively large segments (max 10,000 chars per segment).
 
 ### 9. **Choice Limits**
+
 Maximum 5 choices per segment to maintain readability and database efficiency.
 
 ## Security Considerations
 
 ### 1. **API Keys Never Exposed**
+
 All API credentials remain server-side only. Frontend uses JWT authentication.
 
 ### 2. **Input Validation**
+
 - Zod schemas validate all API inputs
 - Content sanitization prevents injection attacks
 - Choice text is truncated and validated
 
 ### 3. **Rate Limiting**
+
 - Global rate limiter applies to all endpoints
 - User choice recording has per-user limits
 - Prevents abuse of statistics tracking
 
 ### 4. **Authentication Required**
+
 - User must be authenticated to create/modify stories
 - Only authenticated users can record choices
 - Segment deletion requires creator authentication
 
 ### 5. **Data Privacy**
+
 - User choice history is private to that user
 - Statistics are aggregated anonymously
 - No personal data in choice tracking
@@ -431,6 +479,7 @@ All API credentials remain server-side only. Frontend uses JWT authentication.
 ## Performance Optimizations
 
 ### Database Indexes
+
 1. `{storyId, parentSegmentId}` - Branch traversal
 2. `{storyId, branchPath}` - Path uniqueness
 3. `{storyId, segmentIndex}` - Timeline queries
@@ -439,11 +488,13 @@ All API credentials remain server-side only. Frontend uses JWT authentication.
 6. `{userId, isActive}` - Active story filtering
 
 ### Query Optimization
+
 - `maxDepth` parameter limits recursive queries
 - Select only needed fields in aggregations
 - Use index-covered queries where possible
 
 ### Caching Opportunities
+
 - Cache branch trees with TTL
 - Cache user progress for active stories
 - Cache statistics summaries
@@ -453,6 +504,7 @@ All API credentials remain server-side only. Frontend uses JWT authentication.
 Comprehensive test suites are included for:
 
 ### Backend Tests (`story_branching.service.test.ts`)
+
 - createBranchingStory functionality
 - createSegment with depth tracking
 - getBranchTree with max depth
@@ -461,12 +513,14 @@ Comprehensive test suites are included for:
 - Edge cases (circular refs, orphaned segments, etc.)
 
 ### Controller Tests (`story_branching.controller.test.ts`)
+
 - API endpoint validation
 - Request/response formats
 - Error handling
 - Authentication enforcement
 
 Tests cover:
+
 - Happy paths
 - Error scenarios
 - Edge cases
@@ -478,6 +532,7 @@ Tests cover:
 ### Creating a Branching Story
 
 **Backend:**
+
 ```typescript
 const segment = await StoryBranchingService.createBranchingStory(
   storyId,
@@ -486,12 +541,13 @@ const segment = await StoryBranchingService.createBranchingStory(
   [
     { text: "Explore north" },
     { text: "Explore south" },
-    { text: "Stay put and rest" }
-  ]
+    { text: "Stay put and rest" },
+  ],
 );
 ```
 
 **Frontend:**
+
 ```typescript
 await BranchingService.createBranchingStory(
   storyId,
@@ -499,16 +555,16 @@ await BranchingService.createBranchingStory(
   [
     { text: "Explore north" },
     { text: "Explore south" },
-    { text: "Stay put and rest" }
+    { text: "Stay put and rest" },
   ],
-  "fantasy"
+  "fantasy",
 );
 ```
 
 ### Reading a Branching Story
 
 ```tsx
-<StoryBranchingReader 
+<StoryBranchingReader
   storyId={storyId}
   onChoiceMade={(choice) => {
     console.log(`User selected: ${choice}`);
@@ -560,21 +616,25 @@ await BranchingService.createBranchingStory(
 ## Troubleshooting
 
 ### Story Tree Not Loading
+
 - Check MongoDB connection
 - Verify story ID exists
 - Check user authentication
 
 ### Choices Not Recording
+
 - Confirm user is authenticated
 - Verify choice ID matches segment choices
 - Check database write permissions
 
 ### Circular Reference Detected
+
 - Ensure parent segment is different from current
 - Check for accidental self-references
 - Use validation endpoint to identify issues
 
 ### Performance Issues
+
 - Reduce maxDepth in queries
 - Add database indexes if missing
 - Check MongoDB query performance

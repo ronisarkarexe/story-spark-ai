@@ -7,7 +7,8 @@ interface AchievementBadgeProps {
 }
 
 const AchievementBadge: React.FC<AchievementBadgeProps> = ({ achievement }) => {
-  const { title, description, icon, unlockedAt, progress, target } = achievement;
+  const { title, description, icon, unlockedAt, progress, target } =
+    achievement;
   const isUnlocked = !!unlockedAt;
 
   const formattedDate = unlockedAt
@@ -48,7 +49,7 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({ achievement }) => {
               {title}
             </h4>
             {isUnlocked && (
-              <span 
+              <span
                 className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/30"
                 aria-label="Unlocked Badge"
               >
@@ -64,11 +65,18 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({ achievement }) => {
 
       <div className="mt-5 pt-3 border-t border-slate-100 dark:border-white/[0.05]">
         {!isUnlocked ? (
-          <AchievementProgress progress={progress} target={target} label="Goal Progress" />
+          <AchievementProgress
+            progress={progress}
+            target={target}
+            label="Goal Progress"
+          />
         ) : (
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
             <span className="font-medium">Unlocked on:</span>
-            <span className="font-bold text-slate-700 dark:text-slate-200" aria-label={`Unlocked date ${formattedDate}`}>
+            <span
+              className="font-bold text-slate-700 dark:text-slate-200"
+              aria-label={`Unlocked date ${formattedDate}`}
+            >
               {formattedDate}
             </span>
           </div>

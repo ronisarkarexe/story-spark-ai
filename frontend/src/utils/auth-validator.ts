@@ -1,12 +1,28 @@
-export const validateTokenPayload = (decodedData: Record<string, unknown>): void => {
-  if (!decodedData || typeof decodedData !== "object" || Array.isArray(decodedData)) {
+export const validateTokenPayload = (
+  decodedData: Record<string, unknown>,
+): void => {
+  if (
+    !decodedData ||
+    typeof decodedData !== "object" ||
+    Array.isArray(decodedData)
+  ) {
     throw new Error("Token payload is not a valid object.");
   }
   const userId = decodedData.userId ?? decodedData._id ?? decodedData.sub;
-  if (userId === undefined || userId === null || typeof userId !== "string" || userId.trim() === "") {
-    throw new Error("Token is missing a valid user identifier ('userId', '_id', or 'sub').");
+  if (
+    userId === undefined ||
+    userId === null ||
+    typeof userId !== "string" ||
+    userId.trim() === ""
+  ) {
+    throw new Error(
+      "Token is missing a valid user identifier ('userId', '_id', or 'sub').",
+    );
   }
-  if (typeof decodedData.email !== "string" || decodedData.email.trim() === "") {
+  if (
+    typeof decodedData.email !== "string" ||
+    decodedData.email.trim() === ""
+  ) {
     throw new Error("Token is missing a valid 'email' claim.");
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,16 +34,27 @@ export const validateTokenPayload = (decodedData: Record<string, unknown>): void
   }
   const validRoles = ["admin", "super_admin", "user", "writer", "guest"];
   if (!validRoles.includes(decodedData.role)) {
-    throw new Error(`Token 'role' claim must be one of: ${validRoles.join(", ")}`);
+    throw new Error(
+      `Token 'role' claim must be one of: ${validRoles.join(", ")}`,
+    );
   }
-  if (typeof decodedData.subscriptionType !== "string" || decodedData.subscriptionType.trim() === "") {
+  if (
+    typeof decodedData.subscriptionType !== "string" ||
+    decodedData.subscriptionType.trim() === ""
+  ) {
     throw new Error("Token is missing a valid 'subscriptionType' claim.");
   }
   const validSubscriptions = ["free", "pro", "premium"];
   if (!validSubscriptions.includes(decodedData.subscriptionType)) {
-    throw new Error(`Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`);
+    throw new Error(
+      `Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`,
+    );
   }
-  if (typeof decodedData.exp !== "number" || isNaN(decodedData.exp) || decodedData.exp <= 0) {
+  if (
+    typeof decodedData.exp !== "number" ||
+    isNaN(decodedData.exp) ||
+    decodedData.exp <= 0
+  ) {
     throw new Error("Token is missing a valid numeric 'exp' claim.");
   }
   const CLOCK_SKEW_TOLERANCE_SECONDS = 60;
@@ -35,7 +62,11 @@ export const validateTokenPayload = (decodedData: Record<string, unknown>): void
   if (decodedData.exp < currentTime - CLOCK_SKEW_TOLERANCE_SECONDS) {
     throw new Error("Token has expired.");
   }
-  if (typeof decodedData.iat !== "number" || isNaN(decodedData.iat) || decodedData.iat <= 0) {
+  if (
+    typeof decodedData.iat !== "number" ||
+    isNaN(decodedData.iat) ||
+    decodedData.iat <= 0
+  ) {
     throw new Error("Token is missing a valid numeric 'iat' claim.");
   }
   if (decodedData.iat >= decodedData.exp) {
@@ -44,7 +75,10 @@ export const validateTokenPayload = (decodedData: Record<string, unknown>): void
   if (decodedData.name !== undefined && typeof decodedData.name !== "string") {
     throw new Error("Token 'name' claim must be a string.");
   }
-  if (decodedData.postsCount !== undefined && typeof decodedData.postsCount !== "number") {
+  if (
+    decodedData.postsCount !== undefined &&
+    typeof decodedData.postsCount !== "number"
+  ) {
     throw new Error("Token 'postsCount' claim must be a number.");
   }
 };

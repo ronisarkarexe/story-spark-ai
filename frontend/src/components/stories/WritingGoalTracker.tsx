@@ -4,7 +4,9 @@ interface WritingGoalTrackerProps {
   wordCount: number;
 }
 
-const WritingGoalTracker: React.FC<WritingGoalTrackerProps> = ({ wordCount }) => {
+const WritingGoalTracker: React.FC<WritingGoalTrackerProps> = ({
+  wordCount,
+}) => {
   const [goalWords, setGoalWords] = useState<number>(200);
   const [isSettingGoal, setIsSettingGoal] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>("200");
@@ -25,11 +27,11 @@ const WritingGoalTracker: React.FC<WritingGoalTrackerProps> = ({ wordCount }) =>
         sessionStart: sessionStart.toISOString(),
       };
       const existing = JSON.parse(
-        localStorage.getItem("writingSessionStats") || "[]"
+        localStorage.getItem("writingSessionStats") || "[]",
       );
       localStorage.setItem(
         "writingSessionStats",
-        JSON.stringify([...existing, stats])
+        JSON.stringify([...existing, stats]),
       );
     }
   }, [wordCount, goalWords, goalReached, sessionStart]);
@@ -55,8 +57,8 @@ const WritingGoalTracker: React.FC<WritingGoalTrackerProps> = ({ wordCount }) =>
     progress >= 100
       ? "bg-green-500"
       : progress >= 80
-      ? "bg-yellow-400"
-      : "bg-indigo-500";
+        ? "bg-yellow-400"
+        : "bg-indigo-500";
 
   return (
     <div className="w-full rounded-xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm p-4 mb-4">

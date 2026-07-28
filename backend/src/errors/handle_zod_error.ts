@@ -9,7 +9,7 @@ const handleZodError = (err: ZodError) => {
         path: issue.path.length > 0 ? issue.path[issue.path.length - 1] : "",
         message: issue.message,
       };
-    }
+    },
   );
 
   return {

@@ -36,10 +36,15 @@ const validatePromptLength = (prompt: string): void => {
 const generateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 15,
-  keyGenerator: (req: Request & { user?: any }) => req.user?.id ?? req.ip ?? "unknown",
+  keyGenerator: (req: Request & { user?: any }) =>
+    req.user?.id ?? req.ip ?? "unknown",
   standardHeaders: true,
   handler: (req: Request, res: Response) => {
-    res.status(429).json({ error: "Generation limit reached. Please try again in an hour." });
+    res
+      .status(429)
+      .json({
+        error: "Generation limit reached. Please try again in an hour.",
+      });
   },
 });
 
@@ -52,19 +57,22 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   storyGenerationRateLimiter,
   enforceQuota("story_continue"),
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
-    const { prompt, language } = req.body as { prompt: string; language?: string };
+    const { prompt, language } = req.body as {
+      prompt: string;
+      language?: string;
+    };
     const guard = res.locals.quotaRefundGuard;
 
     if (!guard) {
       throw new Error(
-        "Quota guard missing — checkRequestLimit middleware is required"
+        "Quota guard missing — checkRequestLimit middleware is required",
       );
     }
 
@@ -77,7 +85,7 @@ router.post(
       const result = await AiModelService.aiModelStoryContinuation(
         { prompt, language },
         undefined,
-        controller.signal
+        controller.signal,
       );
       sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -85,7 +93,7 @@ router.post(
         data: result,
       });
     });
-  })
+  }),
 );
 
 /** STORY CONTINUATIONS - multiple */
@@ -95,19 +103,23 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   storyGenerationRateLimiter,
   enforceQuota("story_continue"),
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
-    const { prompt, language, count } = req.body as { prompt: string; language?: string; count?: number };
+    const { prompt, language, count } = req.body as {
+      prompt: string;
+      language?: string;
+      count?: number;
+    };
     const guard = res.locals.quotaRefundGuard;
 
     if (!guard) {
       throw new Error(
-        "Quota guard missing — checkRequestLimit middleware is required"
+        "Quota guard missing — checkRequestLimit middleware is required",
       );
     }
 
@@ -117,7 +129,7 @@ router.post(
     await runWithQuotaCleanup(guard, async () => {
       const result = await AiModelService.aiFreeStoryContinuationMultiple(
         { prompt, language, count },
-        controller.signal
+        controller.signal,
       );
       sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -125,7 +137,7 @@ router.post(
         data: result,
       });
     });
-  })
+  }),
 );
 
 /** CREATE REVIEW */
@@ -135,10 +147,10 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   validateRequest(ReviewValidator.createReview),
-  ReviewController.createReview
+  ReviewController.createReview,
 );
 
 /** GENERATE STORY */
@@ -148,7 +160,7 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   // NEW — must run before checkRequestLimit() so a duplicate/retried request
   // never reserves quota or reaches generateStory() a second time.
@@ -165,7 +177,7 @@ router.post(
 
     if (!guard) {
       throw new Error(
-        "Quota guard missing — checkRequestLimit middleware is required"
+        "Quota guard missing — checkRequestLimit middleware is required",
       );
     }
 
@@ -185,7 +197,11 @@ router.post(
 
         // Cache the response against this Idempotency-Key so a retried
         // request replays it instead of calling the AI provider again.
-        await completeIdempotentRequest(idempotencyKey, httpStatus.OK, responseBody);
+        await completeIdempotentRequest(
+          idempotencyKey,
+          httpStatus.OK,
+          responseBody,
+        );
 
         sendResponse(res, {
           statusCode: httpStatus.OK,
@@ -198,7 +214,7 @@ router.post(
       await releaseIdempotentRequest(idempotencyKey);
       throw err;
     }
-  })
+  }),
 );
 
 /** SAVE STORY DRAFT (autosave) */
@@ -208,7 +224,7 @@ router.patch(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -236,7 +252,7 @@ router.patch(
     const updated = await Post.findOneAndUpdate(
       { _id: id, author: userId, isDeleted: { $ne: true } },
       { $set: update },
-      { new: true, runValidators: true, select: "title content updatedAt" }
+      { new: true, runValidators: true, select: "title content updatedAt" },
     );
 
     if (!updated) {
@@ -253,7 +269,7 @@ router.patch(
       message: "Draft saved.",
       data: updated,
     });
-  })
+  }),
 );
 
 export default router;

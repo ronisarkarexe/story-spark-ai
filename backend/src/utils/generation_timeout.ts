@@ -20,7 +20,7 @@ export class GenerationAbortedError extends Error {
 export const raceGenerationWithTimeout = async <T>(
   operation: (signal: AbortSignal) => Promise<T>,
   timeLimitMs: number,
-  externalSignal?: AbortSignal
+  externalSignal?: AbortSignal,
 ): Promise<T> => {
   // Fail fast if the AI provider circuit is currently open.
   aiCircuitBreaker.check();

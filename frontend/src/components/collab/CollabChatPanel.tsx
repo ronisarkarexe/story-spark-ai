@@ -38,7 +38,11 @@ export default function CollabChatPanel({
 
     socket.emit("collab:chat_history", { roomId });
 
-    const handleHistory = ({ messages: history }: { messages: ChatMessage[] }) => {
+    const handleHistory = ({
+      messages: history,
+    }: {
+      messages: ChatMessage[];
+    }) => {
       setMessages(history);
     };
 
@@ -50,7 +54,7 @@ export default function CollabChatPanel({
     const handleTyping = ({ username }: { username: string }) => {
       if (username === currentUsername) return;
       setTypingUsers((prev) =>
-        prev.includes(username) ? prev : [...prev, username]
+        prev.includes(username) ? prev : [...prev, username],
       );
     };
 
@@ -91,7 +95,10 @@ export default function CollabChatPanel({
 
   const stopTypingSignal = () => {
     if (isTypingRef.current) {
-      socket?.emit("collab:chat_stop_typing", { roomId, username: currentUsername });
+      socket?.emit("collab:chat_stop_typing", {
+        roomId,
+        username: currentUsername,
+      });
       isTypingRef.current = false;
     }
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -126,9 +133,18 @@ export default function CollabChatPanel({
           className="flex items-center gap-2 text-sm font-semibold text-slate-200 hover:text-white transition-colors"
           aria-expanded={isOpen}
         >
-          <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          <svg
+            className="w-4 h-4 text-indigo-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
           </svg>
           Room Chat
           {unread > 0 && !isOpen && (
@@ -137,13 +153,19 @@ export default function CollabChatPanel({
             </span>
           )}
         </button>
-        <span className="text-xs text-slate-500">{messages.filter(m => m.type === "message").length} messages</span>
+        <span className="text-xs text-slate-500">
+          {messages.filter((m) => m.type === "message").length} messages
+        </span>
       </div>
 
       {/* Message list */}
-      <div className={`flex-1 overflow-y-auto px-3 py-2 space-y-2 transition-all ${isOpen ? "block" : "hidden sm:block"}`}>
+      <div
+        className={`flex-1 overflow-y-auto px-3 py-2 space-y-2 transition-all ${isOpen ? "block" : "hidden sm:block"}`}
+      >
         {messages.length === 0 && (
-          <p className="text-center text-xs text-slate-500 mt-4">No messages yet. Say hello! 👋</p>
+          <p className="text-center text-xs text-slate-500 mt-4">
+            No messages yet. Say hello! 👋
+          </p>
         )}
         {messages.map((msg, i) => {
           if (msg.type === "system") {
@@ -157,9 +179,15 @@ export default function CollabChatPanel({
           }
           const isMine = msg.senderId === currentUserId;
           return (
-            <div key={i} className={`flex flex-col gap-0.5 ${isMine ? "items-end" : "items-start"}`}>
+            <div
+              key={i}
+              className={`flex flex-col gap-0.5 ${isMine ? "items-end" : "items-start"}`}
+            >
               {!isMine && (
-                <span className="text-xs font-semibold pl-1" style={{ color: msg.senderColor }}>
+                <span
+                  className="text-xs font-semibold pl-1"
+                  style={{ color: msg.senderColor }}
+                >
                   {msg.senderName}
                 </span>
               )}
@@ -172,7 +200,9 @@ export default function CollabChatPanel({
               >
                 {msg.content}
               </div>
-              <span className="text-[10px] text-slate-500 px-1">{formatTime(msg.timestamp)}</span>
+              <span className="text-[10px] text-slate-500 px-1">
+                {formatTime(msg.timestamp)}
+              </span>
             </div>
           );
         })}
@@ -181,7 +211,8 @@ export default function CollabChatPanel({
         {typingUsers.length > 0 && (
           <div className="flex items-center gap-1.5 pl-1">
             <span className="text-xs text-slate-400 italic">
-              {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing
+              {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"}{" "}
+              typing
             </span>
             <span className="flex gap-0.5">
               {[0, 1, 2].map((i) => (
@@ -198,7 +229,9 @@ export default function CollabChatPanel({
       </div>
 
       {/* Input */}
-      <div className={`shrink-0 px-3 py-3 border-t border-slate-700/50 bg-slate-800/60 ${isOpen ? "flex" : "hidden sm:flex"} gap-2`}>
+      <div
+        className={`shrink-0 px-3 py-3 border-t border-slate-700/50 bg-slate-800/60 ${isOpen ? "flex" : "hidden sm:flex"} gap-2`}
+      >
         <input
           type="text"
           value={input}
@@ -215,8 +248,18 @@ export default function CollabChatPanel({
           aria-label="Send message"
           className="shrink-0 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 transition-colors"
         >
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          <svg
+            className="w-4 h-4 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+            />
           </svg>
         </button>
       </div>

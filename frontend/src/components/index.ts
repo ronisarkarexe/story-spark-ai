@@ -1,2 +1,2 @@
-export { default } from './Contributors';
-export { Contributors } from './Contributors';
+export { default } from "./Contributors";
+export { Contributors } from "./Contributors";

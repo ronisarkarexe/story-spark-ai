@@ -46,14 +46,9 @@ const CATEGORY_STYLES: Record<
   },
 };
 
-export const RevisionSuggestionsPanel: React.FC<RevisionSuggestionsPanelProps> = ({
-  suggestions,
-  onApply,
-  onDismiss,
-  isLoading,
-  isError,
-  onRetry,
-}) => {
+export const RevisionSuggestionsPanel: React.FC<
+  RevisionSuggestionsPanelProps
+> = ({ suggestions, onApply, onDismiss, isLoading, isError, onRetry }) => {
   if (isLoading) {
     return (
       <div className="p-6 bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl animate-pulse">
@@ -92,7 +87,8 @@ export const RevisionSuggestionsPanel: React.FC<RevisionSuggestionsPanelProps> =
           Your story is in great shape!
         </h4>
         <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
-          No revision suggestions found. The structure, pacing, and vocabulary look solid.
+          No revision suggestions found. The structure, pacing, and vocabulary
+          look solid.
         </p>
       </div>
     );
@@ -121,72 +117,81 @@ export const RevisionSuggestionsPanel: React.FC<RevisionSuggestionsPanelProps> =
       </div>
 
       <div className="space-y-4">
-        {(Object.keys(categories) as Array<ISuggestion["category"]>).map((catKey) => {
-          const catSuggestions = categories[catKey];
-          if (catSuggestions.length === 0) return null;
-          const catStyle = CATEGORY_STYLES[catKey];
+        {(Object.keys(categories) as Array<ISuggestion["category"]>).map(
+          (catKey) => {
+            const catSuggestions = categories[catKey];
+            if (catSuggestions.length === 0) return null;
+            const catStyle = CATEGORY_STYLES[catKey];
 
-          return (
-            <div key={catKey} className="space-y-3">
-              <div className="flex items-center gap-2 px-1 py-0.5 select-none">
-                <span className={`inline-flex items-center justify-center w-5 h-5 rounded-md ${catStyle.bg} ${catStyle.text} text-xs`}>
-                  <i className={catStyle.icon} />
-                </span>
-                <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                  {catKey} ({catSuggestions.length})
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                {catSuggestions.map((suggestion) => (
-                  <div
-                    key={suggestion.id}
-                    className="p-4 bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-start justify-between gap-4 transition-all hover:border-slate-300 dark:hover:border-white/20"
+            return (
+              <div key={catKey} className="space-y-3">
+                <div className="flex items-center gap-2 px-1 py-0.5 select-none">
+                  <span
+                    className={`inline-flex items-center justify-center w-5 h-5 rounded-md ${catStyle.bg} ${catStyle.text} text-xs`}
                   >
-                    <div className="flex-1 space-y-1.5">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
-                        {suggestion.title}
-                      </h4>
-                      <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                        {suggestion.description}
-                      </p>
+                    <i className={catStyle.icon} />
+                  </span>
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                    {catKey} ({catSuggestions.length})
+                  </span>
+                </div>
 
-                      {suggestion.originalText && suggestion.suggestedText && (
-                        <div className="mt-2 text-[10px] rounded-lg overflow-hidden border border-slate-100 dark:border-white/5 divide-y divide-slate-100 dark:divide-white/5 select-none font-mono">
-                          <div className="p-2 bg-red-500/5 text-red-500 dark:text-red-400 flex items-start gap-1">
-                            <span className="font-bold">-</span>
-                            <span className="truncate">{suggestion.originalText}</span>
-                          </div>
-                          <div className="p-2 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 flex items-start gap-1">
-                            <span className="font-bold">+</span>
-                            <span className="truncate">{suggestion.suggestedText}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {catSuggestions.map((suggestion) => (
+                    <div
+                      key={suggestion.id}
+                      className="p-4 bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-start justify-between gap-4 transition-all hover:border-slate-300 dark:hover:border-white/20"
+                    >
+                      <div className="flex-1 space-y-1.5">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                          {suggestion.title}
+                        </h4>
+                        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                          {suggestion.description}
+                        </p>
 
-                    <div className="flex md:flex-col gap-2 shrink-0 select-none">
-                      {suggestion.suggestedText && (
+                        {suggestion.originalText &&
+                          suggestion.suggestedText && (
+                            <div className="mt-2 text-[10px] rounded-lg overflow-hidden border border-slate-100 dark:border-white/5 divide-y divide-slate-100 dark:divide-white/5 select-none font-mono">
+                              <div className="p-2 bg-red-500/5 text-red-500 dark:text-red-400 flex items-start gap-1">
+                                <span className="font-bold">-</span>
+                                <span className="truncate">
+                                  {suggestion.originalText}
+                                </span>
+                              </div>
+                              <div className="p-2 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 flex items-start gap-1">
+                                <span className="font-bold">+</span>
+                                <span className="truncate">
+                                  {suggestion.suggestedText}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                      </div>
+
+                      <div className="flex md:flex-col gap-2 shrink-0 select-none">
+                        {suggestion.suggestedText && (
+                          <button
+                            onClick={() => onApply(suggestion)}
+                            className="flex-1 md:w-20 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm shadow-blue-500/10"
+                          >
+                            Apply
+                          </button>
+                        )}
                         <button
-                          onClick={() => onApply(suggestion)}
-                          className="flex-1 md:w-20 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm shadow-blue-500/10"
+                          onClick={() => onDismiss(suggestion.id)}
+                          className="flex-1 md:w-20 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 border border-slate-200/60 dark:border-transparent"
                         >
-                          Apply
+                          Dismiss
                         </button>
-                      )}
-                      <button
-                        onClick={() => onDismiss(suggestion.id)}
-                        className="flex-1 md:w-20 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 border border-slate-200/60 dark:border-transparent"
-                      >
-                        Dismiss
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          },
+        )}
       </div>
     </div>
   );

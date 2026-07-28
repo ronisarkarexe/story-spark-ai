@@ -20,7 +20,10 @@ export interface PlotHoleResult {
   score: number;
 }
 
-const buildDetectionPrompt = (title: string, content: string): string => `You are a professional story editor. Analyze the following story for plot holes, timeline inconsistencies, contradictions, unresolved plot points, and narrative flaws.
+const buildDetectionPrompt = (
+  title: string,
+  content: string,
+): string => `You are a professional story editor. Analyze the following story for plot holes, timeline inconsistencies, contradictions, unresolved plot points, and narrative flaws.
 
 Title: ${title}
 
@@ -65,7 +68,9 @@ export const detectPlotHoles = async (
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const result = await model.generateContent(buildDetectionPrompt(title, content));
+    const result = await model.generateContent(
+      buildDetectionPrompt(title, content),
+    );
     const text = result.response.text();
 
     const cleaned = text

@@ -6,7 +6,9 @@ import { StoryInspirationService } from "./story_inspiration.service";
 
 const createStoryInspiration = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await StoryInspirationService.createStoryInspiration(req.body);
+    const result = await StoryInspirationService.createStoryInspiration(
+      req.body,
+    );
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -14,7 +16,7 @@ const createStoryInspiration = catchAsync(
       message: "Story inspiration generated successfully",
       data: result,
     });
-  }
+  },
 );
 
 export const StoryInspirationController = {

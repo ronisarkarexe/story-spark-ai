@@ -26,25 +26,30 @@ export const isJwtTokenFormat = (token: string): boolean => {
  */
 export const decodeToken = (token: string): CustomJwtPayload => {
   if (!isJwtTokenFormat(token)) {
-    throw new Error("Token format is invalid. A JWT must consist of three dot-separated segments.");
+    throw new Error(
+      "Token format is invalid. A JWT must consist of three dot-separated segments.",
+    );
   }
 
   let decoded: CustomJwtPayload;
   try {
     decoded = jwtDecode<CustomJwtPayload>(token);
   } catch (error) {
-    throw new Error(`Failed to decode JWT token: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to decode JWT token: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 
   if (!decoded || typeof decoded !== "object") {
     throw new Error("Token payload is not a valid object.");
   }
 
-
   // 1. Validate required userId or _id claim, then normalize to decoded.userId
   const idToUse = decoded.userId || decoded._id || decoded.sub;
   if (typeof idToUse !== "string" || idToUse.trim() === "") {
-    throw new Error("Token is missing a valid 'userId', '_id', or 'sub' claim.");
+    throw new Error(
+      "Token is missing a valid 'userId', '_id', or 'sub' claim.",
+    );
   }
   decoded.userId = idToUse; // normalize: callers always find the user ID in decoded.userId
 
@@ -64,20 +69,37 @@ export const decodeToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid 'role' claim.");
   }
 
-  const VALID_ROLES = ["user", "admin", "super_admin", "writer", "guest"] as const;
-  if (!VALID_ROLES.includes(decoded.role as typeof VALID_ROLES[number])) {
-    console.warn(`Unrecognised token role: "${decoded.role}". Allowed: ${VALID_ROLES.join(", ")}`);
+  const VALID_ROLES = [
+    "user",
+    "admin",
+    "super_admin",
+    "writer",
+    "guest",
+  ] as const;
+  if (!VALID_ROLES.includes(decoded.role as (typeof VALID_ROLES)[number])) {
+    console.warn(
+      `Unrecognised token role: "${decoded.role}". Allowed: ${VALID_ROLES.join(", ")}`,
+    );
     // Warn but do not throw — prevents valid tokens from being rejected if backend adds new roles.
   }
 
   // 4. Validate required subscriptionType claim
-  if (typeof decoded.subscriptionType !== "string" || decoded.subscriptionType.trim() === "") {
+  if (
+    typeof decoded.subscriptionType !== "string" ||
+    decoded.subscriptionType.trim() === ""
+  ) {
     throw new Error("Token is missing a valid 'subscriptionType' claim.");
   }
 
   const VALID_SUBSCRIPTIONS = ["free", "pro", "premium"] as const;
-  if (!VALID_SUBSCRIPTIONS.includes(decoded.subscriptionType as typeof VALID_SUBSCRIPTIONS[number])) {
-    console.warn(`Unrecognised subscription type: "${decoded.subscriptionType}". Allowed: ${VALID_SUBSCRIPTIONS.join(", ")}`);
+  if (
+    !VALID_SUBSCRIPTIONS.includes(
+      decoded.subscriptionType as (typeof VALID_SUBSCRIPTIONS)[number],
+    )
+  ) {
+    console.warn(
+      `Unrecognised subscription type: "${decoded.subscriptionType}". Allowed: ${VALID_SUBSCRIPTIONS.join(", ")}`,
+    );
     // Warn but do not throw — prevents valid tokens from being rejected if backend adds new plans.
   }
 
@@ -87,7 +109,10 @@ export const decodeToken = (token: string): CustomJwtPayload => {
   }
 
   const CLOCK_SKEW_TOLERANCE_SECONDS = 60;
-  if (decoded.exp <= Math.floor(Date.now() / 1000) - CLOCK_SKEW_TOLERANCE_SECONDS) {
+  if (
+    decoded.exp <=
+    Math.floor(Date.now() / 1000) - CLOCK_SKEW_TOLERANCE_SECONDS
+  ) {
     throw new Error("Token has expired.");
   }
 
@@ -101,7 +126,10 @@ export const decodeToken = (token: string): CustomJwtPayload => {
     if (typeof decoded.nbf !== "number") {
       throw new Error("Token 'nbf' claim must be a number.");
     }
-    if (decoded.nbf > Math.floor(Date.now() / 1000) + CLOCK_SKEW_TOLERANCE_SECONDS) {
+    if (
+      decoded.nbf >
+      Math.floor(Date.now() / 1000) + CLOCK_SKEW_TOLERANCE_SECONDS
+    ) {
       throw new Error("Token is not yet valid (nbf claim is in the future).");
     }
   }
@@ -112,7 +140,10 @@ export const decodeToken = (token: string): CustomJwtPayload => {
   }
 
   // 8. Validate optional postsCount claim type if present
-  if (decoded.postsCount !== undefined && typeof decoded.postsCount !== "number") {
+  if (
+    decoded.postsCount !== undefined &&
+    typeof decoded.postsCount !== "number"
+  ) {
     throw new Error("Token 'postsCount' claim must be a number.");
   }
 
@@ -120,4 +151,3 @@ export const decodeToken = (token: string): CustomJwtPayload => {
 };
 
 export const decodedToken = decodeToken;
-

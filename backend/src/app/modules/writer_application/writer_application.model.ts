@@ -31,10 +31,10 @@ const WriterApplicationSchema = new Schema<IWriterApplication>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const WriterApplication = model<IWriterApplication>(
   "WriterApplication",
-  WriterApplicationSchema
+  WriterApplicationSchema,
 );

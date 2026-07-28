@@ -10,7 +10,7 @@ export interface UseRetryReturn {
   retryCount: number;
   isRetrying: boolean;
   isTimeout: boolean;
-  countdown: number;       // seconds remaining before next retry allowed
+  countdown: number; // seconds remaining before next retry allowed
   MAX_RETRIES: number;
   setIsTimeout: (v: boolean) => void;
   handleRetry: (triggerFn: () => void | Promise<void>) => void;
@@ -27,23 +27,20 @@ export function useRetry({
   const [countdown, setCountdown] = useState(0);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startCountdown = useCallback(
-    (seconds: number, onDone: () => void) => {
-      setCountdown(seconds);
-      countdownRef.current = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(countdownRef.current!);
-            setCountdown(0);
-            onDone();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    },
-    []
-  );
+  const startCountdown = useCallback((seconds: number, onDone: () => void) => {
+    setCountdown(seconds);
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownRef.current!);
+          setCountdown(0);
+          onDone();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
 
   const handleRetry = useCallback(
     (triggerFn: () => void | Promise<void>) => {
@@ -77,7 +74,7 @@ export function useRetry({
         executeTrigger();
       }
     },
-    [isRetrying, countdown, retryCount, maxRetries, baseDelay, startCountdown]
+    [isRetrying, countdown, retryCount, maxRetries, baseDelay, startCountdown],
   );
 
   const resetRetry = useCallback(() => {

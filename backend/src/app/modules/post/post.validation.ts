@@ -134,7 +134,7 @@ const bulkDelete = z.object({
       }),
       {
         required_error: "ids is required",
-      }
+      },
     ),
   }),
 });

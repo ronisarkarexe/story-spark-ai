@@ -11,7 +11,7 @@ const rateStory = async (
   userId: string,
   storyId: string,
   rating: number,
-  review?: string
+  review?: string,
 ) => {
   const post = await Post.findById(storyId);
   if (!post) {
@@ -19,10 +19,7 @@ const rateStory = async (
   }
 
   if (post.author?.toString() === userId) {
-    throw new ApiError(
-      httpStatus.FORBIDDEN,
-      "You cannot rate your own story"
-    );
+    throw new ApiError(httpStatus.FORBIDDEN, "You cannot rate your own story");
   }
 
   const filter = {
@@ -127,7 +124,7 @@ const deleteRating = async (userId: string, ratingId: string) => {
   if (rating.userId.toString() !== userId) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You are not authorized to delete this rating"
+      "You are not authorized to delete this rating",
     );
   }
 

@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Trophy,
-  Crown,
-  Medal,
-  Sparkles,
-  Flame,
-} from "lucide-react";
+import { Trophy, Crown, Medal, Sparkles, Flame } from "lucide-react";
 
 interface LeaderboardUser {
   username: string;
@@ -29,7 +23,7 @@ export default function Leaderboard() {
     setError(null);
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BASE_URL || ""}/api/v1/leaderboard`
+        `${import.meta.env.VITE_BASE_URL || ""}/api/v1/leaderboard`,
       );
 
       if (!res.ok) {
@@ -53,14 +47,12 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-[#030712] text-white overflow-hidden relative">
-
       {/* Background Glow */}
       <div className="absolute top-0 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
 
       <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-indigo-500/10 blur-3xl" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
-
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -80,21 +72,18 @@ export default function Leaderboard() {
           </h1>
 
           <p className="mt-6 max-w-2xl mx-auto text-slate-400 text-lg">
-            Celebrating the most active and creative contributors
-            in the StorySpark AI community.
+            Celebrating the most active and creative contributors in the
+            StorySpark AI community.
           </p>
         </motion.div>
 
         {/* Stats */}
         {!loading && !error && data && (
           <div className="mt-16 grid md:grid-cols-3 gap-6">
-
             <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
               <Trophy className="text-yellow-400 mb-4" size={30} />
 
-              <p className="text-slate-400 text-sm">
-                Total Stories
-              </p>
+              <p className="text-slate-400 text-sm">Total Stories</p>
 
               <h2 className="text-4xl font-black mt-2">
                 {data.totalStories ?? 0}
@@ -104,9 +93,7 @@ export default function Leaderboard() {
             <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
               <Flame className="text-orange-400 mb-4" size={30} />
 
-              <p className="text-slate-400 text-sm">
-                Active Writers
-              </p>
+              <p className="text-slate-400 text-sm">Active Writers</p>
 
               <h2 className="text-4xl font-black mt-2">
                 {data.leaderboard?.length ?? 0}
@@ -116,9 +103,7 @@ export default function Leaderboard() {
             <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
               <Crown className="text-blue-400 mb-4" size={30} />
 
-              <p className="text-slate-400 text-sm">
-                Weekly Champion
-              </p>
+              <p className="text-slate-400 text-sm">Weekly Champion</p>
 
               <h2 className="text-2xl font-bold mt-2">
                 {data.leaderboard?.[0]?.username || "N/A"}
@@ -129,12 +114,9 @@ export default function Leaderboard() {
 
         {/* Leaderboard */}
         <div className="mt-20">
-
           <div className="flex items-center gap-3 mb-10">
             <Medal className="text-yellow-400" />
-            <h2 className="text-3xl font-bold">
-              Top Writers
-            </h2>
+            <h2 className="text-3xl font-bold">Top Writers</h2>
           </div>
 
           {loading ? (
@@ -158,7 +140,6 @@ export default function Leaderboard() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-
               {data?.leaderboard?.map((user, index) => (
                 <motion.div
                   key={user.username}
@@ -171,7 +152,6 @@ export default function Leaderboard() {
                   }}
                   className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-7"
                 >
-
                   {/* Hover Glow */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-yellow-500/10 to-orange-500/10" />
 
@@ -181,16 +161,13 @@ export default function Leaderboard() {
                   </div>
 
                   <div className="relative z-10">
-
                     <img
                       src={user.avatar}
                       alt={user.username}
                       className="h-24 w-24 rounded-full border-4 border-white/10 object-cover"
                     />
 
-                    <h3 className="mt-5 text-2xl font-bold">
-                      {user.username}
-                    </h3>
+                    <h3 className="mt-5 text-2xl font-bold">{user.username}</h3>
 
                     <p className="text-slate-400 text-sm mt-1">
                       Community Writer

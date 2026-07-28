@@ -2,8 +2,22 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const salesData = [
-  { id: 1, plan: "Pro Monthly", user: "user@example.com", amount: "$9.99", date: "2026-05-20", status: "Paid" },
-  { id: 2, plan: "Pro Monthly", user: "writer@example.com", amount: "$9.99", date: "2026-05-18", status: "Paid" },
+  {
+    id: 1,
+    plan: "Pro Monthly",
+    user: "user@example.com",
+    amount: "$9.99",
+    date: "2026-05-20",
+    status: "Paid",
+  },
+  {
+    id: 2,
+    plan: "Pro Monthly",
+    user: "writer@example.com",
+    amount: "$9.99",
+    date: "2026-05-18",
+    status: "Paid",
+  },
 ];
 
 const SalesComponent = () => {
@@ -23,17 +37,23 @@ const SalesComponent = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total Revenue</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Total Revenue
+            </p>
             <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">
               $19.98
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total Orders</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Total Orders
+            </p>
             <p className="text-3xl font-bold text-green-500 mt-1">2</p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Active Subscriptions</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Active Subscriptions
+            </p>
             <p className="text-3xl font-bold text-purple-500 mt-1">2</p>
           </div>
         </div>

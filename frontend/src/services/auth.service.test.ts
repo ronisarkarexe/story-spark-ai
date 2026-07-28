@@ -31,7 +31,9 @@ describe("Auth Service - JWT Payload Validation", () => {
       iat: Math.floor(Date.now() / 1000) - 60,
     };
 
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("valid.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "valid.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload);
 
     const result = getValidDecodedToken();
@@ -55,13 +57,17 @@ describe("Auth Service - JWT Payload Validation", () => {
       iat: Math.floor(Date.now() / 1000) - 60,
     };
 
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("invalid.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "invalid.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload);
 
     const result = getValidDecodedToken();
 
     expect(result).toBeNull();
-    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith("accessToken");
+    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith(
+      "accessToken",
+    );
   });
 
   it("should return null and remove token when role is missing", () => {
@@ -73,13 +79,17 @@ describe("Auth Service - JWT Payload Validation", () => {
       iat: Math.floor(Date.now() / 1000) - 60,
     };
 
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("invalid.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "invalid.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload);
 
     const result = getValidDecodedToken();
 
     expect(result).toBeNull();
-    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith("accessToken");
+    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith(
+      "accessToken",
+    );
   });
 
   it("should return null and remove token when role is invalid", () => {
@@ -92,13 +102,17 @@ describe("Auth Service - JWT Payload Validation", () => {
       iat: Math.floor(Date.now() / 1000) - 60,
     };
 
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("invalid.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "invalid.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload);
 
     const result = getValidDecodedToken();
 
     expect(result).toBeNull();
-    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith("accessToken");
+    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith(
+      "accessToken",
+    );
   });
 
   it("should return null and remove token when exp is not a number", () => {
@@ -111,13 +125,17 @@ describe("Auth Service - JWT Payload Validation", () => {
       iat: Math.floor(Date.now() / 1000) - 60,
     };
 
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("invalid.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "invalid.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload as any);
 
     const result = getValidDecodedToken();
 
     expect(result).toBeNull();
-    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith("accessToken");
+    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith(
+      "accessToken",
+    );
   });
 
   it("should return null and remove token when iat is not a number", () => {
@@ -130,13 +148,17 @@ describe("Auth Service - JWT Payload Validation", () => {
       iat: "not-a-number",
     };
 
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("invalid.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "invalid.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload as any);
 
     const result = getValidDecodedToken();
 
     expect(result).toBeNull();
-    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith("accessToken");
+    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith(
+      "accessToken",
+    );
   });
 
   it("should return null and remove token when token is expired", () => {
@@ -149,27 +171,37 @@ describe("Auth Service - JWT Payload Validation", () => {
       iat: Math.floor(Date.now() / 1000) - 3600,
     };
 
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("expired.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "expired.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload);
 
     const result = getValidDecodedToken();
 
     expect(result).toBeNull();
-    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith("accessToken");
+    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith(
+      "accessToken",
+    );
   });
 
   it("should return null and remove token when payload is empty", () => {
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("empty.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "empty.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockReturnValue({});
 
     const result = getValidDecodedToken();
 
     expect(result).toBeNull();
-    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith("accessToken");
+    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith(
+      "accessToken",
+    );
   });
 
   it("should return null and remove token when decoding throws an error (malformed token)", () => {
-    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("malformed.token.here");
+    vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue(
+      "malformed.token.here",
+    );
     vi.mocked(jwtUtils.decodedToken).mockImplementation(() => {
       throw new Error("Invalid token format");
     });
@@ -177,6 +209,8 @@ describe("Auth Service - JWT Payload Validation", () => {
     const result = getValidDecodedToken();
 
     expect(result).toBeNull();
-    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith("accessToken");
+    expect(localStorageUtils.removeFromLocalStorage).toHaveBeenCalledWith(
+      "accessToken",
+    );
   });
 });

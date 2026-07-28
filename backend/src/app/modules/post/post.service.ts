@@ -29,8 +29,11 @@ interface ICursorPayload {
 
 const encodeCursor = (item: IPost, sortBy: string) => {
   const rawValue = item[sortBy as keyof IPost];
-  const value = rawValue instanceof Date ? rawValue.toISOString() : String(rawValue ?? "");
-  return Buffer.from(JSON.stringify({ value, id: item._id?.toString() })).toString("base64");
+  const value =
+    rawValue instanceof Date ? rawValue.toISOString() : String(rawValue ?? "");
+  return Buffer.from(
+    JSON.stringify({ value, id: item._id?.toString() }),
+  ).toString("base64");
 };
 
 const decodeCursor = (cursor?: string): ICursorPayload | null => {
@@ -121,30 +124,34 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       const updatedUser = await User.findByIdAndUpdate(
         user._id,
         { $inc: { postsCount: 1 } },
-        { new: true }
+        { new: true },
       );
-      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
-      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
+      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(
+        console.error,
+      );
+      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(
+        console.error,
+      );
       if (updatedUser && updatedUser.postsCount === 1) {
-        GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+        GamificationService.awardBadge(String(user._id), "First Story").catch(
+          console.error,
+        );
       }
     }
     return res;
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Failed to create post"
+      "Failed to create post",
     );
-    }
+  }
 };
 
 const getPosts = async (
   filters: IPostSearchFields,
-  pagination: IPaginationOptions
+  pagination: IPaginationOptions,
 ): Promise<IGenericResponse<IPost[]>> => {
-  const { page, limit, cursor, sortBy, orderBy } = paginationHelper(
-    pagination,
-  );
+  const { page, limit, cursor, sortBy, orderBy } = paginationHelper(pagination);
   const { searchTerm, trendingTopic, sortFilter, genres, ...filterData } =
     filters;
   const andCondition: Record<string, unknown>[] = [
@@ -154,7 +161,7 @@ const getPosts = async (
 
   if (searchTerm) {
     const safeSearchTerm = escapeRegex(
-      searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH)
+      searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH),
     );
 
     if (safeSearchTerm) {
@@ -167,7 +174,6 @@ const getPosts = async (
         })),
       });
     }
-
   }
 
   if (trendingTopic) {
@@ -179,7 +185,10 @@ const getPosts = async (
   const genreList = Array.isArray(genres)
     ? genres
     : typeof genres === "string"
-      ? genres.split(",").map((g) => g.trim()).filter(Boolean)
+      ? genres
+          .split(",")
+          .map((g) => g.trim())
+          .filter(Boolean)
       : [];
 
   if (genreList.length > 0) {
@@ -229,7 +238,10 @@ const getPosts = async (
     })
     .populate("bookmarks", "email");
   const total = await Post.countDocuments(countCondition);
-  const nextCursor = result.length === limit ? encodeCursor(result[result.length - 1], sortBy) : undefined;
+  const nextCursor =
+    result.length === limit
+      ? encodeCursor(result[result.length - 1], sortBy)
+      : undefined;
 
   return {
     meta: {
@@ -246,7 +258,7 @@ const getPosts = async (
 const getPublishedPostsByAuthor = async (
   token: ITokenPayload,
   filters: Pick<IPostSearchFields, "searchTerm">,
-  pagination: IPaginationOptions
+  pagination: IPaginationOptions,
 ): Promise<IGenericResponse<IPost[]>> => {
   const { page, limit, cursor, sortBy, orderBy } = paginationHelper(pagination);
   const user = await User.findOne({ email: token.email, role: token.role });
@@ -263,7 +275,7 @@ const getPublishedPostsByAuthor = async (
 
   if (filters.searchTerm) {
     const safeSearchTerm = escapeRegex(
-      filters.searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH)
+      filters.searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH),
     );
     if (safeSearchTerm) {
       andCondition.push({
@@ -303,7 +315,10 @@ const getPublishedPostsByAuthor = async (
       populate: { path: "userId", select: "_id" },
     });
   const total = await Post.countDocuments(countCondition);
-  const nextCursor = result.length === limit ? encodeCursor(result[result.length - 1], sortBy) : undefined;
+  const nextCursor =
+    result.length === limit
+      ? encodeCursor(result[result.length - 1], sortBy)
+      : undefined;
 
   return {
     meta: {
@@ -332,7 +347,7 @@ const getLatestPosts = async () => {
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Failed to get latest posts"
+      "Failed to get latest posts",
     );
   }
 };
@@ -356,7 +371,7 @@ const getFeaturedPosts = async () => {
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Failed to get featured posts"
+      "Failed to get featured posts",
     );
   }
 };
@@ -366,13 +381,13 @@ const doFeaturedPosts = async (postId: string) => {
     const res = await Post.findOneAndUpdate(
       { _id: postId, isDeleted: { $ne: true } },
       { isFeaturedPost: true },
-      { new: true }
+      { new: true },
     );
     return res;
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Failed to approve featured posts"
+      "Failed to approve featured posts",
     );
   }
 };
@@ -403,7 +418,11 @@ const getSinglePost = async (id: string, token?: ITokenPayload | null) => {
   return postById;
 };
 
-const getPostsByTag = async (tag: string, excludeId?: string, limit: number = 2) => {
+const getPostsByTag = async (
+  tag: string,
+  excludeId?: string,
+  limit: number = 2,
+) => {
   if (!tag) {
     return [];
   }
@@ -447,7 +466,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (isBookmarked) {
     await Post.updateOne(
       { _id: postId },
-      { $pull: { bookmarks: user._id }, $inc: { bookmarksCount: -1 } }
+      { $pull: { bookmarks: user._id }, $inc: { bookmarksCount: -1 } },
     );
 
     return {
@@ -458,7 +477,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
 
   await Post.updateOne(
     { _id: postId },
-    { $addToSet: { bookmarks: user._id }, $inc: { bookmarksCount: 1 } }
+    { $addToSet: { bookmarks: user._id }, $inc: { bookmarksCount: 1 } },
   );
 
   return {
@@ -470,7 +489,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
 const updatePost = async (
   postId: string,
   payload: Partial<IPostPayload> & { prompt?: string; generationType?: string },
-  token: ITokenPayload
+  token: ITokenPayload,
 ) => {
   const { email } = token;
   const user = await User.findOne({ email });
@@ -488,14 +507,17 @@ const updatePost = async (
     user.role !== "admin" &&
     user.role !== "super_admin"
   ) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have permission to edit this story!");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have permission to edit this story!",
+    );
   }
 
   await StoryVersionService.createVersionSnapshot(
     postId,
     user._id.toString(),
     payload.prompt || "",
-    payload.generationType || "edited"
+    payload.generationType || "edited",
   );
 
   if (payload.title !== undefined) post.title = payload.title;
@@ -530,7 +552,7 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
   ) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You can only delete your own story!"
+      "You can only delete your own story!",
     );
   }
 
@@ -540,10 +562,7 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
   await post.save();
 
   if (post.isPublished) {
-    await User.findByIdAndUpdate(
-      post.author,
-      { $inc: { postsCount: -1 } }
-    );
+    await User.findByIdAndUpdate(post.author, { $inc: { postsCount: -1 } });
   }
 
   await Bookmark.deleteMany({ storyId: postId });
@@ -554,13 +573,26 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
   return post;
 };
 
-const remixStory = async (postId: string, prompt: string, token: ITokenPayload) => {
+const remixStory = async (
+  postId: string,
+  prompt: string,
+  token: ITokenPayload,
+) => {
   if (!prompt || typeof prompt !== "string") {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Prompt is required and must be a string");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Prompt is required and must be a string",
+    );
   }
-  const safePrompt = prompt.slice(0, 500).replace(/[\n\r\t"]/g, " ").trim();
+  const safePrompt = prompt
+    .slice(0, 500)
+    .replace(/[\n\r\t"]/g, " ")
+    .trim();
   if (!safePrompt) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Prompt cannot be empty or whitespace");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Prompt cannot be empty or whitespace",
+    );
   }
   const user = await User.findOne({ email: token.email });
   if (!user) {
@@ -573,7 +605,10 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     $or: [{ isPublished: true }, { author: user._id }],
   });
   if (!originalPost) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found or access denied!");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Original story post not found or access denied!",
+    );
   }
 
   verifyPostAccess(originalPost, user);
@@ -589,23 +624,35 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
   });
 
   if (res) {
-    await User.findByIdAndUpdate(
-      user._id,
-      { $inc: { postsCount: 1 } }
+    await User.findByIdAndUpdate(user._id, { $inc: { postsCount: 1 } });
+    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(
+      console.error,
     );
-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
   }
 
   return res;
 };
 
-const translateStory = async (postId: string, language: string, token: ITokenPayload) => {
+const translateStory = async (
+  postId: string,
+  language: string,
+  token: ITokenPayload,
+) => {
   if (!language || typeof language !== "string") {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Language is required and must be a string");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Language is required and must be a string",
+    );
   }
-  const safeLanguage = language.slice(0, 50).replace(/[\n\r\t"]/g, " ").trim();
+  const safeLanguage = language
+    .slice(0, 50)
+    .replace(/[\n\r\t"]/g, " ")
+    .trim();
   if (!safeLanguage) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Language cannot be empty or whitespace");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Language cannot be empty or whitespace",
+    );
   }
   const user = await User.findOne({ email: token.email });
   if (!user) {
@@ -618,7 +665,10 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     $or: [{ isPublished: true }, { author: user._id }],
   });
   if (!originalPost) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found or access denied!");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Original story post not found or access denied!",
+    );
   }
 
   verifyPostAccess(originalPost, user);
@@ -634,11 +684,10 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
   });
 
   if (res) {
-    await User.findByIdAndUpdate(
-      user._id,
-      { $inc: { postsCount: 1 } }
+    await User.findByIdAndUpdate(user._id, { $inc: { postsCount: 1 } });
+    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(
+      console.error,
     );
-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
   }
 
   return res;
@@ -650,14 +699,20 @@ const forkStory = async (postId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const originalPost = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  const originalPost = await Post.findOne({
+    _id: postId,
+    isDeleted: { $ne: true },
+  });
   if (!originalPost) {
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
   // Ensure the original post is published (can't fork unpublished drafts)
   if (!originalPost.isPublished) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Cannot fork an unpublished story!");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Cannot fork an unpublished story!",
+    );
   }
 
   const res = await Post.create({
@@ -680,7 +735,10 @@ const forkStory = async (postId: string, token: ITokenPayload) => {
 };
 
 const getGenres = async (): Promise<string[]> => {
-  const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
+  const genres = await Post.distinct("tag", {
+    isDeleted: { $ne: true },
+    tag: { $nin: [null, ""] },
+  });
   return genres.sort();
 };
 
@@ -729,15 +787,12 @@ const bulkDeletePosts = async (ids: string[], token: ITokenPayload) => {
           deletedAt: new Date(),
           deletedBy: adminId,
         },
-      }
+      },
     );
 
     for (const post of existingPosts) {
       if (post.isPublished) {
-        await User.findByIdAndUpdate(
-          post.author,
-          { $inc: { postsCount: -1 } }
-        );
+        await User.findByIdAndUpdate(post.author, { $inc: { postsCount: -1 } });
       }
       await Bookmark.deleteMany({ storyId: post._id });
       await Comment.deleteMany({ postId: post._id });
@@ -770,4 +825,3 @@ export const PostService = {
   getGenres,
   bulkDeletePosts,
 };
-

@@ -10,29 +10,34 @@ const ExploreFeatureComponent = () => {
     return <SkeletonGrid count={2} variant="featured" />;
   }
   if (isError) {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {[1, 2, 3].map((item) => (
-        <div
-          key={item}
-          className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72"
-        ></div>
-      ))}
-    </div>
-  );
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map((item) => (
+          <div
+            key={item}
+            className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72"
+          ></div>
+        ))}
+      </div>
+    );
   }
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {(data?.posts?.length ?? 0) > 0 ? (
         data?.posts?.map((post: Post) => (
-          <div key={post._id} className="relative group overflow-hidden rounded-3xl border border-gray-200 shadow-2xl cursor-pointer bg-white text-slate-900 dark:bg-transparent dark:border-slate-700/50 dark:text-white">
+          <div
+            key={post._id}
+            className="relative group overflow-hidden rounded-3xl border border-gray-200 shadow-2xl cursor-pointer bg-white text-slate-900 dark:bg-transparent dark:border-slate-700/50 dark:text-white"
+          >
             <ImageFallback
-                  src={post.imageURL}
-                  alt={post.title || "Post Image"}
-                  className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
+              src={post.imageURL}
+              alt={post.title || "Post Image"}
+              className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent p-8 flex flex-col justify-end dark:from-slate-950 dark:via-slate-900/60 dark:to-transparent">
-              <h3 className="text-slate-900 text-3xl font-bold tracking-tight drop-shadow-md group-hover:text-blue-600 transition-colors dark:text-white dark:group-hover:text-blue-300">{post.title}</h3>
+              <h3 className="text-slate-900 text-3xl font-bold tracking-tight drop-shadow-md group-hover:text-blue-600 transition-colors dark:text-white dark:group-hover:text-blue-300">
+                {post.title}
+              </h3>
               <p className="text-slate-600 text-base mt-3 leading-relaxed max-w-2xl line-clamp-2 dark:text-slate-300">
                 {post.content.slice(0, 150)}...
               </p>
@@ -41,8 +46,14 @@ const ExploreFeatureComponent = () => {
                   {post.tag}
                 </span>
                 <div className="ml-auto flex items-center gap-6 text-slate-600 text-sm font-medium dark:text-slate-200">
-                  <span className="flex items-center gap-2 hover:text-slate-900 transition-colors dark:hover:text-white"><i className="fas fa-heart text-red-400"></i> {post.likesCount}</span>
-                  <span className="flex items-center gap-2 hover:text-slate-900 transition-colors dark:hover:text-white"><i className="fas fa-comment text-blue-400"></i> {post.commentsCount}</span>
+                  <span className="flex items-center gap-2 hover:text-slate-900 transition-colors dark:hover:text-white">
+                    <i className="fas fa-heart text-red-400"></i>{" "}
+                    {post.likesCount}
+                  </span>
+                  <span className="flex items-center gap-2 hover:text-slate-900 transition-colors dark:hover:text-white">
+                    <i className="fas fa-comment text-blue-400"></i>{" "}
+                    {post.commentsCount}
+                  </span>
                 </div>
               </div>
             </div>

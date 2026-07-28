@@ -39,9 +39,13 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
         setPlotHoles(response.data.data.plot_holes);
         const count = response.data.data.plot_holes.length;
         if (count === 0) {
-          toast.success("Brilliant! No logical consistency errors found.", { id: toastId });
+          toast.success("Brilliant! No logical consistency errors found.", {
+            id: toastId,
+          });
         } else {
-          toast.success(`Analysis complete! Identified ${count} plot holes.`, { id: toastId });
+          toast.success(`Analysis complete! Identified ${count} plot holes.`, {
+            id: toastId,
+          });
         }
       } else {
         throw new Error("Invalid response format received from backend.");
@@ -49,17 +53,17 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
     } catch (err: unknown) {
       console.error("Plot hole analysis error:", err);
 
-      const errMsg =
-        axios.isAxiosError(err)
-          ? err.response?.data?.message || err.message || "Failed to analyze story."
-          : err instanceof Error
-            ? err.message
-            : "Failed to analyze story.";
+      const errMsg = axios.isAxiosError(err)
+        ? err.response?.data?.message ||
+          err.message ||
+          "Failed to analyze story."
+        : err instanceof Error
+          ? err.message
+          : "Failed to analyze story.";
 
       setError(errMsg);
       toast.error(errMsg, { id: toastId });
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -77,17 +81,19 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
             AI Plot-Hole & Consistency Checker
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            Deep-scans your narrative for contradictions, timeline skips, and logical bugs.
+            Deep-scans your narrative for contradictions, timeline skips, and
+            logical bugs.
           </p>
         </div>
         <button
           type="button"
           onClick={handleAnalyze}
           disabled={loading || !storyText}
-          className={`rounded-lg px-5 py-2.5 font-semibold text-sm flex items-center gap-2 border transition-all active:scale-95 cursor-pointer ${loading || !storyText
+          className={`rounded-lg px-5 py-2.5 font-semibold text-sm flex items-center gap-2 border transition-all active:scale-95 cursor-pointer ${
+            loading || !storyText
               ? "bg-slate-800 text-slate-500 border-slate-700/50 cursor-not-allowed opacity-50"
               : "bg-purple-700 hover:bg-purple-600 text-white border-purple-600/50 hover:shadow-lg hover:shadow-purple-500/25"
-            }`}
+          }`}
         >
           {loading ? (
             <>
@@ -119,7 +125,8 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
               </div>
             </div>
             <p className="text-slate-300 text-sm font-medium animate-pulse text-center">
-              AI Editor is checking timelines, character continuity, and logical threads...
+              AI Editor is checking timelines, character continuity, and logical
+              threads...
             </p>
           </motion.div>
         )}
@@ -155,20 +162,30 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
                   Plot-Hole Analysis Clean!
                 </h4>
                 <p className="text-slate-400 text-sm max-w-md leading-relaxed">
-                  Your narrative exhibits outstanding logical integrity. The timelines align perfectly and character profiles remain fully consistent throughout.
+                  Your narrative exhibits outstanding logical integrity. The
+                  timelines align perfectly and character profiles remain fully
+                  consistent throughout.
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-slate-400 text-xs font-semibold mb-3 flex items-center justify-between">
-                  <span>FOUND {plotHoles.length} NARRATIVE INCONSISTENCIES</span>
-                  <span className="text-purple-400">Gemini Literary Review Engine</span>
+                  <span>
+                    FOUND {plotHoles.length} NARRATIVE INCONSISTENCIES
+                  </span>
+                  <span className="text-purple-400">
+                    Gemini Literary Review Engine
+                  </span>
                 </div>
                 <div className="grid gap-4">
                   {plotHoles.map((hole, index) => (
                     <motion.div
                       initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0, transition: { delay: index * 0.08 } }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        transition: { delay: index * 0.08 },
+                      }}
                       key={index}
                       className="border border-slate-700/40 bg-slate-800/40 rounded-xl p-5 hover:border-purple-500/30 transition-all duration-300 shadow-md group"
                     >

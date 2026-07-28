@@ -15,7 +15,7 @@ const generateStoryboard = catchAsync(async (req: Request, res: Response) => {
   try {
     const result = await StoryVisualizerService.generateStoryboard(
       req.body as IStoryVisualizerPayload,
-      controller.signal
+      controller.signal,
     );
 
     sendResponse(res, {

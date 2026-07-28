@@ -47,17 +47,14 @@ describe("PostModel", () => {
 
       const result = await Post.getEngagementStats(postId);
 
-      expect(mockedPost.findById).toHaveBeenCalledWith(
-        postId,
-        {
-          likesCount: 1,
-          commentsCount: 1,
-          bookmarksCount: 1,
-          viewsCount: 1,
-          averageRating: 1,
-          totalRatings: 1,
-        }
-      );
+      expect(mockedPost.findById).toHaveBeenCalledWith(postId, {
+        likesCount: 1,
+        commentsCount: 1,
+        bookmarksCount: 1,
+        viewsCount: 1,
+        averageRating: 1,
+        totalRatings: 1,
+      });
       expect(result).toEqual(fakeStats);
     });
 

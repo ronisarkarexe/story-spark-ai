@@ -12,7 +12,7 @@ const GuestUsageSchema = new Schema<IGuestUsage>(
     requestCount: { type: Number, default: 0, min: 0 },
     lastRequestAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const GuestUsage = model<IGuestUsage>("GuestUsage", GuestUsageSchema);

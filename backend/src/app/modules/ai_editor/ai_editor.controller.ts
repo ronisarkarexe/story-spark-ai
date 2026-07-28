@@ -8,10 +8,14 @@ import ApiError from "../../../errors/api_error";
 const analyzeStory = catchAsync(async (req: Request, res: Response) => {
   const { storyText } = req.body;
 
-  if (!storyText || typeof storyText !== "string" || storyText.trim().length === 0) {
+  if (
+    !storyText ||
+    typeof storyText !== "string" ||
+    storyText.trim().length === 0
+  ) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "Please provide storyText as a non-empty string in the request body."
+      "Please provide storyText as a non-empty string in the request body.",
     );
   }
 

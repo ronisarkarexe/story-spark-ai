@@ -38,9 +38,7 @@ Relationships: ${profile.relationships}
   return (
     <div className="bg-slate-800/70 border border-slate-700 rounded-2xl p-5 shadow-lg">
       <div className="flex justify-between items-start mb-3">
-        <h3 className="text-xl font-bold text-purple-300">
-          👤 {profile.name}
-        </h3>
+        <h3 className="text-xl font-bold text-purple-300">👤 {profile.name}</h3>
 
         <button
           onClick={handleCopyProfile}

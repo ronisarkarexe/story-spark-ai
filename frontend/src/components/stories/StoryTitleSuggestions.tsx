@@ -8,11 +8,7 @@ interface Props {
   onApply: (title: string) => void;
 }
 
-const StoryTitleSuggestions: React.FC<Props> = ({
-  content,
-  tag,
-  onApply,
-}) => {
+const StoryTitleSuggestions: React.FC<Props> = ({ content, tag, onApply }) => {
   const [titles, setTitles] = useState<string[]>([]);
 
   // Generate titles when story changes

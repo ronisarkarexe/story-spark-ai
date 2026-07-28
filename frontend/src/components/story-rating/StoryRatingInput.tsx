@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useRateStoryMutation } from '../../redux/apis/story_rating.api';
-import { toast } from 'react-hot-toast';
+import React, { useState } from "react";
+import { useRateStoryMutation } from "../../redux/apis/story_rating.api";
+import { toast } from "react-hot-toast";
 
 interface StoryRatingInputProps {
   storyId: string;
@@ -16,7 +16,8 @@ const StoryRatingInput: React.FC<StoryRatingInputProps> = ({ storyId }) => {
 
   const renderStarIcon = (index: number) => {
     if (rating >= index) return <i className="fa-solid fa-star" />;
-    if (rating >= index - 0.5) return <i className="fa-solid fa-star-half-stroke" />;
+    if (rating >= index - 0.5)
+      return <i className="fa-solid fa-star-half-stroke" />;
     return <i className="fa-regular fa-star" />;
   };
 
@@ -35,9 +36,13 @@ const StoryRatingInput: React.FC<StoryRatingInputProps> = ({ storyId }) => {
 
   return (
     <div className="max-w-2xl mx-auto my-8 p-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700/50 backdrop-blur-md shadow-lg transition-all">
-      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Rate this Story</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">What did you think of this piece? Your feedback helps the author grow!</p>
-      
+      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
+        Rate this Story
+      </h3>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+        What did you think of this piece? Your feedback helps the author grow!
+      </p>
+
       <div className="flex flex-col items-center mb-6">
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -48,7 +53,9 @@ const StoryRatingInput: React.FC<StoryRatingInputProps> = ({ storyId }) => {
             >
               <div
                 className={`flex items-center justify-center w-8 h-8 ${
-                  star <= Math.ceil(hovered || rating) ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.5)]" : ""
+                  star <= Math.ceil(hovered || rating)
+                    ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.5)]"
+                    : ""
                 }`}
               >
                 {renderStarIcon(star)}
@@ -84,7 +91,9 @@ const StoryRatingInput: React.FC<StoryRatingInputProps> = ({ storyId }) => {
           maxLength={500}
           className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none text-sm"
         />
-        <p className="text-right text-xs text-slate-400 mt-1">{review.length}/500</p>
+        <p className="text-right text-xs text-slate-400 mt-1">
+          {review.length}/500
+        </p>
       </div>
 
       <div className="flex justify-end">

@@ -1,7 +1,5 @@
 import { useMemo } from "react";
-import {
-  generateContinuationSuggestions,
-} from "../../utils/storyContinuationSuggestions";
+import { generateContinuationSuggestions } from "../../utils/storyContinuationSuggestions";
 
 interface Props {
   story: string;
@@ -14,7 +12,7 @@ export default function StoryContinuationSuggestions({
 }: Props) {
   const suggestions = useMemo(
     () => generateContinuationSuggestions(story),
-    [story]
+    [story],
   );
 
   return (
@@ -24,26 +22,19 @@ export default function StoryContinuationSuggestions({
           ✨ AI Story Continuation Suggestions
         </h2>
 
-        <button
-          className="rounded bg-indigo-600 px-4 py-2 text-white"
-        >
+        <button className="rounded bg-indigo-600 px-4 py-2 text-white">
           Regenerate
         </button>
       </div>
 
       <div className="space-y-5">
         {suggestions.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-lg border border-zinc-700 p-5"
-          >
+          <div key={item.id} className="rounded-lg border border-zinc-700 p-5">
             <h3 className="text-lg font-semibold text-white mb-3">
               {item.title}
             </h3>
 
-            <p className="text-gray-300 mb-4">
-              {item.content}
-            </p>
+            <p className="text-gray-300 mb-4">{item.content}</p>
 
             <button
               onClick={() => onInsert(item.content)}

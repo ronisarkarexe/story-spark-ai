@@ -22,20 +22,20 @@ const mapStoryVisualizerError = (error: unknown): never => {
   if (error instanceof GenerationTimeoutError) {
     throw new ApiError(
       httpStatus.GATEWAY_TIMEOUT,
-      "Story visualizer generation timed out. Please try again."
+      "Story visualizer generation timed out. Please try again.",
     );
   }
 
   const errorMsg = error instanceof Error ? error.message : String(error);
   throw new ApiError(
     httpStatus.BAD_GATEWAY,
-    `Story visualizer generation failed: ${errorMsg}`
+    `Story visualizer generation failed: ${errorMsg}`,
   );
 };
 
 const buildStoryboardImagePrompt = (
   styleGuide: string,
-  scenePrompt: string
+  scenePrompt: string,
 ): string => {
   return [
     "Create a consistent storybook illustration for this storyboard scene.",
@@ -50,13 +50,13 @@ const buildStoryboardImagePrompt = (
 const attachSceneImages = async (
   scenes: IStoryboardScene[],
   styleGuide: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<IStoryboardScene[]> => {
   const promises = scenes.map(async (scene) => {
     try {
       const imageUrl = await generateStoryboardImage(
         buildStoryboardImagePrompt(styleGuide, scene.imagePrompt),
-        signal
+        signal,
       );
 
       return {
@@ -77,7 +77,7 @@ const attachSceneImages = async (
 
 const generateStoryboard = async (
   payload: IStoryVisualizerPayload,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<IStoryVisualizerResult> => {
   const language = payload.language ?? "English";
 
@@ -89,16 +89,16 @@ const generateStoryboard = async (
             ...payload,
             language,
           },
-          sig
+          sig,
         ),
       STORY_VISUALIZER_TIMEOUT_MS,
-      signal
+      signal,
     );
 
     const scenes = await attachSceneImages(
       storyboard.scenes,
       storyboard.styleGuide,
-      signal
+      signal,
     );
 
     return {

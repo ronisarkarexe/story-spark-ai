@@ -7,7 +7,9 @@ import { getToken } from "../app/middleware/token";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 jest.mock("../app/middleware/token", () => ({
-  getToken: jest.fn().mockResolvedValue({ email: "test@example.com", role: "user" }),
+  getToken: jest
+    .fn()
+    .mockResolvedValue({ email: "test@example.com", role: "user" }),
 }));
 
 jest.mock("../app/modules/user/user.model", () => ({
@@ -51,10 +53,16 @@ describe("Gamification Endpoints Controllers", () => {
       totalWritingDays: 12,
       lastActiveDate: new Date(),
     };
-    (WritingStreakService.getStreak as jest.Mock).mockResolvedValueOnce(mockStreak);
+    (WritingStreakService.getStreak as jest.Mock).mockResolvedValueOnce(
+      mockStreak,
+    );
 
     const mockNext = jest.fn();
-    await UserController.getWritingStreak(mockReq as Request, mockRes as Response, mockNext);
+    await UserController.getWritingStreak(
+      mockReq as Request,
+      mockRes as Response,
+      mockNext,
+    );
 
     expect(getToken).toHaveBeenCalled();
     expect(User.findOne).toHaveBeenCalledWith({ email: "test@example.com" });
@@ -72,12 +80,24 @@ describe("Gamification Endpoints Controllers", () => {
     (User.findOne as jest.Mock).mockResolvedValueOnce(fakeUser);
 
     const mockAchievementsList = [
-      { id: "streak_1", title: "First Day Writing", progress: 1, target: 1, unlockedAt: new Date() },
+      {
+        id: "streak_1",
+        title: "First Day Writing",
+        progress: 1,
+        target: 1,
+        unlockedAt: new Date(),
+      },
     ];
-    (WritingStreakService.getAchievements as jest.Mock).mockResolvedValueOnce(mockAchievementsList);
+    (WritingStreakService.getAchievements as jest.Mock).mockResolvedValueOnce(
+      mockAchievementsList,
+    );
 
     const mockNext = jest.fn();
-    await UserController.getAchievements(mockReq as Request, mockRes as Response, mockNext);
+    await UserController.getAchievements(
+      mockReq as Request,
+      mockRes as Response,
+      mockNext,
+    );
 
     expect(sendResponse).toHaveBeenCalledWith(mockRes, {
       statusCode: 200,

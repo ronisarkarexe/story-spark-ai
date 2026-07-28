@@ -7,7 +7,7 @@ import { ChatService } from "./chat.service";
 const chatWithAi = catchAsync(async (req: Request, res: Response) => {
   const { messages } = req.body;
   const result = await ChatService.chatWithAi(messages);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

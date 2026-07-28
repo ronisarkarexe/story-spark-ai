@@ -94,7 +94,9 @@ export const storeUserInfo = ({ accessToken }: AccessToken) => {
     validateTokenPayload(decodedData as Record<string, unknown>);
   } catch (error) {
     console.error("Refusing to store invalid access token:", error);
-    throw new Error("Received an invalid access token. Please try logging in again.");
+    throw new Error(
+      "Received an invalid access token. Please try logging in again.",
+    );
   }
 
   const result = setToLocalStorage(AUTH_KEY, accessToken);

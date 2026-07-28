@@ -18,14 +18,9 @@ const StoryWorldMap: React.FC<StoryWorldMapProps> = ({
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="bg-slate-900 w-full max-w-3xl rounded-2xl p-6 border border-slate-700">
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-2xl font-bold text-white">
-            🗺️ Story World Map
-          </h2>
+          <h2 className="text-2xl font-bold text-white">🗺️ Story World Map</h2>
 
-          <button
-            onClick={onClose}
-            className="text-white hover:text-red-400"
-          >
+          <button onClick={onClose} className="text-white hover:text-red-400">
             ✕
           </button>
         </div>
@@ -40,9 +35,7 @@ const StoryWorldMap: React.FC<StoryWorldMapProps> = ({
                 📍 {location.name}
               </h3>
 
-              <p className="text-slate-300 mt-2">
-                {location.description}
-              </p>
+              <p className="text-slate-300 mt-2">{location.description}</p>
             </div>
           ))}
         </div>

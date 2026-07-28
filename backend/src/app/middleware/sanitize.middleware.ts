@@ -8,7 +8,7 @@ import { sanitizeObjectStrings, sanitizeText } from "../../utils/sanitize.util";
 export const sanitizeBodyMiddleware = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (req.body && typeof req.body === "object") {
     req.body = sanitizeObjectStrings(req.body, sanitizeText);
@@ -23,10 +23,13 @@ export const sanitizeBodyMiddleware = (
 export const sanitizeQueryMiddleware = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (req.query && typeof req.query === "object") {
-    const sanitizedQuery = sanitizeObjectStrings(req.query as Record<string, any>, sanitizeText);
+    const sanitizedQuery = sanitizeObjectStrings(
+      req.query as Record<string, any>,
+      sanitizeText,
+    );
     req.query = sanitizedQuery as any;
   }
   next();

@@ -1,24 +1,14 @@
 import React from "react";
-import {
-  generateChecklist,
-  StoryData,
-} from "../../utils/storyChecklist";
+import { generateChecklist, StoryData } from "../../utils/storyChecklist";
 
 interface StoryChecklistProps extends StoryData {}
 
-const StoryChecklist: React.FC<StoryChecklistProps> = ({
-  title,
-  content,
-}) => {
+const StoryChecklist: React.FC<StoryChecklistProps> = ({ title, content }) => {
   const checklist = generateChecklist({ title, content });
 
-  const completedItems = checklist.filter(
-    (item) => item.completed
-  ).length;
+  const completedItems = checklist.filter((item) => item.completed).length;
 
-  const progress = Math.round(
-    (completedItems / checklist.length) * 100
-  );
+  const progress = Math.round((completedItems / checklist.length) * 100);
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-6">
@@ -45,18 +35,12 @@ const StoryChecklist: React.FC<StoryChecklistProps> = ({
             key={item.id}
             className="flex items-center justify-between rounded-lg bg-zinc-800 px-4 py-3"
           >
-            <span className="text-white">
-              {item.label}
-            </span>
+            <span className="text-white">{item.label}</span>
 
             {item.completed ? (
-              <span className="text-green-400 font-semibold">
-                ✅ Complete
-              </span>
+              <span className="text-green-400 font-semibold">✅ Complete</span>
             ) : (
-              <span className="text-red-400 font-semibold">
-                ❌ Missing
-              </span>
+              <span className="text-red-400 font-semibold">❌ Missing</span>
             )}
           </div>
         ))}

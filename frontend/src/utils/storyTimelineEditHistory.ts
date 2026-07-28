@@ -7,9 +7,7 @@ export interface StoryEditCheckpoint {
   content: string;
 }
 
-export function generateEditHistory(
-  story: string
-): StoryEditCheckpoint[] {
+export function generateEditHistory(story: string): StoryEditCheckpoint[] {
   if (!story.trim()) return [];
 
   return [
@@ -42,14 +40,12 @@ export function generateEditHistory(
 
 export function restoreStoryVersion(
   checkpoints: StoryEditCheckpoint[],
-  id: number
+  id: number,
 ): string {
   const checkpoint = checkpoints.find((item) => item.id === id);
   return checkpoint?.content ?? "";
 }
 
-export function refreshTimelineHistory(
-  story: string
-) {
+export function refreshTimelineHistory(story: string) {
   return generateEditHistory(story);
 }

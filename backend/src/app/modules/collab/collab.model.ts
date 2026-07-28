@@ -40,7 +40,7 @@ const CollabRoomSchema = new Schema<ICollabRoom>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Enable dynamic TTL expiration based on expiresAt field

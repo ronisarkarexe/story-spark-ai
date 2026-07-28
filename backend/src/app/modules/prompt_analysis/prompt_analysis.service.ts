@@ -13,7 +13,7 @@ export class PromptAnalysisService {
    * Analyze user prompt and generate creativity score + enhancement suggestions
    */
   static async analyzePrompt(
-    req: IPromptAnalysisRequest
+    req: IPromptAnalysisRequest,
   ): Promise<IPromptAnalysisResponse> {
     const { prompt, language = "English", genre, tone } = req;
 
@@ -21,7 +21,10 @@ export class PromptAnalysisService {
       // 1. Calculate base metrics
       const promptLength = prompt.length;
       const wordCount = prompt.split(/\s+/).filter((w) => w.length > 0).length;
-      const estimatedGenerationTime = Math.max(5, Math.ceil(wordCount / 10) * 3);
+      const estimatedGenerationTime = Math.max(
+        5,
+        Math.ceil(wordCount / 10) * 3,
+      );
 
       // 2. Extract keywords using basic NLP
       const keywords = this.extractKeywords(prompt);
@@ -37,7 +40,7 @@ export class PromptAnalysisService {
         prompt,
         keywords,
         sentimentScore,
-        complexity
+        complexity,
       );
 
       // 6. Call Gemini to enhance prompt and get suggestions
@@ -45,13 +48,13 @@ export class PromptAnalysisService {
         prompt,
         language,
         genre,
-        tone
+        tone,
       );
 
       // 7. Adjust creativity score based on enhancement analysis
       creativityScore = Math.min(
         100,
-        creativityScore + enhancementData.scoreBoost
+        creativityScore + enhancementData.scoreBoost,
       );
 
       return {
@@ -69,7 +72,7 @@ export class PromptAnalysisService {
     } catch (error) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
-        `Prompt analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Prompt analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
@@ -177,7 +180,10 @@ export class PromptAnalysisService {
     });
 
     const total = posCount + negCount || 1;
-    const neutral = Math.max(0, 1 - (posCount + negCount) / prompt.split(/\s+/).length);
+    const neutral = Math.max(
+      0,
+      1 - (posCount + negCount) / prompt.split(/\s+/).length,
+    );
 
     return {
       positive: Math.round((posCount / total) * 100) / 100,
@@ -190,11 +196,10 @@ export class PromptAnalysisService {
    * Determine prompt complexity based on various factors
    */
   private static determineComplexity(
-    prompt: string
+    prompt: string,
   ): "simple" | "moderate" | "complex" {
     const wordCount = prompt.split(/\s+/).length;
-    const avgWordLength =
-      prompt.replace(/\s+/g, "").length / wordCount;
+    const avgWordLength = prompt.replace(/\s+/g, "").length / wordCount;
     const sentenceCount = (prompt.match(/[.!?]/g) || []).length || 1;
     const avgSentenceLength = wordCount / sentenceCount;
 
@@ -226,7 +231,7 @@ export class PromptAnalysisService {
     prompt: string,
     keywords: string[],
     sentimentScore: any,
-    complexity: string
+    complexity: string,
   ): number {
     let score = 50; // Base score
 
@@ -243,7 +248,7 @@ export class PromptAnalysisService {
 
     // Adjust for sentiment balance
     const sentimentBalance = Math.abs(
-      sentimentScore.positive - sentimentScore.negative
+      sentimentScore.positive - sentimentScore.negative,
     );
     if (sentimentBalance <= 0.3) {
       score += 10; // Balanced sentiment is creative
@@ -258,8 +263,7 @@ export class PromptAnalysisService {
     // Check for specific creative indicators
     if (/\?|!/.test(prompt)) score += 5; // Questions or exclamations are more engaging
     if (/\b(what|why|how|if|when)\b/i.test(prompt)) score += 5; // Intrigue words
-    if (/\b(magic|dream|imagine|create|discover)\b/i.test(prompt))
-      score += 10; // Fantasy/imaginative words
+    if (/\b(magic|dream|imagine|create|discover)\b/i.test(prompt)) score += 10; // Fantasy/imaginative words
 
     return Math.min(100, Math.max(0, score));
   }
@@ -271,7 +275,7 @@ export class PromptAnalysisService {
     originalPrompt: string,
     language: string,
     genre?: string,
-    tone?: string
+    tone?: string,
   ): Promise<{
     enhancedPrompt: string;
     improvements: string[];

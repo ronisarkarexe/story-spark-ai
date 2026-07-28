@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import {
-  getISTTimeFormate,
-  timeAgo,
-  formatDateShort,
-} from "../time-formate";
+import { getISTTimeFormate, timeAgo, formatDateShort } from "../time-formate";
 
 describe("getISTTimeFormate", () => {
   it("returns a non-empty formatted string for a valid timestamp", () => {
@@ -96,9 +92,7 @@ describe("timeAgo", () => {
   });
 
   it("returns '1 year ago' for approximately 1 year in the past", () => {
-    const oneYearAgo = new Date(
-      Date.now() - 365 * 86_400_000,
-    ).toISOString();
+    const oneYearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
     expect(timeAgo(oneYearAgo)).toBe("1 year ago");
   });
 

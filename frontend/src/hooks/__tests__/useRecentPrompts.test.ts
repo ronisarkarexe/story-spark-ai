@@ -25,12 +25,21 @@ describe("useRecentPrompts hook", () => {
 
   it("loads prompts from localStorage on mount", () => {
     const stored = [
-      { id: "1", prompt: "test prompt", timestamp: 1000, lastUsedAt: 1000, useCount: 1, isFavorite: false },
+      {
+        id: "1",
+        prompt: "test prompt",
+        timestamp: 1000,
+        lastUsedAt: 1000,
+        useCount: 1,
+        isFavorite: false,
+      },
     ];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
     const { result } = renderUseRecentPrompts();
-    act(() => { vi.runAllTimers(); });
+    act(() => {
+      vi.runAllTimers();
+    });
 
     expect(result.current.recentPrompts).toHaveLength(1);
     expect(result.current.recentPrompts[0].prompt).toBe("test prompt");
@@ -38,13 +47,17 @@ describe("useRecentPrompts hook", () => {
 
   it("addPrompt does nothing for empty string", () => {
     const { result } = renderUseRecentPrompts();
-    act(() => { result.current.addPrompt(""); });
+    act(() => {
+      result.current.addPrompt("");
+    });
     expect(result.current.recentPrompts).toEqual([]);
   });
 
   it("addPrompt adds a new prompt to the beginning of the list", () => {
     const { result } = renderUseRecentPrompts();
-    act(() => { result.current.addPrompt("hello world"); });
+    act(() => {
+      result.current.addPrompt("hello world");
+    });
     expect(result.current.recentPrompts).toHaveLength(1);
     expect(result.current.recentPrompts[0].prompt).toBe("hello world");
     expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull();
@@ -52,14 +65,25 @@ describe("useRecentPrompts hook", () => {
 
   it("addPrompt deduplicates existing prompts by moving to top", () => {
     const stored = [
-      { id: "1", prompt: "existing prompt", timestamp: 1000, lastUsedAt: 1000, useCount: 1, isFavorite: false },
+      {
+        id: "1",
+        prompt: "existing prompt",
+        timestamp: 1000,
+        lastUsedAt: 1000,
+        useCount: 1,
+        isFavorite: false,
+      },
     ];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
     const { result } = renderUseRecentPrompts();
-    act(() => { vi.runAllTimers(); });
+    act(() => {
+      vi.runAllTimers();
+    });
 
-    act(() => { result.current.addPrompt("existing prompt"); });
+    act(() => {
+      result.current.addPrompt("existing prompt");
+    });
 
     expect(result.current.recentPrompts).toHaveLength(1);
     expect(result.current.recentPrompts[0].useCount).toBe(2);
@@ -70,7 +94,9 @@ describe("useRecentPrompts hook", () => {
     const { result } = renderUseRecentPrompts();
 
     for (let i = 0; i < 25; i++) {
-      act(() => { result.current.addPrompt(`prompt ${i}`); });
+      act(() => {
+        result.current.addPrompt(`prompt ${i}`);
+      });
     }
 
     expect(result.current.recentPrompts).toHaveLength(20);
@@ -80,14 +106,25 @@ describe("useRecentPrompts hook", () => {
 
   it("recordPromptUse increments useCount and updates lastUsedAt", () => {
     const stored = [
-      { id: "id-1", prompt: "test", timestamp: 1000, lastUsedAt: 1000, useCount: 1, isFavorite: false },
+      {
+        id: "id-1",
+        prompt: "test",
+        timestamp: 1000,
+        lastUsedAt: 1000,
+        useCount: 1,
+        isFavorite: false,
+      },
     ];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
     const { result } = renderUseRecentPrompts();
-    act(() => { vi.runAllTimers(); });
+    act(() => {
+      vi.runAllTimers();
+    });
 
-    act(() => { result.current.recordPromptUse("id-1"); });
+    act(() => {
+      result.current.recordPromptUse("id-1");
+    });
 
     expect(result.current.recentPrompts[0].useCount).toBe(2);
     expect(result.current.recentPrompts[0].lastUsedAt).toBeGreaterThan(1000);
@@ -95,31 +132,62 @@ describe("useRecentPrompts hook", () => {
 
   it("toggleFavorite toggles the isFavorite flag", () => {
     const stored = [
-      { id: "id-1", prompt: "test", timestamp: 1000, lastUsedAt: 1000, useCount: 1, isFavorite: false },
+      {
+        id: "id-1",
+        prompt: "test",
+        timestamp: 1000,
+        lastUsedAt: 1000,
+        useCount: 1,
+        isFavorite: false,
+      },
     ];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
     const { result } = renderUseRecentPrompts();
-    act(() => { vi.runAllTimers(); });
+    act(() => {
+      vi.runAllTimers();
+    });
 
-    act(() => { result.current.toggleFavorite("id-1"); });
+    act(() => {
+      result.current.toggleFavorite("id-1");
+    });
     expect(result.current.recentPrompts[0].isFavorite).toBe(true);
 
-    act(() => { result.current.toggleFavorite("id-1"); });
+    act(() => {
+      result.current.toggleFavorite("id-1");
+    });
     expect(result.current.recentPrompts[0].isFavorite).toBe(false);
   });
 
   it("removePrompt removes a specific prompt by id", () => {
     const stored = [
-      { id: "id-1", prompt: "test 1", timestamp: 1000, lastUsedAt: 1000, useCount: 1, isFavorite: false },
-      { id: "id-2", prompt: "test 2", timestamp: 2000, lastUsedAt: 2000, useCount: 1, isFavorite: false },
+      {
+        id: "id-1",
+        prompt: "test 1",
+        timestamp: 1000,
+        lastUsedAt: 1000,
+        useCount: 1,
+        isFavorite: false,
+      },
+      {
+        id: "id-2",
+        prompt: "test 2",
+        timestamp: 2000,
+        lastUsedAt: 2000,
+        useCount: 1,
+        isFavorite: false,
+      },
     ];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
     const { result } = renderUseRecentPrompts();
-    act(() => { vi.runAllTimers(); });
+    act(() => {
+      vi.runAllTimers();
+    });
 
-    act(() => { result.current.removePrompt("id-1"); });
+    act(() => {
+      result.current.removePrompt("id-1");
+    });
 
     expect(result.current.recentPrompts).toHaveLength(1);
     expect(result.current.recentPrompts[0].id).toBe("id-2");
@@ -127,14 +195,25 @@ describe("useRecentPrompts hook", () => {
 
   it("clearAll removes all prompts and clears localStorage", () => {
     const stored = [
-      { id: "id-1", prompt: "test", timestamp: 1000, lastUsedAt: 1000, useCount: 1, isFavorite: false },
+      {
+        id: "id-1",
+        prompt: "test",
+        timestamp: 1000,
+        lastUsedAt: 1000,
+        useCount: 1,
+        isFavorite: false,
+      },
     ];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
     const { result } = renderUseRecentPrompts();
-    act(() => { vi.runAllTimers(); });
+    act(() => {
+      vi.runAllTimers();
+    });
 
-    act(() => { result.current.clearAll(); });
+    act(() => {
+      result.current.clearAll();
+    });
 
     expect(result.current.recentPrompts).toEqual([]);
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
@@ -145,25 +224,37 @@ describe("useRecentPrompts hook", () => {
       null,
       { prompt: "valid prompt" },
       undefined,
-      { id: "id-1", timestamp: 1000, lastUsedAt: 1000, useCount: 1, isFavorite: false },
+      {
+        id: "id-1",
+        timestamp: 1000,
+        lastUsedAt: 1000,
+        useCount: 1,
+        isFavorite: false,
+      },
     ];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
     const { result } = renderUseRecentPrompts();
-    act(() => { vi.runAllTimers(); });
+    act(() => {
+      vi.runAllTimers();
+    });
 
     expect(result.current.recentPrompts).toHaveLength(1);
   });
 
   it("trims whitespace from added prompts", () => {
     const { result } = renderUseRecentPrompts();
-    act(() => { result.current.addPrompt("  hello world  "); });
+    act(() => {
+      result.current.addPrompt("  hello world  ");
+    });
     expect(result.current.recentPrompts[0].prompt).toBe("hello world");
   });
 
   it("addPrompt persists to localStorage", () => {
     const { result } = renderUseRecentPrompts();
-    act(() => { result.current.addPrompt("persisted prompt"); });
+    act(() => {
+      result.current.addPrompt("persisted prompt");
+    });
 
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     expect(stored).toHaveLength(1);

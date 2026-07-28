@@ -1,20 +1,13 @@
 import React, { useState } from "react";
-import {
-  GenreWeight,
-  normalizeWeights,
-} from "../../utils/genreWeights";
+import { GenreWeight, normalizeWeights } from "../../utils/genreWeights";
 
 export default function GenreWeightControls() {
-
   const [genres, setGenres] = useState<GenreWeight[]>([
     { genre: "Fantasy", weight: 50 },
     { genre: "Mystery", weight: 50 },
   ]);
 
-  const updateWeight = (
-    index: number,
-    value: number
-  ) => {
+  const updateWeight = (index: number, value: number) => {
     const updated = [...genres];
     updated[index].weight = value;
     setGenres(normalizeWeights({ genres: updated }).genres);
@@ -22,14 +15,12 @@ export default function GenreWeightControls() {
 
   return (
     <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
-
       <h2 className="text-2xl font-bold text-white mb-6">
         🎭 Genre Weight Controls
       </h2>
 
       {genres.map((genre, index) => (
         <div key={genre.genre} className="mb-6">
-
           <div className="flex justify-between text-white mb-2">
             <span>{genre.genre}</span>
             <span>{genre.weight}%</span>
@@ -40,17 +31,13 @@ export default function GenreWeightControls() {
             min={0}
             max={100}
             value={genre.weight}
-            onChange={(e) =>
-              updateWeight(index, Number(e.target.value))
-            }
+            onChange={(e) => updateWeight(index, Number(e.target.value))}
             className="w-full"
           />
         </div>
       ))}
 
-      <div className="text-gray-300 mt-4">
-        Selected Mix:
-      </div>
+      <div className="text-gray-300 mt-4">Selected Mix:</div>
 
       <ul className="text-white mt-2">
         {genres.map((g) => (
@@ -59,7 +46,6 @@ export default function GenreWeightControls() {
           </li>
         ))}
       </ul>
-
     </div>
   );
 }

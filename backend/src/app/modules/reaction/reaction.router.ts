@@ -11,9 +11,9 @@ router.post(
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER
+    ENUM_USER_ROLE.USER,
   ),
-  ReactionController.toggleReaction
+  ReactionController.toggleReaction,
 );
 
 export const ReactionRouter = router;

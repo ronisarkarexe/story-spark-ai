@@ -14,12 +14,16 @@ const globalErrorHandler: ErrorRequestHandler = (
   err,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (config.env === "development") {
-    logger.info(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
+    logger.info(
+      `Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`,
+    );
   } else {
-    logger.error(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
+    logger.error(
+      `Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`,
+    );
   }
 
   let statusCode = 500;
@@ -49,7 +53,7 @@ const globalErrorHandler: ErrorRequestHandler = (
   } else if (err instanceof ApiError) {
     statusCode = err.statusCode;
     message = err.message;
-    errorMessages = err?.message 
+    errorMessages = err?.message
       ? [
           {
             path: "",
@@ -64,7 +68,7 @@ const globalErrorHandler: ErrorRequestHandler = (
     }
   } else if (err instanceof Error) {
     message = err.message;
-    errorMessages = err?.message 
+    errorMessages = err?.message
       ? [
           {
             path: "",

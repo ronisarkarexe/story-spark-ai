@@ -43,7 +43,9 @@ import { AiModelController } from "../ai_model.controller";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const mockSetCookie = setGuestUserIdCookie as jest.MockedFunction<typeof setGuestUserIdCookie>;
+const mockSetCookie = setGuestUserIdCookie as jest.MockedFunction<
+  typeof setGuestUserIdCookie
+>;
 
 function buildReqRes(existingUserId?: string) {
   const req = {

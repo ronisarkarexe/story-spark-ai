@@ -14,7 +14,7 @@ const updateDailyStreak = async (userId: string) => {
     const now = new Date();
 
     const user = await User.findById(userId).select(
-      "gamification.lastActiveDate gamification.xp gamification.level"
+      "gamification.lastActiveDate gamification.xp gamification.level",
     );
     if (!user) return;
 
@@ -44,7 +44,7 @@ const updateDailyStreak = async (userId: string) => {
             "gamification.level": 1,
             "gamification.badges": [],
           },
-        }
+        },
       );
 
       return;
@@ -69,7 +69,7 @@ const updateDailyStreak = async (userId: string) => {
           },
           $set: { "gamification.lastActiveDate": now },
           $max: { "gamification.level": newLevel },
-        }
+        },
       );
     } else if (diffDays > 1) {
       await User.findOneAndUpdate(
@@ -84,7 +84,7 @@ const updateDailyStreak = async (userId: string) => {
             "gamification.lastActiveDate": now,
           },
           $max: { "gamification.level": newLevel },
-        }
+        },
       );
     }
   } catch (error) {
@@ -94,26 +94,30 @@ const updateDailyStreak = async (userId: string) => {
 
 const addXp = async (userId: string, amount: number, reason: string) => {
   try {
-    await User.updateOne(
-      { _id: userId },
-      [
-        {
-          $set: {
-            "gamification.xp": { $add: [{ $ifNull: ["$gamification.xp", 0] }, amount] }
-          }
+    await User.updateOne({ _id: userId }, [
+      {
+        $set: {
+          "gamification.xp": {
+            $add: [{ $ifNull: ["$gamification.xp", 0] }, amount],
+          },
         },
-        {
-          $set: {
-            "gamification.level": {
-              $max: [
-                { $ifNull: ["$gamification.level", 1] },
-                { $add: [{ $floor: { $sqrt: { $divide: ["$gamification.xp", 100] } } }, 1] }
-              ]
-            }
-          }
-        }
-      ]
-    );
+      },
+      {
+        $set: {
+          "gamification.level": {
+            $max: [
+              { $ifNull: ["$gamification.level", 1] },
+              {
+                $add: [
+                  { $floor: { $sqrt: { $divide: ["$gamification.xp", 100] } } },
+                  1,
+                ],
+              },
+            ],
+          },
+        },
+      },
+    ]);
   } catch (error) {
     console.error(`Error adding XP for ${reason}:`, error);
   }

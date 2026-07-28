@@ -12,7 +12,7 @@ const router = express.Router();
 router.post(
   "/swift",
   validateRequest(CodeAnalysisValidator.analyzeSwift),
-  CodeAnalysisController.analyzeSwift
+  CodeAnalysisController.analyzeSwift,
 );
 
 export const CodeAnalysisRouter = router;

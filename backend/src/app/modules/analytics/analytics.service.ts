@@ -4,15 +4,92 @@ import { ITokenPayload } from "../../../interfaces/token";
 import { performance } from "perf_hooks";
 
 const STOP_WORDS = new Set([
-  "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
-  "of", "with", "by", "from", "is", "was", "are", "were", "be", "been",
-  "being", "have", "has", "had", "do", "does", "did", "will", "would",
-  "could", "should", "may", "might", "shall", "can", "need", "dare",
-  "it", "its", "this", "that", "these", "those", "i", "you", "he", "she",
-  "we", "they", "my", "your", "his", "her", "our", "their", "what", "which",
-  "who", "when", "where", "why", "how", "all", "each", "every", "both",
-  "few", "more", "most", "other", "some", "such", "no", "not", "only",
-  "same", "so", "than", "too", "very", "just", "as", "up", "out", "if",
+  "the",
+  "a",
+  "an",
+  "and",
+  "or",
+  "but",
+  "in",
+  "on",
+  "at",
+  "to",
+  "for",
+  "of",
+  "with",
+  "by",
+  "from",
+  "is",
+  "was",
+  "are",
+  "were",
+  "be",
+  "been",
+  "being",
+  "have",
+  "has",
+  "had",
+  "do",
+  "does",
+  "did",
+  "will",
+  "would",
+  "could",
+  "should",
+  "may",
+  "might",
+  "shall",
+  "can",
+  "need",
+  "dare",
+  "it",
+  "its",
+  "this",
+  "that",
+  "these",
+  "those",
+  "i",
+  "you",
+  "he",
+  "she",
+  "we",
+  "they",
+  "my",
+  "your",
+  "his",
+  "her",
+  "our",
+  "their",
+  "what",
+  "which",
+  "who",
+  "when",
+  "where",
+  "why",
+  "how",
+  "all",
+  "each",
+  "every",
+  "both",
+  "few",
+  "more",
+  "most",
+  "other",
+  "some",
+  "such",
+  "no",
+  "not",
+  "only",
+  "same",
+  "so",
+  "than",
+  "too",
+  "very",
+  "just",
+  "as",
+  "up",
+  "out",
+  "if",
 ]);
 
 const SERVER_TIME_ZONE =
@@ -20,7 +97,7 @@ const SERVER_TIME_ZONE =
 
 const runMeasuredAnalytics = async <T>(
   label: string,
-  operation: () => Promise<T>
+  operation: () => Promise<T>,
 ): Promise<T> => {
   if (process.env.ANALYTICS_BENCHMARK !== "1") {
     return operation();
@@ -38,8 +115,8 @@ const runMeasuredAnalytics = async <T>(
 
     console.info(
       `[analytics:benchmark] ${label} duration=${durationMs.toFixed(
-        2
-      )}ms heapDelta=${heapDeltaKb.toFixed(2)}KB`
+        2,
+      )}ms heapDelta=${heapDeltaKb.toFixed(2)}KB`,
     );
   }
 };
@@ -58,7 +135,9 @@ const getOverview = async (token: ITokenPayload | null) => {
 
   const userObjectId = new Types.ObjectId(token._id);
 
-  const posts = await Post.find({ author: userObjectId }).lean() as Array<Record<string, any>>;
+  const posts = (await Post.find({ author: userObjectId }).lean()) as Array<
+    Record<string, any>
+  >;
   const totalStories = posts.length;
   const totalWords = posts.reduce((sum, p) => {
     return sum + (p.content?.split(/\s+/).length || 0);
@@ -111,7 +190,7 @@ const getOverview = async (token: ITokenPayload | null) => {
   let mediumStories = 0;
   let longStories = 0;
 
-  posts.forEach(p => {
+  posts.forEach((p) => {
     const wordCount = p.content?.split(/\s+/).length || 0;
     if (wordCount < 500) {
       shortStories++;
@@ -132,15 +211,15 @@ const getOverview = async (token: ITokenPayload | null) => {
     storyLengths: {
       short: shortStories,
       medium: mediumStories,
-      long: longStories
-    }
+      long: longStories,
+    },
   };
 };
 
 const getHeatmap = async (token: ITokenPayload | null) => {
   if (!token?._id) {
-  return [];
-}
+    return [];
+  }
   const userObjectId = new Types.ObjectId(token._id);
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -177,14 +256,14 @@ const getHeatmap = async (token: ITokenPayload | null) => {
         },
       },
       { $sort: { date: 1 } },
-    ])
+    ]),
   );
 };
 
 const getGenreDistribution = async (token: ITokenPayload | null) => {
-if (!token?._id) {
-  return [];
-}
+  if (!token?._id) {
+    return [];
+  }
   const userObjectId = new Types.ObjectId(token._id);
 
   const result = await Post.aggregate([
@@ -201,8 +280,8 @@ if (!token?._id) {
 
 const getWordCloud = async (token: ITokenPayload | null) => {
   if (!token?._id) {
-  return [];
-}
+    return [];
+  }
   const userObjectId = new Types.ObjectId(token._id);
   const posts = await Post.find({ author: userObjectId })
     .select("content title")
@@ -226,8 +305,8 @@ const getWordCloud = async (token: ITokenPayload | null) => {
 };
 
 const getProductiveHours = async (token: ITokenPayload | null) => {
-  if(!token?._id){
-    return []
+  if (!token?._id) {
+    return [];
   }
   const userObjectId = new Types.ObjectId(token._id);
 
@@ -261,10 +340,7 @@ const getProductiveHours = async (token: ITokenPayload | null) => {
     ]);
 
     const countByHour = new Map<number, number>(
-      rows.map((row: { hour: number; count: number }) => [
-        row.hour,
-        row.count,
-      ])
+      rows.map((row: { hour: number; count: number }) => [row.hour, row.count]),
     );
 
     return Array.from({ length: 24 }, (_, hour) => ({
@@ -277,7 +353,7 @@ const getProductiveHours = async (token: ITokenPayload | null) => {
 const getEmotionDistribution = async (token: ITokenPayload | null) => {
   if (!token?._id) {
     return [];
-  } 
+  }
   const userObjectId = new Types.ObjectId(token._id);
 
   const result = await Post.aggregate([
@@ -291,9 +367,9 @@ const getEmotionDistribution = async (token: ITokenPayload | null) => {
 };
 
 const getMoodTimeline = async (token: ITokenPayload | null) => {
-    if (!token?._id) {
+  if (!token?._id) {
     return [];
-  } 
+  }
   const userObjectId = new Types.ObjectId(token._id);
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -361,7 +437,7 @@ const getMoodTimeline = async (token: ITokenPayload | null) => {
         },
       },
       { $sort: { month: 1 } },
-    ])
+    ]),
   );
 };
 

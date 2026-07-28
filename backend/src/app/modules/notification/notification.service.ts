@@ -36,7 +36,7 @@ const resolveUserId = async (token: ITokenPayload) => {
 const getUserNotifications = async (
   token: ITokenPayload,
   page: number = 1,
-  limit: number = 20
+  limit: number = 20,
 ) => {
   const userId = await resolveUserId(token);
   const skip = (page - 1) * limit;
@@ -63,7 +63,7 @@ const getUserNotifications = async (
 
 const markNotificationAsRead = async (
   notificationId: string,
-  token: ITokenPayload
+  token: ITokenPayload,
 ) => {
   if (!Types.ObjectId.isValid(notificationId)) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid notification ID");
@@ -73,7 +73,7 @@ const markNotificationAsRead = async (
   const notification = await Notification.findOneAndUpdate(
     { _id: notificationId, userId },
     { isRead: true },
-    { new: true }
+    { new: true },
   );
 
   if (!notification) {
@@ -91,7 +91,7 @@ const markAllNotificationsAsRead = async (token: ITokenPayload) => {
   // Single atomic updateMany — far cheaper than N individual updates
   const result = await Notification.updateMany(
     { userId, isRead: false },
-    { $set: { isRead: true } }
+    { $set: { isRead: true } },
   );
 
   // Notify all connected tabs/sessions so the badge clears instantly everywhere

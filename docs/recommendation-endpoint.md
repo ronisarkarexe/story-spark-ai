@@ -19,6 +19,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 The token payload must include:
+
 - `_id` or `userId` (string): User identifier
 - `email` (string): User email
 - `role` (string): One of `user`, `admin`, `super_admin`, `writer`, `guest`
@@ -67,11 +68,11 @@ None.
 
 ### Error Responses
 
-| Status | Condition |
-|--------|-----------|
-| 401 Unauthorized | Missing or invalid JWT token |
-| 404 Not Found | User not found in database |
-| 500 Internal Server Error | Unexpected server error |
+| Status                    | Condition                    |
+| ------------------------- | ---------------------------- |
+| 401 Unauthorized          | Missing or invalid JWT token |
+| 404 Not Found             | User not found in database   |
+| 500 Internal Server Error | Unexpected server error      |
 
 ### Error Response Format
 

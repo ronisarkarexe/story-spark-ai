@@ -26,7 +26,9 @@ const MagicCursorComponent = () => {
   const sparkleTimers = useRef<number[]>([]);
 
   useEffect(() => {
-    const pointerQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const pointerQuery = window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    );
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const updateAvailability = () => {
@@ -67,40 +69,42 @@ const MagicCursorComponent = () => {
 
       const timerId = window.setTimeout(() => {
         setSparkles((items) => items.filter((item) => item.id !== id));
-        sparkleTimers.current = sparkleTimers.current.filter((timer) => timer !== timerId);
+        sparkleTimers.current = sparkleTimers.current.filter(
+          (timer) => timer !== timerId,
+        );
       }, SPARKLE_LIFETIME);
 
       sparkleTimers.current.push(timerId);
     };
 
     const handlePointerMove = (event: PointerEvent) => {
-  const targetElement = event.target as HTMLElement;
+      const targetElement = event.target as HTMLElement;
 
-  const isTypingElement =
-    targetElement.tagName === "TEXTAREA" ||
-    targetElement.tagName === "INPUT" ||
-    targetElement.isContentEditable;
+      const isTypingElement =
+        targetElement.tagName === "TEXTAREA" ||
+        targetElement.tagName === "INPUT" ||
+        targetElement.isContentEditable;
 
-  if (isTypingElement) {
-    return;
-  }
+      if (isTypingElement) {
+        return;
+      }
 
-  target.current = { x: event.clientX, y: event.clientY };
+      target.current = { x: event.clientX, y: event.clientY };
 
-  const dx = event.clientX - lastSparkle.current.x;
-  const dy = event.clientY - lastSparkle.current.y;
-  const distance = Math.hypot(dx, dy);
-  const now = performance.now();
+      const dx = event.clientX - lastSparkle.current.x;
+      const dy = event.clientY - lastSparkle.current.y;
+      const distance = Math.hypot(dx, dy);
+      const now = performance.now();
 
-  if (distance > 30 && now - lastSparkle.current.time > 85) {
-    addSparkle(event.clientX, event.clientY);
-    lastSparkle.current = {
-      x: event.clientX,
-      y: event.clientY,
-      time: now,
+      if (distance > 30 && now - lastSparkle.current.time > 85) {
+        addSparkle(event.clientX, event.clientY);
+        lastSparkle.current = {
+          x: event.clientX,
+          y: event.clientY,
+          time: now,
+        };
+      }
     };
-  }
-};
 
     const handlePointerDown = (event: PointerEvent) => {
       addSparkle(event.clientX - 8, event.clientY + 4);
@@ -122,8 +126,12 @@ const MagicCursorComponent = () => {
       frameId.current = window.requestAnimationFrame(animateCursor);
     };
 
-    window.addEventListener("pointermove", handlePointerMove, { passive: true });
-    window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    window.addEventListener("pointermove", handlePointerMove, {
+      passive: true,
+    });
+    window.addEventListener("pointerdown", handlePointerDown, {
+      passive: true,
+    });
     frameId.current = window.requestAnimationFrame(animateCursor);
 
     return () => {
@@ -141,12 +149,12 @@ const MagicCursorComponent = () => {
   }, [enabled]);
 
   const isInputFocused =
-  document.activeElement instanceof HTMLInputElement ||
-  document.activeElement instanceof HTMLTextAreaElement;
+    document.activeElement instanceof HTMLInputElement ||
+    document.activeElement instanceof HTMLTextAreaElement;
 
   if (!enabled || isInputFocused || !glowEnabled) {
-  return null;
-}
+    return null;
+  }
 
   return (
     <div className="magic-cursor-layer" aria-hidden="true">
@@ -166,7 +174,6 @@ const MagicCursorComponent = () => {
         />
       ))}
     </div>
-    
   );
 };
 

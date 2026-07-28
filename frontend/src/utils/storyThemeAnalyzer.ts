@@ -6,9 +6,7 @@ export interface StoryTheme {
   confidence: number;
 }
 
-export function analyzeStoryThemes(
-  story: string
-): StoryTheme[] {
+export function analyzeStoryThemes(story: string): StoryTheme[] {
   if (!story.trim()) return [];
 
   return [
@@ -39,8 +37,6 @@ export function analyzeStoryThemes(
   ];
 }
 
-export function reanalyzeStoryThemes(
-  story: string
-) {
+export function reanalyzeStoryThemes(story: string) {
   return analyzeStoryThemes(story);
 }

@@ -26,7 +26,7 @@ describe("generateStoryboardImage", () => {
 
   const mockImageDownloadResponse = (
     bytes: Uint8Array,
-    contentType = "image/png"
+    contentType = "image/png",
   ) => {
     return {
       ok: true,
@@ -36,22 +36,22 @@ describe("generateStoryboardImage", () => {
   };
 
   it("fetches the temporary OpenAI url server-side and returns a persisted data URI instead of the raw url (#4284)", async () => {
-    const temporaryUrl = "https://oaidalleapiprodscus.blob.core.windows.net/temp/image.png";
+    const temporaryUrl =
+      "https://oaidalleapiprodscus.blob.core.windows.net/temp/image.png";
     const imageBytes = new Uint8Array([1, 2, 3, 4]);
 
     const fetchMock = jest
       .fn()
       // 1st call: the image generation request
       .mockResolvedValueOnce(
-        mockGenerationResponse({ data: [{ url: temporaryUrl }] })
+        mockGenerationResponse({ data: [{ url: temporaryUrl }] }),
       )
       // 2nd call: re-fetching the temporary url's bytes
       .mockResolvedValueOnce(mockImageDownloadResponse(imageBytes));
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    const { generateStoryboardImage } = await import(
-      "../storyboard_image_generation"
-    );
+    const { generateStoryboardImage } =
+      await import("../storyboard_image_generation");
 
     const result = await generateStoryboardImage("a cat in a hat");
 
@@ -61,7 +61,7 @@ describe("generateStoryboardImage", () => {
 
     // It should be re-persisted as a self-contained base64 data URI.
     expect(result).toBe(
-      `data:image/png;base64,${Buffer.from(imageBytes).toString("base64")}`
+      `data:image/png;base64,${Buffer.from(imageBytes).toString("base64")}`,
     );
 
     // Confirms we actually went back out to the temporary url to fetch bytes.
@@ -70,20 +70,20 @@ describe("generateStoryboardImage", () => {
   });
 
   it("returns null (mapped to imageStatus: failed by the caller) when the temporary url can no longer be fetched", async () => {
-    const temporaryUrl = "https://oaidalleapiprodscus.blob.core.windows.net/temp/expired.png";
+    const temporaryUrl =
+      "https://oaidalleapiprodscus.blob.core.windows.net/temp/expired.png";
 
     const fetchMock = jest
       .fn()
       .mockResolvedValueOnce(
-        mockGenerationResponse({ data: [{ url: temporaryUrl }] })
+        mockGenerationResponse({ data: [{ url: temporaryUrl }] }),
       )
       // Simulates the url having already expired by the time we re-fetch it.
       .mockResolvedValueOnce({ ok: false } as Response);
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    const { generateStoryboardImage } = await import(
-      "../storyboard_image_generation"
-    );
+    const { generateStoryboardImage } =
+      await import("../storyboard_image_generation");
 
     const result = await generateStoryboardImage("a cat in a hat");
 
@@ -92,14 +92,15 @@ describe("generateStoryboardImage", () => {
   });
 
   it("leaves the b64_json branch untouched, since it never returns a temporary link", async () => {
-    const fetchMock = jest.fn().mockResolvedValueOnce(
-      mockGenerationResponse({ data: [{ b64_json: "aGVsbG8=" }] })
-    );
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockGenerationResponse({ data: [{ b64_json: "aGVsbG8=" }] }),
+      );
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    const { generateStoryboardImage } = await import(
-      "../storyboard_image_generation"
-    );
+    const { generateStoryboardImage } =
+      await import("../storyboard_image_generation");
 
     const result = await generateStoryboardImage("a cat in a hat");
 
@@ -114,9 +115,8 @@ describe("generateStoryboardImage", () => {
       .mockResolvedValueOnce(mockGenerationResponse({ data: [{}] }));
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    const { generateStoryboardImage } = await import(
-      "../storyboard_image_generation"
-    );
+    const { generateStoryboardImage } =
+      await import("../storyboard_image_generation");
 
     const result = await generateStoryboardImage("a cat in a hat");
 
@@ -129,9 +129,8 @@ describe("generateStoryboardImage", () => {
     const fetchMock = jest.fn();
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    const { generateStoryboardImage } = await import(
-      "../storyboard_image_generation"
-    );
+    const { generateStoryboardImage } =
+      await import("../storyboard_image_generation");
 
     const result = await generateStoryboardImage("a cat in a hat");
 

@@ -20,24 +20,18 @@ export interface OutlineAnalysis {
   issues: OutlineIssue[];
 }
 
-export const analyzeOutline = (
-  outline: string
-): OutlineAnalysis => {
+export const analyzeOutline = (outline: string): OutlineAnalysis => {
   return {
     score: 90,
     issues: [],
   };
 };
 
-export const refreshAnalysis = (
-  outline: string
-) => {
+export const refreshAnalysis = (outline: string) => {
   return analyzeOutline(outline);
 };
 
-export const getQualityRating = (
-  score: number
-) => {
+export const getQualityRating = (score: number) => {
   if (score >= 90) return "Excellent";
   if (score >= 75) return "Good";
   if (score >= 60) return "Average";

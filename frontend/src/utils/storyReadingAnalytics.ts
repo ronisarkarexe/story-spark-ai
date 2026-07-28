@@ -8,9 +8,7 @@ export interface StoryAnalytics {
   engagementTrend: number[];
 }
 
-export function generateStoryAnalytics(
-  story: string
-): StoryAnalytics {
+export function generateStoryAnalytics(story: string): StoryAnalytics {
   const words = story.trim().split(/\s+/).filter(Boolean).length;
 
   return {

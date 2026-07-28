@@ -18,7 +18,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
       const num = parseInt(e.key, 10);
       if (!Number.isNaN(num) && num >= 1 && num <= 5) setRating(num);
     },
-    [rating, setRating]
+    [rating, setRating],
   );
 
   return (
@@ -249,7 +249,7 @@ const ReviewForm: React.FC = () => {
               </div>
             </div>
 
-                        {/* Rating */}
+            {/* Rating */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
               <label className="mb-3 flex items-center gap-2 text-base font-semibold text-gray-200">
                 <span className="text-blue-400">⭐</span>
@@ -305,7 +305,7 @@ const ReviewForm: React.FC = () => {
                   "Share Review ✨"
                 )}
               </button>
-                        </div>
+            </div>
           </div>
         </div>
       </div>

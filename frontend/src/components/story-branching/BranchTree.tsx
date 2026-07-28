@@ -23,12 +23,18 @@ interface Props {
   onNodeClick?: (nodeId: string) => void;
 }
 
-export const BranchTree: React.FC<Props> = ({ storyId, maxDepth, onNodeClick }) => {
+export const BranchTree: React.FC<Props> = ({
+  storyId,
+  maxDepth,
+  onNodeClick,
+}) => {
   const [nodes, setNodes] = useState<BranchNode[]>([]);
   const [edges, setEdges] = useState<BranchEdge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(["root"]));
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(
+    new Set(["root"]),
+  );
 
   useEffect(() => {
     const loadTree = async () => {
@@ -38,7 +44,9 @@ export const BranchTree: React.FC<Props> = ({ storyId, maxDepth, onNodeClick }) 
         setNodes(tree.nodes);
         setEdges(tree.edges);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load branch tree");
+        setError(
+          err instanceof Error ? err.message : "Failed to load branch tree",
+        );
       } finally {
         setLoading(false);
       }
@@ -71,7 +79,11 @@ export const BranchTree: React.FC<Props> = ({ storyId, maxDepth, onNodeClick }) 
     const isExpanded = expandedNodes.has(node.id);
 
     return (
-      <div key={node.id} className="tree-node" style={{ marginLeft: `${depth * 20}px` }}>
+      <div
+        key={node.id}
+        className="tree-node"
+        style={{ marginLeft: `${depth * 20}px` }}
+      >
         <div className="node-header">
           {childNodes.length > 0 && (
             <button

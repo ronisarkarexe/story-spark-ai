@@ -17,9 +17,7 @@ const IllustrationPreview = ({ scene }: IllustrationPreviewProps) => {
   const [imageFailed, setImageFailed] = useState(false);
   const { cachedSrc } = useCachedImage(scene.imageUrl);
   const shouldShowImage =
-    Boolean(scene.imageUrl) &&
-    scene.imageStatus !== "failed" &&
-    !imageFailed;
+    Boolean(scene.imageUrl) && scene.imageStatus !== "failed" && !imageFailed;
 
   if (shouldShowImage) {
     return (
@@ -48,12 +46,8 @@ const IllustrationPreview = ({ scene }: IllustrationPreviewProps) => {
         <div className="mb-3 text-4xl" aria-hidden="true">
           Image
         </div>
-        <p className="text-lg font-bold text-slate-100">
-          Illustration Preview
-        </p>
-        <p className="mt-2 text-sm leading-6 text-slate-300">
-          {message}
-        </p>
+        <p className="text-lg font-bold text-slate-100">Illustration Preview</p>
+        <p className="mt-2 text-sm leading-6 text-slate-300">{message}</p>
         <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-indigo-200">
           This scene is ready for image generation.
         </p>

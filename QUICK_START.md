@@ -3,6 +3,7 @@
 ## ⏱️ 5-Minute Integration
 
 ### What's Already Done ✅
+
 - All backend files created and registered
 - All frontend components ready
 - All dependencies installed (no new packages!)
@@ -14,11 +15,13 @@
 **File:** `frontend/src/components/stories/stories.component.tsx`
 
 #### Step 1: Import (Line ~20)
+
 ```typescript
 import PromptAnalysisIntegration from "../prompt_analysis/PromptAnalysisIntegration";
 ```
 
 #### Step 2: Add Handler (Line ~500-550)
+
 ```typescript
 const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
   setTextareaValue(enhancedPrompt);
@@ -27,6 +30,7 @@ const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
 ```
 
 #### Step 3: Add JSX (After textarea, before generate button)
+
 ```typescript
 {textareaValue.trim().length >= 10 && (
   <PromptAnalysisIntegration
@@ -98,6 +102,7 @@ POST /api/v1/prompt-analysis/batch       # Bulk processing (up to 10)
 ## Verify Installation
 
 ### Backend
+
 ```bash
 # Should work immediately - no setup needed
 curl http://localhost:4002/api/v1/prompt-analysis/analyze \
@@ -106,6 +111,7 @@ curl http://localhost:4002/api/v1/prompt-analysis/analyze \
 ```
 
 ### Frontend
+
 ```bash
 # Just build - no additional dependencies
 npm run build
@@ -116,34 +122,40 @@ npm run build
 ## Features Overview
 
 ### 🎯 Creativity Score
+
 - Machine learning algorithm
 - 0-100 scale
 - Considers 7 factors
 - AI enhanced with Gemini
 
 ### ✨ Enhanced Prompt
+
 - AI-refined version
 - Better descriptions
 - Improved structure
 - Fallback if API down
 
 ### 💡 Suggestions
+
 - 3-5 recommendations
 - Specific and actionable
 - Impact level shown
 - Expandable details
 
 ### 🔍 Keyword Analysis
+
 - Top 10 keywords
 - Ranked by frequency
 - Visual tag display
 
 ### 😊 Sentiment Analysis
+
 - Positive/Neutral/Negative
 - Percentage breakdown
 - Animated visualizations
 
 ### 📊 Complexity Level
+
 - Simple/Moderate/Complex
 - Helps understand prompt
 - Shown with indicators
@@ -163,15 +175,19 @@ npm run build
 ## Troubleshooting
 
 **Q: Feature not showing?**
+
 - A: Verify import is added and JSX component is rendered
 
 **Q: Analysis fails?**
+
 - A: Check browser console, verify backend is running
 
 **Q: Takes too long?**
+
 - A: Normal - Gemini API takes 3-5 seconds
 
 **Q: Looks different on mobile?**
+
 - A: It's responsive - that's expected
 
 ---

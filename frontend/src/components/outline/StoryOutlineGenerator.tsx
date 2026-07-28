@@ -14,17 +14,14 @@ const StoryOutlineGenerator: React.FC<StoryOutlineGeneratorProps> = ({
   prompt,
 }) => {
   const [outline, setOutline] = useState<StoryOutline>(
-    generateOutline({ prompt } as StoryPrompt)
+    generateOutline({ prompt } as StoryPrompt),
   );
 
   const handleRegenerate = () => {
     setOutline(regenerateOutline({ prompt }));
   };
 
-  const updateField = (
-    field: keyof StoryOutline,
-    value: string | string[]
-  ) => {
+  const updateField = (field: keyof StoryOutline, value: string | string[]) => {
     setOutline((prev) => ({
       ...prev,
       [field]: value,
@@ -45,9 +42,7 @@ const StoryOutlineGenerator: React.FC<StoryOutlineGeneratorProps> = ({
 
         <textarea
           value={outline.introduction}
-          onChange={(e) =>
-            updateField("introduction", e.target.value)
-          }
+          onChange={(e) => updateField("introduction", e.target.value)}
           className="w-full bg-zinc-800 text-white rounded-lg p-3"
           rows={3}
         />
@@ -62,10 +57,7 @@ const StoryOutlineGenerator: React.FC<StoryOutlineGeneratorProps> = ({
         <textarea
           value={outline.plotPoints.join("\n")}
           onChange={(e) =>
-            updateField(
-              "plotPoints",
-              e.target.value.split("\n")
-            )
+            updateField("plotPoints", e.target.value.split("\n"))
           }
           className="w-full bg-zinc-800 text-white rounded-lg p-3"
           rows={5}
@@ -74,15 +66,11 @@ const StoryOutlineGenerator: React.FC<StoryOutlineGeneratorProps> = ({
 
       {/* Climax */}
       <div className="mb-5">
-        <label className="block text-white mb-2 font-semibold">
-          Climax
-        </label>
+        <label className="block text-white mb-2 font-semibold">Climax</label>
 
         <textarea
           value={outline.climax}
-          onChange={(e) =>
-            updateField("climax", e.target.value)
-          }
+          onChange={(e) => updateField("climax", e.target.value)}
           className="w-full bg-zinc-800 text-white rounded-lg p-3"
           rows={3}
         />
@@ -96,9 +84,7 @@ const StoryOutlineGenerator: React.FC<StoryOutlineGeneratorProps> = ({
 
         <textarea
           value={outline.conclusion}
-          onChange={(e) =>
-            updateField("conclusion", e.target.value)
-          }
+          onChange={(e) => updateField("conclusion", e.target.value)}
           className="w-full bg-zinc-800 text-white rounded-lg p-3"
           rows={3}
         />
@@ -112,9 +98,7 @@ const StoryOutlineGenerator: React.FC<StoryOutlineGeneratorProps> = ({
           🔄 Regenerate Outline
         </button>
 
-        <button
-          className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white"
-        >
+        <button className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white">
           ✨ Generate Story
         </button>
       </div>

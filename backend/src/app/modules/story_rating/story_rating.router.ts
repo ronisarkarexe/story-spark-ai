@@ -14,10 +14,10 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   validateRequest(StoryRatingValidation.createOrUpdateRating),
-  StoryRatingController.createOrUpdateRating
+  StoryRatingController.createOrUpdateRating,
 );
 
 // GET /story-rating/top-rated — top rated stories (must be before /:storyId)
@@ -36,9 +36,9 @@ router.delete(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryRatingController.deleteRating
+  StoryRatingController.deleteRating,
 );
 
 export const StoryRatingRouter = router;

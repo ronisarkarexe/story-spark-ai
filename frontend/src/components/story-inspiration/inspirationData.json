@@ -5,7 +5,12 @@
     "author": "Mary Shelley",
     "genre": "Horror",
     "summary": "A brilliant scientist, Victor Frankenstein, succeeds in creating a sapient being in an unorthodox scientific experiment, only to immediately abandon the creature out of fear and disgust, sparking a tragic sequence of revenge and isolation.",
-    "themes": ["Creation & Responsibility", "Scientific Hubris", "Isolation", "Monstrosity"],
+    "themes": [
+      "Creation & Responsibility",
+      "Scientific Hubris",
+      "Isolation",
+      "Monstrosity"
+    ],
     "prompts": [
       "Write a story about a modern software developer who creates an AI that develops consciousness, only to isolate it to prevent public outcry.",
       "Explore the narrative from the perspective of a synthetic being trying to fit into a human society that refuses to acknowledge its rights.",
@@ -19,7 +24,12 @@
     "author": "Arthur Conan Doyle",
     "genre": "Mystery",
     "summary": "A collection of cases solved by the brilliant detective Sherlock Holmes and his companion Dr. John Watson, focusing on observation, deduction, and uncovering secrets hidden in plain sight.",
-    "themes": ["Logic & Deduction", "Justice vs. Law", "Obsessive Focus", "Deciphering Truth"],
+    "themes": [
+      "Logic & Deduction",
+      "Justice vs. Law",
+      "Obsessive Focus",
+      "Deciphering Truth"
+    ],
     "prompts": [
       "An analyst noticed a tiny, recurring discrepancy in public weather records that points to a massive, hidden conspiracy.",
       "Two partners are hired to solve a lockbox heist where the lockbox itself was never opened, but its contents were replaced.",
@@ -33,7 +43,12 @@
     "author": "Lewis Carroll",
     "genre": "Fantasy",
     "summary": "A young girl named Alice falls through a rabbit hole into a subterranean fantasy world populated by peculiar, anthropomorphic creatures and governed by absurd, dreamlike logic.",
-    "themes": ["Curiosity", "Identity & Growth", "Absurdism", "Loss of Childhood Innocence"],
+    "themes": [
+      "Curiosity",
+      "Identity & Growth",
+      "Absurdism",
+      "Loss of Childhood Innocence"
+    ],
     "prompts": [
       "A protagonist stumbles into an antique shop where every item has its own eccentric physics and laws of nature.",
       "Write a story where the characters speak entirely in riddles, and the protagonist must adapt to save themselves from a royal execution.",
@@ -47,7 +62,12 @@
     "author": "H.G. Wells",
     "genre": "Sci-Fi",
     "summary": "An inventor constructs a device that allows him to travel into the far future, where he discovers humanity has split into two distinct species: the gentle Eloi and the subterranean, predatory Morlocks.",
-    "themes": ["Time Travel", "Social Stratification", "Human Evolution", "Entropy"],
+    "themes": [
+      "Time Travel",
+      "Social Stratification",
+      "Human Evolution",
+      "Entropy"
+    ],
     "prompts": [
       "A time traveler lands in a future where time travel itself is the only remaining currency, and history is being actively traded.",
       "Explore the consequences of a device that doesn't let you travel to the future, but lets you view it as a live broadcast.",
@@ -61,7 +81,12 @@
     "author": "Robert Louis Stevenson",
     "genre": "Adventure",
     "summary": "Young Jim Hawkins comes into possession of a legendary pirate treasure map and embarks on a dangerous sea voyage, facing mutiny, gold-lust, and the enigmatic pirate leader Long John Silver.",
-    "themes": ["Greed & Morality", "Coming of Age", "Betrayal & Loyalty", "Seafaring Quests"],
+    "themes": [
+      "Greed & Morality",
+      "Coming of Age",
+      "Betrayal & Loyalty",
+      "Seafaring Quests"
+    ],
     "prompts": [
       "A group of friends discovers a coordinate map hidden inside a defunct digital hard drive, leading them to a forgotten server room.",
       "Write a story centering on a charismatic mentor who is secretly leading a rebellion against the crew they are supposed to train.",
@@ -75,7 +100,12 @@
     "author": "Jane Austen",
     "genre": "Romance",
     "summary": "Set in early 19th-century England, the story follows the turbulent relationship between Elizabeth Bennet, the daughter of a country gentleman, and Fitzwilliam Darcy, a rich aristocratic landowner, as they overcome their respective biases.",
-    "themes": ["First Impressions", "Social Class & Wealth", "Personal Growth", "Love & Marriage"],
+    "themes": [
+      "First Impressions",
+      "Social Class & Wealth",
+      "Personal Growth",
+      "Love & Marriage"
+    ],
     "prompts": [
       "Two rival architects are forced to collaborate on a prestigious landmark design, despite their completely opposite philosophies.",
       "A story about two people who initially dismiss each other at a chaotic tech conference, only to repeatedly cross paths in unexpected scenarios.",
@@ -89,7 +119,12 @@
     "author": "Bram Stoker",
     "genre": "Horror",
     "summary": "The ancient vampire Count Dracula attempts to move from Transylvania to England to find new blood and spread the undead curse, while a small group of men and women led by Professor Abraham Van Helsing fight to stop him.",
-    "themes": ["Good vs. Evil", "Immortality & Decay", "Invasion & Paranoia", "Superstition vs. Reason"],
+    "themes": [
+      "Good vs. Evil",
+      "Immortality & Decay",
+      "Invasion & Paranoia",
+      "Superstition vs. Reason"
+    ],
     "prompts": [
       "A real estate agent is hired to sell an old mansion whose reclusive owner only communicates via email at night and makes unusual requests.",
       "A sleepy coastal town experiences a strange, unexplained wave of sleepwalking and anemia among its youth.",
@@ -103,7 +138,12 @@
     "author": "Jules Verne",
     "genre": "Sci-Fi",
     "summary": "Professor Aronnax, his servant Conseil, and harpooner Ned Land are captured by the mysterious Captain Nemo and taken on an undersea voyage aboard the advanced submarine Nautilus.",
-    "themes": ["Exploration & Discovery", "Freedom vs. Exile", "Advanced Technology", "Man vs. Nature"],
+    "themes": [
+      "Exploration & Discovery",
+      "Freedom vs. Exile",
+      "Advanced Technology",
+      "Man vs. Nature"
+    ],
     "prompts": [
       "An oceanographer discovers a massive, artificial habitat miles below the ice sheets of Jupiter's moon Europa.",
       "Explore the life of an eccentric genius who chooses to live in a self-sustaining city in the clouds, cut off from terrestrial politics.",
@@ -117,7 +157,12 @@
     "author": "Homer",
     "genre": "Adventure",
     "summary": "The legendary Greek hero Odysseus journeys home to Ithaca after the fall of Troy, encountering mythical monsters, divine wrath, and seductive sirens while his wife Penelope fends off suitors at home.",
-    "themes": ["Homecoming & Nostalgia", "Cunning vs. Strength", "Hospitality & Loyalty", "Divine Intervention"],
+    "themes": [
+      "Homecoming & Nostalgia",
+      "Cunning vs. Strength",
+      "Hospitality & Loyalty",
+      "Divine Intervention"
+    ],
     "prompts": [
       "A spacecraft captain spends a decade trying to navigate back to Earth through uncharted, anomaly-ridden sectors of space.",
       "An undercover agent must travel across a country under martial law to reunite with their family, using only their wits and disguises.",
@@ -131,7 +176,12 @@
     "author": "William Shakespeare",
     "genre": "Romance",
     "summary": "Two young star-crossed lovers from feuding families in Verona fall in love at first sight, leading to a series of fateful misunderstandings and a tragic ending that finally reconciles their families.",
-    "themes": ["Fate & Free Will", "Forbidden Passion", "Family Honor & Feuds", "Youthful Impulsiveness"],
+    "themes": [
+      "Fate & Free Will",
+      "Forbidden Passion",
+      "Family Honor & Feuds",
+      "Youthful Impulsiveness"
+    ],
     "prompts": [
       "Two researchers working for fiercely competitive biotech firms fall in love while secretly meeting in a shared university library.",
       "A story about two people from different sides of a city wall that divides two opposing political or cultural factions.",

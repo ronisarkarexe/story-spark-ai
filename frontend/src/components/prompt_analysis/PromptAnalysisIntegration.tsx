@@ -2,7 +2,7 @@
  * Integration component for the Prompt Analysis Feature
  * This wrapper component integrates AI Prompt Enhancement & Creativity Score System
  * into the existing story generation flow.
- * 
+ *
  * Usage in stories.component.tsx:
  * <PromptAnalysisIntegration
  *   prompt={textareaValue}

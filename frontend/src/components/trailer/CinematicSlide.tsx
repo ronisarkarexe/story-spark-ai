@@ -52,86 +52,105 @@ export default function CinematicSlide({
       <ParticleBackground genre={genre} />
 
       {/* Letterbox bars */}
-      <div style={{
-        position: "absolute",
-        top: 0, left: 0, right: 0,
-        height: "12%",
-        background: "#000",
-        zIndex: 10,
-      }} />
-      <div style={{
-        position: "absolute",
-        bottom: 0, left: 0, right: 0,
-        height: "12%",
-        background: "#000",
-        zIndex: 10,
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "12%",
+          background: "#000",
+          zIndex: 10,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "12%",
+          background: "#000",
+          zIndex: 10,
+        }}
+      />
 
       {/* Scene number */}
-      <div style={{
-        position: "absolute",
-        top: "15%",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 20,
-        fontSize: "11px",
-        fontWeight: "700",
-        letterSpacing: "0.3em",
-        color: "rgba(255,255,255,0.4)",
-        textTransform: "uppercase",
-      }}>
+      <div
+        style={{
+          position: "absolute",
+          top: "15%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 20,
+          fontSize: "11px",
+          fontWeight: "700",
+          letterSpacing: "0.3em",
+          color: "rgba(255,255,255,0.4)",
+          textTransform: "uppercase",
+        }}
+      >
         {isFinal ? "THE END" : `Scene ${sceneNumber} of ${totalScenes}`}
       </div>
 
       {/* Main text */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 20,
-        padding: "0 10%",
-      }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 20,
+          padding: "0 10%",
+        }}
+      >
         {isFinal ? (
           <div style={{ textAlign: "center" }}>
-            <div style={{
-              fontSize: "clamp(2rem, 5vw, 4rem)",
-              fontWeight: "900",
-              color: "#ffffff",
-              letterSpacing: "0.05em",
-              textShadow: "0 0 40px rgba(255,255,255,0.5)",
-              lineHeight: "1.2",
-              marginBottom: "16px",
-            }}>
+            <div
+              style={{
+                fontSize: "clamp(2rem, 5vw, 4rem)",
+                fontWeight: "900",
+                color: "#ffffff",
+                letterSpacing: "0.05em",
+                textShadow: "0 0 40px rgba(255,255,255,0.5)",
+                lineHeight: "1.2",
+                marginBottom: "16px",
+              }}
+            >
               {storyTitle}
             </div>
-            <div style={{
-              fontSize: "14px",
-              letterSpacing: "0.3em",
-              color: "rgba(255,255,255,0.5)",
-              textTransform: "uppercase",
-            }}>
+            <div
+              style={{
+                fontSize: "14px",
+                letterSpacing: "0.3em",
+                color: "rgba(255,255,255,0.5)",
+                textTransform: "uppercase",
+              }}
+            >
               A StorySparkAI Original
             </div>
           </div>
         ) : (
-          <p style={{
-            fontSize: "clamp(1.5rem, 3.5vw, 2.8rem)",
-            fontWeight: "700",
-            color: "#ffffff",
-            textAlign: "center",
-            lineHeight: "1.4",
-            fontFamily: "Georgia, serif",
-            textShadow: "0 2px 20px rgba(0,0,0,0.8)",
-            letterSpacing: "0.02em",
-          }}>
+          <p
+            style={{
+              fontSize: "clamp(1.5rem, 3.5vw, 2.8rem)",
+              fontWeight: "700",
+              color: "#ffffff",
+              textAlign: "center",
+              lineHeight: "1.4",
+              fontFamily: "Georgia, serif",
+              textShadow: "0 2px 20px rgba(0,0,0,0.8)",
+              letterSpacing: "0.02em",
+            }}
+          >
             {words.map((word, i) => (
               <span
                 key={i}
                 style={{
                   opacity: i < visibleWords ? 1 : 0,
-                  transform: i < visibleWords ? "translateY(0)" : "translateY(10px)",
+                  transform:
+                    i < visibleWords ? "translateY(0)" : "translateY(10px)",
                   display: "inline-block",
                   transition: "all 0.3s ease",
                   marginRight: "0.3em",
@@ -145,13 +164,16 @@ export default function CinematicSlide({
       </div>
 
       {/* Vignette */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%)",
-        zIndex: 15,
-        pointerEvents: "none",
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%)",
+          zIndex: 15,
+          pointerEvents: "none",
+        }}
+      />
     </div>
   );
 }

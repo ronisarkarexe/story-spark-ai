@@ -10,14 +10,18 @@ const mockRedisClient = {
   on: jest.fn(),
 };
 
-jest.mock("mongoose", () => ({
-  Schema: jest.fn().mockImplementation(() => ({
-    index: jest.fn(),
-  })),
-  model: jest.fn(() => ({
-    findOneAndUpdate: mockFindOneAndUpdate,
-  })),
-}), { virtual: true });
+jest.mock(
+  "mongoose",
+  () => ({
+    Schema: jest.fn().mockImplementation(() => ({
+      index: jest.fn(),
+    })),
+    model: jest.fn(() => ({
+      findOneAndUpdate: mockFindOneAndUpdate,
+    })),
+  }),
+  { virtual: true },
+);
 
 jest.mock("../utils/logger.util", () => ({
   __esModule: true,
@@ -26,12 +30,19 @@ jest.mock("../utils/logger.util", () => ({
   },
 }));
 
-jest.mock("../app/utils/redis.client", () => ({
-  __esModule: true,
-  default: mockRedisClient,
-}), { virtual: true });
+jest.mock(
+  "../app/utils/redis.client",
+  () => ({
+    __esModule: true,
+    default: mockRedisClient,
+  }),
+  { virtual: true },
+);
 
-import { consumeRateLimit, consumeTokenQuota } from "../app/middleware/rate_limit.store";
+import {
+  consumeRateLimit,
+  consumeTokenQuota,
+} from "../app/middleware/rate_limit.store";
 
 describe("consumeRateLimit", () => {
   beforeEach(() => {
@@ -47,7 +58,9 @@ describe("consumeRateLimit", () => {
   });
 
   it("fails closed when the backing store throws", async () => {
-    mockFindOneAndUpdate.mockRejectedValueOnce(new Error("database unavailable"));
+    mockFindOneAndUpdate.mockRejectedValueOnce(
+      new Error("database unavailable"),
+    );
 
     const result = await consumeRateLimit({
       key: "login_127.0.0.1",
@@ -61,7 +74,7 @@ describe("consumeRateLimit", () => {
     expect(result.remaining).toBe(0);
     expect(typeof result.resetAt).toBe("number");
     expect(mockLoggerError).toHaveBeenCalledWith(
-      "Rate limit store error for login_127.0.0.1: database unavailable"
+      "Rate limit store error for login_127.0.0.1: database unavailable",
     );
   });
 

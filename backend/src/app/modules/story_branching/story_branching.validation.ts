@@ -4,8 +4,15 @@ import { z } from "zod";
  * Validation for branch choice
  */
 export const BranchChoiceSchema = z.object({
-  id: z.string().min(1, "Choice ID is required").max(50, "Choice ID too long").optional(),
-  text: z.string().min(1, "Choice text is required").max(500, "Choice text too long"),
+  id: z
+    .string()
+    .min(1, "Choice ID is required")
+    .max(50, "Choice ID too long")
+    .optional(),
+  text: z
+    .string()
+    .min(1, "Choice text is required")
+    .max(500, "Choice text too long"),
   nextSegmentId: z.string().optional(),
 });
 
@@ -14,7 +21,10 @@ export const BranchChoiceSchema = z.object({
  */
 export const CreateBranchingStorySchema = z.object({
   storyId: z.string().min(1, "Story ID is required"),
-  initialContent: z.string().min(1, "Initial content is required").max(10000, "Content too long"),
+  initialContent: z
+    .string()
+    .min(1, "Initial content is required")
+    .max(10000, "Content too long"),
   choices: z
     .array(BranchChoiceSchema)
     .min(1, "At least one choice is required")
@@ -28,7 +38,10 @@ export const CreateBranchingStorySchema = z.object({
 export const CreateSegmentSchema = z.object({
   storyId: z.string().min(1, "Story ID is required"),
   parentSegmentId: z.string().min(1, "Parent segment ID is required"),
-  content: z.string().min(1, "Segment content is required").max(10000, "Content too long"),
+  content: z
+    .string()
+    .min(1, "Segment content is required")
+    .max(10000, "Content too long"),
   choices: z
     .array(BranchChoiceSchema)
     .min(1, "At least one choice is required")
@@ -62,7 +75,9 @@ export const ValidateBranchSchema = z.object({
   checkOrphaned: z.boolean().optional().default(true),
 });
 
-export type CreateBranchingStoryInput = z.infer<typeof CreateBranchingStorySchema>;
+export type CreateBranchingStoryInput = z.infer<
+  typeof CreateBranchingStorySchema
+>;
 export type CreateSegmentInput = z.infer<typeof CreateSegmentSchema>;
 export type RecordChoiceInput = z.infer<typeof RecordChoiceSchema>;
 export type GetBranchTreeInput = z.infer<typeof GetBranchTreeSchema>;

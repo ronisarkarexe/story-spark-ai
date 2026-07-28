@@ -50,7 +50,7 @@ export function ProfileCompletionIndicator({
         hint: "Add at least one social link",
       },
     ],
-    [name, bio, avatar, socialLinks]
+    [name, bio, avatar, socialLinks],
   );
 
   const completedCount = fields.filter((f) => f.completed).length;

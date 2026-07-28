@@ -3,6 +3,7 @@
 ## 🎯 What Was Implemented
 
 A complete story variation comparison feature that allows story authors to:
+
 - Select 2 story versions
 - View character-level differences with color highlighting
 - See side-by-side comparison
@@ -33,12 +34,14 @@ frontend/src/
 ## 🧪 Quick Test Checklist
 
 ### Prerequisites
+
 - [ ] You are logged in as a story author
 - [ ] You have written a story with multiple versions
   - Tip: Edit a story to create a new version
   - Or use "regenerate" if available
 
 ### Test Workflow
+
 1. [ ] Navigate to your story (e.g., `/post/:id`)
 2. [ ] See the blue "📊 Compare Variations" button in the creator panel
 3. [ ] Click the button
@@ -56,6 +59,7 @@ frontend/src/
 15. [ ] Click "✕" to close comparison
 
 ### Edge Cases
+
 - [ ] Selecting same version twice: Compare button disabled + warning message
 - [ ] Story with only 1 version: "No Variations Available" message
 - [ ] Long story (10k+ chars): Comparison still works, might be slightly slower
@@ -63,6 +67,7 @@ frontend/src/
 - [ ] Dark mode: Toggle dark mode, verify colors are correct
 
 ### Visual Verification
+
 - [ ] Green highlighting shows added text
 - [ ] Red highlighting shows removed text (with strikethrough)
 - [ ] Normal text is unchanged
@@ -89,37 +94,41 @@ frontend/src/
 
 ## 🎨 Color Legend
 
-| Color | Meaning |
-|-------|---------|
-| 🟢 Green | Text added in Version 2 |
-| 🔴 Red | Text removed (only in Version 1) |
-| ⚪ White/Gray | Unchanged text |
-| 🔵 Blue | Version numbers, UI elements |
-| 🟣 Purple | Headers, section titles |
+| Color         | Meaning                          |
+| ------------- | -------------------------------- |
+| 🟢 Green      | Text added in Version 2          |
+| 🔴 Red        | Text removed (only in Version 1) |
+| ⚪ White/Gray | Unchanged text                   |
+| 🔵 Blue       | Version numbers, UI elements     |
+| 🟣 Purple     | Headers, section titles          |
 
 ## 📱 Responsive Behavior
 
-| Screen Size | Layout |
-|-------------|--------|
-| Mobile (<640px) | Full-width drawer, stacked panels |
-| Tablet (640-1024px) | 2-column grid for selectors |
-| Desktop (1024px+) | Max-width 3xl, scrollable content |
+| Screen Size         | Layout                            |
+| ------------------- | --------------------------------- |
+| Mobile (<640px)     | Full-width drawer, stacked panels |
+| Tablet (640-1024px) | 2-column grid for selectors       |
+| Desktop (1024px+)   | Max-width 3xl, scrollable content |
 
 ## 🔧 Key Implementation Details
 
 ### Character-Level Diff
+
 Using `jsdiff.diffChars()` for fine-grained comparison:
+
 ```typescript
 const differences = diffChars(version1.content, version2.content);
 // Returns array of {value, added?, removed?}
 ```
 
 ### Three Diff Views
+
 1. **Side-by-side version 1**: Only unchanged/removed content
-2. **Side-by-side version 2**: Only unchanged/added content  
+2. **Side-by-side version 2**: Only unchanged/added content
 3. **Unified diff**: Git-style with +/- prefixes
 
 ### State Management Flow
+
 ```
 showComparison: false → click button → true
   ↓
@@ -176,6 +185,7 @@ import * as StoryComparison from "../components/story-comparison";
 ## 🎓 Learn More
 
 See `STORY_COMPARISON_IMPLEMENTATION.md` for:
+
 - Detailed architecture
 - Component relationships
 - Code structure

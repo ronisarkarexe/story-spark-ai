@@ -4,9 +4,18 @@ const DEFAULT_URL = "https://storysparkai.vercel.app";
 const CANONICAL_DOMAIN = "storysparkai.vercel.app";
 
 const TAGS_TO_CHECK = [
-  { name: "og:url", regex: /<meta\s+property=["']og:url["']\s+content=["']([^"']+)["']/i },
-  { name: "og:image", regex: /<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i },
-  { name: "twitter:image", regex: /<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i },
+  {
+    name: "og:url",
+    regex: /<meta\s+property=["']og:url["']\s+content=["']([^"']+)["']/i,
+  },
+  {
+    name: "og:image",
+    regex: /<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i,
+  },
+  {
+    name: "twitter:image",
+    regex: /<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i,
+  },
 ];
 
 async function main() {
@@ -38,7 +47,9 @@ async function main() {
     }
     const content = match[1];
     if (!content.includes(CANONICAL_DOMAIN)) {
-      console.error(`✗ ${tag.name}: expected domain "${CANONICAL_DOMAIN}" but got "${content}"`);
+      console.error(
+        `✗ ${tag.name}: expected domain "${CANONICAL_DOMAIN}" but got "${content}"`,
+      );
       hasFailure = true;
     } else {
       console.log(`✓ ${tag.name}: ${content}`);
@@ -49,7 +60,7 @@ async function main() {
     console.error(
       "\nOne or more meta tags point to an unexpected domain. " +
         "This usually means the production deployment is stale or " +
-        "tracking the wrong branch/domain in Vercel. See issue #3553."
+        "tracking the wrong branch/domain in Vercel. See issue #3553.",
     );
     process.exit(1);
   }

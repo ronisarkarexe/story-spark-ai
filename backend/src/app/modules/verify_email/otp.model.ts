@@ -46,7 +46,7 @@ const otpSchema = new Schema<IOTP>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Prevent duplicate OTPs for same email

@@ -6,7 +6,7 @@ import { generateCharacterPortrait } from "../utils/character_portrait_generatio
 
 export const generatePortrait = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { id } = req.params;

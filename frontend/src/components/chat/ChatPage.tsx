@@ -1,5 +1,18 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Trash2, Bot, User, Sparkles, RefreshCw, AlertCircle, HelpCircle, BookOpen, Compass, Zap } from "lucide-react";
+import {
+  Send,
+  MessageSquare,
+  Trash2,
+  Bot,
+  User,
+  Sparkles,
+  RefreshCw,
+  AlertCircle,
+  HelpCircle,
+  BookOpen,
+  Compass,
+  Zap,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { chatWithSparky, ISparkyMessage } from "../../services/ai.service";
 import toast from "react-hot-toast";
@@ -60,7 +73,10 @@ const ChatPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSend = async (textToSend: string, existingMessages?: ISparkyMessage[]) => {
+  const handleSend = async (
+    textToSend: string,
+    existingMessages?: ISparkyMessage[],
+  ) => {
     const trimmed = textToSend.trim();
     if (!trimmed || isLoading) return;
 
@@ -74,11 +90,15 @@ const ChatPage: React.FC = () => {
 
     try {
       const response = await chatWithSparky(updatedMessages);
-      const botMessage: ISparkyMessage = { role: "model", content: response.content };
+      const botMessage: ISparkyMessage = {
+        role: "model",
+        content: response.content,
+      };
       setMessages((prev) => [...prev, botMessage]);
     } catch (err: any) {
       console.error(err);
-      const errMsg = err.message || "Failed to communicate with Sparky AI service.";
+      const errMsg =
+        err.message || "Failed to communicate with Sparky AI service.";
       setErrorState(errMsg);
       toast.error(errMsg);
     } finally {
@@ -132,13 +152,34 @@ const ChatPage: React.FC = () => {
 
       // Handle simple headers
       if (formatted.startsWith("### ")) {
-        return <h4 key={idx} className="text-sm font-bold text-slate-900 dark:text-white mt-3 mb-1">{formatted.replace("### ", "")}</h4>;
+        return (
+          <h4
+            key={idx}
+            className="text-sm font-bold text-slate-900 dark:text-white mt-3 mb-1"
+          >
+            {formatted.replace("### ", "")}
+          </h4>
+        );
       }
       if (formatted.startsWith("## ")) {
-        return <h3 key={idx} className="text-base font-bold text-slate-900 dark:text-white mt-4 mb-1">{formatted.replace("## ", "")}</h3>;
+        return (
+          <h3
+            key={idx}
+            className="text-base font-bold text-slate-900 dark:text-white mt-4 mb-1"
+          >
+            {formatted.replace("## ", "")}
+          </h3>
+        );
       }
       if (formatted.startsWith("# ")) {
-        return <h2 key={idx} className="text-lg font-extrabold text-slate-900 dark:text-white mt-4 mb-2">{formatted.replace("# ", "")}</h2>;
+        return (
+          <h2
+            key={idx}
+            className="text-lg font-extrabold text-slate-900 dark:text-white mt-4 mb-2"
+          >
+            {formatted.replace("# ", "")}
+          </h2>
+        );
       }
 
       // Handle list items
@@ -156,7 +197,14 @@ const ChatPage: React.FC = () => {
         if (match.index > lastIndex) {
           parts.push(formatted.substring(lastIndex, match.index));
         }
-        parts.push(<strong key={match.index} className="font-bold text-indigo-600 dark:text-indigo-400">{match[1]}</strong>);
+        parts.push(
+          <strong
+            key={match.index}
+            className="font-bold text-indigo-600 dark:text-indigo-400"
+          >
+            {match[1]}
+          </strong>,
+        );
         lastIndex = boldRegex.lastIndex;
       }
       if (lastIndex < formatted.length) {
@@ -167,14 +215,20 @@ const ChatPage: React.FC = () => {
 
       if (isBullet) {
         return (
-          <li key={idx} className="ml-4 list-disc text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+          <li
+            key={idx}
+            className="ml-4 list-disc text-sm leading-relaxed text-slate-700 dark:text-slate-300"
+          >
             {contentNode}
           </li>
         );
       }
 
       return (
-        <p key={idx} className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 min-h-[1rem]">
+        <p
+          key={idx}
+          className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 min-h-[1rem]"
+        >
           {contentNode}
         </p>
       );
@@ -192,7 +246,8 @@ const ChatPage: React.FC = () => {
           Chat with Sparky
         </h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Your creative co-writer and assistant. Brainstorm plots, refine characters, and get instant feedback.
+          Your creative co-writer and assistant. Brainstorm plots, refine
+          characters, and get instant feedback.
         </p>
       </div>
 
@@ -205,12 +260,16 @@ const ChatPage: React.FC = () => {
               Meet Sparky
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Sparky is specifically trained on StorySparkAI features. He can help you navigate the editor, construct branching choices, suggest complex story prompts, or simply co-write alongside you!
+              Sparky is specifically trained on StorySparkAI features. He can
+              help you navigate the editor, construct branching choices, suggest
+              complex story prompts, or simply co-write alongside you!
             </p>
             <div className="mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 space-y-3">
               <div className="flex items-start gap-2.5 text-xs text-slate-500 dark:text-slate-400">
                 <Zap className="h-4 w-4 text-violet-500 shrink-0 mt-0.5" />
-                <span>Supports context-aware history (remembers up to 10 messages)</span>
+                <span>
+                  Supports context-aware history (remembers up to 10 messages)
+                </span>
               </div>
               <div className="flex items-start gap-2.5 text-xs text-slate-500 dark:text-slate-400">
                 <BookOpen className="h-4 w-4 text-pink-500 shrink-0 mt-0.5" />
@@ -220,7 +279,9 @@ const ChatPage: React.FC = () => {
           </div>
 
           <div className="rounded-3xl border border-slate-200/80 bg-white/60 p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.06] backdrop-blur-xl">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Suggested Topics</h2>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
+              Suggested Topics
+            </h2>
             <div className="space-y-2">
               {STARTER_PROMPTS.map((prompt, idx) => {
                 const Icon = prompt.icon;
@@ -252,15 +313,21 @@ const ChatPage: React.FC = () => {
                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-950"></span>
               </div>
               <div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Sparky</h3>
-                <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">StorySpark AI Assistant</span>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  Sparky
+                </h3>
+                <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  StorySpark AI Assistant
+                </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               {isConfirmingClear ? (
                 <div className="flex items-center gap-1.5 bg-red-50 dark:bg-red-950/20 p-1 rounded-xl border border-red-200 dark:border-red-900/30">
-                  <span className="text-[10px] font-bold text-red-600 dark:text-red-400 px-1">Clear chat?</span>
+                  <span className="text-[10px] font-bold text-red-600 dark:text-red-400 px-1">
+                    Clear chat?
+                  </span>
                   <button
                     onClick={confirmClear}
                     className="px-2 py-1 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 transition-colors"
@@ -295,9 +362,13 @@ const ChatPage: React.FC = () => {
                   <MessageSquare size={32} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Start a Conversation</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Start a Conversation
+                  </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
-                    Ask Sparky anything about writing. You can try the quick starting suggestions on the left, or type your own question below.
+                    Ask Sparky anything about writing. You can try the quick
+                    starting suggestions on the left, or type your own question
+                    below.
                   </p>
                 </div>
 
@@ -325,21 +396,33 @@ const ChatPage: React.FC = () => {
                 key={index}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
               >
-                <div className={`flex gap-3 max-w-[85%] sm:max-w-[75%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                  <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center shadow-sm ${
-                    msg.role === "user"
-                      ? "bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                  }`}>
-                    {msg.role === "user" ? <User size={16} /> : <Bot size={16} />}
-                  </div>
-                  <div className={`p-4 rounded-2xl text-sm space-y-2 shadow-sm ${
-                    msg.role === "user"
-                      ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-tr-none"
-                      : "bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-tl-none text-slate-900 dark:text-slate-100"
-                  }`}>
+                <div
+                  className={`flex gap-3 max-w-[85%] sm:max-w-[75%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center shadow-sm ${
+                      msg.role === "user"
+                        ? "bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
                     {msg.role === "user" ? (
-                      <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      <User size={16} />
+                    ) : (
+                      <Bot size={16} />
+                    )}
+                  </div>
+                  <div
+                    className={`p-4 rounded-2xl text-sm space-y-2 shadow-sm ${
+                      msg.role === "user"
+                        ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-tr-none"
+                        : "bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-tl-none text-slate-900 dark:text-slate-100"
+                    }`}
+                  >
+                    {msg.role === "user" ? (
+                      <p className="leading-relaxed whitespace-pre-wrap">
+                        {msg.content}
+                      </p>
                     ) : (
                       renderMessageContent(msg.content)
                     )}
@@ -355,7 +438,9 @@ const ChatPage: React.FC = () => {
                     <Bot size={16} />
                   </div>
                   <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-4 rounded-2xl rounded-tl-none flex items-center gap-2">
-                    <span className="text-xs text-slate-400 font-medium">Sparky is typing</span>
+                    <span className="text-xs text-slate-400 font-medium">
+                      Sparky is typing
+                    </span>
                     <span className="flex gap-1">
                       <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0s]"></span>
                       <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>

@@ -2,7 +2,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { useGetUserCollectionsQuery, useCreateCollectionMutation } from "../../redux/apis/collection.api";
+import {
+  useGetUserCollectionsQuery,
+  useCreateCollectionMutation,
+} from "../../redux/apis/collection.api";
 
 interface Props {
   userId: string;
@@ -11,7 +14,8 @@ interface Props {
 
 const UserCollectionsTab: React.FC<Props> = ({ userId, isOwner }) => {
   const { data: collections, isLoading } = useGetUserCollectionsQuery(userId);
-  const [createCollection, { isLoading: isCreating }] = useCreateCollectionMutation();
+  const [createCollection, { isLoading: isCreating }] =
+    useCreateCollectionMutation();
 
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
@@ -19,9 +23,16 @@ const UserCollectionsTab: React.FC<Props> = ({ userId, isOwner }) => {
   const [visibility, setVisibility] = useState<"public" | "private">("public");
 
   const handleCreate = async () => {
-    if (!title.trim()) { toast.error("Title is required."); return; }
+    if (!title.trim()) {
+      toast.error("Title is required.");
+      return;
+    }
     try {
-      await createCollection({ title: title.trim(), description: description.trim() || undefined, visibility }).unwrap();
+      await createCollection({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        visibility,
+      }).unwrap();
       toast.success("Collection created!");
       setShowCreate(false);
       setTitle("");
@@ -53,7 +64,9 @@ const UserCollectionsTab: React.FC<Props> = ({ userId, isOwner }) => {
             </button>
           ) : (
             <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 space-y-3 max-w-lg">
-              <h3 className="font-bold text-white text-sm">Create Collection</h3>
+              <h3 className="font-bold text-white text-sm">
+                Create Collection
+              </h3>
               <input
                 type="text"
                 placeholder="Collection title *"
@@ -122,15 +135,23 @@ const UserCollectionsTab: React.FC<Props> = ({ userId, isOwner }) => {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
-                          <div key={story._id} className="w-full h-full bg-indigo-900/40 flex items-center justify-center text-2xl">
+                          <div
+                            key={story._id}
+                            className="w-full h-full bg-indigo-900/40 flex items-center justify-center text-2xl"
+                          >
                             📖
                           </div>
-                        )
+                        ),
                       )}
                       {/* Fill remaining slots */}
-                      {Array.from({ length: 3 - previewStories.length }).map((_, i) => (
-                        <div key={`empty-${i}`} className="w-full h-full bg-slate-800/40" />
-                      ))}
+                      {Array.from({ length: 3 - previewStories.length }).map(
+                        (_, i) => (
+                          <div
+                            key={`empty-${i}`}
+                            className="w-full h-full bg-slate-800/40"
+                          />
+                        ),
+                      )}
                     </div>
                   ) : (
                     <span className="text-4xl">📚</span>
@@ -172,7 +193,8 @@ const UserCollectionsTab: React.FC<Props> = ({ userId, isOwner }) => {
           </h3>
           {isOwner && (
             <p className="text-slate-500 text-sm mt-1">
-              Create your first collection above to showcase your stories as a series.
+              Create your first collection above to showcase your stories as a
+              series.
             </p>
           )}
         </div>

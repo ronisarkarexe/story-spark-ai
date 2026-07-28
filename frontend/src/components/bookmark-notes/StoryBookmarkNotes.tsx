@@ -10,15 +10,10 @@ interface Props {
   storyId: string;
 }
 
-export default function StoryBookmarkNotes({
-  storyId,
-}: Props) {
+export default function StoryBookmarkNotes({ storyId }: Props) {
+  const [notes, setNotes] = useState<BookmarkNote[]>([]);
 
-  const [notes, setNotes] =
-    useState<BookmarkNote[]>([]);
-
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     setNotes(loadBookmarkNotes());
@@ -30,7 +25,7 @@ export default function StoryBookmarkNotes({
 
   const filtered = useMemo(
     () => searchBookmarkNotes(notes, search),
-    [notes, search]
+    [notes, search],
   );
 
   const addNote = () => {
@@ -56,12 +51,8 @@ export default function StoryBookmarkNotes({
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-
       <div className="flex items-center justify-between mb-6">
-
-        <h2 className="text-2xl font-bold text-white">
-          🔖 Bookmark Notes
-        </h2>
+        <h2 className="text-2xl font-bold text-white">🔖 Bookmark Notes</h2>
 
         <button
           onClick={addNote}
@@ -69,48 +60,29 @@ export default function StoryBookmarkNotes({
         >
           Add Note
         </button>
-
       </div>
 
       <input
         type="text"
         placeholder="Search notes..."
         value={search}
-        onChange={(e) =>
-          setSearch(e.target.value)
-        }
+        onChange={(e) => setSearch(e.target.value)}
         className="mb-6 w-full rounded border border-zinc-700 bg-zinc-800 p-2 text-white"
       />
 
       <div className="space-y-4">
-
         {filtered.map((item) => (
+          <div key={item.id} className="rounded-lg border border-zinc-700 p-4">
+            <h3 className="font-semibold text-white">{item.title}</h3>
 
-          <div
-            key={item.id}
-            className="rounded-lg border border-zinc-700 p-4"
-          >
-
-            <h3 className="font-semibold text-white">
-              {item.title}
-            </h3>
-
-            <p className="mt-2 text-gray-300">
-              {item.note}
-            </p>
+            <p className="mt-2 text-gray-300">{item.note}</p>
 
             <p className="mt-2 text-xs text-gray-500">
-              {new Date(
-                item.createdAt
-              ).toLocaleString()}
+              {new Date(item.createdAt).toLocaleString()}
             </p>
-
           </div>
-
         ))}
-
       </div>
-
     </div>
   );
 }

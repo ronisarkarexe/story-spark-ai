@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react";
-import {
-  extractStoryEvents,
-  StoryEvent,
-} from "../../utils/storyTimeline";
+import { extractStoryEvents, StoryEvent } from "../../utils/storyTimeline";
 
 interface Props {
   story: string;
 }
 
-export default function StoryTimelineVisualization({
-  story,
-}: Props) {
+export default function StoryTimelineVisualization({ story }: Props) {
   const [events, setEvents] = useState<StoryEvent[]>([]);
   const [activeEvent, setActiveEvent] = useState<number | null>(null);
 
@@ -20,10 +15,7 @@ export default function StoryTimelineVisualization({
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-
-      <h2 className="text-2xl font-bold text-white mb-6">
-        📅 Story Timeline
-      </h2>
+      <h2 className="text-2xl font-bold text-white mb-6">📅 Story Timeline</h2>
 
       <div className="space-y-4">
         {events.map((event) => (
@@ -36,17 +28,12 @@ export default function StoryTimelineVisualization({
                 : "border-zinc-700 bg-zinc-800 text-gray-300"
             }`}
           >
-            <h3 className="font-semibold">
-              {event.title}
-            </h3>
+            <h3 className="font-semibold">{event.title}</h3>
 
-            <p className="mt-2 text-sm line-clamp-2">
-              {event.content}
-            </p>
+            <p className="mt-2 text-sm line-clamp-2">{event.content}</p>
           </button>
         ))}
       </div>
-
     </div>
   );
 }

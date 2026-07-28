@@ -12,8 +12,18 @@ export interface WritingMetrics {
 }
 
 const BLOCKED_WORDS = [
-  "ugh", "stuck", "help", "idk", "nothing", "blank",
-  "no idea", "can't", "cannot", "hmm", "dunno", "whatever",
+  "ugh",
+  "stuck",
+  "help",
+  "idk",
+  "nothing",
+  "blank",
+  "no idea",
+  "can't",
+  "cannot",
+  "hmm",
+  "dunno",
+  "whatever",
 ];
 
 const WINDOW_SECONDS = 30;
@@ -23,17 +33,19 @@ interface UseWritingMetricsOptions {
   onSessionReady: (session: WritingMetrics[]) => void;
 }
 
-export function useWritingMetrics({ onSessionReady }: UseWritingMetricsOptions) {
-  const totalKeys      = useRef(0);
-  const backspaceKeys  = useRef(0);
-  const regenCount     = useRef(0);
-  const sessionStart   = useRef<number | null>(null);
-  const firstKeyTime   = useRef<number | null>(null);
-  const lastKeyTime    = useRef<number | null>(null);
-  const longestPause   = useRef(0);
-  const windowBuffer   = useRef<WritingMetrics[]>([]);
-  const windowTimer    = useRef<ReturnType<typeof setInterval> | null>(null);
-  const currentPrompt  = useRef("");
+export function useWritingMetrics({
+  onSessionReady,
+}: UseWritingMetricsOptions) {
+  const totalKeys = useRef(0);
+  const backspaceKeys = useRef(0);
+  const regenCount = useRef(0);
+  const sessionStart = useRef<number | null>(null);
+  const firstKeyTime = useRef<number | null>(null);
+  const lastKeyTime = useRef<number | null>(null);
+  const longestPause = useRef(0);
+  const windowBuffer = useRef<WritingMetrics[]>([]);
+  const windowTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentPrompt = useRef("");
 
   function countWords(text: string) {
     return text.trim().split(/\s+/).filter(Boolean).length;
@@ -56,26 +68,27 @@ export function useWritingMetrics({ onSessionReady }: UseWritingMetricsOptions) 
     const timeToSubmit = firstKeyTime.current
       ? Math.round((now - firstKeyTime.current) / 1000)
       : 0;
-    const ratio = totalKeys.current > 0
-      ? Math.round((backspaceKeys.current / totalKeys.current) * 100)
-      : 0;
+    const ratio =
+      totalKeys.current > 0
+        ? Math.round((backspaceKeys.current / totalKeys.current) * 100)
+        : 0;
 
     const snapshot: WritingMetrics = {
-      prompt_length:      countWords(currentPrompt.current),
-      time_to_submit:     timeToSubmit,
+      prompt_length: countWords(currentPrompt.current),
+      time_to_submit: timeToSubmit,
       regeneration_count: regenCount.current,
-      session_duration:   Math.min(sessionDuration, 120),
-      backspace_ratio:    ratio,
-      pause_duration:     longestPause.current,
-      confidence_score:   deriveConfidence(regenCount.current),
+      session_duration: Math.min(sessionDuration, 120),
+      backspace_ratio: ratio,
+      pause_duration: longestPause.current,
+      confidence_score: deriveConfidence(regenCount.current),
       blocked_word_count: countBlockedWords(currentPrompt.current),
     };
 
     windowBuffer.current.push(snapshot);
-    totalKeys.current     = 0;
+    totalKeys.current = 0;
     backspaceKeys.current = 0;
-    longestPause.current  = 0;
-    lastKeyTime.current   = null;
+    longestPause.current = 0;
+    lastKeyTime.current = null;
 
     if (windowBuffer.current.length >= SEQ_LEN) {
       onSessionReady([...windowBuffer.current]);
@@ -87,28 +100,34 @@ export function useWritingMetrics({ onSessionReady }: UseWritingMetricsOptions) 
     currentPrompt.current = text;
   }, []);
 
-  const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-  const now = Date.now();
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const now = Date.now();
 
-  if (!firstKeyTime.current) {
-    firstKeyTime.current = now;
-    sessionStart.current = now;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- snapshotWindow uses refs only, stable at runtime
-    windowTimer.current = setInterval(snapshotWindow, WINDOW_SECONDS * 1000);
-  }
-    if (lastKeyTime.current) {
-      const pauseSec = (now - lastKeyTime.current) / 1000;
-      if (pauseSec > longestPause.current) {
-        longestPause.current = Math.round(pauseSec);
+      if (!firstKeyTime.current) {
+        firstKeyTime.current = now;
+        sessionStart.current = now;
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- snapshotWindow uses refs only, stable at runtime
+        windowTimer.current = setInterval(
+          snapshotWindow,
+          WINDOW_SECONDS * 1000,
+        );
       }
-    }
-    lastKeyTime.current = now;
-    totalKeys.current++;
+      if (lastKeyTime.current) {
+        const pauseSec = (now - lastKeyTime.current) / 1000;
+        if (pauseSec > longestPause.current) {
+          longestPause.current = Math.round(pauseSec);
+        }
+      }
+      lastKeyTime.current = now;
+      totalKeys.current++;
 
-    if (e.key === "Backspace" || e.key === "Delete") {
-      backspaceKeys.current++;
-    }
-  }, []);
+      if (e.key === "Backspace" || e.key === "Delete") {
+        backspaceKeys.current++;
+      }
+    },
+    [],
+  );
 
   const onRegenerate = useCallback(() => {
     regenCount.current++;
@@ -116,15 +135,15 @@ export function useWritingMetrics({ onSessionReady }: UseWritingMetricsOptions) 
 
   const reset = useCallback(() => {
     if (windowTimer.current) clearInterval(windowTimer.current);
-    windowTimer.current   = null;
-    totalKeys.current     = 0;
+    windowTimer.current = null;
+    totalKeys.current = 0;
     backspaceKeys.current = 0;
-    regenCount.current    = 0;
-    longestPause.current  = 0;
-    firstKeyTime.current  = null;
-    lastKeyTime.current   = null;
-    sessionStart.current  = null;
-    windowBuffer.current  = [];
+    regenCount.current = 0;
+    longestPause.current = 0;
+    firstKeyTime.current = null;
+    lastKeyTime.current = null;
+    sessionStart.current = null;
+    windowBuffer.current = [];
     currentPrompt.current = "";
   }, []);
 

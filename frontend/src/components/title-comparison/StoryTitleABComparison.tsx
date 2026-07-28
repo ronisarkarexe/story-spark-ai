@@ -1,7 +1,5 @@
 import { useMemo } from "react";
-import {
-  generateStoryTitleOptions,
-} from "../../utils/storyTitleABComparison";
+import { generateStoryTitleOptions } from "../../utils/storyTitleABComparison";
 
 interface Props {
   story: string;
@@ -14,17 +12,11 @@ export default function StoryTitleABComparison({
   onApplyTitle,
   onRegenerate,
 }: Props) {
-
-  const titles = useMemo(
-    () => generateStoryTitleOptions(story),
-    [story]
-  );
+  const titles = useMemo(() => generateStoryTitleOptions(story), [story]);
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-
       <div className="mb-6 flex items-center justify-between">
-
         <h2 className="text-2xl font-bold text-white">
           🏷️ AI Story Title A/B Comparison
         </h2>
@@ -35,37 +27,22 @@ export default function StoryTitleABComparison({
         >
           Regenerate
         </button>
-
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-
         {titles.map((title) => (
-
-          <div
-            key={title.id}
-            className="rounded-lg border border-zinc-700 p-5"
-          >
-
-            <h3 className="text-xl font-bold text-white">
-              {title.title}
-            </h3>
+          <div key={title.id} className="rounded-lg border border-zinc-700 p-5">
+            <h3 className="text-xl font-bold text-white">{title.title}</h3>
 
             <div className="mt-4 space-y-2 text-sm text-gray-300">
-
               <p>Creativity: {title.creativity}/100</p>
               <p>Relevance: {title.relevance}/100</p>
               <p>Memorability: {title.memorability}/100</p>
               <p>Emotional Appeal: {title.emotionalAppeal}/100</p>
-
             </div>
 
             <div className="mt-4 rounded bg-zinc-800 p-3">
-
-              <p className="text-sm text-indigo-300">
-                {title.feedback}
-              </p>
-
+              <p className="text-sm text-indigo-300">{title.feedback}</p>
             </div>
 
             <button
@@ -74,13 +51,9 @@ export default function StoryTitleABComparison({
             >
               Apply Title
             </button>
-
           </div>
-
         ))}
-
       </div>
-
     </div>
   );
 }

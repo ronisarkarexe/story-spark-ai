@@ -17,7 +17,10 @@ import { formatReadingStats } from "../../utils/story-utils";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import toast, { Toaster } from "react-hot-toast";
 import StoryTranslator from "../translate/StoryTranslator";
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+import AudioPlayer, {
+  type AudioPlayerHandle,
+  type NarrationPlaybackState,
+} from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
 import ExportStoryModal from "./ExportStoryModal";
 
@@ -88,23 +91,27 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   setStories,
 }) => {
   const [selectedStory, setSelectedStory] = useState<IStories | null>(
-    stories && stories[0]
+    stories && stories[0],
   );
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
+  const [characterProfiles, setCharacterProfiles] = useState<
+    CharacterProfile[]
+  >([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [showExportModal, setShowExportModal] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
-  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
+  const [showGenreTransformation, setShowGenreTransformation] =
+    useState<boolean>(false);
 
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
   const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
-  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+  const [narrationState, setNarrationState] =
+    useState<NarrationPlaybackState>("idle");
 
   const sentenceSegments = useMemo(() => {
     return buildSentenceSegments(selectedStory?.content ?? "");
@@ -133,79 +140,74 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     }
   }, [stories]);
 
-useEffect(() => {
-  if (!selectedStory || !isLogin) return;
+  useEffect(() => {
+    if (!selectedStory || !isLogin) return;
 
-  const timer = setTimeout(async () => {
-    const post: IPost = {
-      ...selectedStory,
-      topic: selectTopics,
-    };
+    const timer = setTimeout(async () => {
+      const post: IPost = {
+        ...selectedStory,
+        topic: selectTopics,
+      };
 
-    try {
-      await createPost(post).unwrap();
-      toast.success("Story auto-saved!");
-    } catch (error) {
-      console.error("Auto-save failed", error);
-    }
-  }, 1500);
+      try {
+        await createPost(post).unwrap();
+        toast.success("Story auto-saved!");
+      } catch (error) {
+        console.error("Auto-save failed", error);
+      }
+    }, 1500);
 
-  return () => clearTimeout(timer);
-}, [selectedStory, isLogin, selectTopics]);
+    return () => clearTimeout(timer);
+  }, [selectedStory, isLogin, selectTopics]);
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
 
   const handleRestoreVersion = (restoredContent: string) => {
-  if (!selectedStory) return;
+    if (!selectedStory) return;
 
-  const updatedStory = {
-    ...selectedStory,
-    content: restoredContent,
+    const updatedStory = {
+      ...selectedStory,
+      content: restoredContent,
+    };
+
+    setSelectedStory(updatedStory);
+
+    setStories(
+      stories.map((story) =>
+        story.uuid === selectedStory.uuid ? updatedStory : story,
+      ),
+    );
+
+    toast.success("Story version restored successfully!");
   };
-
-  setSelectedStory(updatedStory);
-
-  setStories(
-    stories.map((story) =>
-      story.uuid === selectedStory.uuid
-        ? updatedStory
-        : story
-    )
-  );
-
-  toast.success("Story version restored successfully!");
-};
 
   const handleTopicClick = (index: number) => {
     const updatedTopics = [...topics];
     updatedTopics[index].selected = !updatedTopics[index].selected;
     setTopics(updatedTopics);
   };
-const handleCopyStory = async () => {
-  if (selectedStory?.content) {
-    await navigator.clipboard.writeText(selectedStory.content);
-    setIsCopied(true);
-    toast.success("Story copied!");
-    setTimeout(() => setIsCopied(false), 2000);
-       }
-    };
+  const handleCopyStory = async () => {
+    if (selectedStory?.content) {
+      await navigator.clipboard.writeText(selectedStory.content);
+      setIsCopied(true);
+      toast.success("Story copied!");
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
+  const handleGenerateCharacterProfile = async () => {
+    if (!selectedStory) {
+      toast.error("No story selected!");
+      return;
+    }
 
-const handleGenerateCharacterProfile = async () => {
-  if (!selectedStory) {
-    toast.error("No story selected!");
-    return;
-  }
+    setProfileLoading(true);
 
-  setProfileLoading(true);
-
-  try {
-    // Replace with your backend API endpoint
-    const response = await fetch(
-      "/api/generate-character-profile",
-      {
+    try {
+      // Replace with your backend API endpoint
+      const response = await fetch("/api/generate-character-profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -213,21 +215,20 @@ const handleGenerateCharacterProfile = async () => {
         body: JSON.stringify({
           story: selectedStory.content,
         }),
-      }
-    );
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    setCharacterProfiles(data.data);
+      setCharacterProfiles(data.data);
 
-    toast.success("Character profiles generated!");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to generate profiles.");
-  } finally {
-    setProfileLoading(false);
-  }
-};
+      toast.success("Character profiles generated!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate profiles.");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const handelPublishStory = async () => {
     if (!isLogin) {
@@ -251,32 +252,36 @@ const handleGenerateCharacterProfile = async () => {
         setSelectedStory(null);
       }
     } catch (error) {
-      const message = error?.data?.message || error?.message || "Something went wrong. Please try again.";
+      const message =
+        error?.data?.message ||
+        error?.message ||
+        "Something went wrong. Please try again.";
       toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
-if (!selectedStory) {
-  return null;
-}
+  if (!selectedStory) {
+    return null;
+  }
 
-if (!stories || stories.length === 0) {
-  return (
-    <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
-      <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg transition-all duration-500 ease-in-out mx-auto">
-        <div className="text-5xl mb-6 animate-pulse">✨</div>
-        <h3 className="text-2xl font-bold text-slate-200 tracking-wide">
-          Your AI-generated story will appear here
-        </h3>
-        <p className="mt-3 text-base text-slate-400">
-          Enter a creative prompt above and let StorySparkAI craft something magical.
-        </p>
+  if (!stories || stories.length === 0) {
+    return (
+      <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg transition-all duration-500 ease-in-out mx-auto">
+          <div className="text-5xl mb-6 animate-pulse">✨</div>
+          <h3 className="text-2xl font-bold text-slate-200 tracking-wide">
+            Your AI-generated story will appear here
+          </h3>
+          <p className="mt-3 text-base text-slate-400">
+            Enter a creative prompt above and let StorySparkAI craft something
+            magical.
+          </p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
@@ -332,7 +337,7 @@ if (!stories || stories.length === 0) {
             {/* Ambient AI Glow inside the story card */}
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            
+
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-slate-200 relative z-10">
                 Generated Story
@@ -384,103 +389,105 @@ if (!stories || stories.length === 0) {
                 </button>
               </div>
             </div>
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
+            <div
+              id="story-content"
+              className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10"
+            >
               <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence =
-                      isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
+                {sentenceSegments.length > 0
+                  ? sentenceSegments.map((segment: StorySentenceSegment) => {
+                      const isActiveSentence =
+                        isNarrationActive &&
+                        narrationWordIndex >= segment.startWordIndex &&
+                        narrationWordIndex <= segment.endWordIndex;
 
-                    const rawParts = segment.text.split(/(\s+)/);
-                    let wordOffset = 0;
+                      const rawParts = segment.text.split(/(\s+)/);
+                      let wordOffset = 0;
 
-                    return (
-                      <span
-                        key={segment.id}
-                        className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
-                      >
-                        {rawParts.map((part, partIdx) => {
-                          if (part === "") return null;
-                          if (/^\s+$/.test(part)) {
-                            return part;
+                      return (
+                        <span
+                          key={segment.id}
+                          className={
+                            isActiveSentence
+                              ? "text-slate-100 font-medium transition-colors duration-300"
+                              : undefined
                           }
+                        >
+                          {rawParts.map((part, partIdx) => {
+                            if (part === "") return null;
+                            if (/^\s+$/.test(part)) {
+                              return part;
+                            }
 
-                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
-                          wordOffset++;
+                            const absoluteWordIndex =
+                              segment.startWordIndex + wordOffset;
+                            wordOffset++;
 
-                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+                            const isActiveWord =
+                              isNarrationActive &&
+                              narrationWordIndex === absoluteWordIndex;
 
-                          if (isActiveWord) {
-                            return (
-                              <span
-                                key={partIdx}
-                                className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                                data-active-word="true"
-                              >
-                                {part}
-                              </span>
-                            );
-                          }
+                            if (isActiveWord) {
+                              return (
+                                <span
+                                  key={partIdx}
+                                  className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                                  data-active-word="true"
+                                >
+                                  {part}
+                                </span>
+                              );
+                            }
 
+                            return <span key={partIdx}>{part}</span>;
+                          })}
+                        </span>
+                      );
+                    })
+                  : (() => {
+                      if (!selectedStory) return null;
+                      const rawParts = selectedStory.content.split(/(\s+)/);
+                      let wordOffset = 0;
+                      return rawParts.map((part, partIdx) => {
+                        if (part === "") return null;
+                        if (/^\s+$/.test(part)) {
+                          return part;
+                        }
+
+                        const absoluteWordIndex = wordOffset;
+                        wordOffset++;
+
+                        const isActiveWord =
+                          isNarrationActive &&
+                          narrationWordIndex === absoluteWordIndex;
+
+                        if (isActiveWord) {
                           return (
-                            <span key={partIdx}>
+                            <span
+                              key={partIdx}
+                              className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                              data-active-word="true"
+                            >
                               {part}
                             </span>
                           );
-                        })}
-                      </span>
-                    );
-                  })
-                ) : (
-                  (() => {
-                    if (!selectedStory) return null;
-                    const rawParts = selectedStory.content.split(/(\s+)/);
-                    let wordOffset = 0;
-                    return rawParts.map((part, partIdx) => {
-                      if (part === "") return null;
-                      if (/^\s+$/.test(part)) {
-                        return part;
-                      }
+                        }
 
-                      const absoluteWordIndex = wordOffset;
-                      wordOffset++;
-
-                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                      if (isActiveWord) {
-                        return (
-                          <span
-                            key={partIdx}
-                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                            data-active-word="true"
-                          >
-                            {part}
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <span key={partIdx}>
-                          {part}
-                        </span>
-                      );
-                    });
-                  })()
-                )}
+                        return <span key={partIdx}>{part}</span>;
+                      });
+                    })()}
               </p>
             </div>
 
             {selectedStory && (
               <>
                 <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
-                  <AudioPlayer 
-                    ref={audioPlayerRef} 
-                    text={selectedStory.content} 
-                    title={selectedStory.title} 
-                    onWordIndexChange={setNarrationWordIndex} 
-                    onPlaybackStateChange={setNarrationState} 
+                  <AudioPlayer
+                    ref={audioPlayerRef}
+                    text={selectedStory.content}
+                    title={selectedStory.title}
+                    onWordIndexChange={setNarrationWordIndex}
+                    onPlaybackStateChange={setNarrationState}
                   />
                 </div>
                 <StoryVersionHistory
@@ -491,23 +498,20 @@ if (!stories || stories.length === 0) {
             )}
           </div>
           <div className="mt-6">
-  {characterProfiles.length > 0 && (
-    <>
-      <h3 className="text-xl font-bold text-white mb-4">
-        Character Profiles
-      </h3>
+            {characterProfiles.length > 0 && (
+              <>
+                <h3 className="text-xl font-bold text-white mb-4">
+                  Character Profiles
+                </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {characterProfiles.map((profile, index) => (
-          <CharacterProfileCard
-            key={index}
-            profile={profile}
-          />
-        ))}
-      </div>
-    </>
-  )}
-</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {characterProfiles.map((profile, index) => (
+                    <CharacterProfileCard key={index} profile={profile} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
               <h3 className="text-lg font-bold text-slate-200 mb-4">
@@ -541,9 +545,6 @@ if (!stories || stories.length === 0) {
           </div>
         </div>
 
-        
-
-
         <div className="col-span-1 lg:col-span-4">
           <div className="mb-5">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
@@ -562,9 +563,12 @@ if (!stories || stories.length === 0) {
                 </div>
                 <div className="px-3 py-1">
                   <div className="mb-2 inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                   {selectedStory.tag.toUpperCase()}
+                    {selectedStory.tag.toUpperCase()}
                   </div>
-                  <h6 className="mb-1 text-gray-300 text-xl font-semibold truncate max-w-full" title={selectedStory.title}>
+                  <h6
+                    className="mb-1 text-gray-300 text-xl font-semibold truncate max-w-full"
+                    title={selectedStory.title}
+                  >
                     {selectedStory.title}
                   </h6>
                   <p className="text-gray-400 font-light breakwords text-sm sm:text-base">

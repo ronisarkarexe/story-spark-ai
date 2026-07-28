@@ -1,7 +1,10 @@
 import { model, Schema } from "mongoose";
 import { IPost, PostModel } from "./post.interface";
 
-export const PostSchema: Schema<IPost, PostModel> = new Schema<IPost, PostModel>(
+export const PostSchema: Schema<IPost, PostModel> = new Schema<
+  IPost,
+  PostModel
+>(
   {
     title: { type: String, required: true, maxlength: 200 },
     content: { type: String, required: true, maxlength: 50000 },
@@ -40,7 +43,7 @@ export const PostSchema: Schema<IPost, PostModel> = new Schema<IPost, PostModel>
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 PostSchema.index({ author: 1, publishedAt: -1 });
@@ -74,7 +77,7 @@ PostSchema.index(
     name: "title_text_content_text_tag_text",
     weights: { title: 10, tag: 5, content: 1 },
     default_language: "english",
-  }
+  },
 );
 PostSchema.index({ createdAt: -1 });
 

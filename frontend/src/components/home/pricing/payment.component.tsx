@@ -28,7 +28,7 @@ interface RazorpayInstance {
   open: () => void;
   on: (
     event: string,
-    callback: (response: RazorpayFailureResponse) => void
+    callback: (response: RazorpayFailureResponse) => void,
   ) => void;
 }
 
@@ -122,8 +122,7 @@ const PaymentComponent = () => {
               body: JSON.stringify(response),
             });
 
-            const verifyData: { success: boolean } =
-              await verifyRes.json();
+            const verifyData: { success: boolean } = await verifyRes.json();
 
             if (verifyData.success) {
               alert("Payment successful!");
@@ -150,8 +149,8 @@ const PaymentComponent = () => {
         },
       };
 
-      const paymentObject = new ((window as unknown) as RazorpayWindow).Razorpay(
-        options
+      const paymentObject = new (window as unknown as RazorpayWindow).Razorpay(
+        options,
       );
 
       paymentObject.on(
@@ -160,7 +159,7 @@ const PaymentComponent = () => {
           console.error(response.error);
           alert(response.error?.description || "Payment failed.");
           setLoading(false);
-        }
+        },
       );
 
       paymentObject.open();
@@ -228,7 +227,9 @@ const PaymentComponent = () => {
                   type="text"
                   placeholder="1234 5678 9012 3456"
                   value={cardNumber}
-                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                  onChange={(e) =>
+                    setCardNumber(formatCardNumber(e.target.value))
+                  }
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
                   required
                 />
@@ -259,7 +260,9 @@ const PaymentComponent = () => {
                   type="password"
                   placeholder="123"
                   value={cvv}
-                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                  onChange={(e) =>
+                    setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))
+                  }
                   className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
                   required
                 />
@@ -304,7 +307,8 @@ const PaymentComponent = () => {
             </button>
 
             <p className="text-xs leading-5 text-slate-400 text-center">
-              Your payment information is protected by secure encryption processing and is never stored on our servers.
+              Your payment information is protected by secure encryption
+              processing and is never stored on our servers.
             </p>
           </form>
 
@@ -313,7 +317,10 @@ const PaymentComponent = () => {
               to="/pricing"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors select-none group"
             >
-              <ArrowLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-0.5" />
+              <ArrowLeft
+                size={14}
+                className="transition-transform duration-200 group-hover:-translate-x-0.5"
+              />
               Back to Pricing
             </Link>
           </div>
@@ -324,4 +331,3 @@ const PaymentComponent = () => {
 };
 
 export default PaymentComponent;
-

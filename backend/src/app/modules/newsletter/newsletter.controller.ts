@@ -20,7 +20,7 @@ export const subscribe = async (req: Request, res: Response) => {
       name,
       source,
       userId,
-      baseUrl
+      baseUrl,
     );
 
     res.status(200).json(result);
@@ -58,7 +58,9 @@ export const unsubscribeByToken = async (req: Request, res: Response) => {
     // Handle edge cases where token might be an array
     const safeToken = Array.isArray(token) ? token[0] : token;
 
-    const result = await newsletterService.unsubscribeByToken(safeToken as string);
+    const result = await newsletterService.unsubscribeByToken(
+      safeToken as string,
+    );
 
     res.status(200).json({
       success: true,

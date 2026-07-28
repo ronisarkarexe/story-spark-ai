@@ -8,12 +8,8 @@ interface Props {
   story: string;
 }
 
-export default function VocabularyAnalyzer({
-  story,
-}: Props) {
-
-  const [analysis, setAnalysis] =
-    useState<VocabularyAnalysis | null>(null);
+export default function VocabularyAnalyzer({ story }: Props) {
+  const [analysis, setAnalysis] = useState<VocabularyAnalysis | null>(null);
 
   const handleAnalyze = () => {
     setAnalysis(analyzeVocabulary(story));
@@ -21,7 +17,6 @@ export default function VocabularyAnalyzer({
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-
       <h2 className="text-2xl font-bold text-white mb-4">
         📚 Vocabulary Analyzer
       </h2>
@@ -35,7 +30,6 @@ export default function VocabularyAnalyzer({
 
       {analysis && (
         <div className="mt-6 space-y-4">
-
           <p className="text-white">
             Readability Score: {analysis.readabilityScore}/100
           </p>
@@ -45,9 +39,7 @@ export default function VocabularyAnalyzer({
           </p>
 
           <div>
-            <h3 className="text-white font-semibold">
-              Repeated Words
-            </h3>
+            <h3 className="text-white font-semibold">Repeated Words</h3>
 
             <ul className="text-gray-300 list-disc ml-6">
               {analysis.repeatedWords.map((word) => (
@@ -57,9 +49,7 @@ export default function VocabularyAnalyzer({
           </div>
 
           <div>
-            <h3 className="text-white font-semibold">
-              Suggestions
-            </h3>
+            <h3 className="text-white font-semibold">Suggestions</h3>
 
             {analysis.suggestions.map((item) => (
               <div
@@ -70,16 +60,12 @@ export default function VocabularyAnalyzer({
                   <strong>{item.word}</strong> → {item.replacement}
                 </p>
 
-                <p className="text-gray-400">
-                  {item.reason}
-                </p>
+                <p className="text-gray-400">{item.reason}</p>
               </div>
             ))}
           </div>
-
         </div>
       )}
-
     </div>
   );
 }

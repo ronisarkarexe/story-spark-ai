@@ -13,10 +13,10 @@ router.post(
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER
+    ENUM_USER_ROLE.USER,
   ),
   validateRequest(CommentValidator.createComment),
-  CommentController.createComment
+  CommentController.createComment,
 );
 
 // Get comments by postId
@@ -29,9 +29,9 @@ router.patch(
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER
+    ENUM_USER_ROLE.USER,
   ),
-  CommentController.toggleCommentLike
+  CommentController.toggleCommentLike,
 );
 
 // Toggle helpful reaction on a comment
@@ -41,9 +41,9 @@ router.patch(
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER
+    ENUM_USER_ROLE.USER,
   ),
-  CommentController.toggleCommentHelpful
+  CommentController.toggleCommentHelpful,
 );
 
 // Delete a comment (author or admin only)
@@ -53,9 +53,9 @@ router.delete(
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER
+    ENUM_USER_ROLE.USER,
   ),
-  CommentController.deleteComment
+  CommentController.deleteComment,
 );
 
 export const CommentRouter = router;

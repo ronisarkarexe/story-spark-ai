@@ -66,7 +66,13 @@ type CharacterFlowNode = Node<CharacterNodeData, "character">;
 type CharacterFlowEdge = Edge<RelationshipEdgeData, "relationship">;
 
 const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
-  const { data: networkData, isLoading, isFetching, error, refetch } = useGetCharacterNetworkQuery(storyId);
+  const {
+    data: networkData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useGetCharacterNetworkQuery(storyId);
 
   // Filter States
   const [search, setSearch] = useState("");
@@ -104,8 +110,14 @@ const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
   }, [storyId, storyContent, refetch]);
 
   // Nodes & Edges computing based on active filters
-  const rawCharacters = useMemo(() => networkData?.characters || [], [networkData]);
-  const rawRelationships = useMemo(() => networkData?.relationships || [], [networkData]);
+  const rawCharacters = useMemo(
+    () => networkData?.characters || [],
+    [networkData],
+  );
+  const rawRelationships = useMemo(
+    () => networkData?.relationships || [],
+    [networkData],
+  );
 
   // Find selected item objects
   const selectedNode = useMemo(() => {
@@ -125,7 +137,7 @@ const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
     // 1. Find characters matching search.
     // If search is empty, allow all characters for relationship filtering.
     const matchedChars = rawCharacters.filter((char) =>
-      searchLower ? char.name.toLowerCase().includes(searchLower) : true
+      searchLower ? char.name.toLowerCase().includes(searchLower) : true,
     );
 
     const matchedCharIds = new Set(matchedChars.map((c) => c.id));
@@ -140,7 +152,8 @@ const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
         matchedCharIds.has(rel.target);
 
       // Matches type if any selected
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(rel.type);
+      const matchesType =
+        selectedTypes.length === 0 || selectedTypes.includes(rel.type);
 
       // Matches min strength
       const matchesStrength = rel.strength >= minStrength;
@@ -161,7 +174,9 @@ const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
       matchedCharIds.forEach((id) => activeCharIds.add(id));
     }
 
-    const finalCharacters = rawCharacters.filter((char) => activeCharIds.has(char.id));
+    const finalCharacters = rawCharacters.filter((char) =>
+      activeCharIds.has(char.id),
+    );
 
     return {
       characters: finalCharacters,
@@ -255,7 +270,9 @@ const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
     return (
       <div className="flex flex-col flex-1 items-center justify-center bg-[#101319] text-indigo-300 py-20">
         <i className="fas fa-spinner fa-spin text-3xl mb-3"></i>
-        <span className="text-sm font-semibold">Analyzing story content...</span>
+        <span className="text-sm font-semibold">
+          Analyzing story content...
+        </span>
       </div>
     );
   }
@@ -266,7 +283,8 @@ const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
         <i className="fas fa-exclamation-triangle text-3xl mb-3"></i>
         <h4 className="font-bold text-lg text-white">Analysis Failed</h4>
         <p className="text-xs max-w-sm mt-1 text-slate-400">
-          We couldn't analyze the character network for this story. Make sure the story contains text and try again.
+          We couldn't analyze the character network for this story. Make sure
+          the story contains text and try again.
         </p>
       </div>
     );
@@ -295,7 +313,10 @@ const CharacterNetwork = ({ storyId, storyContent }: CharacterNetworkProps) => {
       </div>
 
       {/* React Flow Graph Area */}
-      <div className="flex-1 relative h-[500px] md:h-auto bg-zinc-950/20" aria-label="Character network graph workspace">
+      <div
+        className="flex-1 relative h-[500px] md:h-auto bg-zinc-950/20"
+        aria-label="Character network graph workspace"
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}

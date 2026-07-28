@@ -33,7 +33,9 @@ describe("loadRazorpayScript", () => {
     await vi.advanceTimersByTimeAsync(0);
 
     // Trigger the onload handler
-    const script = document.getElementById("razorpay-script") as HTMLScriptElement;
+    const script = document.getElementById(
+      "razorpay-script",
+    ) as HTMLScriptElement;
     expect(script).not.toBeNull();
     script.onload?.({} as Event);
 
@@ -46,7 +48,9 @@ describe("loadRazorpayScript", () => {
 
     await vi.advanceTimersByTimeAsync(0);
 
-    const script = document.getElementById("razorpay-script") as HTMLScriptElement;
+    const script = document.getElementById(
+      "razorpay-script",
+    ) as HTMLScriptElement;
     expect(script).not.toBeNull();
     script.onerror?.({} as Event);
 
@@ -58,7 +62,9 @@ describe("loadRazorpayScript", () => {
     loadRazorpayScript();
     await vi.advanceTimersByTimeAsync(0);
 
-    const script = document.getElementById("razorpay-script") as HTMLScriptElement;
+    const script = document.getElementById(
+      "razorpay-script",
+    ) as HTMLScriptElement;
     expect(script.src).toBe("https://checkout.razorpay.com/v1/checkout.js");
   });
 

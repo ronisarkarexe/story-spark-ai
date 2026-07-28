@@ -8,12 +8,8 @@ interface Props {
   story: string;
 }
 
-export default function DialogueEnhancer({
-  story,
-}: Props) {
-  const [suggestions, setSuggestions] = useState<
-    DialogueSuggestion[]
-  >([]);
+export default function DialogueEnhancer({ story }: Props) {
+  const [suggestions, setSuggestions] = useState<DialogueSuggestion[]>([]);
 
   const handleAnalyze = () => {
     const result = analyzeDialogue(story);
@@ -22,7 +18,6 @@ export default function DialogueEnhancer({
 
   return (
     <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
-
       <h2 className="text-2xl font-bold text-white mb-4">
         💬 AI Dialogue Enhancer
       </h2>
@@ -36,10 +31,7 @@ export default function DialogueEnhancer({
 
       <div className="space-y-4 mt-6">
         {suggestions.map((item) => (
-          <div
-            key={item.id}
-            className="border border-zinc-700 rounded-lg p-4"
-          >
+          <div key={item.id} className="border border-zinc-700 rounded-lg p-4">
             <p className="text-gray-300">
               <strong>Original:</strong> {item.original}
             </p>
@@ -48,9 +40,7 @@ export default function DialogueEnhancer({
               <strong>Suggestion:</strong> {item.suggestion}
             </p>
 
-            <p className="text-yellow-400 mt-2">
-              {item.reason}
-            </p>
+            <p className="text-yellow-400 mt-2">{item.reason}</p>
 
             <div className="flex gap-3 mt-4">
               <button className="bg-green-600 px-3 py-1 rounded text-white">
@@ -64,7 +54,6 @@ export default function DialogueEnhancer({
           </div>
         ))}
       </div>
-
     </div>
   );
 }

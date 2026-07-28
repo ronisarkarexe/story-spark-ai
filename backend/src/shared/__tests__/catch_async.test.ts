@@ -7,9 +7,11 @@ import catchAsync from "../catch_async";
 
 describe("catch_async utility", () => {
   it("passes successful response through without calling next with an error", async () => {
-    const mockHandler = jest.fn().mockImplementation((_req: Request, res: Response) => {
-      res.json({ ok: true });
-    });
+    const mockHandler = jest
+      .fn()
+      .mockImplementation((_req: Request, res: Response) => {
+        res.json({ ok: true });
+      });
     const wrapped = catchAsync(mockHandler as any);
     const req = {} as Request;
     const res = { json: jest.fn() } as unknown as Response;

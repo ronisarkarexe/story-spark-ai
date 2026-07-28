@@ -12,10 +12,7 @@ interface StoryCollectionsProps {
   storyTitle: string;
 }
 
-const StoryCollections = ({
-  storyId,
-  storyTitle,
-}: StoryCollectionsProps) => {
+const StoryCollections = ({ storyId, storyTitle }: StoryCollectionsProps) => {
   const [collections, setCollections] = useState<StoryCollection[]>([]);
   const [collectionName, setCollectionName] = useState("");
   const [search, setSearch] = useState("");
@@ -31,10 +28,7 @@ const StoryCollections = ({
 
   // Save collections
   useEffect(() => {
-    localStorage.setItem(
-      "story-collections",
-      JSON.stringify(collections)
-    );
+    localStorage.setItem("story-collections", JSON.stringify(collections));
   }, [collections]);
 
   // Create collection
@@ -66,8 +60,8 @@ const StoryCollections = ({
                 ? item.stories
                 : [...item.stories, storyId],
             }
-          : item
-      )
+          : item,
+      ),
     );
 
     toast.success("Story added to collection");
@@ -75,22 +69,18 @@ const StoryCollections = ({
 
   // Delete collection
   const deleteCollection = (id: string) => {
-    setCollections(
-      collections.filter((item) => item.id !== id)
-    );
+    setCollections(collections.filter((item) => item.id !== id));
 
     toast.success("Collection deleted");
   };
 
   const filteredCollections = collections.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <div className="rounded-xl bg-slate-900 p-5 text-white mt-5">
-      <h2 className="text-xl font-bold mb-4">
-        📚 Story Collections
-      </h2>
+      <h2 className="text-xl font-bold mb-4">📚 Story Collections</h2>
 
       {/* Create Collection */}
       <div className="flex gap-2 mb-4">
@@ -102,10 +92,7 @@ const StoryCollections = ({
           className="flex-1 p-2 rounded text-black"
         />
 
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 px-4 rounded"
-        >
+        <button onClick={handleCreate} className="bg-blue-600 px-4 rounded">
           Create
         </button>
       </div>
@@ -123,15 +110,10 @@ const StoryCollections = ({
       <div className="space-y-3">
         {filteredCollections.length > 0 ? (
           filteredCollections.map((item) => (
-            <div
-              key={item.id}
-              className="bg-slate-800 p-3 rounded"
-            >
+            <div key={item.id} className="bg-slate-800 p-3 rounded">
               <div className="flex justify-between">
                 <div>
-                  <h3 className="font-semibold">
-                    {item.name}
-                  </h3>
+                  <h3 className="font-semibold">{item.name}</h3>
 
                   <p className="text-sm text-gray-400">
                     {item.stories.length} stories
@@ -150,14 +132,12 @@ const StoryCollections = ({
                 onClick={() => addStory(item.id)}
                 className="mt-2 bg-green-600 px-3 py-1 rounded"
               >
-                Add "{storyTitle}" 
+                Add "{storyTitle}"
               </button>
             </div>
           ))
         ) : (
-          <p className="text-gray-400">
-            No collections found
-          </p>
+          <p className="text-gray-400">No collections found</p>
         )}
       </div>
     </div>

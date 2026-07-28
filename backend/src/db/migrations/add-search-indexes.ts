@@ -24,7 +24,7 @@ async function up() {
 
   const existingIndexes = await postCollection.indexes();
   const hasTextIndex = existingIndexes.some(
-    (idx) => idx.name === "title_text_content_text_tag_text"
+    (idx) => idx.name === "title_text_content_text_tag_text",
   );
 
   if (!hasTextIndex) {
@@ -34,7 +34,7 @@ async function up() {
         name: "title_text_content_text_tag_text",
         weights: { title: 10, tag: 5, content: 1 },
         default_language: "english",
-      }
+      },
     );
     console.log("✅ Post text index created");
   } else {
@@ -44,7 +44,7 @@ async function up() {
   // ── Post createdAt index (date-sorted queries) ───────────────────────────
   await postCollection.createIndex(
     { createdAt: -1 },
-    { name: "post_createdAt_desc", background: true }
+    { name: "post_createdAt_desc", background: true },
   );
   console.log("✅ Post createdAt index ensured");
 
@@ -52,7 +52,7 @@ async function up() {
   const userCollection = db.collection("users");
   await userCollection.createIndex(
     { name: 1 },
-    { name: "user_name_asc", background: true }
+    { name: "user_name_asc", background: true },
   );
   console.log("✅ User.name index ensured");
 

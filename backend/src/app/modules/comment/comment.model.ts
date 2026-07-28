@@ -11,50 +11,49 @@ const CommentSchema: Schema<IComment> = new Schema<IComment, CommentModel>(
       ref: "Comment",
       default: null,
     },
-   likes: [
-  {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default: [],
-  },
-],
-   helpful: [
-  {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default: [],
-  },
-],
+    likes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
+    helpful: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
 
-isDeleted: {
-  type: Boolean,
-  default: false,
-},
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
 
-deletedAt: {
-  type: Date,
-  default: null,
-},
-isHidden: {
-  type: Boolean,
-  default: false,
-},
-
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Supports checking replies under a specific parent comment
 CommentSchema.index({
   postId: 1,
   parentCommentId: 1,
-  createdAt: -1
+  createdAt: -1,
 });
 
 // Supports fetching all comments for a post ordered by createdAt
 CommentSchema.index({
   postId: 1,
-  createdAt: -1
+  createdAt: -1,
 });
 
 export const Comment = model<IComment, CommentModel>("Comment", CommentSchema);

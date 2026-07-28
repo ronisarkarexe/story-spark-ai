@@ -21,7 +21,7 @@ const BookmarkSchema = new Schema<IBookmark>(
       createdAt: true,
       updatedAt: false,
     },
-  }
+  },
 );
 
 // Add compound unique index to prevent duplicates at the database level

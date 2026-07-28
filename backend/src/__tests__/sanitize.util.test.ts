@@ -100,7 +100,7 @@ describe("stripHtml", () => {
   });
 
   it("decodes common HTML entities", () => {
-    expect(stripHtml("&amp; &lt; &gt; &quot; &nbsp;")).toBe("& < > \"");
+    expect(stripHtml("&amp; &lt; &gt; &quot; &nbsp;")).toBe('& < > "');
   });
 
   it("trims whitespace from result", () => {
@@ -158,7 +158,9 @@ describe("sanitizeUrl", () => {
   });
 
   it("allows mailto URLs", () => {
-    expect(sanitizeUrl("mailto:user@example.com")).toBe("mailto:user@example.com");
+    expect(sanitizeUrl("mailto:user@example.com")).toBe(
+      "mailto:user@example.com",
+    );
   });
 
   it("allows tel URLs", () => {
@@ -218,7 +220,12 @@ describe("sanitizeObjectStrings", () => {
   it("handles mixed arrays with strings, objects, and primitives", () => {
     const input = { mixed: ["<p>", { nested: "<i>" }, 42, null] };
     const result = sanitizeObjectStrings(input);
-    expect(result.mixed).toEqual(["&lt;p&gt;", { nested: "&lt;i&gt;" }, 42, null]);
+    expect(result.mixed).toEqual([
+      "&lt;p&gt;",
+      { nested: "&lt;i&gt;" },
+      42,
+      null,
+    ]);
   });
 
   it("uses a custom sanitizer when provided", () => {
@@ -240,7 +247,9 @@ describe("truncateText", () => {
   });
 
   it("truncates string longer than maxLength with ellipsis", () => {
-    expect(truncateText("hello world this is a long text", 10)).toBe("hello world...");
+    expect(truncateText("hello world this is a long text", 10)).toBe(
+      "hello world...",
+    );
   });
 
   it("trims trailing whitespace before ellipsis", () => {

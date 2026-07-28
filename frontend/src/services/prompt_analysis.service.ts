@@ -35,12 +35,12 @@ export interface IPromptAnalysisResponse {
  * Analyze a single prompt
  */
 export const analyzePrompt = async (
-  request: IPromptAnalysisRequest
+  request: IPromptAnalysisRequest,
 ): Promise<IPromptAnalysisResponse> => {
   const response = await axios.post(
     `${API_BASE}/prompt-analysis/analyze`,
     request,
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data.data;
 };
@@ -49,7 +49,7 @@ export const analyzePrompt = async (
  * Enhance a prompt (subset of full analysis)
  */
 export const enhancePrompt = async (
-  request: IPromptAnalysisRequest
+  request: IPromptAnalysisRequest,
 ): Promise<{
   originalPrompt: string;
   enhancedPrompt: string;
@@ -59,7 +59,7 @@ export const enhancePrompt = async (
   const response = await axios.post(
     `${API_BASE}/prompt-analysis/enhance`,
     request,
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data.data;
 };
@@ -68,12 +68,12 @@ export const enhancePrompt = async (
  * Analyze multiple prompts in batch
  */
 export const batchAnalyzePrompts = async (
-  prompts: IPromptAnalysisRequest[]
+  prompts: IPromptAnalysisRequest[],
 ): Promise<IPromptAnalysisResponse[]> => {
   const response = await axios.post(
     `${API_BASE}/prompt-analysis/batch`,
     { prompts },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data.data;
 };

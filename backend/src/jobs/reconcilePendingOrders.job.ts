@@ -30,12 +30,19 @@ export async function reconcilePendingOrders(): Promise<void> {
     try {
       const plan = PLANS[order.plan];
       if (!plan) {
-        logger.error(`[reconcile] Order ${order._id} has unknown plan "${order.plan}" — flagging for manual review.`);
-        await Order.updateOne({ _id: order._id }, { $inc: { entitlementAttempts: 1 } });
+        logger.error(
+          `[reconcile] Order ${order._id} has unknown plan "${order.plan}" — flagging for manual review.`,
+        );
+        await Order.updateOne(
+          { _id: order._id },
+          { $inc: { entitlementAttempts: 1 } },
+        );
         continue;
       }
 
-      const subscriptionExpiry = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
+      const subscriptionExpiry = new Date(
+        Date.now() + plan.durationDays * 24 * 60 * 60 * 1000,
+      );
 
       const updatedUser = await User.findByIdAndUpdate(
         order.userId,
@@ -45,24 +52,34 @@ export async function reconcilePendingOrders(): Promise<void> {
           lastPaymentId: order.razorpayPaymentId,
           lastOrderId: order.razorpayOrderId,
         },
-        { new: true }
+        { new: true },
       );
 
       if (!updatedUser) {
-        logger.error(`[reconcile] Order ${order._id} references missing user ${order.userId} — flagging for manual review.`);
-        await Order.updateOne({ _id: order._id }, { $inc: { entitlementAttempts: 1 } });
+        logger.error(
+          `[reconcile] Order ${order._id} references missing user ${order.userId} — flagging for manual review.`,
+        );
+        await Order.updateOne(
+          { _id: order._id },
+          { $inc: { entitlementAttempts: 1 } },
+        );
         continue;
       }
 
       await Order.updateOne(
         { _id: order._id, status: "paid_pending_entitlement" },
-        { status: "paid" }
+        { status: "paid" },
       );
 
-      logger.info(`[reconcile] Completed entitlement for order ${order._id} (user ${order.userId}).`);
+      logger.info(
+        `[reconcile] Completed entitlement for order ${order._id} (user ${order.userId}).`,
+      );
     } catch (err) {
       logger.error(`[reconcile] Failed to reconcile order ${order._id}:`, err);
-      await Order.updateOne({ _id: order._id }, { $inc: { entitlementAttempts: 1 } });
+      await Order.updateOne(
+        { _id: order._id },
+        { $inc: { entitlementAttempts: 1 } },
+      );
     }
   }
 
@@ -71,7 +88,9 @@ export async function reconcilePendingOrders(): Promise<void> {
     entitlementAttempts: { $gte: MAX_ENTITLEMENT_ATTEMPTS },
   });
   if (exhausted > 0) {
-    logger.error(`[reconcile] ${exhausted} order(s) exhausted retry attempts and need manual review.`);
+    logger.error(
+      `[reconcile] ${exhausted} order(s) exhausted retry attempts and need manual review.`,
+    );
   }
 }
 
@@ -79,7 +98,7 @@ export async function reconcilePendingOrders(): Promise<void> {
 export function startOrderReconciliationJob(): void {
   cron.schedule("*/5 * * * *", () => {
     reconcilePendingOrders().catch((err) =>
-      logger.error("[reconcile] Unhandled error in scheduled sweep:", err)
+      logger.error("[reconcile] Unhandled error in scheduled sweep:", err),
     );
   });
   logger.info("🔁 Order reconciliation job scheduled (every 5 minutes).");

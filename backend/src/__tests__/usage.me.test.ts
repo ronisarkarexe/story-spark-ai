@@ -3,10 +3,7 @@ import request from "supertest";
 
 jest.mock("../app/middleware/auth.middleware", () => ({
   __esModule: true,
-  default:
-    () =>
-    (_req: any, _res: any, next: any) =>
-      next(),
+  default: () => (_req: any, _res: any, next: any) => next(),
 }));
 
 jest.mock("../app/modules/usage/usage.service", () => ({
@@ -54,27 +51,24 @@ describe("UsageRouter", () => {
 
     const response = await request(app).get("/api/v1/usage/me");
 
-   expect(response.status).toBe(200);
+    expect(response.status).toBe(200);
 
-expect(response.body.success).toBe(true);
+    expect(response.body.success).toBe(true);
 
-expect(response.body).toHaveProperty("message");
+    expect(response.body).toHaveProperty("message");
 
-expect(response.body.data).toHaveProperty("actions");
+    expect(response.body.data).toHaveProperty("actions");
 
-expect(response.body.data.actions).toHaveProperty("story_generate");
+    expect(response.body.data.actions).toHaveProperty("story_generate");
 
-expect(response.body.data.plan).toBe("pro");
+    expect(response.body.data.plan).toBe("pro");
 
-expect(response.body.data).toHaveProperty("billingPeriodStart");
+    expect(response.body.data).toHaveProperty("billingPeriodStart");
 
-expect(response.body.data).toHaveProperty("billingPeriodEnd");
+    expect(response.body.data).toHaveProperty("billingPeriodEnd");
 
-expect(response.body.data.actions.story_generate.used).toBe(12);
+    expect(response.body.data.actions.story_generate.used).toBe(12);
 
-expect(response.body.data.actions.story_generate.limit).toBe(50);
-
-    
-  
-});
+    expect(response.body.data.actions.story_generate.limit).toBe(50);
+  });
 });

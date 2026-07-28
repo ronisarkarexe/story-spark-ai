@@ -16,7 +16,8 @@ export const enforceQuota = (action: "story_generate" | "story_continue") => {
       }
 
       const plan = user.subscriptionType || "free";
-      const limitsForPlan = PLAN_QUOTAS[plan as keyof typeof PLAN_QUOTAS] || PLAN_QUOTAS.free;
+      const limitsForPlan =
+        PLAN_QUOTAS[plan as keyof typeof PLAN_QUOTAS] || PLAN_QUOTAS.free;
       const limit = limitsForPlan[action];
 
       if (limit === Infinity) {
@@ -30,14 +31,14 @@ export const enforceQuota = (action: "story_generate" | "story_continue") => {
       const record = await UsageRecord.findOneAndUpdate(
         { userId: user._id, action, billingPeriodStart },
         { $inc: { count: 1 } },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, new: true, setDefaultsOnInsert: true },
       );
 
       if (record.count > limit) {
         // Rollback the count increment since limit was exceeded
         await UsageRecord.updateOne(
           { userId: user._id, action, billingPeriodStart },
-          { $inc: { count: -1 } }
+          { $inc: { count: -1 } },
         );
 
         return res.status(httpStatus.TOO_MANY_REQUESTS).json({
@@ -56,7 +57,7 @@ export const enforceQuota = (action: "story_generate" | "story_continue") => {
       res.locals.quotaRefundGuard = new QuotaRefundGuard(async () => {
         await UsageRecord.findOneAndUpdate(
           { userId: user._id, action, billingPeriodStart, count: { $gt: 0 } },
-          { $inc: { count: -1 } }
+          { $inc: { count: -1 } },
         );
       });
 

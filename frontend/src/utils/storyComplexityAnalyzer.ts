@@ -8,18 +8,12 @@ export interface ComplexityAnalysis {
   suggestions: string[];
 }
 
-export function analyzeStoryComplexity(
-  story: string
-): ComplexityAnalysis {
+export function analyzeStoryComplexity(story: string): ComplexityAnalysis {
   const words = story.trim().split(/\s+/);
-  const sentences = story
-    .split(/[.!?]+/)
-    .filter(Boolean);
+  const sentences = story.split(/[.!?]+/).filter(Boolean);
 
   const avgSentenceLength =
-    sentences.length > 0
-      ? words.length / sentences.length
-      : 0;
+    sentences.length > 0 ? words.length / sentences.length : 0;
 
   let score = 60;
 
@@ -28,12 +22,7 @@ export function analyzeStoryComplexity(
   if (words.length > 800) score += 10;
   if (avgSentenceLength > 18) score += 10;
 
-  const level =
-    score < 70
-      ? "Simple"
-      : score < 90
-      ? "Moderate"
-      : "Advanced";
+  const level = score < 70 ? "Simple" : score < 90 ? "Moderate" : "Advanced";
 
   return {
     score,
@@ -51,8 +40,6 @@ export function analyzeStoryComplexity(
   };
 }
 
-export function refreshComplexityAnalysis(
-  story: string
-) {
+export function refreshComplexityAnalysis(story: string) {
   return analyzeStoryComplexity(story);
 }

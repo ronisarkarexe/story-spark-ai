@@ -1,9 +1,5 @@
 // Types
-export type ExportTheme =
-  | "Classic"
-  | "Novel"
-  | "Minimal"
-  | "Dark";
+export type ExportTheme = "Classic" | "Novel" | "Minimal" | "Dark";
 
 export interface StoryData {
   title: string;
@@ -33,17 +29,11 @@ const themes = {
 };
 
 // PDF Export
-export const exportAsPDF = (
-  story: StoryData,
-  theme: ExportTheme
-) => {
+export const exportAsPDF = (story: StoryData, theme: ExportTheme) => {
   // jsPDF implementation
 };
 
 // DOCX Export
-export const exportAsDOCX = (
-  story: StoryData,
-  theme: ExportTheme
-) => {
+export const exportAsDOCX = (story: StoryData, theme: ExportTheme) => {
   // docx implementation
 };

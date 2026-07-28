@@ -4,9 +4,7 @@ export interface StoryScene {
   content: string;
 }
 
-export function detectScenes(
-  story: string
-): StoryScene[] {
+export function detectScenes(story: string): StoryScene[] {
   const sections = story
     .split(/\n\s*\n/)
     .filter((section) => section.trim() !== "");
@@ -18,14 +16,6 @@ export function detectScenes(
   }));
 }
 
-export function renameScene(
-  scenes: StoryScene[],
-  id: number,
-  title: string
-) {
-  return scenes.map((scene) =>
-    scene.id === id
-      ? { ...scene, title }
-      : scene
-  );
+export function renameScene(scenes: StoryScene[], id: number, title: string) {
+  return scenes.map((scene) => (scene.id === id ? { ...scene, title } : scene));
 }

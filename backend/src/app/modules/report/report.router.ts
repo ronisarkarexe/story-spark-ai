@@ -13,25 +13,22 @@ router.post(
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER
+    ENUM_USER_ROLE.USER,
   ),
   validateRequest(ReportValidation.createReport),
-  ReportController.createReport
+  ReportController.createReport,
 );
 
 router.get(
   "/",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
-  ReportController.getAllReports
+  ReportController.getAllReports,
 );
 
 router.get(
   "/pending-comments",
-  auth(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
-  ),
-  ReportController.getPendingCommentReports
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  ReportController.getPendingCommentReports,
 );
 
 export const ReportRouter = router;

@@ -24,12 +24,14 @@ describe("aiLimiter", () => {
       });
 
     await Promise.all(Array.from({ length: 10 }, task));
-    expect(maxActive).toBeLessThanOrEqual(getAIConcurrencyStats().concurrencyLimit);
+    expect(maxActive).toBeLessThanOrEqual(
+      getAIConcurrencyStats().concurrencyLimit,
+    );
   });
 
   it("should propagate errors from tasks", async () => {
     await expect(
-      aiLimit(() => Promise.reject(new Error("AI failed")))
+      aiLimit(() => Promise.reject(new Error("AI failed"))),
     ).rejects.toThrow("AI failed");
   });
 

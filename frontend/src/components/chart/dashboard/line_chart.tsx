@@ -19,7 +19,7 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 interface Props {
@@ -59,7 +59,10 @@ const PostsPerMonthChart: FC<Props> = ({ perMonth }) => {
   };
 
   return (
-    <div style={{ position: "relative", height: "300px", width: "100%" }} className="min-w-0 overflow-hidden rounded-lg bg-blue-500/10 p-4 shadow-md">
+    <div
+      style={{ position: "relative", height: "300px", width: "100%" }}
+      className="min-w-0 overflow-hidden rounded-lg bg-blue-500/10 p-4 shadow-md"
+    >
       <Line data={chartData} options={options} key={JSON.stringify(perMonth)} />
     </div>
   );

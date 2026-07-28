@@ -44,7 +44,10 @@ const autosaveDraftSchema = z.object({
   content: z.string().default(""),
 });
 
-const autosaveDraftStore = new Map<string, { draftId: string; title: string; content: string; savedAt: string }>();
+const autosaveDraftStore = new Map<
+  string,
+  { draftId: string; title: string; content: string; savedAt: string }
+>();
 
 router.put(
   "/save",
@@ -69,7 +72,7 @@ router.put(
       success: true,
       data: { draftId, savedAt },
     });
-  })
+  }),
 );
 
 router.post(
@@ -79,11 +82,11 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   enforceQuota("story_generate"),
   validateRequest(branchingStorySchema),
-  StoryBranchingController.createBranchingStory
+  StoryBranchingController.createBranchingStory,
 );
 
 router.post(
@@ -93,9 +96,9 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  PostController.forkStory
+  PostController.forkStory,
 );
 
 router.post(
@@ -103,7 +106,7 @@ router.post(
   storyLimiter,
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   validateRequest(PostValidator.bulkDelete),
-  PostController.bulkDelete
+  PostController.bulkDelete,
 );
 
 export const StoriesRouter = router;

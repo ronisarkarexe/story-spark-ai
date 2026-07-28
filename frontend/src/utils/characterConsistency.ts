@@ -7,9 +7,23 @@ export interface CharacterConflict {
 
 // All supported hair color keywords (including fantasy colors)
 const HAIR_COLOR_SET = new Set([
-  "silver", "silvery", "black", "brown", "blonde", "red",
-  "grey", "gray", "white", "ginger", "auburn",
-  "purple", "blue", "pink", "golden", "dark", "light",
+  "silver",
+  "silvery",
+  "black",
+  "brown",
+  "blonde",
+  "red",
+  "grey",
+  "gray",
+  "white",
+  "ginger",
+  "auburn",
+  "purple",
+  "blue",
+  "pink",
+  "golden",
+  "dark",
+  "light",
 ]);
 
 // Pattern 1: "silver hair", "silvery hair", "silver-colored hair"
@@ -50,7 +64,7 @@ function extractCharacterName(sentence: string): string | null {
 }
 
 export const checkCharacterConsistency = (
-  chapters: { content: string }[]
+  chapters: { content: string }[],
 ): CharacterConflict[] => {
   const conflicts: CharacterConflict[] = [];
 

@@ -74,7 +74,9 @@ function createMockContainer({
 }
 
 function renderScrollHook(container: HTMLDivElement) {
-  const containerRef = { current: container } as RefObject<HTMLDivElement | null>;
+  const containerRef = {
+    current: container,
+  } as RefObject<HTMLDivElement | null>;
   return renderHook(() => useAntiGravityScroll(containerRef));
 }
 
@@ -216,7 +218,7 @@ describe("useAntiGravityScroll hook", () => {
       // decayRate is 0.05 per frame
       expect(result.current.currentVelocityRef.current).toBeCloseTo(
         Math.max(0, velocityBeforeStop - 0.05),
-        5
+        5,
       );
     });
 
@@ -315,12 +317,12 @@ describe("useAntiGravityScroll hook", () => {
       expect(addEventListenerSpy).toHaveBeenCalledWith(
         "wheel",
         expect.any(Function),
-        { passive: true }
+        { passive: true },
       );
       expect(addEventListenerSpy).toHaveBeenCalledWith(
         "touchmove",
         expect.any(Function),
-        { passive: true }
+        { passive: true },
       );
     });
 
@@ -333,11 +335,11 @@ describe("useAntiGravityScroll hook", () => {
 
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         "wheel",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         "touchmove",
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });

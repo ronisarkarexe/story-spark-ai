@@ -60,7 +60,10 @@ describe("checkCharacterConsistency – hair color detection", () => {
         chapter("Lyra had silvery hair."),
         chapter("Lyra had black hair."),
       ]);
-      expect(result[0]).toMatchObject({ previous: "silvery", current: "black" });
+      expect(result[0]).toMatchObject({
+        previous: "silvery",
+        current: "black",
+      });
     });
 
     it("detects 'silver-colored hair'", () => {
@@ -90,7 +93,11 @@ describe("checkCharacterConsistency – hair color detection", () => {
         chapter("Tom had black hair."),
       ]);
       expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({ character: "Tom", previous: "silver", current: "black" });
+      expect(result[0]).toMatchObject({
+        character: "Tom",
+        previous: "silver",
+        current: "black",
+      });
     });
   });
 
@@ -191,7 +198,9 @@ describe("checkCharacterConsistency", () => {
   });
 
   it("returns empty array for single chapter with consistent hair color", () => {
-    const chapters = [{ content: "Alice has black hair and walked into town." }];
+    const chapters = [
+      { content: "Alice has black hair and walked into town." },
+    ];
     const result = checkCharacterConsistency(chapters);
     expect(result).toEqual([]);
   });
@@ -269,4 +278,3 @@ describe("checkCharacterConsistency", () => {
     expect(result[0].current).toBe("blonde");
   });
 });
-

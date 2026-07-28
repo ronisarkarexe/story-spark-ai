@@ -14,28 +14,24 @@ const createReview = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-const getPublishedReviews = catchAsync(
-  async (req: Request, res: Response) => {
-    const result = await ReviewService.getPublishedReviews();
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Reviews fetched successfully!",
-      data: result,
-    });
-  }
-);
-const getPendingReviews = catchAsync(
-  async (req: Request, res: Response) => {
-    const result = await ReviewService.getPendingReviews();
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Pending reviews fetched successfully!",
-      data: result,
-    });
-  }
-);
+const getPublishedReviews = catchAsync(async (req: Request, res: Response) => {
+  const result = await ReviewService.getPublishedReviews();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Reviews fetched successfully!",
+    data: result,
+  });
+});
+const getPendingReviews = catchAsync(async (req: Request, res: Response) => {
+  const result = await ReviewService.getPendingReviews();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Pending reviews fetched successfully!",
+    data: result,
+  });
+});
 const approveReview = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id as string;
   const result = await ReviewService.approveReview(id);

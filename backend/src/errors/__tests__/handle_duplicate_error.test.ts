@@ -71,6 +71,8 @@ describe("handleDuplicateError", () => {
     };
     const result = handleDuplicateError(err);
     expect(result.errorMessages[0].path).toBe("email");
-    expect(result.errorMessages[0].message).toBe("user@domain.com is already in use");
+    expect(result.errorMessages[0].message).toBe(
+      "user@domain.com is already in use",
+    );
   });
 });

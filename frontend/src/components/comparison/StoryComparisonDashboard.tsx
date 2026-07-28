@@ -6,25 +6,18 @@ interface Props {
   storyB: string;
 }
 
-export default function StoryComparisonDashboard({
-  storyA,
-  storyB,
-}: Props) {
+export default function StoryComparisonDashboard({ storyA, storyB }: Props) {
   const comparison = useMemo(
     () => compareStories(storyA, storyB),
-    [storyA, storyB]
+    [storyA, storyB],
   );
 
   const [active, setActive] = useState<"A" | "B">("A");
 
-  const current =
-    active === "A"
-      ? comparison.first
-      : comparison.second;
+  const current = active === "A" ? comparison.first : comparison.second;
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-
       <h2 className="text-2xl font-bold text-white mb-6">
         📊 Story Comparison Dashboard
       </h2>
@@ -46,7 +39,6 @@ export default function StoryComparisonDashboard({
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-
         <div>📝 Word Count: {current.wordCount}</div>
 
         <div>⏱ Reading Time: {current.readingTime} min</div>
@@ -58,7 +50,6 @@ export default function StoryComparisonDashboard({
         <div>⚡ Pacing: {current.pacing}/100</div>
 
         <div>😊 Sentiment: {current.sentiment}</div>
-
       </div>
     </div>
   );

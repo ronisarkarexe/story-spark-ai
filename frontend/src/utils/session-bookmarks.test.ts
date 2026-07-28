@@ -26,7 +26,7 @@ describe("session-bookmarks", () => {
   it("returns stored bookmarks", () => {
     sessionStorage.setItem(
       "story_spark_session_bookmarks",
-      JSON.stringify([story])
+      JSON.stringify([story]),
     );
 
     expect(getSessionBookmarks()).toEqual([story]);
@@ -77,7 +77,7 @@ describe("session-bookmarks", () => {
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "session_bookmarks_changed",
-      })
+      }),
     );
   });
 
@@ -91,7 +91,7 @@ describe("session-bookmarks", () => {
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "session_bookmarks_changed",
-      })
+      }),
     );
   });
 });

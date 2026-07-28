@@ -1,388 +1,360 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="dark" lang="en">
-
-<head>
-
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 
     <title>Login | Story Spark AI</title>
 
     <meta
-        name="description"
-        content="Sign in or create an account for Story Spark AI."
+      name="description"
+      content="Sign in or create an account for Story Spark AI."
     />
 
     <!-- FONTS -->
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
     />
 
     <!-- ICONS -->
 
     <link
-        href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css"
-        rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css"
+      rel="stylesheet"
     />
 
     <!-- GOOGLE AUTH -->
 
-    <script
-        src="https://accounts.google.com/gsi/client"
-        async
-        defer
-    ></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <!-- STYLES -->
 
-    <link href="auth.css" rel="stylesheet"/>
-
-</head>
-<body>
-
+    <link href="auth.css" rel="stylesheet" />
+  </head>
+  <body>
     <!-- PARTICLE CANVAS BACKGROUND -->
     <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
     <!-- MAIN WRAPPER -->
 
     <div class="auth-wrapper">
- 
-
-        <!-- MAIN CONTAINER -->
-
-        <main class="auth-container">
-
-            <!-- LEFT PANEL -->
-
-            <!-- LEFT PANEL (HIDDEN IN CSS) -->
-            <section class="left-pane"></section>
-
-            <!-- RIGHT PANEL -->
-
-            <section class="right-pane">
-
-                <div class="auth-form-card">
-
-                    <!-- CARD BRANDING -->
-                    <div class="auth-card-brand">
-                        <div class="auth-card-icon">
-                            <i class="fi fi-rr-sparkles" style="color: white; font-size: 18px;"></i>
-                        </div>
-                        <div class="auth-card-title">Story Spark AI</div>
-                    </div>
-
-                    <!-- HEADER MOVED TO LEFT PANE -->
-
-                    <!-- TABS -->
-
-                    <div class="auth-tabs">
-
-    <button
-        id="tab-signin"
-        class="auth-tab auth-tab-active"
-        onclick="window.location.href='login.html'"
-    >
-        Log In
-    </button>
-
-    <button
-        id="tab-signup"
-        class="auth-tab"
-        onclick="window.location.href='signup.html'"
-    >
-        Sign Up
-    </button>
-
-</div>
-                    <!-- GOOGLE BUTTON -->
-
-                    <button
-                        onclick="handleGoogleSignIn()"
-                        type="button"
-                        class="ds-btn-google"
-                    >
-
-                        <div
-                            style="
-                                display:flex;
-                                align-items:center;
-                                justify-content:center;
-                                gap:12px;
-                            "
-                        >
-
-                            <svg
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                            >
-
-                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 01-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                                <path d="M5.84 14.09a6.97 6.97 0 010-4.18V7.07H2.18A11 11 0 001 12c0 1.78.43 3.45 1.18 4.93l3.85-2.84z" fill="#FBBC05"/>
-                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-
-                            </svg>
-
-                            <span
-                                style="
-                                    font-size:14px;
-                                    font-weight:600;
-                                "
-                            >
-                                Continue with Google
-                            </span>
-
-                        </div>
-
-                    </button>
-
-                    <!-- DIVIDER -->
-                    <div class="auth-divider">
-                        <div class="auth-divider-line"></div>
-                        <span class="auth-divider-text">OR</span>
-                        <div class="auth-divider-line"></div>
-                    </div>
-
-                    <div id="form-alert" class="ds-alert hidden" role="status" aria-live="polite"></div>
-
-                    <!-- FORM -->
-                    <form
-                        class="auth-form"
-                        id="auth-form"
-                        novalidate
-                    >
-
-                        <div class="auth-fields">
-
-                            <!-- NAME -->
-
-                            <div
-                                class="hidden"
-                                id="signup-fields"
-                            >
-
-                                <label
-                                    class="ds-label"
-                                    for="name-field"
-                                >
-                                    Full Name
-                                </label>
-
-                                <div class="ds-input-group">
-
-                                    <i
-                                        class="fi fi-rr-user ds-input-icon"
-                                    ></i>
-
-                                    <input
-                                        type="text"
-                                        id="name-field"
-                                        placeholder="Alex Spark"
-                                        autocomplete="name"
-                                    />
-
-                                </div>
-
-                            </div>
-
-                            <!-- EMAIL -->
-
-                            <div>
-
-                                <label
-                                    class="ds-label"
-                                    for="email-field"
-                                >
-                                    Email Address
-                                </label>
-
-                                 <div class="ds-input-group">
-                                     <i class="fi fi-rr-envelope ds-input-icon"></i>
-                                     <input
-                                         type="email"
-                                         id="email-field"
-                                         placeholder="name@storyspark.ai"
-                                         autocomplete="email"
-                                         required
-                                         aria-describedby="email-error"
-                                     />
-                                 </div>
-                                 <p class="ds-error" id="email-error" role="alert" aria-live="polite"></p>
-
-                            </div>
-
-                            <!-- PASSWORD -->
-
-                            <div>
-
-                                <div
-                                    style="
-                                        display:flex;
-                                        justify-content:space-between;
-                                        align-items:center;
-                                        margin-bottom:10px;
-                                    "
-                                >
-
-                                    <label
-                                        class="ds-label"
-                                        for="password-field"
-                                        style="margin:0;"
-                                    >
-                                        Password
-                                    </label>
-
-                                    <a
-                                        id="forgot-password-link"
-                                        style="
-                                            font-size:12px;
-                                            color:#8b5cf6;
-                                            cursor:pointer;
-                                            font-weight:600;
-                                        "
-                                    >
-                                        Forgot?
-                                    </a>
-
-                                </div>
-
-                                <div class="ds-input-group">
-                                     <i class="fi fi-rr-lock ds-input-icon"></i>
-                                     <input
-                                         id="password-field"
-                                         placeholder="••••••••"
-                                         type="password"
-                                         autocomplete="current-password"
-                                         required
-                                         aria-describedby="password-error"
-                                     />
-                                     <button
-                                         onclick="togglePasswordVisibility()"
-                                         type="button"
-                                         aria-label="Toggle password visibility"
-                                         style="
-                                             position:absolute;
-                                             right:18px;
-                                             top:50%;
-                                             transform:translateY(-50%);
-                                             display:flex;
-                                             align-items:center;
-                                             justify-content:center;
-                                             padding:0;
-                                             margin:0;
-                                             background:none;
-                                             border:none;
-                                             color:rgba(255,255,255,.5);
-                                             cursor:pointer;
-                                         "
-                                     >
-                                         <i class="fi fi-rr-eye-crossed" id="eye-icon"></i>
-                                     </button>
-                                 </div>
-                                 <p class="ds-error" id="password-error" role="alert" aria-live="polite"></p>
-                                 <p id="login-caps-lock-warning" class="hidden text-yellow-400 text-sm mt-2">Caps Lock is ON</p>
-
-                            </div>
-
-                        </div>
-
-                        <!-- TERMS -->
-
-                        <div class="auth-terms">
-
-                            <input
-                                id="terms-checkbox"
-                                type="checkbox"
-                            >
-
-                            <div class="auth-terms-text">
-
-                                I agree to the
-
-                                <a href="javascript:void(0)" onclick="openLegalModal('terms')">
-                                    Terms
-                                </a>
-
-                                and
-
-                                <a href="javascript:void(0)" onclick="openLegalModal('privacy')">
-                                    Privacy Policy
-                                </a>
-
-                            </div>
-
-                        </div>
-
-                        <!-- BUTTON -->
-
-                        <div class="auth-actions">
-
-                            <button
-                                class="ds-btn-submit"
-                                id="submit-btn"
-                                type="submit"
-                            >
-
-                                <span
-                                    class="btn-spinner"
-                                    id="btn-spinner"
-                                ></span>
-
-                                <span
-                                    class="btn-label"
-                                    id="btn-label"
-                                >
-                                    Log In
-                                </span>
-
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                    <!-- FOOTER -->
-
-                    <div
-                        class="auth-footer"
-                        id="nav-toggle"
-                    >
-
-                        Don’t have an account?
-
-                        <a href="signup.html">
-                            Sign up
-                        </a>
-
-                    </div>
-
+      <!-- MAIN CONTAINER -->
+
+      <main class="auth-container">
+        <!-- LEFT PANEL -->
+
+        <!-- LEFT PANEL (HIDDEN IN CSS) -->
+        <section class="left-pane"></section>
+
+        <!-- RIGHT PANEL -->
+
+        <section class="right-pane">
+          <div class="auth-form-card">
+            <!-- CARD BRANDING -->
+            <div class="auth-card-brand">
+              <div class="auth-card-icon">
+                <i
+                  class="fi fi-rr-sparkles"
+                  style="color: white; font-size: 18px"
+                ></i>
+              </div>
+              <div class="auth-card-title">Story Spark AI</div>
+            </div>
+
+            <!-- HEADER MOVED TO LEFT PANE -->
+
+            <!-- TABS -->
+
+            <div class="auth-tabs">
+              <button
+                id="tab-signin"
+                class="auth-tab auth-tab-active"
+                onclick="window.location.href = 'login.html'"
+              >
+                Log In
+              </button>
+
+              <button
+                id="tab-signup"
+                class="auth-tab"
+                onclick="window.location.href = 'signup.html'"
+              >
+                Sign Up
+              </button>
+            </div>
+            <!-- GOOGLE BUTTON -->
+
+            <button
+              onclick="handleGoogleSignIn()"
+              type="button"
+              class="ds-btn-google"
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  gap: 12px;
+                "
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 01-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.84 14.09a6.97 6.97 0 010-4.18V7.07H2.18A11 11 0 001 12c0 1.78.43 3.45 1.18 4.93l3.85-2.84z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335"
+                  />
+                </svg>
+
+                <span style="font-size: 14px; font-weight: 600">
+                  Continue with Google
+                </span>
+              </div>
+            </button>
+
+            <!-- DIVIDER -->
+            <div class="auth-divider">
+              <div class="auth-divider-line"></div>
+              <span class="auth-divider-text">OR</span>
+              <div class="auth-divider-line"></div>
+            </div>
+
+            <div
+              id="form-alert"
+              class="ds-alert hidden"
+              role="status"
+              aria-live="polite"
+            ></div>
+
+            <!-- FORM -->
+            <form class="auth-form" id="auth-form" novalidate>
+              <div class="auth-fields">
+                <!-- NAME -->
+
+                <div class="hidden" id="signup-fields">
+                  <label class="ds-label" for="name-field"> Full Name </label>
+
+                  <div class="ds-input-group">
+                    <i class="fi fi-rr-user ds-input-icon"></i>
+
+                    <input
+                      type="text"
+                      id="name-field"
+                      placeholder="Alex Spark"
+                      autocomplete="name"
+                    />
+                  </div>
                 </div>
 
-            </section>
+                <!-- EMAIL -->
 
-        </main>
+                <div>
+                  <label class="ds-label" for="email-field">
+                    Email Address
+                  </label>
 
+                  <div class="ds-input-group">
+                    <i class="fi fi-rr-envelope ds-input-icon"></i>
+                    <input
+                      type="email"
+                      id="email-field"
+                      placeholder="name@storyspark.ai"
+                      autocomplete="email"
+                      required
+                      aria-describedby="email-error"
+                    />
+                  </div>
+                  <p
+                    class="ds-error"
+                    id="email-error"
+                    role="alert"
+                    aria-live="polite"
+                  ></p>
+                </div>
+
+                <!-- PASSWORD -->
+
+                <div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <label
+                      class="ds-label"
+                      for="password-field"
+                      style="margin: 0"
+                    >
+                      Password
+                    </label>
+
+                    <a
+                      id="forgot-password-link"
+                      style="
+                        font-size: 12px;
+                        color: #8b5cf6;
+                        cursor: pointer;
+                        font-weight: 600;
+                      "
+                    >
+                      Forgot?
+                    </a>
+                  </div>
+
+                  <div class="ds-input-group">
+                    <i class="fi fi-rr-lock ds-input-icon"></i>
+                    <input
+                      id="password-field"
+                      placeholder="••••••••"
+                      type="password"
+                      autocomplete="current-password"
+                      required
+                      aria-describedby="password-error"
+                    />
+                    <button
+                      onclick="togglePasswordVisibility()"
+                      type="button"
+                      aria-label="Toggle password visibility"
+                      style="
+                        position: absolute;
+                        right: 18px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 0;
+                        margin: 0;
+                        background: none;
+                        border: none;
+                        color: rgba(255, 255, 255, 0.5);
+                        cursor: pointer;
+                      "
+                    >
+                      <i class="fi fi-rr-eye-crossed" id="eye-icon"></i>
+                    </button>
+                  </div>
+                  <p
+                    class="ds-error"
+                    id="password-error"
+                    role="alert"
+                    aria-live="polite"
+                  ></p>
+                  <p
+                    id="login-caps-lock-warning"
+                    class="hidden text-yellow-400 text-sm mt-2"
+                  >
+                    Caps Lock is ON
+                  </p>
+                </div>
+              </div>
+
+              <!-- TERMS -->
+
+              <div class="auth-terms">
+                <input id="terms-checkbox" type="checkbox" />
+
+                <div class="auth-terms-text">
+                  I agree to the
+
+                  <a
+                    href="javascript:void(0)"
+                    onclick="openLegalModal('terms')"
+                  >
+                    Terms
+                  </a>
+
+                  and
+
+                  <a
+                    href="javascript:void(0)"
+                    onclick="openLegalModal('privacy')"
+                  >
+                    Privacy Policy
+                  </a>
+                </div>
+              </div>
+
+              <!-- BUTTON -->
+
+              <div class="auth-actions">
+                <button class="ds-btn-submit" id="submit-btn" type="submit">
+                  <span class="btn-spinner" id="btn-spinner"></span>
+
+                  <span class="btn-label" id="btn-label"> Log In </span>
+                </button>
+              </div>
+            </form>
+
+            <!-- FOOTER -->
+
+            <div class="auth-footer" id="nav-toggle">
+              Don’t have an account?
+
+              <a href="signup.html"> Sign up </a>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
 
     <!-- LEGAL MODAL -->
     <div id="legal-modal" class="legal-modal">
-        <div id="legal-modal-content" class="legal-modal-content">
-            <button onclick="closeLegalModal()" aria-label="Close modal" style="position:absolute; right:24px; top:24px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
-                <i class="fi fi-rr-cross-small" style="font-size: 20px;"></i>
-            </button>
-            <h3 id="legal-modal-title" style="margin-bottom:16px; font-size:24px; font-weight:700; color:var(--text);"></h3>
-            <div id="legal-modal-text" style="font-size:14px; line-height:1.6; color:var(--text-muted); max-height:60vh; overflow-y:auto;"></div>
-        </div>
+      <div id="legal-modal-content" class="legal-modal-content">
+        <button
+          onclick="closeLegalModal()"
+          aria-label="Close modal"
+          style="
+            position: absolute;
+            right: 24px;
+            top: 24px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+          "
+        >
+          <i class="fi fi-rr-cross-small" style="font-size: 20px"></i>
+        </button>
+        <h3
+          id="legal-modal-title"
+          style="
+            margin-bottom: 16px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+          "
+        ></h3>
+        <div
+          id="legal-modal-text"
+          style="
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            max-height: 60vh;
+            overflow-y: auto;
+          "
+        ></div>
+      </div>
     </div>
 
     <!-- SCRIPT -->
 
     <script src="auth.js" defer></script>
-
-</body>
-
+  </body>
 </html>

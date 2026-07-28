@@ -12,12 +12,16 @@ interface IGithubIssuePayload {
   email?: string;
 }
 
-export const createGithubIssue = async (payload: IGithubIssuePayload): Promise<void> => {
+export const createGithubIssue = async (
+  payload: IGithubIssuePayload,
+): Promise<void> => {
   const token = config.github.token;
   const repo = config.github.repo;
 
   if (!token) {
-    console.warn("[GitHub Integration] GITHUB_TOKEN is not set. Skipping GitHub issue creation.");
+    console.warn(
+      "[GitHub Integration] GITHUB_TOKEN is not set. Skipping GitHub issue creation.",
+    );
     return;
   }
 
@@ -49,7 +53,11 @@ ${payload.email || "Not provided"}
   const requestBody = JSON.stringify({
     title: issueTitle,
     body: issueBody,
-    labels: ["bug", payload.severity.toLowerCase(), payload.category.toLowerCase()],
+    labels: [
+      "bug",
+      payload.severity.toLowerCase(),
+      payload.category.toLowerCase(),
+    ],
   });
 
   const options = {
@@ -59,7 +67,7 @@ ${payload.email || "Not provided"}
     headers: {
       "Content-Type": "application/json",
       "User-Agent": "story-spark-ai-backend",
-      "Authorization": `token ${token}`,
+      Authorization: `token ${token}`,
       "Content-Length": Buffer.byteLength(requestBody),
     },
   };
@@ -74,14 +82,18 @@ ${payload.email || "Not provided"}
         if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const parsed = JSON.parse(data);
-            console.log(`[GitHub Integration] Successfully created issue: ${parsed.html_url}`);
+            console.log(
+              `[GitHub Integration] Successfully created issue: ${parsed.html_url}`,
+            );
           } catch {
-            console.log("[GitHub Integration] Successfully created issue, failed to parse response.");
+            console.log(
+              "[GitHub Integration] Successfully created issue, failed to parse response.",
+            );
           }
           resolve();
         } else {
           console.error(
-            `[GitHub Integration] Failed to create issue. Status: ${res.statusCode}. Response: ${data}`
+            `[GitHub Integration] Failed to create issue. Status: ${res.statusCode}. Response: ${data}`,
           );
           resolve(); // Resolve anyway to not block the main database submission
         }

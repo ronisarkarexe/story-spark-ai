@@ -22,7 +22,8 @@ const EmptyStoriesState: React.FC = () => {
               No stories yet. Start your creative journey today!
             </h2>
             <p className="mt-3 max-w-md text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-              Pick a prompt, let the magic happen, and your first story will appear here.
+              Pick a prompt, let the magic happen, and your first story will
+              appear here.
             </p>
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3 items-center justify-center">
@@ -46,5 +47,3 @@ const EmptyStoriesState: React.FC = () => {
 };
 
 export default EmptyStoriesState;
-
-

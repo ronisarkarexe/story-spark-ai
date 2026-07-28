@@ -15,33 +15,43 @@ const requiredEnv = (key: string): string => {
   const value = process.env[key]?.trim();
   if (!value) {
     throw new Error(
-      `${key} environment variable is required. See backend/.env.example for setup instructions.`
+      `${key} environment variable is required. See backend/.env.example for setup instructions.`,
     );
   }
   return value;
 };
 
 export const assertAIProviderConfigured = (): void => {
-  const hasOpenAI = !!(process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY)?.trim();
+  const hasOpenAI = !!(
+    process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY
+  )?.trim();
   const hasGemini = !!process.env.GEMINI_API_KEY?.trim();
   const hasAnthropic = !!process.env.ANTHROPIC_API_KEY?.trim();
 
   if (!hasOpenAI && !hasGemini && !hasAnthropic) {
     throw new Error(
-      "No AI provider API key configured. Set at least one of OPEN_AI_KEY, GEMINI_API_KEY, or ANTHROPIC_API_KEY in your environment. See backend/.env.example for setup instructions."
+      "No AI provider API key configured. Set at least one of OPEN_AI_KEY, GEMINI_API_KEY, or ANTHROPIC_API_KEY in your environment. See backend/.env.example for setup instructions.",
     );
   }
 
-  if (!hasOpenAI) console.warn("[Config] OPEN_AI_KEY not set — OpenAI provider unavailable.");
-  if (!hasGemini) console.warn("[Config] GEMINI_API_KEY not set — Gemini provider unavailable.");
-  if (!hasAnthropic) console.warn("[Config] ANTHROPIC_API_KEY not set — Anthropic provider unavailable.");
+  if (!hasOpenAI)
+    console.warn("[Config] OPEN_AI_KEY not set — OpenAI provider unavailable.");
+  if (!hasGemini)
+    console.warn(
+      "[Config] GEMINI_API_KEY not set — Gemini provider unavailable.",
+    );
+  if (!hasAnthropic)
+    console.warn(
+      "[Config] ANTHROPIC_API_KEY not set — Anthropic provider unavailable.",
+    );
 };
 
 export default {
   env: process.env.NODE_ENV,
   frontend_url: process.env.FRONTEND_URL,
   port: process.env.PORT || "5000",
-  disable_logs: process.env.DISABLE_LOGS === "true" || process.env.VERCEL === "1",
+  disable_logs:
+    process.env.DISABLE_LOGS === "true" || process.env.VERCEL === "1",
   database_url: (() => {
     const url = process.env.DATABASE_URL?.trim();
     if (!url) {
@@ -72,7 +82,8 @@ export default {
   unsplash_key_api: process.env.UNSPLASH_KEY_API,
   unsplash_secret_key_api: process.env.UNSPLASH_KEY_API_SECRET,
   gemini_api_key: process.env.GEMINI_API_KEY,
-  gemini_image_model: process.env.GEMINI_IMAGE_MODEL || "imagen-3.0-generate-002",
+  gemini_image_model:
+    process.env.GEMINI_IMAGE_MODEL || "imagen-3.0-generate-002",
   anthropic_api_key: process.env.ANTHROPIC_API_KEY,
   verify_email: process.env.VERIFY_EMAIL,
   verify_password: process.env.VERIFY_PASSWORD,

@@ -65,12 +65,16 @@ const NewsletterSubscriberSchema = new Schema<INewsletterSubscriber>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // ✅ Safe registration — prevents "Cannot overwrite model" error on hot reload
 const NewsletterSubscriber =
-  (mongoose.models.NewsletterSubscriber as mongoose.Model<INewsletterSubscriber>) ||
-  mongoose.model<INewsletterSubscriber>("NewsletterSubscriber", NewsletterSubscriberSchema);
+  (mongoose.models
+    .NewsletterSubscriber as mongoose.Model<INewsletterSubscriber>) ||
+  mongoose.model<INewsletterSubscriber>(
+    "NewsletterSubscriber",
+    NewsletterSubscriberSchema,
+  );
 
 export { NewsletterSubscriber };

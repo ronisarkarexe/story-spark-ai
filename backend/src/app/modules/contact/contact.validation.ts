@@ -37,10 +37,10 @@ const requiredTrimmedString = (label: string, max?: number) =>
     },
     max
       ? z
-        .string()
-        .min(1, `${label} is required`)
-        .max(max, `${label} must not exceed ${max} characters`)
-      : z.string().min(1, `${label} is required`)
+          .string()
+          .min(1, `${label} is required`)
+          .max(max, `${label} must not exceed ${max} characters`)
+      : z.string().min(1, `${label} is required`),
   );
 
 const contactValidationSchema = z.object({

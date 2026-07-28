@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { useGetPostListsQuery,useDeletePostMutation  } from "../../../redux/apis/post.api";
+import {
+  useGetPostListsQuery,
+  useDeletePostMutation,
+} from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
@@ -43,9 +46,9 @@ const PostListsComponent: React.FC = () => {
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setSearchTerm(e.target.value);
-  setPage(1);
-};
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -64,7 +67,7 @@ const PostListsComponent: React.FC = () => {
         style={{
           backgroundColor: `${topic.color}15`,
           color: topic.color,
-          borderColor: `${topic.color}30`
+          borderColor: `${topic.color}30`,
         }}
       >
         {topic.title}
@@ -75,10 +78,11 @@ const PostListsComponent: React.FC = () => {
   const getStatusBadge = (isPublished: boolean) => {
     return (
       <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${isPublished
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${
+          isPublished
             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
             : "bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
-          }`}
+        }`}
       >
         {isPublished ? "Published" : "Draft"}
       </span>
@@ -88,7 +92,9 @@ const PostListsComponent: React.FC = () => {
   return (
     <div className="bg-[#1a1d2d]/80 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-800/60 overflow-hidden">
       <div className="w-full flex justify-between items-center p-5 border-b border-gray-800/60 bg-[#1a1d2d]/50">
-        <h2 className="text-xl font-bold text-gray-100 tracking-tight">Posts</h2>
+        <h2 className="text-xl font-bold text-gray-100 tracking-tight">
+          Posts
+        </h2>
         <div className="ml-3">
           <div className="w-full max-w-sm min-w-[250px] relative group">
             <div className="relative">
@@ -177,7 +183,10 @@ const PostListsComponent: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-800/60 bg-transparent">
               {data?.posts?.map((post) => (
-                <tr key={post._id} className="hover:bg-gray-800/30 transition-colors duration-200 group">
+                <tr
+                  key={post._id}
+                  className="hover:bg-gray-800/30 transition-colors duration-200 group"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {post.imageURL && (
@@ -201,11 +210,11 @@ const PostListsComponent: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-200">
-                      {post.author?.name || 'Unknown User'}
+                      {post.author?.name || "Unknown User"}
                     </div>
 
                     <div className="text-xs text-gray-400">
-                      {post.author?.email || 'N/A'}
+                      {post.author?.email || "N/A"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -229,19 +238,25 @@ const PostListsComponent: React.FC = () => {
                         <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-rose-400 transition-colors">
                           {post.likesCount}
                         </div>
-                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Likes</div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">
+                          Likes
+                        </div>
                       </div>
                       <div className="text-center group/stat">
                         <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-blue-400 transition-colors">
                           {post.commentsCount}
                         </div>
-                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Comments</div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">
+                          Comments
+                        </div>
                       </div>
                       <div className="text-center group/stat">
                         <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-emerald-400 transition-colors">
                           {post.viewsCount}
                         </div>
-                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Views</div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">
+                          Views
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -254,9 +269,10 @@ const PostListsComponent: React.FC = () => {
                         Edit
                       </button>
                       <button
-                          onClick={() => setConfirmDeleteId(post._id)}
-                          className="text-rose-400 hover:text-rose-300 hover:bg-rose-400/10 px-3 py-1.5 rounded-md transition-all">
-                          Delete
+                        onClick={() => setConfirmDeleteId(post._id)}
+                        className="text-rose-400 hover:text-rose-300 hover:bg-rose-400/10 px-3 py-1.5 rounded-md transition-all"
+                      >
+                        Delete
                       </button>
                     </div>
                   </td>
@@ -280,9 +296,12 @@ const PostListsComponent: React.FC = () => {
           {confirmDeleteId && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
               <div className="bg-[#1a1d2d] border border-gray-700 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
-                <h3 className="text-lg font-bold text-white mb-2">Delete Story?</h3>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  Delete Story?
+                </h3>
                 <p className="text-gray-400 text-sm mb-6">
-                  Are you sure you want to delete this story? This action cannot be undone.
+                  Are you sure you want to delete this story? This action cannot
+                  be undone.
                 </p>
                 <div className="flex justify-end gap-3">
                   <button

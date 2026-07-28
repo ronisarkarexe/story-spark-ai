@@ -12,7 +12,7 @@ const router = express.Router();
 router.post(
   "/analyze",
   validateRequest(KotlinAnalysisValidator.analyzeKotlin),
-  KotlinAnalysisController.analyzeKotlin
+  KotlinAnalysisController.analyzeKotlin,
 );
 
 export const KotlinAnalysisRouter = router;

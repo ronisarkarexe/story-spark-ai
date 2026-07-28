@@ -28,7 +28,7 @@ const idempotencyMiddleware =
       const existing = await IdempotencyKey.findOneAndUpdate(
         { key: scopedKey },
         { $setOnInsert: { key: scopedKey, status: "in_progress" } },
-        { upsert: true, new: false }
+        { upsert: true, new: false },
       );
 
       if (existing === null) {
@@ -59,17 +59,17 @@ const idempotencyMiddleware =
 export const completeIdempotentRequest = async (
   scopedKey: string | undefined,
   statusCode: number,
-  body: unknown
+  body: unknown,
 ): Promise<void> => {
   if (!scopedKey) return;
   await IdempotencyKey.findOneAndUpdate(
     { key: scopedKey },
-    { status: "completed", statusCode, responseBody: JSON.stringify(body) }
+    { status: "completed", statusCode, responseBody: JSON.stringify(body) },
   );
 };
 
 export const releaseIdempotentRequest = async (
-  scopedKey: string | undefined
+  scopedKey: string | undefined,
 ): Promise<void> => {
   if (!scopedKey) return;
   // Let a future retry start fresh instead of being stuck "in_progress" forever.

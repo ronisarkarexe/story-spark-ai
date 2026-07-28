@@ -1,6 +1,6 @@
 // frontend/src/components/Contributors/Contributors.tsx
-import { useState, useEffect } from 'react';
-import { FaGithub, FaStar, FaCodeBranch, FaUsers } from 'react-icons/fa';
+import { useState, useEffect } from "react";
+import { FaGithub, FaStar, FaCodeBranch, FaUsers } from "react-icons/fa";
 
 interface Contributor {
   id: number;
@@ -22,8 +22,8 @@ export const Contributors: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const REPO_OWNER = 'ronisarkarexe';
-  const REPO_NAME = 'story-spark-ai';
+  const REPO_OWNER = "ronisarkarexe";
+  const REPO_NAME = "story-spark-ai";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +33,7 @@ export const Contributors: React.FC = () => {
 
         // Fetch contributors
         const contributorsRes = await fetch(
-          `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contributors?per_page=100`
+          `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contributors?per_page=100`,
         );
 
         if (!contributorsRes.ok) {
@@ -45,7 +45,7 @@ export const Contributors: React.FC = () => {
 
         // Fetch repo stats
         const repoRes = await fetch(
-          `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`
+          `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`,
         );
 
         if (repoRes.ok) {
@@ -56,10 +56,11 @@ export const Contributors: React.FC = () => {
             contributors: contributorsData.length,
           });
         }
-
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch contributors');
-        console.error('Error fetching contributors:', err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch contributors",
+        );
+        console.error("Error fetching contributors:", err);
       } finally {
         setLoading(false);
       }
@@ -135,7 +136,9 @@ export const Contributors: React.FC = () => {
             <p className="text-2xl font-bold text-slate-900 dark:text-white">
               {repoStats.contributors}
             </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Contributors</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Contributors
+            </p>
           </div>
         </div>
       )}

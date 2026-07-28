@@ -2,13 +2,7 @@ export interface DialogueEmotion {
   id: number;
   character: string;
   dialogue: string;
-  emotion:
-    | "Happy"
-    | "Sad"
-    | "Angry"
-    | "Fear"
-    | "Confident"
-    | "Sarcastic";
+  emotion: "Happy" | "Sad" | "Angry" | "Fear" | "Confident" | "Sarcastic";
   confidence: number;
   suggestion: string;
 }
@@ -19,9 +13,7 @@ export interface CharacterEmotionSummary {
   dialogueCount: number;
 }
 
-export function analyzeDialogueEmotion(
-  story: string
-): {
+export function analyzeDialogueEmotion(story: string): {
   dialogues: DialogueEmotion[];
   summaries: CharacterEmotionSummary[];
 } {
@@ -74,8 +66,6 @@ export function analyzeDialogueEmotion(
   };
 }
 
-export function refreshDialogueEmotionAnalysis(
-  story: string
-) {
+export function refreshDialogueEmotionAnalysis(story: string) {
   return analyzeDialogueEmotion(story);
 }

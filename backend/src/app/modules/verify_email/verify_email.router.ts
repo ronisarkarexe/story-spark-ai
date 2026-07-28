@@ -6,6 +6,11 @@ import { apiRateLimiter } from "../../middleware/rateLimit.middleware";
 const router = express.Router();
 
 router.post("/verify-email", apiRateLimiter, VerifyEmailController.VerifyEmail);
-router.post("/verify-otp", apiRateLimiter, otpRateLimiter, VerifyEmailController.VerifyOtp);
+router.post(
+  "/verify-otp",
+  apiRateLimiter,
+  otpRateLimiter,
+  VerifyEmailController.VerifyOtp,
+);
 
 export const VerifyEmailRouter = router;

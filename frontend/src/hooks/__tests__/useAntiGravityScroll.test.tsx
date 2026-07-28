@@ -56,7 +56,7 @@ describe("useAntiGravityScroll", () => {
 
   it("initializes with isPlaying false and targetSpeed 1", () => {
     const { result } = renderHook(() =>
-      useAntiGravityScroll({ current: createMockContainer() })
+      useAntiGravityScroll({ current: createMockContainer() }),
     );
     expect(result.current.isPlaying).toBe(false);
     expect(result.current.targetSpeed).toBe(1);
@@ -68,35 +68,35 @@ describe("useAntiGravityScroll", () => {
     expect(container.addEventListener).toHaveBeenCalledWith(
       "wheel",
       expect.any(Function),
-      { passive: true }
+      { passive: true },
     );
     expect(container.addEventListener).toHaveBeenCalledWith(
       "touchmove",
       expect.any(Function),
-      { passive: true }
+      { passive: true },
     );
   });
 
   it("removes event listeners on unmount", () => {
     const container = createMockContainer();
     const { unmount } = renderHook(() =>
-      useAntiGravityScroll({ current: container })
+      useAntiGravityScroll({ current: container }),
     );
     unmount();
     expect(container.removeEventListener).toHaveBeenCalledWith(
       "wheel",
-      expect.any(Function)
+      expect.any(Function),
     );
     expect(container.removeEventListener).toHaveBeenCalledWith(
       "touchmove",
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
   it("wheel event interrupts auto-play (sets isPlaying false)", () => {
     const container = createMockContainer();
     const { result } = renderHook(() =>
-      useAntiGravityScroll({ current: container })
+      useAntiGravityScroll({ current: container }),
     );
 
     // Manually trigger wheel event
@@ -116,7 +116,7 @@ describe("useAntiGravityScroll", () => {
   it("setIsPlaying updates state", () => {
     const container = createMockContainer();
     const { result } = renderHook(() =>
-      useAntiGravityScroll({ current: container })
+      useAntiGravityScroll({ current: container }),
     );
 
     act(() => {
@@ -133,7 +133,7 @@ describe("useAntiGravityScroll", () => {
   it("setTargetSpeed updates state", () => {
     const container = createMockContainer();
     const { result } = renderHook(() =>
-      useAntiGravityScroll({ current: container })
+      useAntiGravityScroll({ current: container }),
     );
 
     act(() => {
@@ -145,7 +145,7 @@ describe("useAntiGravityScroll", () => {
   it("exposes currentVelocityRef", () => {
     const container = createMockContainer();
     const { result } = renderHook(() =>
-      useAntiGravityScroll({ current: container })
+      useAntiGravityScroll({ current: container }),
     );
     expect(result.current.currentVelocityRef).toBeDefined();
     expect(typeof result.current.currentVelocityRef.current).toBe("number");
@@ -154,7 +154,7 @@ describe("useAntiGravityScroll", () => {
   it("returns a container ref unchanged across renders", () => {
     const container = createMockContainer();
     const { result, rerender } = renderHook(() =>
-      useAntiGravityScroll({ current: container })
+      useAntiGravityScroll({ current: container }),
     );
     const firstRef = result.current;
     rerender();

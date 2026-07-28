@@ -26,9 +26,9 @@ describe("isAllowedUrlProtocol", () => {
   });
 
   it("returns false for data: protocol", () => {
-    expect(isAllowedUrlProtocol("data:text/html,<script>alert(1)</script>")).toBe(
-      false,
-    );
+    expect(
+      isAllowedUrlProtocol("data:text/html,<script>alert(1)</script>"),
+    ).toBe(false);
   });
 
   it("returns false for vbscript: protocol", () => {
@@ -102,9 +102,7 @@ describe("isAllowedUrlProtocol", () => {
 
 describe("sanitizeUrl", () => {
   it("returns URL unchanged when protocol is safe (https)", () => {
-    expect(sanitizeUrl("https://example.com")).toBe(
-      "https://example.com",
-    );
+    expect(sanitizeUrl("https://example.com")).toBe("https://example.com");
   });
 
   it("returns URL unchanged when protocol is safe (http)", () => {
@@ -119,7 +117,9 @@ describe("sanitizeUrl", () => {
   });
 
   it("returns fallback for data: URLs", () => {
-    expect(sanitizeUrl("data:text/html,<script>alert(1)</script>", "")).toBe("");
+    expect(sanitizeUrl("data:text/html,<script>alert(1)</script>", "")).toBe(
+      "",
+    );
     expect(sanitizeUrl("data:text/html,<script/>", "fallback.png")).toBe(
       "fallback.png",
     );
@@ -135,9 +135,7 @@ describe("sanitizeUrl", () => {
 
   it("returns fallback for empty string", () => {
     expect(sanitizeUrl("", "")).toBe("");
-    expect(sanitizeUrl("", "https://default.com")).toBe(
-      "https://default.com",
-    );
+    expect(sanitizeUrl("", "https://default.com")).toBe("https://default.com");
   });
 
   it("returns fallback for null/undefined", () => {
@@ -150,9 +148,7 @@ describe("sanitizeUrl", () => {
   });
 
   it("trims whitespace from safe URLs", () => {
-    expect(sanitizeUrl("  https://example.com  ")).toBe(
-      "https://example.com",
-    );
+    expect(sanitizeUrl("  https://example.com  ")).toBe("https://example.com");
   });
 
   it("uses empty string as default fallback", () => {

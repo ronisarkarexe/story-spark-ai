@@ -1,19 +1,12 @@
 import { useEffect, useState } from "react";
-import {
-  detectScenes,
-  renameScene,
-} from "../../utils/storySceneNavigator";
+import { detectScenes, renameScene } from "../../utils/storySceneNavigator";
 
 interface Props {
   story: string;
 }
 
-export default function StorySceneNavigator({
-  story,
-}: Props) {
-  const [scenes, setScenes] = useState(
-    detectScenes(story)
-  );
+export default function StorySceneNavigator({ story }: Props) {
+  const [scenes, setScenes] = useState(detectScenes(story));
 
   const [activeScene, setActiveScene] = useState(1);
 
@@ -21,18 +14,12 @@ export default function StorySceneNavigator({
     setScenes(detectScenes(story));
   }, [story]);
 
-  const handleRename = (
-    id: number,
-    value: string
-  ) => {
-    setScenes((prev) =>
-      renameScene(prev, id, value)
-    );
+  const handleRename = (id: number, value: string) => {
+    setScenes((prev) => renameScene(prev, id, value));
   };
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-
       <h2 className="text-2xl font-bold text-white mb-6">
         🎬 Story Scene Navigator
       </h2>
@@ -50,9 +37,7 @@ export default function StorySceneNavigator({
           >
             <input
               value={scene.title}
-              onChange={(e) =>
-                handleRename(scene.id, e.target.value)
-              }
+              onChange={(e) => handleRename(scene.id, e.target.value)}
               className="w-full bg-transparent text-white font-semibold"
             />
 

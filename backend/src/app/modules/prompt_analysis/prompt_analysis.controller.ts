@@ -11,7 +11,8 @@ export const PromptAnalysisController = {
    * Analyze a user prompt and return creativity score + enhancements
    */
   analyzePrompt: catchAsync(async (req: Request, res: Response) => {
-    const { prompt, language, genre, tone } = req.body as IPromptAnalysisRequest;
+    const { prompt, language, genre, tone } =
+      req.body as IPromptAnalysisRequest;
 
     const result = await PromptAnalysisService.analyzePrompt({
       prompt,
@@ -51,7 +52,7 @@ export const PromptAnalysisController = {
     const limitedPrompts = prompts.slice(0, 10);
 
     const results = await Promise.all(
-      limitedPrompts.map((p) => PromptAnalysisService.analyzePrompt(p))
+      limitedPrompts.map((p) => PromptAnalysisService.analyzePrompt(p)),
     );
 
     sendResponse(res, {
@@ -67,7 +68,8 @@ export const PromptAnalysisController = {
    * Get enhanced version of a prompt without full analysis
    */
   enhancePrompt: catchAsync(async (req: Request, res: Response) => {
-    const { prompt, language, genre, tone } = req.body as IPromptAnalysisRequest;
+    const { prompt, language, genre, tone } =
+      req.body as IPromptAnalysisRequest;
 
     const result = await PromptAnalysisService.analyzePrompt({
       prompt,

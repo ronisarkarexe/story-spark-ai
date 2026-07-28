@@ -11,20 +11,20 @@ router.post(
   "/",
   auth(ENUM_USER_ROLE.USER),
   validateRequest(WriterApplicationValidation.submitApplicationZodSchema),
-  WriterApplicationController.submitApplication
+  WriterApplicationController.submitApplication,
 );
 
 router.get(
   "/",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
-  WriterApplicationController.getAllApplications
+  WriterApplicationController.getAllApplications,
 );
 
 router.patch(
   "/:id",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   validateRequest(WriterApplicationValidation.updateApplicationStatusZodSchema),
-  WriterApplicationController.updateApplicationStatus
+  WriterApplicationController.updateApplicationStatus,
 );
 
 export const WriterApplicationRoutes = router;

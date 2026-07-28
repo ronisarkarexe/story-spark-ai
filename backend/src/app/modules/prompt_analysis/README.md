@@ -1,6 +1,7 @@
 # Prompt Analysis API Documentation
 
 ## Base URL
+
 ```
 /api/v1/prompt-analysis
 ```
@@ -8,11 +9,13 @@
 ## Endpoints
 
 ### 1. Analyze Prompt
+
 Comprehensive analysis of a story prompt including creativity score, enhancements, and recommendations.
 
 **Endpoint:** `POST /api/v1/prompt-analysis/analyze`
 
 **Request:**
+
 ```json
 {
   "prompt": "A young wizard discovers a hidden library containing spells of forgotten ages. Confused and curious, she must choose between revealing her secret or protecting it.",
@@ -25,22 +28,26 @@ Comprehensive analysis of a story prompt including creativity score, enhancement
 **Query Parameters:** None
 
 **Headers Required:**
+
 - `Content-Type: application/json`
 
 **Body Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `prompt` | string | Yes | Story prompt (10-2000 characters) |
-| `language` | string | No | Language code. Default: "English" |
-| `genre` | string | No | Genre classification |
-| `tone` | string | No | Desired tone for the story |
+
+| Parameter  | Type   | Required | Description                       |
+| ---------- | ------ | -------- | --------------------------------- |
+| `prompt`   | string | Yes      | Story prompt (10-2000 characters) |
+| `language` | string | No       | Language code. Default: "English" |
+| `genre`    | string | No       | Genre classification              |
+| `tone`     | string | No       | Desired tone for the story        |
 
 **Valid Values:**
+
 - **language**: English, Hindi, Spanish, French, Portuguese, German, Japanese, Korean, Bengali, Tamil, Telugu, Marathi
 - **genre**: Drama, Comedy, Horror, Romance, Sci-Fi, Fantasy, Mystery, Adventure
 - **tone**: formal, casual, humorous, serious, mysterious, inspirational
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -60,7 +67,7 @@ Comprehensive analysis of a story prompt including creativity score, enhancement
     "sentimentScore": {
       "positive": 0.65,
       "neutral": 0.25,
-      "negative": 0.10
+      "negative": 0.1
     },
     "complexity": "moderate",
     "recommendations": [
@@ -85,6 +92,7 @@ Comprehensive analysis of a story prompt including creativity score, enhancement
 ```
 
 **Error Response (400 Bad Request):**
+
 ```json
 {
   "success": false,
@@ -101,11 +109,13 @@ Comprehensive analysis of a story prompt including creativity score, enhancement
 ---
 
 ### 2. Enhance Prompt
+
 Quick enhancement endpoint that returns only the enhanced prompt and suggestions (without full analysis).
 
 **Endpoint:** `POST /api/v1/prompt-analysis/enhance`
 
 **Request:**
+
 ```json
 {
   "prompt": "A young wizard discovers a hidden library",
@@ -114,6 +124,7 @@ Quick enhancement endpoint that returns only the enhanced prompt and suggestions
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -134,11 +145,13 @@ Quick enhancement endpoint that returns only the enhanced prompt and suggestions
 ---
 
 ### 3. Batch Analyze Prompts
+
 Analyze multiple prompts in a single request (up to 10 prompts).
 
 **Endpoint:** `POST /api/v1/prompt-analysis/batch`
 
 **Request:**
+
 ```json
 {
   "prompts": [
@@ -157,11 +170,13 @@ Analyze multiple prompts in a single request (up to 10 prompts).
 **Query Parameters:** None
 
 **Body Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `prompts` | array | Yes | Array of prompt objects (1-10 items) |
+
+| Parameter | Type  | Required | Description                          |
+| --------- | ----- | -------- | ------------------------------------ |
+| `prompts` | array | Yes      | Array of prompt objects (1-10 items) |
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -192,7 +207,9 @@ Analyze multiple prompts in a single request (up to 10 prompts).
 ## Response Fields Explained
 
 ### `creativityScore` (0-100)
+
 Machine learning-based creativity assessment calculated from:
+
 - Prompt length (optimal range: 50-150 words)
 - Keyword diversity and relevance
 - Sentiment balance and emotional tone
@@ -200,45 +217,58 @@ Machine learning-based creativity assessment calculated from:
 - Presence of intrigue and imaginative language
 
 **Score Interpretation:**
+
 - **75-100**: Excellent creativity, well-structured and highly engaging
 - **50-74**: Good potential, could benefit from additional details
 - **0-49**: Fair creativity, review suggestions for significant improvements
 
 ### `enhancedPrompt`
+
 AI-refined version of the original prompt using Google Gemini API. Incorporates:
+
 - Improved specificity and clarity
 - Enhanced descriptive language
 - Better narrative structure
 - More engaging opening/hook
 
 ### `improvements` (Array of 3-5 strings)
+
 Specific, actionable suggestions to improve the prompt. Examples:
+
 - "Add character names and background details"
 - "Specify the setting and time period"
 - "Include the central conflict or mystery"
 - "Define stakes and consequences"
 
 ### `keywords` (Array of strings)
+
 Automatically extracted important words/themes using:
+
 - Stop word filtering
 - Frequency analysis
 - Semantic relevance scoring
 - Limited to top 10 keywords
 
 ### `sentimentScore`
+
 Emotional tone breakdown (all values between 0-1):
+
 - **positive**: Uplifting, optimistic, joyful language
 - **neutral**: Factual, descriptive, balanced language
 - **negative**: Dark, threatening, somber language
 
 ### `complexity`
+
 Prompt complexity classification:
+
 - **simple**: Short, straightforward prompt (optimal for beginners)
 - **moderate**: Balanced complexity with good detail (most prompts)
 - **complex**: Sophisticated structure with nuanced elements (advanced users)
 
 ### `recommendations`
+
 Array of detailed improvement suggestions with:
+
 - **title**: Brief recommendation title
 - **description**: Detailed explanation and benefits
 - **impact**: "high", "medium", or "low" - expected impact on story quality
@@ -249,15 +279,16 @@ Array of detailed improvement suggestions with:
 
 ### HTTP Status Codes
 
-| Code | Scenario |
-|------|----------|
-| 200 | Successful analysis |
-| 400 | Invalid request parameters (validation failed) |
-| 422 | Prompt too short or too long |
-| 500 | Internal server error |
-| 503 | Gemini API unavailable (falls back to basic analysis) |
+| Code | Scenario                                              |
+| ---- | ----------------------------------------------------- |
+| 200  | Successful analysis                                   |
+| 400  | Invalid request parameters (validation failed)        |
+| 422  | Prompt too short or too long                          |
+| 500  | Internal server error                                 |
+| 503  | Gemini API unavailable (falls back to basic analysis) |
 
 ### Error Response Format
+
 ```json
 {
   "success": false,
@@ -276,11 +307,13 @@ Array of detailed improvement suggestions with:
 ## Rate Limiting
 
 The prompt analysis endpoints are subject to standard API rate limiting:
+
 - **Default limit**: 100 requests per 15 minutes per IP
 - **Batch limit**: 10 prompts maximum per request
 - **Timeout**: 60 seconds per request
 
 When rate limit is exceeded:
+
 ```json
 {
   "success": false,
@@ -293,6 +326,7 @@ When rate limit is exceeded:
 ## Examples
 
 ### cURL Example
+
 ```bash
 curl -X POST http://localhost:4002/api/v1/prompt-analysis/analyze \
   -H "Content-Type: application/json" \
@@ -305,15 +339,17 @@ curl -X POST http://localhost:4002/api/v1/prompt-analysis/analyze \
 ```
 
 ### JavaScript/Fetch Example
+
 ```javascript
-const result = await fetch('/api/v1/prompt-analysis/analyze', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const result = await fetch("/api/v1/prompt-analysis/analyze", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    prompt: "A young detective discovers her cold case partner is the criminal mastermind.",
+    prompt:
+      "A young detective discovers her cold case partner is the criminal mastermind.",
     language: "English",
-    genre: "Mystery"
-  })
+    genre: "Mystery",
+  }),
 });
 
 const data = await result.json();
@@ -321,6 +357,7 @@ console.log(`Creativity Score: ${data.data.creativityScore}`);
 ```
 
 ### Python Example
+
 ```python
 import requests
 
@@ -344,6 +381,7 @@ print(f"Enhanced: {analysis['enhancedPrompt']}")
 ## Implementation Details
 
 ### Creativity Score Algorithm
+
 1. **Base Score**: 50 points
 2. **Length Bonus**: +15 points (50-150 words), +10 points (30-200 words)
 3. **Keyword Diversity**: +2 points per unique keyword (max 15)
@@ -353,19 +391,24 @@ print(f"Enhanced: {analysis['enhancedPrompt']}")
 7. **AI Enhancement Boost**: +15 points (from Gemini analysis)
 
 ### Fallback Behavior
+
 If Gemini API is unavailable:
+
 - Returns pre-built suggestions based on prompt analysis
 - Reduces creativity score boost (5 instead of 15)
 - Maintains all other analysis features
 - Notifies user of limited enhancement
 
 ### Language Support
+
 Automatic detection and handling for:
+
 - English, Spanish, French, Portuguese, German
 - Hindi, Bengali, Tamil, Telugu, Marathi
 - Japanese, Korean
 
 Multi-language support includes:
+
 - Sentiment analysis adapted for language patterns
 - Keyword extraction using language-specific stop words
 - Genre/tone translations in responses
@@ -375,18 +418,21 @@ Multi-language support includes:
 ## Best Practices
 
 ### For Frontend Integration
+
 1. Validate prompt locally before sending (min 10 chars)
 2. Show loading state during analysis
 3. Cache results if prompt hasn't changed
 4. Handle 503 errors gracefully with fallback UI
 
 ### For Backend Usage
+
 1. Implement request timeouts (60 seconds)
 2. Monitor Gemini API usage for cost optimization
 3. Log analysis requests for analytics
 4. Implement circuit breaker for API failures
 
 ### For Performance
+
 1. Batch analyze related prompts when possible
 2. Debounce real-time analysis calls
 3. Cache frequently analyzed prompts
@@ -397,17 +443,20 @@ Multi-language support includes:
 ## Troubleshooting
 
 ### "Gemini API unavailable"
+
 - Check API key configuration
 - Verify API quota hasn't been exceeded
 - Check network connectivity
 - Fallback suggestions will still be provided
 
 ### "Prompt must be at least 10 characters"
+
 - Ensure prompt length >= 10 characters
 - Remove leading/trailing whitespace
 - Combine multiple short phrases if needed
 
 ### No keywords extracted
+
 - Ensure prompt contains meaningful words
 - Avoid purely numeric or symbolic content
 - Check language setting matches prompt

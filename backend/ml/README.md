@@ -80,12 +80,12 @@
 4. **First-Time Setup (Admin Seeding)**
 
    Before starting the server for the first time, you must create an admin user:
-   
+
    ```bash
    cd backend
    npx ts-node scripts/seed-admin.ts
    ```
-   
+
    Make sure `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in your `backend/.env` file.
 
 5. **Run apps**
@@ -111,10 +111,10 @@
 
 Use **two** Vercel projects from this monorepo:
 
-| Project | Root directory | Example domain |
-|---------|----------------|----------------|
-| Frontend | `frontend` | `storysparkai.vercel.app` |
-| Backend API | `backend` | `apistorysparkai.vercel.app` |
+| Project     | Root directory | Example domain               |
+| ----------- | -------------- | ---------------------------- |
+| Frontend    | `frontend`     | `storysparkai.vercel.app`    |
+| Backend API | `backend`      | `apistorysparkai.vercel.app` |
 
 **Frontend environment variables** (redeploy after changing):
 
@@ -141,25 +141,25 @@ cp frontend/.env.example frontend/.env
 
 Variables marked **Yes** are required for local development. Variables marked **No** are optional and can usually use the default value. Variables marked for a feature are only required when you use that feature.
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | MongoDB connection string. Use a local URI such as `mongodb://localhost:27017/storysparkai` or an Atlas URI. |
-| `PORT` | No | API port number. Defaults to `5000` if unset. |
-| `NODE_ENV` | No | Runtime mode, usually `development` locally or `production` in deploys. |
-| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests, e.g., `http://localhost:4001`. |
-| `SALT_ROUNDS` | Yes | Bcrypt cost factor as a number, e.g., `10`. |
-| `JWT_SECRET` | Yes | Access token signing secret, e.g., `your-jwt-secret`. Use a strong random value outside local testing. |
-| `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret, e.g., `your-refresh-secret`. Use a different strong value from `JWT_SECRET`. |
-| `JWT_EXPIRES_IN` | Yes | Access token lifetime, e.g., `60d`, `24h`, or another valid duration string. |
-| `JWT_REFRESH_EXPIRES_IN` | Yes | Refresh token lifetime, e.g., `120d`, `30d`, or another valid duration string. |
-| `DEFAULT_ADMIN_PASSWORD` | Yes | Initial admin password used during seeding, e.g., `admin123` for local development only. |
-| `OPEN_AI_KEY` | For OpenAI | [OpenAI API key](https://platform.openai.com/api-keys), required only when using OpenAI-backed features. |
-| `GEMINI_API_KEY` | For Gemini | [Google AI Studio key](https://aistudio.google.com/apikey), required only when using Gemini-backed features. |
-| `UNSPLASH_KEY_API` | For images | [Unsplash Access Key](https://unsplash.com/developers), required only for Unsplash image features. |
-| `UNSPLASH_KEY_API_SECRET` | For images | Unsplash secret, required only for Unsplash image features that need it. |
-| `VERIFY_EMAIL` | For email | SMTP sender address, required only for email verification or email notifications. |
-| `VERIFY_PASSWORD` | For email | SMTP password or app password, required only for email verification or email notifications. |
-| `GOOGLE_CLIENT_ID` | For login with google | Google OAuth client ID from the [Google Cloud Console](https://console.cloud.google.com), required only for Google login. |
+| Variable                  | Required              | Description                                                                                                               |
+| ------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`            | Yes                   | MongoDB connection string. Use a local URI such as `mongodb://localhost:27017/storysparkai` or an Atlas URI.              |
+| `PORT`                    | No                    | API port number. Defaults to `5000` if unset.                                                                             |
+| `NODE_ENV`                | No                    | Runtime mode, usually `development` locally or `production` in deploys.                                                   |
+| `CORS_ORIGINS`            | No                    | Comma-separated frontend URLs allowed for CORS requests, e.g., `http://localhost:4001`.                                   |
+| `SALT_ROUNDS`             | Yes                   | Bcrypt cost factor as a number, e.g., `10`.                                                                               |
+| `JWT_SECRET`              | Yes                   | Access token signing secret, e.g., `your-jwt-secret`. Use a strong random value outside local testing.                    |
+| `JWT_REFRESH_SECRET`      | Yes                   | Refresh token signing secret, e.g., `your-refresh-secret`. Use a different strong value from `JWT_SECRET`.                |
+| `JWT_EXPIRES_IN`          | Yes                   | Access token lifetime, e.g., `60d`, `24h`, or another valid duration string.                                              |
+| `JWT_REFRESH_EXPIRES_IN`  | Yes                   | Refresh token lifetime, e.g., `120d`, `30d`, or another valid duration string.                                            |
+| `DEFAULT_ADMIN_PASSWORD`  | Yes                   | Initial admin password used during seeding, e.g., `admin123` for local development only.                                  |
+| `OPEN_AI_KEY`             | For OpenAI            | [OpenAI API key](https://platform.openai.com/api-keys), required only when using OpenAI-backed features.                  |
+| `GEMINI_API_KEY`          | For Gemini            | [Google AI Studio key](https://aistudio.google.com/apikey), required only when using Gemini-backed features.              |
+| `UNSPLASH_KEY_API`        | For images            | [Unsplash Access Key](https://unsplash.com/developers), required only for Unsplash image features.                        |
+| `UNSPLASH_KEY_API_SECRET` | For images            | Unsplash secret, required only for Unsplash image features that need it.                                                  |
+| `VERIFY_EMAIL`            | For email             | SMTP sender address, required only for email verification or email notifications.                                         |
+| `VERIFY_PASSWORD`         | For email             | SMTP password or app password, required only for email verification or email notifications.                               |
+| `GOOGLE_CLIENT_ID`        | For login with google | Google OAuth client ID from the [Google Cloud Console](https://console.cloud.google.com), required only for Google login. |
 
 Example backend `.env`:
 
@@ -180,11 +180,11 @@ DEFAULT_ADMIN_PASSWORD=admin123
 
 Variables prefixed with `VITE_` are exposed to the frontend by Vite. `VITE_SOCKET_URL` is optional if you are not testing real-time notifications locally.
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_BASE_URL` | Yes | Backend API base URL, e.g., `http://localhost:5000/api/v1` for local development. |
-| `VITE_SOCKET_URL` | No | Socket.IO server URL, e.g., `http://localhost:5000`. Optional unless you are using real-time notifications. |
-| `VITE_GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID from the [Google Cloud Console](https://console.cloud.google.com). |
+| Variable                | Required | Description                                                                                                 |
+| ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `VITE_BASE_URL`         | Yes      | Backend API base URL, e.g., `http://localhost:5000/api/v1` for local development.                           |
+| `VITE_SOCKET_URL`       | No       | Socket.IO server URL, e.g., `http://localhost:5000`. Optional unless you are using real-time notifications. |
+| `VITE_GOOGLE_CLIENT_ID` | Yes      | Google OAuth client ID from the [Google Cloud Console](https://console.cloud.google.com).                   |
 
 Example frontend `.env`:
 
@@ -238,9 +238,8 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 2. Create a branch: `git checkout -b your-feature-branch`
 3. Install with `pnpm install` at the repo root, configure `.env` files, then `git add`, `git commit`, `git push`, and open a pull request.
 
-
-
 <a id="troubleshooting"></a>
+
 ## Troubleshooting 🛠️
 
 Running into issues during setup? Here are the most common errors and how to fix them.
@@ -262,6 +261,7 @@ Running into issues during setup? Here are the most common errors and how to fix
 ```
 
 Then re-run:
+
 ```bash
 pnpm install
 ```
@@ -276,6 +276,7 @@ pnpm install
 👉 https://www.docker.com/products/docker-desktop/
 
 After installation, restart your terminal and verify with:
+
 ```bash
 docker --version
 ```
@@ -287,9 +288,11 @@ docker --version
 **Cause:** Your Windows Subsystem for Linux (WSL) version is outdated and incompatible with the current Docker Desktop.
 
 **Fix:** Run the following command in your terminal (as Administrator if needed):
+
 ```bash
 wsl --update
 ```
+
 Once the update completes, click **Try Again** in Docker Desktop. If the issue persists, restart your machine.
 
 ---
@@ -299,10 +302,13 @@ Once the update completes, click **Try Again** in Docker Desktop. If the issue p
 **Cause:** The `package-lock.json` is either missing or out of sync with `package.json`, causing `npm ci` to fail.
 
 **Fix:** At the **repo root**, regenerate the lockfile:
+
 ```bash
 pnpm install
 ```
+
 Then commit the updated `package-lock.json` before rebuilding your Docker image:
+
 ```bash
 git add package-lock.json
 git commit -m "chore: regenerate package-lock.json"

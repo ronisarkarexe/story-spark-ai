@@ -12,7 +12,7 @@ const router = express.Router();
 router.post(
   "/analyze",
   validateRequest(PromptAnalysisValidator.analyzePrompt),
-  PromptAnalysisController.analyzePrompt
+  PromptAnalysisController.analyzePrompt,
 );
 
 /**
@@ -22,7 +22,7 @@ router.post(
 router.post(
   "/enhance",
   validateRequest(PromptAnalysisValidator.analyzePrompt),
-  PromptAnalysisController.enhancePrompt
+  PromptAnalysisController.enhancePrompt,
 );
 
 /**

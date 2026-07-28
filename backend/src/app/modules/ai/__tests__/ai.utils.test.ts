@@ -55,7 +55,8 @@ describe("safeParseAIResponse", () => {
   });
 
   it("recovers embedded JSON from surrounding text", () => {
-    const raw = 'Here is your result:\n```json\n{ "title": "Hello", "score": 75 }\n```\nHope this helps!';
+    const raw =
+      'Here is your result:\n```json\n{ "title": "Hello", "score": 75 }\n```\nHope this helps!';
     expect(safeParseAIResponse(raw, TestSchema, fallback)).toEqual({
       title: "Hello",
       score: 75,
@@ -105,7 +106,7 @@ describe("parseAIResponseOrThrow", () => {
   it("throws when JSON is invalid", () => {
     const raw = "not json";
     expect(() => parseAIResponseOrThrow(raw, TestSchema)).toThrow(
-      "AI returned invalid JSON"
+      "AI returned invalid JSON",
     );
   });
 
@@ -114,7 +115,7 @@ describe("parseAIResponseOrThrow", () => {
     expect(() =>
       parseAIResponseOrThrow(raw, TestSchema, {
         errorMessage: "Custom parse failure",
-      })
+      }),
     ).toThrow("Custom parse failure");
   });
 });

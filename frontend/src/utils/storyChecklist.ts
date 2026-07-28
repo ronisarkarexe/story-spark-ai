@@ -19,14 +19,12 @@ export const hasCharacters = (story: StoryData) => {
 
 export const hasSetting = (story: StoryData) => {
   return /(city|forest|village|school|home|castle|mountain)/i.test(
-    story.content
+    story.content,
   );
 };
 
 export const hasConflict = (story: StoryData) => {
-  return /(problem|fight|enemy|challenge|conflict|danger)/i.test(
-    story.content
-  );
+  return /(problem|fight|enemy|challenge|conflict|danger)/i.test(story.content);
 };
 
 export const hasClimax = (story: StoryData) => {
@@ -34,14 +32,10 @@ export const hasClimax = (story: StoryData) => {
 };
 
 export const hasConclusion = (story: StoryData) => {
-  return /(ended|happy ending|conclusion|finally|the end)/i.test(
-    story.content
-  );
+  return /(ended|happy ending|conclusion|finally|the end)/i.test(story.content);
 };
 
-export const generateChecklist = (
-  story: StoryData
-): ChecklistItem[] => [
+export const generateChecklist = (story: StoryData): ChecklistItem[] => [
   {
     id: "title",
     label: "Story Title",

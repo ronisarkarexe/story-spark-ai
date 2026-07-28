@@ -34,10 +34,14 @@ describe("useCachedImage hook", () => {
 
   it("sets isLoading true when src is provided", async () => {
     vi.mocked(getCachedImageUrl).mockReturnValue(
-      new Promise((resolve) => setTimeout(() => resolve("blob:http://cached"), 100))
+      new Promise((resolve) =>
+        setTimeout(() => resolve("blob:http://cached"), 100),
+      ),
     );
 
-    const { result } = renderHook(() => useCachedImage("https://example.com/image.png"));
+    const { result } = renderHook(() =>
+      useCachedImage("https://example.com/image.png"),
+    );
 
     expect(result.current.isLoading).toBe(true);
   });
@@ -45,7 +49,9 @@ describe("useCachedImage hook", () => {
   it("sets cachedSrc when getCachedImageUrl resolves", async () => {
     vi.mocked(getCachedImageUrl).mockResolvedValue("blob:http://cached-url");
 
-    const { result } = renderHook(() => useCachedImage("https://example.com/image.png"));
+    const { result } = renderHook(() =>
+      useCachedImage("https://example.com/image.png"),
+    );
 
     // Allow the effect to run and promise to resolve
     await act(async () => {
@@ -60,7 +66,9 @@ describe("useCachedImage hook", () => {
   it("falls back to original src when getCachedImageUrl rejects", async () => {
     vi.mocked(getCachedImageUrl).mockRejectedValue(new Error("Network error"));
 
-    const { result } = renderHook(() => useCachedImage("https://example.com/image.png"));
+    const { result } = renderHook(() =>
+      useCachedImage("https://example.com/image.png"),
+    );
 
     await act(async () => {
       await Promise.resolve();
@@ -85,7 +93,7 @@ describe("useCachedImage hook", () => {
     vi.mocked(getCachedImageUrl).mockReturnValue(deferred.promise);
 
     const { result, unmount } = renderHook(() =>
-      useCachedImage("https://example.com/image.png")
+      useCachedImage("https://example.com/image.png"),
     );
 
     expect(result.current.isLoading).toBe(true);
@@ -111,7 +119,7 @@ describe("useCachedImage hook", () => {
 
     const { result, rerender } = renderHook(
       ({ src }: { src: string | undefined }) => useCachedImage(src),
-      { initialProps: { src: "https://example.com/first.png" } }
+      { initialProps: { src: "https://example.com/first.png" } },
     );
 
     await act(async () => {

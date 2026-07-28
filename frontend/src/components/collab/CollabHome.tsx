@@ -33,7 +33,7 @@ export default function CollabHome() {
 
       if (!socketUrl || !token) {
         setError(
-          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env",
         );
         setIsCreating(false);
         return;
@@ -114,15 +114,14 @@ export default function CollabHome() {
             AI joins in whenever you need inspiration!
           </p>
           {!socketConfigured && (
-  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-4 py-3 text-yellow-700 dark:text-yellow-300 text-xs font-medium mb-6 text-left">
-    ⚠️ Real-time collaboration is currently disabled.
-    <br />
-    Configure <code>VITE_SOCKET_URL</code> in
-    <code> frontend/.env</code> and run the backend with
-    Socket.IO enabled to use Story Collab Mode.
-  </div>
-)}
- 
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-4 py-3 text-yellow-700 dark:text-yellow-300 text-xs font-medium mb-6 text-left">
+              ⚠️ Real-time collaboration is currently disabled.
+              <br />
+              Configure <code>VITE_SOCKET_URL</code> in
+              <code> frontend/.env</code> and run the backend with Socket.IO
+              enabled to use Story Collab Mode.
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-500/5 border border-red-500/10 rounded-xl px-4 py-3 text-red-500 dark:text-red-400 text-xs font-semibold mb-6">
@@ -133,14 +132,14 @@ export default function CollabHome() {
           <div className="space-y-5 w-full box-border">
             <button
               onClick={createRoom}
-              disabled={isCreating || !socketConfigured}         
+              disabled={isCreating || !socketConfigured}
               className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none cursor-pointer"
             >
               {!socketConfigured
-  ? "Socket.IO Not Configured"
-  : isCreating
-  ? "Creating Room..."
-  : "✨ Create a New Story Room"}
+                ? "Socket.IO Not Configured"
+                : isCreating
+                  ? "Creating Room..."
+                  : "✨ Create a New Story Room"}
             </button>
 
             <div className="relative my-6 select-none w-full box-border">
@@ -162,12 +161,9 @@ export default function CollabHome() {
                 placeholder="Enter Room ID..."
                 className="flex-1 h-11 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-blue-500/40 transition-colors box-border"
               />
-              <button
-  onClick={joinRoom}
-  className="disabled:opacity-50"
->
-  Join 🚀
-</button>
+              <button onClick={joinRoom} className="disabled:opacity-50">
+                Join 🚀
+              </button>
             </div>
           </div>
 
@@ -177,9 +173,14 @@ export default function CollabHome() {
               { icon: "⚡", label: "Real-time sync" },
               { icon: "✨", label: "AI co-writer" },
             ].map((f) => (
-              <div key={f.label} className="bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl p-3 shadow-sm dark:shadow-none box-border">
+              <div
+                key={f.label}
+                className="bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl p-3 shadow-sm dark:shadow-none box-border"
+              >
                 <div className="text-xl mb-1">{f.icon}</div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 m-0">{f.label}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 m-0">
+                  {f.label}
+                </p>
               </div>
             ))}
           </div>

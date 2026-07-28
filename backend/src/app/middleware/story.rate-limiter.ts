@@ -68,7 +68,7 @@ const KEY_PREFIX = "story_gen";
 export const storyGenerationRateLimiter = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     // ── Resolve user identity ──────────────────────────────────────────────
@@ -97,12 +97,13 @@ export const storyGenerationRateLimiter = async (
     const rateLimitKey = `${KEY_PREFIX}_${userId ?? ip}`;
 
     // ── Consume one token from the store ──────────────────────────────────
-    const { allowed, retryAfterSec, remaining, resetAt } = await consumeRateLimit({
-      key: rateLimitKey,
-      windowMs: WINDOW_MS,
-      maxRequests,
-      blockTimeMs: BLOCK_TIME_MS,
-    });
+    const { allowed, retryAfterSec, remaining, resetAt } =
+      await consumeRateLimit({
+        key: rateLimitKey,
+        windowMs: WINDOW_MS,
+        maxRequests,
+        blockTimeMs: BLOCK_TIME_MS,
+      });
 
     // ── Set informational rate-limit headers on every response ────────────
     // (previously only set on blocked requests, so callers had no way to
@@ -121,7 +122,7 @@ export const storyGenerationRateLimiter = async (
         httpStatus.TOO_MANY_REQUESTS,
         `Story generation limit reached for your plan (${maxRequests}/hour). ` +
           `Please try again after ${Math.ceil(retryAfterSec / 60)} minutes, ` +
-          `or upgrade your plan for a higher limit.`
+          `or upgrade your plan for a higher limit.`,
       );
     }
 

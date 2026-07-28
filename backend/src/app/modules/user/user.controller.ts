@@ -62,7 +62,7 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
   ) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You can only delete your own account!"
+      "You can only delete your own account!",
     );
   }
 
@@ -95,7 +95,7 @@ const approveWriterApplication = catchAsync(
     if (token.role !== "admin" && token.role !== "super_admin") {
       throw new ApiError(
         httpStatus.FORBIDDEN,
-        "Only administrators can approve writer applications!"
+        "Only administrators can approve writer applications!",
       );
     }
 
@@ -109,7 +109,7 @@ const approveWriterApplication = catchAsync(
       message: "Approve writer application successfully!",
       data: result,
     });
-  }
+  },
 );
 
 const getAllWriterApplicationUsers = catchAsync(
@@ -122,7 +122,7 @@ const getAllWriterApplicationUsers = catchAsync(
       message: "Approve writer application successfully!",
       data: result,
     });
-  }
+  },
 );
 
 const getProfileInfo = catchAsync(async (req: Request, res: Response) => {

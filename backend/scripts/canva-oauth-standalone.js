@@ -1,22 +1,22 @@
 /**
  * Canva OAuth 2.0 with PKCE - Standalone Simulator Server
- * 
+ *
  * This is an independent, single-file Express server that simulates the complete
  * authorization flow for the Canva Connect API using Proof Key for Code Exchange (PKCE).
- * 
+ *
  * Features:
  *   - Local App Server: Simulates your application's client-side / backend code.
  *   - Local Canva Mock Authorization Server: Simulates Canva's OAuth Consent Portal and Token endpoint.
  *   - Works instantly without needing real Canva API keys or registering an account!
- * 
+ *
  * Dependencies:
  *   - express (for running the web server)
- * 
+ *
  * Node.js version 18+ is recommended (uses global fetch).
  */
 
-const express = require('express');
-const crypto = require('crypto');
+const express = require("express");
+const crypto = require("crypto");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,10 +27,10 @@ app.use(express.json());
 // ============================================================================
 // CONFIGURATION (Using standard values for our local demo)
 // ============================================================================
-const CLIENT_ID = 'demo_client_id_12345';
-const CLIENT_SECRET = 'demo_client_secret_67890';
+const CLIENT_ID = "demo_client_id_12345";
+const CLIENT_SECRET = "demo_client_secret_67890";
 const REDIRECT_URI = `http://localhost:${PORT}/callback`;
-const SCOPES = 'design:content:read asset:write';
+const SCOPES = "design:content:read asset:write";
 
 // Local storage for matching verifiers and codes
 const sessionStore = new Map();
@@ -40,17 +40,21 @@ const authorizationCodeStore = new Map();
 // PKCE HELPERS
 // ============================================================================
 function generateCodeVerifier() {
-  return crypto.randomBytes(32).toString('base64url');
+  return crypto.randomBytes(32).toString("base64url");
 }
 
 function generateCodeChallenge(verifier) {
-  return crypto.createHash('sha256').update(verifier).digest().toString('base64url');
+  return crypto
+    .createHash("sha256")
+    .update(verifier)
+    .digest()
+    .toString("base64url");
 }
 
 // ============================================================================
 // 1. APP ROUTE: HOME PAGE
 // ============================================================================
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -158,24 +162,26 @@ app.get('/', (req, res) => {
 // ============================================================================
 // 2. APP ROUTE: INITIATE OAUTH FLOW (LOGIN)
 // ============================================================================
-app.get('/login', (req, res) => {
+app.get("/login", (req, res) => {
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = generateCodeChallenge(codeVerifier);
-  const state = crypto.randomBytes(16).toString('hex');
+  const state = crypto.randomBytes(16).toString("hex");
 
   // Store codeVerifier securely on our App's session state
   sessionStore.set(state, { codeVerifier });
 
   // In a real application, we redirect to Canva's authorization URL.
   // Here, we redirect to our local *Mock Canva Authorization Server* endpoint!
-  const mockCanvaAuthUrl = new URL(`http://localhost:${PORT}/mock-canva/authorize`);
-  mockCanvaAuthUrl.searchParams.append('response_type', 'code');
-  mockCanvaAuthUrl.searchParams.append('client_id', CLIENT_ID);
-  mockCanvaAuthUrl.searchParams.append('redirect_uri', REDIRECT_URI);
-  mockCanvaAuthUrl.searchParams.append('scope', SCOPES);
-  mockCanvaAuthUrl.searchParams.append('code_challenge', codeChallenge);
-  mockCanvaAuthUrl.searchParams.append('code_challenge_method', 's256');
-  mockCanvaAuthUrl.searchParams.append('state', state);
+  const mockCanvaAuthUrl = new URL(
+    `http://localhost:${PORT}/mock-canva/authorize`,
+  );
+  mockCanvaAuthUrl.searchParams.append("response_type", "code");
+  mockCanvaAuthUrl.searchParams.append("client_id", CLIENT_ID);
+  mockCanvaAuthUrl.searchParams.append("redirect_uri", REDIRECT_URI);
+  mockCanvaAuthUrl.searchParams.append("scope", SCOPES);
+  mockCanvaAuthUrl.searchParams.append("code_challenge", codeChallenge);
+  mockCanvaAuthUrl.searchParams.append("code_challenge_method", "s256");
+  mockCanvaAuthUrl.searchParams.append("state", state);
 
   res.redirect(mockCanvaAuthUrl.toString());
 });
@@ -183,7 +189,7 @@ app.get('/login', (req, res) => {
 // ============================================================================
 // 3. MOCK CANVA ROUTE: AUTHORIZATION CONSENT PORTAL
 // ============================================================================
-app.get('/mock-canva/authorize', (req, res) => {
+app.get("/mock-canva/authorize", (req, res) => {
   const { client_id, redirect_uri, scope, code_challenge, state } = req.query;
 
   // Render a beautiful consent page mimicking Canva's login portal
@@ -332,19 +338,19 @@ app.get('/mock-canva/authorize', (req, res) => {
 // ============================================================================
 // 4. MOCK CANVA ROUTE: PROCESS CONSENT APPROVAL & GENERATE CODE
 // ============================================================================
-app.post('/mock-canva/approve', (req, res) => {
+app.post("/mock-canva/approve", (req, res) => {
   const { redirect_uri, code_challenge, state } = req.body;
 
   // Generate a mock authorization code
-  const authCode = 'mock_auth_code_' + crypto.randomBytes(16).toString('hex');
+  const authCode = "mock_auth_code_" + crypto.randomBytes(16).toString("hex");
 
   // Store challenge alongside generated code to verify verifier later during exchange
   authorizationCodeStore.set(authCode, { code_challenge });
 
   // Redirect back to client app URI with the auth code
   const redirectUrl = new URL(redirect_uri);
-  redirectUrl.searchParams.append('code', authCode);
-  redirectUrl.searchParams.append('state', state);
+  redirectUrl.searchParams.append("code", authCode);
+  redirectUrl.searchParams.append("state", state);
 
   res.redirect(redirectUrl.toString());
 });
@@ -352,7 +358,7 @@ app.post('/mock-canva/approve', (req, res) => {
 // ============================================================================
 // 5. APP ROUTE: CALLBACK RECEIVER & INITIATE CODE EXCHANGE
 // ============================================================================
-app.get('/callback', async (req, res) => {
+app.get("/callback", async (req, res) => {
   const { code, state, error } = req.query;
 
   if (error) {
@@ -362,7 +368,9 @@ app.get('/callback', async (req, res) => {
   // Retrieve verifier saved during step 2
   const session = sessionStore.get(state);
   if (!session) {
-    return res.status(400).send('OAuth state verification failed. The request may have expired.');
+    return res
+      .status(400)
+      .send("OAuth state verification failed. The request may have expired.");
   }
 
   const { codeVerifier } = session;
@@ -370,25 +378,30 @@ app.get('/callback', async (req, res) => {
 
   // Call mock Canva Token exchange endpoint (hosted locally on the same server)
   try {
-    const exchangeResponse = await fetch(`http://localhost:${PORT}/mock-canva/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const exchangeResponse = await fetch(
+      `http://localhost:${PORT}/mock-canva/token`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          grant_type: "authorization_code",
+          client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET,
+          code: code,
+          code_verifier: codeVerifier,
+          redirect_uri: REDIRECT_URI,
+        }),
       },
-      body: JSON.stringify({
-        grant_type: 'authorization_code',
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        code: code,
-        code_verifier: codeVerifier,
-        redirect_uri: REDIRECT_URI
-      })
-    });
+    );
 
     const tokenData = await exchangeResponse.json();
 
     if (!exchangeResponse.ok) {
-      return res.status(exchangeResponse.status).send(`Token Exchange Failed: ${tokenData.error}`);
+      return res
+        .status(exchangeResponse.status)
+        .send(`Token Exchange Failed: ${tokenData.error}`);
     }
 
     // Success Screen
@@ -496,46 +509,69 @@ app.get('/callback', async (req, res) => {
 // ============================================================================
 // 6. MOCK CANVA ROUTE: TOKEN EXCHANGE ENDPOINT (VALIDATES PKCE)
 // ============================================================================
-app.post('/mock-canva/token', (req, res) => {
-  const { grant_type, client_id, client_secret, code, code_verifier } = req.body;
+app.post("/mock-canva/token", (req, res) => {
+  const { grant_type, client_id, client_secret, code, code_verifier } =
+    req.body;
 
   // 1. Verify Client ID and Client Secret
   if (client_id !== CLIENT_ID || client_secret !== CLIENT_SECRET) {
-    return res.status(401).json({ error: 'invalid_client', error_description: 'Client authentication failed.' });
+    return res
+      .status(401)
+      .json({
+        error: "invalid_client",
+        error_description: "Client authentication failed.",
+      });
   }
 
   // 2. Verify authorization code is present and valid
   const authCodeSession = authorizationCodeStore.get(code);
   if (!authCodeSession) {
-    return res.status(400).json({ error: 'invalid_grant', error_description: 'Authorization code is invalid or expired.' });
+    return res
+      .status(400)
+      .json({
+        error: "invalid_grant",
+        error_description: "Authorization code is invalid or expired.",
+      });
   }
 
   const { code_challenge } = authCodeSession;
   authorizationCodeStore.delete(code); // consume code
 
   // 3. PKCE Verification: Hash the received code_verifier and match with code_challenge
-  const hashedVerifier = crypto.createHash('sha256').update(code_verifier).digest().toString('base64url');
+  const hashedVerifier = crypto
+    .createHash("sha256")
+    .update(code_verifier)
+    .digest()
+    .toString("base64url");
 
   if (hashedVerifier !== code_challenge) {
     console.error(`[PKCE Error] Code verifier hash does not match challenge!`);
     console.error(`  Received Verifier: ${code_verifier}`);
     console.error(`  Computed Hash:     ${hashedVerifier}`);
     console.error(`  Expected Challenge: ${code_challenge}`);
-    return res.status(400).json({ error: 'invalid_grant', error_description: 'PKCE verification failed: Code verifier does not match challenge.' });
+    return res
+      .status(400)
+      .json({
+        error: "invalid_grant",
+        error_description:
+          "PKCE verification failed: Code verifier does not match challenge.",
+      });
   }
 
   console.log(`[Mock Canva] PKCE verification success! Issuing tokens.`);
 
   // 4. Generate mock tokens
-  const accessToken = 'canva_access_token_' + crypto.randomBytes(32).toString('hex');
-  const refreshToken = 'canva_refresh_token_' + crypto.randomBytes(32).toString('hex');
+  const accessToken =
+    "canva_access_token_" + crypto.randomBytes(32).toString("hex");
+  const refreshToken =
+    "canva_refresh_token_" + crypto.randomBytes(32).toString("hex");
 
   res.json({
     access_token: accessToken,
-    token_type: 'Bearer',
+    token_type: "Bearer",
     expires_in: 3600,
     refresh_token: refreshToken,
-    scope: SCOPES
+    scope: SCOPES,
   });
 });
 

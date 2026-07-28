@@ -20,12 +20,13 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   const query: any = { isDeleted: false, isPublished: true };
 
   // ISSUE #3994 FIX: Cap the exclusion list to the most recent 100 reads.
-  // This limits the size of the $nin array, preventing MongoDB query 
+  // This limits the size of the $nin array, preventing MongoDB query
   // planner degradation and collection scans for highly active users.
   const EXCLUSION_LIMIT = 100;
-  const cappedReadingHistory = readingHistory && readingHistory.length > 0
-    ? readingHistory.slice(-EXCLUSION_LIMIT)
-    : [];
+  const cappedReadingHistory =
+    readingHistory && readingHistory.length > 0
+      ? readingHistory.slice(-EXCLUSION_LIMIT)
+      : [];
 
   // Exclude read posts using the optimized, capped history
   if (cappedReadingHistory.length > 0) {
@@ -41,13 +42,13 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
       .slice()
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
-      .map(g => g.name);
+      .map((g) => g.name);
 
     const favoriteEmotions = (readingPreferences.favoriteEmotions || [])
       .slice()
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
-      .map(e => e.name);
+      .map((e) => e.name);
 
     if (favoriteGenres.length > 0 || favoriteEmotions.length > 0) {
       const orConditions = [];
@@ -59,19 +60,21 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
       }
 
       const prefQuery = { ...query, $or: orConditions };
-      recommendations = await Post.find(prefQuery)
+      recommendations = (await Post.find(prefQuery)
         .populate("author", "name profile.avatar")
-        .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
+        .select(
+          "_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt",
+        )
         .sort({ likesCount: -1, viewsCount: -1 })
         .limit(10)
-        .lean() as any;
+        .lean()) as any;
     }
   }
 
   // Fallback: If no preferences or not enough recommendations, get top popular posts
   if (recommendations.length < 10) {
     const limit = 10 - recommendations.length;
-    const recommendationIds = recommendations.map(r => (r as any)._id);
+    const recommendationIds = recommendations.map((r) => (r as any)._id);
 
     // Add existing recommendations to exclusion list to avoid duplicates.
     // CRITICAL: Use cappedReadingHistory here as well so the fallback query doesn't bottleneck.
@@ -79,17 +82,19 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
       ...query,
       ...(recommendationIds.length > 0 && {
         _id: {
-          $nin: [...cappedReadingHistory, ...recommendationIds]
-        }
-      })
+          $nin: [...cappedReadingHistory, ...recommendationIds],
+        },
+      }),
     };
 
-    const popularPosts = await Post.find(fallbackQuery)
+    const popularPosts = (await Post.find(fallbackQuery)
       .populate("author", "name profile.avatar")
-      .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
+      .select(
+        "_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt",
+      )
       .sort({ likesCount: -1, viewsCount: -1 })
       .limit(limit)
-      .lean() as any;
+      .lean()) as any;
 
     recommendations = [...recommendations, ...popularPosts];
   }

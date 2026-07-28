@@ -31,13 +31,15 @@
   gap: 6px;
 }
 
-.cp-form-group label, .cp-arc-section label {
+.cp-form-group label,
+.cp-arc-section label {
   color: #e2e8f0;
   font-size: 0.85rem;
   font-weight: 500;
 }
 
-.cp-form-group input, .cp-form-group select {
+.cp-form-group input,
+.cp-form-group select {
   background-color: #0f172a;
   border: 1px solid #475569;
   border-radius: 6px;
@@ -48,7 +50,8 @@
   transition: border-color 0.2s ease;
 }
 
-.cp-form-group input:focus, .cp-form-group select:focus {
+.cp-form-group input:focus,
+.cp-form-group select:focus {
   border-color: #38bdf8;
 }
 

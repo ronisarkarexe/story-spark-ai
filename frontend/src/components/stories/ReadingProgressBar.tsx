@@ -41,9 +41,7 @@ const ReadingProgressBar: React.FC<ReadingProgressBarProps> = ({
       )}
 
       {progress === 100 && (
-        <p className="mt-3 text-green-400 font-medium">
-          ✅ Story completed!
-        </p>
+        <p className="mt-3 text-green-400 font-medium">✅ Story completed!</p>
       )}
     </div>
   );

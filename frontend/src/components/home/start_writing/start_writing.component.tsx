@@ -10,7 +10,7 @@ const StartWritingComponent = () => {
 
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -z-10 group-hover:bg-blue-500/15 transition-colors duration-500 pointer-events-none select-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-[80px] -z-10 pointer-events-none select-none" />
-        
+
         <div className="px-6 py-12 sm:px-12 lg:px-20 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16 w-full box-border">
           <div className="flex-1 text-center md:text-left min-w-0 w-full">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white mb-4 sm:mb-6 leading-tight tracking-tight">
@@ -27,7 +27,7 @@ const StartWritingComponent = () => {
               </button>
             </Link>
           </div>
-          
+
           <div className="flex-1 flex justify-center md:justify-end w-full shrink-0 select-none">
             <div className="relative">
               <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-3xl -z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />

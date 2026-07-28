@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { BranchingService, BranchStatistics } from "../../services/branching.service";
+import {
+  BranchingService,
+  BranchStatistics,
+} from "../../services/branching.service";
 import "./BranchStatistics.css";
 
 interface StatisticsSummary {
@@ -26,7 +29,9 @@ export const BranchStatistics: React.FC<Props> = ({ storyId }) => {
         const stats = await BranchingService.getStatisticsSummary(storyId);
         setSummary(stats);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load statistics");
+        setError(
+          err instanceof Error ? err.message : "Failed to load statistics",
+        );
       } finally {
         setLoading(false);
       }
@@ -77,7 +82,10 @@ export const BranchStatistics: React.FC<Props> = ({ storyId }) => {
         <h3>Most Popular Choices</h3>
         <div className="choices-list">
           {summary.mostPopularChoices.map((choice, index) => (
-            <div key={`${choice.segmentId}-${choice.choiceId}`} className="choice-stat">
+            <div
+              key={`${choice.segmentId}-${choice.choiceId}`}
+              className="choice-stat"
+            >
               <span className="rank">#{index + 1}</span>
               <span className="count">{choice.totalSelections} selections</span>
               <span className="percentage">

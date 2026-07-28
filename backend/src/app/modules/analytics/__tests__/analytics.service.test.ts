@@ -110,7 +110,7 @@ describe("AnalyticsService aggregation endpoints", () => {
       },
     ];
     const expected = oldHeatmap(fixtures).sort((a, b) =>
-      a.date.localeCompare(b.date)
+      a.date.localeCompare(b.date),
     );
     mockedPost.aggregate.mockResolvedValue(expected as never);
 
@@ -127,7 +127,7 @@ describe("AnalyticsService aggregation endpoints", () => {
         expect.objectContaining({ $project: expect.any(Object) }),
         expect.objectContaining({ $group: expect.any(Object) }),
         expect.objectContaining({ $sort: { date: 1 } }),
-      ])
+      ]),
     );
   });
 
@@ -164,7 +164,7 @@ describe("AnalyticsService aggregation endpoints", () => {
         expect.objectContaining({ $project: expect.any(Object) }),
         expect.objectContaining({ $group: expect.any(Object) }),
         expect.objectContaining({ $sort: { hour: 1 } }),
-      ])
+      ]),
     );
   });
 
@@ -176,9 +176,9 @@ describe("AnalyticsService aggregation endpoints", () => {
     const expected = oldProductiveHours([fixture]);
     const expectedHour = fixture.publishedAt!.getHours();
 
-    mockedPost.aggregate.mockResolvedValue(
-      [{ hour: expectedHour, count: 1 }] as never
-    );
+    mockedPost.aggregate.mockResolvedValue([
+      { hour: expectedHour, count: 1 },
+    ] as never);
 
     const result = await AnalyticsService.getProductiveHours(token);
 
@@ -197,7 +197,7 @@ describe("AnalyticsService aggregation endpoints", () => {
             },
           },
         }),
-      ])
+      ]),
     );
   });
 
@@ -241,7 +241,7 @@ describe("AnalyticsService aggregation endpoints", () => {
         },
         expect.objectContaining({ $group: expect.any(Object) }),
         expect.objectContaining({ $sort: { month: 1 } }),
-      ])
+      ]),
     );
   });
 
@@ -290,7 +290,7 @@ describe("AnalyticsService aggregation endpoints", () => {
             }),
           }),
         }),
-      ])
+      ]),
     );
   });
 

@@ -6,9 +6,7 @@ export interface EndingAlternative {
   content: string;
 }
 
-export function generateEndingAlternatives(
-  story: string
-): EndingAlternative[] {
+export function generateEndingAlternatives(story: string): EndingAlternative[] {
   if (!story.trim()) return [];
 
   return [
@@ -39,8 +37,6 @@ export function generateEndingAlternatives(
   ];
 }
 
-export function regenerateEndingAlternatives(
-  story: string
-) {
+export function regenerateEndingAlternatives(story: string) {
   return generateEndingAlternatives(story);
 }

@@ -8,12 +8,7 @@ interface StoryEndingGeneratorProps {
   onClose: () => void;
 }
 
-const endingStyles = [
-  "Happy 😊",
-  "Tragic 💔",
-  "Mystery 🕵️",
-  "Unexpected 😲",
-];
+const endingStyles = ["Happy 😊", "Tragic 💔", "Mystery 🕵️", "Unexpected 😲"];
 
 const StoryEndingGenerator: React.FC<StoryEndingGeneratorProps> = ({
   story,
@@ -49,7 +44,6 @@ const StoryEndingGenerator: React.FC<StoryEndingGeneratorProps> = ({
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-2xl border border-slate-700">
-        
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-white">
             ✨ AI Story Ending Generator
@@ -96,9 +90,7 @@ const StoryEndingGenerator: React.FC<StoryEndingGeneratorProps> = ({
               Generated {selectedStyle} Ending
             </h3>
 
-            <p className="text-slate-300">
-              {generatedEnding}
-            </p>
+            <p className="text-slate-300">{generatedEnding}</p>
 
             <button
               onClick={copyEnding}

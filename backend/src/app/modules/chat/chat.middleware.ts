@@ -7,21 +7,18 @@ import chatRateLimiter from "../../middleware/chat.rate-limiter";
 export const flexibleChatRateLimiter = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
-
   const authHeader = Array.isArray(req.headers.authorization)
     ? req.headers.authorization[0]
     : req.headers.authorization;
 
-  const bearerToken =
-    authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7).trim()
-      : "";
+  const bearerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : "";
 
   const cookieToken =
-    (req as any).cookies?.accessToken ||
-    (req as any).cookies?.token;
+    (req as any).cookies?.accessToken || (req as any).cookies?.token;
 
   const token = bearerToken || cookieToken;
 
@@ -29,7 +26,7 @@ export const flexibleChatRateLimiter = async (
     try {
       const verifiedUser = JwtHelpers.verifyToken(
         token,
-        config.jwt.secret as Secret
+        config.jwt.secret as Secret,
       );
 
       if (verifiedUser) {

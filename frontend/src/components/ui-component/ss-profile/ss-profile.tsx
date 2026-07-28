@@ -20,7 +20,11 @@ const SSProfile: React.FC<SSProfileProps> = ({
       .join("")
       .toUpperCase();
   };
-  const textSize = size.includes("h-8") ? "text-xs" : size.includes("h-12") ? "text-sm" : "text-lg";
+  const textSize = size.includes("h-8")
+    ? "text-xs"
+    : size.includes("h-12")
+      ? "text-sm"
+      : "text-lg";
   return (
     <div
       className={`rounded-full flex items-center justify-center text-slate-700 dark:text-gray-300 font-bold overflow-hidden border border-gray-500 ${size} ${textSize}`}

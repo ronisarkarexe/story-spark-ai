@@ -7,27 +7,39 @@ const mockDeleteMany = jest.fn();
 const mockEmitNotificationToUser = jest.fn();
 const mockEmitNotificationStateToUser = jest.fn();
 
-jest.mock("../notification.model", () => ({
-  Notification: {
-    create: jest.fn(),
-    find: mockFind,
-    countDocuments: mockCountDocuments,
-    findOneAndUpdate: mockFindOneAndUpdate,
-    updateMany: mockUpdateMany,
-    deleteMany: mockDeleteMany,
-  },
-}), { virtual: true });
+jest.mock(
+  "../notification.model",
+  () => ({
+    Notification: {
+      create: jest.fn(),
+      find: mockFind,
+      countDocuments: mockCountDocuments,
+      findOneAndUpdate: mockFindOneAndUpdate,
+      updateMany: mockUpdateMany,
+      deleteMany: mockDeleteMany,
+    },
+  }),
+  { virtual: true },
+);
 
-jest.mock("../../user/user.model", () => ({
-  User: {
-    findOne: mockFindOne,
-  },
-}), { virtual: true });
+jest.mock(
+  "../../user/user.model",
+  () => ({
+    User: {
+      findOne: mockFindOne,
+    },
+  }),
+  { virtual: true },
+);
 
-jest.mock("../../../../socket/notification.socket", () => ({
-  emitNotificationToUser: mockEmitNotificationToUser,
-  emitNotificationStateToUser: mockEmitNotificationStateToUser,
-}), { virtual: true });
+jest.mock(
+  "../../../../socket/notification.socket",
+  () => ({
+    emitNotificationToUser: mockEmitNotificationToUser,
+    emitNotificationStateToUser: mockEmitNotificationStateToUser,
+  }),
+  { virtual: true },
+);
 
 import { NotificationService } from "../notification.service";
 
@@ -53,7 +65,9 @@ describe("NotificationService.resolveUserId", () => {
       postsCount: 0,
     } as any;
 
-    await expect(NotificationService.resolveUserId(token)).resolves.toBe("user-123");
+    await expect(NotificationService.resolveUserId(token)).resolves.toBe(
+      "user-123",
+    );
     expect(mockFindOne).not.toHaveBeenCalled();
   });
 
@@ -72,7 +86,9 @@ describe("NotificationService.resolveUserId", () => {
       postsCount: 0,
     } as any;
 
-    await expect(NotificationService.resolveUserId(token)).resolves.toBe("user-456");
+    await expect(NotificationService.resolveUserId(token)).resolves.toBe(
+      "user-456",
+    );
     expect(mockFindOne).toHaveBeenCalledWith({ email: "ada@example.com" });
   });
 });
@@ -87,7 +103,7 @@ describe("NotificationService.markNotificationAsRead", () => {
   it("throws a 400 Bad Request error if the notification ID is invalid", async () => {
     const token = { _id: "user-123" } as any;
     await expect(
-      NotificationService.markNotificationAsRead("invalid-id", token)
+      NotificationService.markNotificationAsRead("invalid-id", token),
     ).rejects.toMatchObject({
       statusCode: 400,
       message: "Invalid notification ID",
@@ -104,19 +120,21 @@ describe("NotificationService.markNotificationAsRead", () => {
       isRead: true,
     });
 
-    const result = await NotificationService.markNotificationAsRead(validObjectId, token);
+    const result = await NotificationService.markNotificationAsRead(
+      validObjectId,
+      token,
+    );
     expect(result).toBeDefined();
     expect(result.isRead).toBe(true);
     expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
       { _id: validObjectId, userId: "user-123" },
       { isRead: true },
-      { new: true }
+      { new: true },
     );
     expect(mockEmitNotificationStateToUser).toHaveBeenCalledWith(
       "user-123",
       "notification:updated",
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 });
-

@@ -1,10 +1,7 @@
 import { Document, Types } from "mongoose";
 
 export type OrderStatus =
-  | "created"
-  | "paid_pending_entitlement"
-  | "paid"
-  | "failed";
+  "created" | "paid_pending_entitlement" | "paid" | "failed";
 
 export interface IOrder extends Document {
   userId: Types.ObjectId;

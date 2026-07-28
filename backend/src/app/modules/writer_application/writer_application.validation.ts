@@ -2,12 +2,16 @@ import { z } from "zod";
 
 const submitApplicationZodSchema = z.object({
   body: z.object({
-    portfolioLink: z.string({
-      required_error: "Portfolio link is required",
-    }).url("Must be a valid URL"),
-    reason: z.string({
-      required_error: "Reason is required",
-    }).min(10, "Reason must be at least 10 characters long"),
+    portfolioLink: z
+      .string({
+        required_error: "Portfolio link is required",
+      })
+      .url("Must be a valid URL"),
+    reason: z
+      .string({
+        required_error: "Reason is required",
+      })
+      .min(10, "Reason must be at least 10 characters long"),
   }),
 });
 

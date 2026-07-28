@@ -9,12 +9,8 @@ interface Props {
   story: string;
 }
 
-export default function StoryFocusMode({
-  story,
-}: Props) {
-
-  const [settings, setSettings] =
-    useState(loadFocusModeSettings());
+export default function StoryFocusMode({ story }: Props) {
+  const [settings, setSettings] = useState(loadFocusModeSettings());
 
   useEffect(() => {
     saveFocusModeSettings(settings);
@@ -22,29 +18,20 @@ export default function StoryFocusMode({
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-
       <div className="flex justify-between items-center mb-6">
-
-        <h2 className="text-2xl font-bold text-white">
-          📖 Reading Focus Mode
-        </h2>
+        <h2 className="text-2xl font-bold text-white">📖 Reading Focus Mode</h2>
 
         <button
-          onClick={() =>
-            setSettings(toggleFocusMode(settings))
-          }
+          onClick={() => setSettings(toggleFocusMode(settings))}
           className="rounded bg-indigo-600 px-4 py-2 text-white"
         >
           {settings.enabled ? "Disable" : "Enable"}
         </button>
-
       </div>
 
       <div className="grid md:grid-cols-2 gap-4 mb-6">
-
         <label className="text-white">
           Font Size
-
           <input
             type="range"
             min={14}
@@ -61,7 +48,6 @@ export default function StoryFocusMode({
 
         <label className="text-white">
           Line Spacing
-
           <input
             type="range"
             min={1.2}
@@ -79,7 +65,6 @@ export default function StoryFocusMode({
 
         <label className="text-white">
           Content Width
-
           <input
             type="range"
             min={500}
@@ -108,7 +93,6 @@ export default function StoryFocusMode({
           <option value="light">Light</option>
           <option value="dark">Dark</option>
         </select>
-
       </div>
 
       <div
@@ -126,7 +110,6 @@ export default function StoryFocusMode({
       >
         {story || "Story preview..."}
       </div>
-
     </div>
   );
 }

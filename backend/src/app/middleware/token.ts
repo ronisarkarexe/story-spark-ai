@@ -14,13 +14,13 @@ export const getToken = (req: Request): ITokenPayload => {
   if (!token) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "You are not authorized to access"
+      "You are not authorized to access",
     );
   }
   try {
     const verifiedUser = JwtHelpers.verifyToken(
       token,
-      config.jwt.secret as Secret
+      config.jwt.secret as Secret,
     );
     const user = {
       _id: verifiedUser._id,

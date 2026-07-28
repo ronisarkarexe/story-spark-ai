@@ -10,24 +10,27 @@ export interface IStoryCache extends Document {
 
 const StoryCacheSchema: Schema = new Schema(
   {
-    promptKey: { 
-      type: String, 
-      required: true, 
+    promptKey: {
+      type: String,
+      required: true,
       unique: true, // Prevents duplicate cache insertions
-      index: true   // Speeds up lookups on repeated views
+      index: true, // Speeds up lookups on repeated views
     },
-    provider: { 
-      type: String, 
-      required: true 
+    provider: {
+      type: String,
+      required: true,
     },
-    storyData: { 
-      type: String, 
-      required: true 
-    }
+    storyData: {
+      type: String,
+      required: true,
+    },
   },
-  { 
-    timestamps: { createdAt: true, updatedAt: false } 
-  }
+  {
+    timestamps: { createdAt: true, updatedAt: false },
+  },
 );
 
-export const StoryCache = mongoose.model<IStoryCache>("StoryCache", StoryCacheSchema);
+export const StoryCache = mongoose.model<IStoryCache>(
+  "StoryCache",
+  StoryCacheSchema,
+);

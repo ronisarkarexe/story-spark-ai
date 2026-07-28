@@ -11,7 +11,7 @@ export interface PublishingReadinessReport {
 }
 
 export function analyzePublishingReadiness(
-  story: string
+  story: string,
 ): PublishingReadinessReport {
   if (!story.trim()) {
     return {
@@ -27,56 +27,54 @@ export function analyzePublishingReadiness(
         name: "Grammar",
         score: 91,
         status: "Excellent",
-        recommendation: "Minor punctuation review."
+        recommendation: "Minor punctuation review.",
       },
       {
         name: "Readability",
         score: 86,
         status: "Good",
-        recommendation: "Simplify a few long sentences."
+        recommendation: "Simplify a few long sentences.",
       },
       {
         name: "Story Structure",
         score: 90,
         status: "Excellent",
-        recommendation: "Well organized."
+        recommendation: "Well organized.",
       },
       {
         name: "Pacing",
         score: 81,
         status: "Good",
-        recommendation: "Slow down the final chapter."
+        recommendation: "Slow down the final chapter.",
       },
       {
         name: "Title Quality",
         score: 79,
         status: "Needs Improvement",
-        recommendation: "Make the title more memorable."
+        recommendation: "Make the title more memorable.",
       },
       {
         name: "Dialogue Balance",
         score: 84,
         status: "Good",
-        recommendation: "Add slightly more character interaction."
+        recommendation: "Add slightly more character interaction.",
       },
       {
         name: "Character Consistency",
         score: 92,
         status: "Excellent",
-        recommendation: "Very consistent personalities."
+        recommendation: "Very consistent personalities.",
       },
       {
         name: "Ending Quality",
         score: 85,
         status: "Good",
-        recommendation: "Increase emotional impact."
-      }
-    ]
+        recommendation: "Increase emotional impact.",
+      },
+    ],
   };
 }
 
-export function rerunPublishingAnalysis(
-  story: string
-) {
+export function rerunPublishingAnalysis(story: string) {
   return analyzePublishingReadiness(story);
 }

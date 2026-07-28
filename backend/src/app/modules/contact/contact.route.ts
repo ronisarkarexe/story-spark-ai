@@ -10,7 +10,7 @@ router.post(
   "/",
   contactRateLimiter,
   validateRequest(ContactValidation.contactValidationSchema),
-  ContactController.submitContactForm
+  ContactController.submitContactForm,
 );
 
 export const ContactRoutes = router;

@@ -21,21 +21,30 @@ router.post(
   "/login",
   loginRateLimiter,
   validateRequest(UserValidator.login),
-  AuthController.login
+  AuthController.login,
 );
 
 // Google Login API route
 router.post("/google-login", loginRateLimiter, AuthController.googleLogin);
-router.post("/send-otp", forgotPasswordRateLimiter, validateRequest(UserValidator.sendOtp), AuthController.sendOtp);// Register API route
+router.post(
+  "/send-otp",
+  forgotPasswordRateLimiter,
+  validateRequest(UserValidator.sendOtp),
+  AuthController.sendOtp,
+); // Register API route
 router.post(
   "/register",
   validateRequest(UserValidator.register),
   ipRateLimiter,
-  AuthController.register
+  AuthController.register,
 );
 
 // Refresh Token API route
-router.post("/refresh-token", refreshTokenRateLimiter, AuthController.refreshToken);
+router.post(
+  "/refresh-token",
+  refreshTokenRateLimiter,
+  AuthController.refreshToken,
+);
 
 // Logout API route
 router.post("/logout", AuthController.logout);
@@ -48,10 +57,10 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   validateRequest(UserValidator.changePassword),
-  AuthController.changePassword
+  AuthController.changePassword,
 );
 
 // Verify email change API route
@@ -59,7 +68,7 @@ router.post(
   "/verify-email-change",
   verifyEmailChangeRateLimiter,
   validateRequest(UserValidator.verifyEmailChange),
-  AuthController.verifyEmailChange
+  AuthController.verifyEmailChange,
 );
 
 // Forgot Password API route
@@ -67,7 +76,7 @@ router.post(
   "/forgot-password",
   forgotPasswordRateLimiter,
   validateRequest(UserValidator.forgotPassword),
-  AuthController.forgotPassword
+  AuthController.forgotPassword,
 );
 
 // Reset Password API route
@@ -75,7 +84,7 @@ router.post(
   "/reset-password",
   resetPasswordRateLimiter,
   validateRequest(UserValidator.resetPassword),
-  AuthController.resetPassword
+  AuthController.resetPassword,
 );
 
 export const AuthRouter = router;

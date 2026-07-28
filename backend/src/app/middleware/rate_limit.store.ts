@@ -28,7 +28,7 @@ rateLimitSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
 const RateLimitRecord = model<IRateLimitRecord>(
   "RateLimitRecord",
-  rateLimitSchema
+  rateLimitSchema,
 );
 
 export interface ConsumeOptions {
@@ -53,7 +53,7 @@ const STORE_ERROR_RETRY_AFTER_SEC = 60;
 // The whole window-and-block state transition runs in a single pipeline update
 // so concurrent requests cannot race. Fails closed on store errors.
 export const consumeRateLimit = async (
-  opts: ConsumeOptions
+  opts: ConsumeOptions,
 ): Promise<ConsumeResult> => {
   const { key, windowMs, maxRequests, blockTimeMs } = opts;
   const now = new Date();
@@ -113,7 +113,7 @@ export const consumeRateLimit = async (
         },
         { $unset: ["_blocked", "_prevBlocked", "_count", "_first"] },
       ],
-      { new: true, upsert: true, setDefaultsOnInsert: true }
+      { new: true, upsert: true, setDefaultsOnInsert: true },
     );
 
     const blockedUntil = updated?.blockedUntil ?? null;
@@ -124,7 +124,7 @@ export const consumeRateLimit = async (
       return {
         allowed: false,
         retryAfterSec: Math.ceil(
-          (blockedUntil.getTime() - now.getTime()) / 1000
+          (blockedUntil.getTime() - now.getTime()) / 1000,
         ),
         remaining: 0,
         resetAt: blockedUntil.getTime(),
@@ -155,8 +155,12 @@ export const consumeRateLimit = async (
 export const consumeTokenQuota = async (
   userIdOrIp: string,
   tokensRequired: number,
-  dailyQuotaLimit: number
-): Promise<{ allowed: boolean; remainingTokens: number; retryAfterSec: number }> => {
+  dailyQuotaLimit: number,
+): Promise<{
+  allowed: boolean;
+  remainingTokens: number;
+  retryAfterSec: number;
+}> => {
   const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   const key = `token_quota:${userIdOrIp}:${dateStr}`;
 
@@ -178,16 +182,26 @@ export const consumeTokenQuota = async (
       const tomorrow = new Date(now);
       tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
       tomorrow.setUTCHours(0, 0, 0, 0);
-      const retryAfterSec = Math.ceil((tomorrow.getTime() - now.getTime()) / 1000);
+      const retryAfterSec = Math.ceil(
+        (tomorrow.getTime() - now.getTime()) / 1000,
+      );
 
-      return { allowed: false, remainingTokens: dailyQuotaLimit - usedTokens, retryAfterSec };
+      return {
+        allowed: false,
+        remainingTokens: dailyQuotaLimit - usedTokens,
+        retryAfterSec,
+      };
     }
 
     // Atomically increment and set expiry to 48 hours (to be safe)
     await redis.incrby(key, tokensRequired);
     await redis.expire(key, 48 * 60 * 60);
 
-    return { allowed: true, remainingTokens: dailyQuotaLimit - (usedTokens + tokensRequired), retryAfterSec: 0 };
+    return {
+      allowed: true,
+      remainingTokens: dailyQuotaLimit - (usedTokens + tokensRequired),
+      retryAfterSec: 0,
+    };
   } catch (error) {
     logger.error(`Redis token quota error: ${error}`);
     // Fail open or closed? Typically fail closed for financial limits.

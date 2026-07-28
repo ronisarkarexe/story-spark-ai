@@ -13,7 +13,7 @@ export const escapeHtml = (unsafe: string): string => {
 export const sendVerificationEmail = async (
   to: string,
   token: string,
-  unsubscribeUrl?: string
+  unsubscribeUrl?: string,
 ) => {
   if (!config.verify_email || !config.verify_password) {
     console.warn("Email configuration missing. Verification email not sent.");

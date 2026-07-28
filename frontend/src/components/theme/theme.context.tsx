@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 type Theme = "light" | "dark";
 
@@ -22,7 +28,9 @@ const getInitialTheme = (): Theme => {
     return storedTheme;
   }
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 };
 
 const getInitialGlow = (): boolean => {
@@ -34,7 +42,9 @@ const getInitialGlow = (): boolean => {
   return storedGlow !== "false";
 };
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [glowEnabled, setGlowEnabled] = useState<boolean>(getInitialGlow);
 
@@ -53,14 +63,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     () => ({
       theme,
       isDark: theme === "dark",
-      toggleTheme: () => setTheme((prev) => (prev === "dark" ? "light" : "dark")),
+      toggleTheme: () =>
+        setTheme((prev) => (prev === "dark" ? "light" : "dark")),
       glowEnabled,
       toggleGlow: () => setGlowEnabled((prev) => !prev),
     }),
     [theme, glowEnabled],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };
 
 // eslint-disable-next-line react-refresh/only-export-components

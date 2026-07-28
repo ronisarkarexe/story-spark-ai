@@ -99,7 +99,7 @@ export const useRecentPrompts = () => {
               lastUsedAt: Date.now(),
               useCount: (prompt.useCount || 0) + 1,
             }
-          : prompt
+          : prompt,
       );
       persistPrompts(updated);
       return updated;
@@ -111,7 +111,7 @@ export const useRecentPrompts = () => {
       const updated = prev.map((prompt) =>
         prompt.id === id
           ? { ...prompt, isFavorite: !prompt.isFavorite }
-          : prompt
+          : prompt,
       );
       persistPrompts(updated);
       return updated;

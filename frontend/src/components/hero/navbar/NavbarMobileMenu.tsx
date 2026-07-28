@@ -52,13 +52,19 @@ const MobileNavLink = ({
         to={item.to}
         end={item.end}
         onClick={onNavigate}
-        className={`flex min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${active
-          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
-          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-          }`}
+        className={`flex min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
+          active
+            ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+            : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
+        }`}
       >
         <span>{item.label}</span>
-        {active && <span className="h-2 w-2 rounded-full bg-white/90" aria-hidden="true" />}
+        {active && (
+          <span
+            className="h-2 w-2 rounded-full bg-white/90"
+            aria-hidden="true"
+          />
+        )}
       </NavLink>
     </motion.div>
   );
@@ -72,7 +78,8 @@ const NavbarMobileMenu = ({
   onNavigate,
   onLogout,
 }: NavbarMobileMenuProps) => {
-  const authIndexOffset = primaryItems.length + secondaryItems.length + (loggedIn ? 1 : 0);
+  const authIndexOffset =
+    primaryItems.length + secondaryItems.length + (loggedIn ? 1 : 0);
 
   return (
     <motion.div

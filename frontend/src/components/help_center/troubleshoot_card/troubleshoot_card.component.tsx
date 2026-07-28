@@ -24,13 +24,17 @@ const TroubleshootCard: FC<TroubleshootCardProps> = ({ item }) => {
               <span className="text-red-600 dark:text-red-400 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
                 Symptoms
               </span>
-              <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium leading-relaxed">{item.symptoms}</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium leading-relaxed">
+                {item.symptoms}
+              </p>
             </div>
             <div>
               <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
                 Solution
               </span>
-              <p className="text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">{item.solution}</p>
+              <p className="text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                {item.solution}
+              </p>
             </div>
           </div>
         </div>

@@ -11,20 +11,21 @@ describe("parseStory", () => {
 
   // 2. Test known locations (should extract locations from story text)
   it("should detect known locations (castle, forest, city)", () => {
-    const story = "The knight rode from the castle, through the deep forest, and into the busy city.";
+    const story =
+      "The knight rode from the castle, through the deep forest, and into the busy city.";
     const result = parseStory(story);
 
     // Verify location nodes exist
     const locationNames = result.nodes
-      .filter(node => node.type === "location")
-      .map(node => node.name);
+      .filter((node) => node.type === "location")
+      .map((node) => node.name);
 
     expect(locationNames).toContain("Castle");
     expect(locationNames).toContain("Forest");
     expect(locationNames).toContain("City");
 
     // Verify occurrence count and IDs are correct
-    const castleNode = result.nodes.find(node => node.id === "loc_castle");
+    const castleNode = result.nodes.find((node) => node.id === "loc_castle");
     expect(castleNode).toBeDefined();
     expect(castleNode?.occurrenceCount).toBe(1);
     expect(castleNode?.excerpt).toContain("castle");
@@ -32,29 +33,31 @@ describe("parseStory", () => {
 
   // 3. Test character detection (with names appearing multiple times)
   it("should detect characters who appear multiple times (Alice, Bob)", () => {
-    const story = "Alice went to the park. Bob saw Alice. Bob waved at Alice and Bob smiled.";
+    const story =
+      "Alice went to the park. Bob saw Alice. Bob waved at Alice and Bob smiled.";
     const result = parseStory(story);
 
-    const characters = result.nodes.filter(node => node.type === "character");
-    const characterNames = characters.map(node => node.name);
+    const characters = result.nodes.filter((node) => node.type === "character");
+    const characterNames = characters.map((node) => node.name);
 
     expect(characterNames).toContain("Alice");
     expect(characterNames).toContain("Bob");
 
     // Verify excerpt content
-    const aliceNode = result.nodes.find(node => node.id === "char_Alice");
+    const aliceNode = result.nodes.find((node) => node.id === "char_Alice");
     expect(aliceNode).toBeDefined();
     expect(aliceNode?.excerpt).toContain("Alice");
   });
 
   // 4. Test skip words (pronouns, common capitalized words should not be characters)
   it("should not count skip words as characters", () => {
-    const story = "He went to the house. She went too. They saw it. The adventure started. Once upon a time.";
+    const story =
+      "He went to the house. She went too. They saw it. The adventure started. Once upon a time.";
     const result = parseStory(story);
 
     const characterNames = result.nodes
-      .filter(node => node.type === "character")
-      .map(node => node.name);
+      .filter((node) => node.type === "character")
+      .map((node) => node.name);
 
     expect(characterNames).not.toContain("He");
     expect(characterNames).not.toContain("She");
@@ -68,12 +71,13 @@ describe("parseStory", () => {
     // "Charlie" starts a sentence and only appears once -> should be filtered out
     // "Dave" appears once but does NOT start a sentence -> should be kept
     // "Edward" appears twice -> should be kept
-    const story = "Charlie is very happy. The loyal servant Dave went to fetch water. Edward went out. Edward came back.";
+    const story =
+      "Charlie is very happy. The loyal servant Dave went to fetch water. Edward went out. Edward came back.";
     const result = parseStory(story);
 
     const characterNames = result.nodes
-      .filter(node => node.type === "character")
-      .map(node => node.name);
+      .filter((node) => node.type === "character")
+      .map((node) => node.name);
 
     expect(characterNames).not.toContain("Charlie");
     expect(characterNames).toContain("Dave");
@@ -86,20 +90,20 @@ describe("parseStory", () => {
     // Bob is far away from castle (separated by a very long padding of words).
     const padding = "x ".repeat(150); // 300 characters padding
     const story = `Alice went to the castle. ${padding} Bob also exists.`;
-    
+
     // We need both Alice and Bob to appear at least twice so they are detected as characters
     const fullStory = `${story} Alice saw Bob. Alice spoke to Bob.`;
     const result = parseStory(fullStory);
 
     // Verify we have a link from Alice to castle
     const aliceToCastleLink = result.links.find(
-      link => link.source === "char_Alice" && link.target === "loc_castle"
+      (link) => link.source === "char_Alice" && link.target === "loc_castle",
     );
     expect(aliceToCastleLink).toBeDefined();
 
     // Verify we do NOT have a link from Bob to castle
     const bobToCastleLink = result.links.find(
-      link => link.source === "char_Bob" && link.target === "loc_castle"
+      (link) => link.source === "char_Bob" && link.target === "loc_castle",
     );
     expect(bobToCastleLink).toBeUndefined();
   });
@@ -112,7 +116,7 @@ describe("parseStory", () => {
     const result = parseStory(story);
 
     const consecutiveLink = result.links.find(
-      link => link.source === "loc_forest" && link.target === "loc_castle"
+      (link) => link.source === "loc_forest" && link.target === "loc_castle",
     );
     expect(consecutiveLink).toBeDefined();
   });

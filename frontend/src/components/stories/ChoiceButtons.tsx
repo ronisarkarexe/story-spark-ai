@@ -37,7 +37,9 @@ const ChoiceButtons = ({ choices, onSelect, disabled }: ChoiceButtonsProps) => {
           <motion.button
             key={`${choice}-${index}`}
             type="button"
-            whileHover={disabled || selectedChoice ? undefined : { scale: 1.01, y: -1 }}
+            whileHover={
+              disabled || selectedChoice ? undefined : { scale: 1.01, y: -1 }
+            }
             whileTap={disabled || selectedChoice ? undefined : { scale: 0.99 }}
             onClick={() => handleSelect(choice)}
             disabled={disabled || Boolean(selectedChoice)}
@@ -53,14 +55,16 @@ const ChoiceButtons = ({ choices, onSelect, disabled }: ChoiceButtonsProps) => {
                   Choice {index + 1}
                 </span>
                 <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-medium m-0 break-words">
-                  {choice.length > MAX_CHOICE_LENGTH ? `${choice.slice(0, MAX_CHOICE_LENGTH)}...` : choice}
+                  {choice.length > MAX_CHOICE_LENGTH
+                    ? `${choice.slice(0, MAX_CHOICE_LENGTH)}...`
+                    : choice}
                 </p>
               </div>
-              
+
               <span
                 className={`mt-1 h-3.5 w-3.5 rounded-full border transition-all duration-200 shrink-0 select-none ${
-                  isSelected 
-                    ? "border-blue-600 bg-blue-600 dark:border-white dark:bg-white scale-110" 
+                  isSelected
+                    ? "border-blue-600 bg-blue-600 dark:border-white dark:bg-white scale-110"
                     : "border-slate-300 dark:border-white/20 bg-transparent group-hover:border-slate-400 dark:group-hover:border-white/40"
                 }`}
               />

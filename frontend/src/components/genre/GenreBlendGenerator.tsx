@@ -1,16 +1,11 @@
 import React, { useState } from "react";
-import {
-  blendGenres,
-} from "../../utils/genreBlend";
+import { blendGenres } from "../../utils/genreBlend";
 
 interface Props {
   prompt: string;
 }
 
-export default function GenreBlendGenerator({
-  prompt,
-}: Props) {
-
+export default function GenreBlendGenerator({ prompt }: Props) {
   const genres = [
     "Fantasy",
     "Mystery",
@@ -40,7 +35,6 @@ export default function GenreBlendGenerator({
 
   return (
     <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
-
       <h2 className="text-2xl font-bold text-white mb-4">
         🎭 Genre Blend Generator
       </h2>
@@ -72,7 +66,6 @@ export default function GenreBlendGenerator({
         Selected Genres:
         {selected.join(", ")}
       </div>
-
     </div>
   );
 }

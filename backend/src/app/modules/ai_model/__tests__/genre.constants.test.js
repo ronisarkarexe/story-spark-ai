@@ -1,12 +1,18 @@
 // genre.constants.test.ts
 
 const GENRE_MODIFIER_INSTRUCTIONS = {
-  fantasy: "Write in the style of epic fantasy fiction. Include vivid world-building, magic, and heroic themes.",
-  horror: "Write in the style of psychological horror. Build dread slowly, use dark imagery, and leave an unsettling feeling.",
-  romance: "Write in the style of contemporary romance. Focus on emotional tension, character chemistry, and satisfying resolution.",
-  scifi: "Write in the style of science fiction. Ground the story in plausible technology or speculative concepts.",
-  mystery: "Write in the style of a mystery thriller. Plant subtle clues, build suspense, and deliver a reveal.",
-  childrens: "Write in the style of a children's picture book. Use simple language, a warm tone, and a clear moral.",
+  fantasy:
+    "Write in the style of epic fantasy fiction. Include vivid world-building, magic, and heroic themes.",
+  horror:
+    "Write in the style of psychological horror. Build dread slowly, use dark imagery, and leave an unsettling feeling.",
+  romance:
+    "Write in the style of contemporary romance. Focus on emotional tension, character chemistry, and satisfying resolution.",
+  scifi:
+    "Write in the style of science fiction. Ground the story in plausible technology or speculative concepts.",
+  mystery:
+    "Write in the style of a mystery thriller. Plant subtle clues, build suspense, and deliver a reveal.",
+  childrens:
+    "Write in the style of a children's picture book. Use simple language, a warm tone, and a clear moral.",
 };
 
 const buildGenreInstruction = (genre) => {
@@ -17,7 +23,14 @@ const buildGenreInstruction = (genre) => {
 };
 
 describe("Genre modifier map", () => {
-  const REQUIRED_GENRES = ["fantasy", "horror", "romance", "scifi", "mystery", "childrens"];
+  const REQUIRED_GENRES = [
+    "fantasy",
+    "horror",
+    "romance",
+    "scifi",
+    "mystery",
+    "childrens",
+  ];
 
   it("contains all 6 required genres", () => {
     REQUIRED_GENRES.forEach((key) => {
@@ -32,7 +45,9 @@ describe("Genre modifier map", () => {
     const result = buildGenreInstruction("horror") + BASE;
     expect(result).toContain("psychological horror");
     expect(result).toContain(BASE);
-    expect(result.indexOf("Genre & Style Directive")).toBeLessThan(result.indexOf(BASE));
+    expect(result.indexOf("Genre & Style Directive")).toBeLessThan(
+      result.indexOf(BASE),
+    );
   });
 
   it("returns empty string for undefined genre", () => {

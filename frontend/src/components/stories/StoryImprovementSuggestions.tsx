@@ -36,17 +36,12 @@ const suggestionsData = [
   },
 ];
 
-const StoryImprovementSuggestions: React.FC<Props> = ({
-  story,
-  onClose,
-}) => {
+const StoryImprovementSuggestions: React.FC<Props> = ({ story, onClose }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     const text = suggestionsData
-      .map(
-        (item) => `${item.category}: ${item.suggestion}`
-      )
+      .map((item) => `${item.category}: ${item.suggestion}`)
       .join("\n");
 
     await navigator.clipboard.writeText(text);
@@ -63,10 +58,7 @@ const StoryImprovementSuggestions: React.FC<Props> = ({
             ✨ AI Story Improvement Suggestions
           </h2>
 
-          <button
-            onClick={onClose}
-            className="text-gray-300 hover:text-white"
-          >
+          <button onClick={onClose} className="text-gray-300 hover:text-white">
             ✕
           </button>
         </div>
@@ -77,16 +69,9 @@ const StoryImprovementSuggestions: React.FC<Props> = ({
 
         <div className="space-y-4">
           {suggestionsData.map((item, index) => (
-            <div
-              key={index}
-              className="bg-slate-700 rounded-xl p-4"
-            >
-              <h3 className="font-semibold text-purple-300">
-                {item.category}
-              </h3>
-              <p className="text-gray-200 mt-1">
-                {item.suggestion}
-              </p>
+            <div key={index} className="bg-slate-700 rounded-xl p-4">
+              <h3 className="font-semibold text-purple-300">{item.category}</h3>
+              <p className="text-gray-200 mt-1">{item.suggestion}</p>
             </div>
           ))}
         </div>

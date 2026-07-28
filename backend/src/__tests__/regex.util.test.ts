@@ -68,9 +68,7 @@ describe("escapeRegex", () => {
 
   it("escapes all metacharacters in a combined string", () => {
     const result = escapeRegex("[a-z]{1,3}(foo|bar)+?bar$");
-    expect(result).toBe(
-      "\\[a\\-z\\]\\{1\\,3\\}\\(foo\\|bar\\)\\+\\?bar\\$"
-    );
+    expect(result).toBe("\\[a\\-z\\]\\{1\\,3\\}\\(foo\\|bar\\)\\+\\?bar\\$");
   });
 
   it("output can be safely used as pattern in RegExp constructor", () => {
@@ -82,7 +80,9 @@ describe("escapeRegex", () => {
   it("preserves whitespace and alphanumeric characters unchanged", () => {
     expect(escapeRegex("plain text 123")).toBe("plain text 123");
     expect(escapeRegex("hello world 2024")).toBe("hello world 2024");
-    expect(escapeRegex("  leading and trailing  ")).toBe("  leading and trailing  ");
+    expect(escapeRegex("  leading and trailing  ")).toBe(
+      "  leading and trailing  ",
+    );
   });
 
   it("is idempotent — already-escaped strings remain unchanged on second call", () => {

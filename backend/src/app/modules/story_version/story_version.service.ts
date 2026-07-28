@@ -1,5 +1,12 @@
-import { enhancePromptWithGemini, enhancePromptWithOpenAI, enhancePromptWithAnthropic } from "./enhance_prompt.utils";
-import { raceGenerationWithTimeout, GenerationTimeoutError } from "../../../utils/generation_timeout";
+import {
+  enhancePromptWithGemini,
+  enhancePromptWithOpenAI,
+  enhancePromptWithAnthropic,
+} from "./enhance_prompt.utils";
+import {
+  raceGenerationWithTimeout,
+  GenerationTimeoutError,
+} from "../../../utils/generation_timeout";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { Post } from "../post/post.model";
@@ -11,8 +18,14 @@ import {
   IPaginationOptions,
   IGenericResponse,
 } from "../../../interfaces/pagination";
-import { analyzeCharacterNetwork, ICharacterNetworkResponse } from "./character_network.utils";
-import { compressContext, serializeLore } from "../../../utils/contextCompressor";
+import {
+  analyzeCharacterNetwork,
+  ICharacterNetworkResponse,
+} from "./character_network.utils";
+import {
+  compressContext,
+  serializeLore,
+} from "../../../utils/contextCompressor";
 
 interface IBranchTreeNode {
   id: string;
@@ -37,7 +50,7 @@ const createVersionSnapshot = async (
   storyId: string,
   userId: string,
   prompt: string = "",
-  generationType: string = "edited"
+  generationType: string = "edited",
 ): Promise<IStoryVersion | null> => {
   try {
     const post = await Post.findById(storyId);
@@ -52,7 +65,9 @@ const createVersionSnapshot = async (
           .sort({ versionNumber: -1 })
           .select("versionNumber");
 
-        const nextVersionNumber = lastVersion ? lastVersion.versionNumber + 1 : 1;
+        const nextVersionNumber = lastVersion
+          ? lastVersion.versionNumber + 1
+          : 1;
 
         const snapshot = await StoryVersion.create({
           storyId: post._id,
@@ -82,37 +97,31 @@ const createVersionSnapshot = async (
 const createBranchVersion = async (
   parentVersionId: string,
   userId: string,
-  branchName: string
+  branchName: string,
 ): Promise<IStoryVersion> => {
   const parentVersion = await StoryVersion.findById(parentVersionId);
 
   if (!parentVersion) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      "Parent story version not found!"
-    );
+    throw new ApiError(httpStatus.NOT_FOUND, "Parent story version not found!");
   }
 
   const post = await Post.findById(parentVersion.storyId);
 
   if (!post) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      "Associated story not found!"
-    );
+    throw new ApiError(httpStatus.NOT_FOUND, "Associated story not found!");
   }
 
   if (post.author.toString() !== userId) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You do not have permission to create a branch for this story!"
+      "You do not have permission to create a branch for this story!",
     );
   }
 
   if ((parentVersion.branchDepth ?? 0) >= 100) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "Maximum branch depth (100) reached. Cannot create deeper branches."
+      "Maximum branch depth (100) reached. Cannot create deeper branches.",
     );
   }
 
@@ -122,9 +131,7 @@ const createBranchVersion = async (
     .sort({ versionNumber: -1 })
     .select("versionNumber");
 
-  const nextVersionNumber = latestVersion
-    ? latestVersion.versionNumber + 1
-    : 1;
+  const nextVersionNumber = latestVersion ? latestVersion.versionNumber + 1 : 1;
 
   const branchVersion = await StoryVersion.create({
     storyId: parentVersion.storyId,
@@ -144,32 +151,33 @@ const createBranchVersion = async (
 
 const getStoryTree = async (
   storyId: string,
-  userId: string
+  userId: string,
 ): Promise<IStoryTreeResponse> => {
   const post = await Post.findById(storyId);
 
   if (!post) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      "Story not found!"
-    );
+    throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
   }
 
   if (post.author.toString() !== userId) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You do not have access to this story!"
+      "You do not have access to this story!",
     );
   }
 
-  const versions = await StoryVersion.find({ storyId }).sort({ versionNumber: 1 });
+  const versions = await StoryVersion.find({ storyId }).sort({
+    versionNumber: 1,
+  });
   const nodes: IBranchTreeNode[] = [];
   const edges: IBranchTreeEdge[] = [];
 
   for (const version of versions) {
     nodes.push({
       id: version._id.toString(),
-      parentId: version.parentVersionId ? version.parentVersionId.toString() : null,
+      parentId: version.parentVersionId
+        ? version.parentVersionId.toString()
+        : null,
       title: version.title,
       versionNumber: version.versionNumber,
       branchName: version.branchName ?? null,
@@ -189,15 +197,12 @@ const getStoryTree = async (
 
 const getBranchPath = async (
   versionId: string,
-  userId: string
+  userId: string,
 ): Promise<IStoryVersion[]> => {
   const version = await StoryVersion.findById(versionId);
 
   if (!version) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      "Story version not found!"
-    );
+    throw new ApiError(httpStatus.NOT_FOUND, "Story version not found!");
   }
 
   const post = await Post.findById(version.storyId);
@@ -205,7 +210,7 @@ const getBranchPath = async (
   if (!post || post.author.toString() !== userId) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You do not have access to this story!"
+      "You do not have access to this story!",
     );
   }
 
@@ -229,7 +234,7 @@ const getBranchPath = async (
   }
 
   const ancestors: IStoryVersion[] = aggregated[0].ancestors || [];
-  
+
   // Sort ancestors by branchDepth (root downwards)
   ancestors.sort((a, b) => (a.branchDepth || 0) - (b.branchDepth || 0));
 
@@ -239,7 +244,7 @@ const getBranchPath = async (
 const getVersionsByStoryId = async (
   storyId: string,
   userId: string,
-  pagination: IPaginationOptions
+  pagination: IPaginationOptions,
 ): Promise<IGenericResponse<IStoryVersion[]>> => {
   const { page, limit, skip } = paginationHelper(pagination);
   const post = await Post.findById(storyId);
@@ -250,7 +255,7 @@ const getVersionsByStoryId = async (
   if (post.author.toString() !== userId) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You do not have access to this story history!"
+      "You do not have access to this story history!",
     );
   }
 
@@ -273,13 +278,13 @@ const getVersionsByStoryId = async (
 
 const getVersionById = async (
   versionId: string,
-  userId: string
+  userId: string,
 ): Promise<IStoryVersion> => {
   const version = await StoryVersion.findById(versionId);
   if (!version) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Story version snapshot not found!"
+      "Story version snapshot not found!",
     );
   }
 
@@ -287,7 +292,7 @@ const getVersionById = async (
   if (!post || post.author.toString() !== userId) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You do not have access to this story version!"
+      "You do not have access to this story version!",
     );
   }
 
@@ -296,13 +301,13 @@ const getVersionById = async (
 
 const restoreVersion = async (
   versionId: string,
-  userId: string
+  userId: string,
 ): Promise<IPost> => {
   const version = await StoryVersion.findById(versionId);
   if (!version) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Story version snapshot not found!"
+      "Story version snapshot not found!",
     );
   }
 
@@ -314,7 +319,7 @@ const restoreVersion = async (
   if (post.author.toString() !== userId) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You do not have permission to restore this story!"
+      "You do not have permission to restore this story!",
     );
   }
 
@@ -322,7 +327,7 @@ const restoreVersion = async (
     post._id.toString(),
     userId,
     "Snapshot created automatically before restoration",
-    "pre-restoration"
+    "pre-restoration",
   );
 
   post.content = version.content;
@@ -333,7 +338,7 @@ const restoreVersion = async (
     post._id.toString(),
     userId,
     `Restored to Version ${version.versionNumber}`,
-    "restored"
+    "restored",
   );
 
   return post;
@@ -353,41 +358,49 @@ const buildCompressedContext = (storyContext: string): string => {
 const enhancePrompt = async (
   prompt: string,
   storyContentOrProvider?: string,
-  providerParam?: string
+  providerParam?: string,
 ): Promise<string> => {
   let storyContent = "";
   let provider = providerParam;
 
   if (storyContentOrProvider) {
     const lower = storyContentOrProvider.toLowerCase();
-    if (lower === "gemini" || lower === "openai" || lower === "anthropic" || lower === "claude") {
+    if (
+      lower === "gemini" ||
+      lower === "openai" ||
+      lower === "anthropic" ||
+      lower === "claude"
+    ) {
       provider = storyContentOrProvider;
     } else {
       storyContent = storyContentOrProvider;
     }
   }
 
-  const compressedContext = storyContent ? buildCompressedContext(storyContent) : "";
+  const compressedContext = storyContent
+    ? buildCompressedContext(storyContent)
+    : "";
 
   try {
-    const enhanced = await raceGenerationWithTimeout(
-      async (signal) => {
-        const p = provider?.toLowerCase();
-        if (p === "anthropic" || p === "claude") {
-          return enhancePromptWithAnthropic(prompt, signal);
-        } else if (p === "openai") {
-          return enhancePromptWithOpenAI(prompt, signal);
-        } else {
-          return enhancePromptWithGemini(prompt, signal, compressedContext || undefined);
-        }
-      },
-      ENHANCE_TIMEOUT_MS
-    );
+    const enhanced = await raceGenerationWithTimeout(async (signal) => {
+      const p = provider?.toLowerCase();
+      if (p === "anthropic" || p === "claude") {
+        return enhancePromptWithAnthropic(prompt, signal);
+      } else if (p === "openai") {
+        return enhancePromptWithOpenAI(prompt, signal);
+      } else {
+        return enhancePromptWithGemini(
+          prompt,
+          signal,
+          compressedContext || undefined,
+        );
+      }
+    }, ENHANCE_TIMEOUT_MS);
 
     if (!enhanced || typeof enhanced !== "string" || enhanced.trim() === "") {
       throw new ApiError(
         httpStatus.BAD_GATEWAY,
-        "Prompt enhancement returned empty result."
+        "Prompt enhancement returned empty result.",
       );
     }
 
@@ -398,21 +411,21 @@ const enhancePrompt = async (
     if (error instanceof GenerationTimeoutError) {
       throw new ApiError(
         httpStatus.GATEWAY_TIMEOUT,
-        "Prompt enhancement timed out. Please try again."
+        "Prompt enhancement timed out. Please try again.",
       );
     }
 
     const msg = error instanceof Error ? error.message : String(error);
     throw new ApiError(
       httpStatus.BAD_GATEWAY,
-      `Prompt enhancement failed. (${msg})`
+      `Prompt enhancement failed. (${msg})`,
     );
   }
 };
 
 const getCharacterNetwork = async (
   storyId: string,
-  userId: string
+  userId: string,
 ): Promise<ICharacterNetworkResponse> => {
   const post = await Post.findById(storyId);
   if (!post) {
@@ -420,7 +433,10 @@ const getCharacterNetwork = async (
   }
 
   if (post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story history!");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have access to this story history!",
+    );
   }
 
   return await analyzeCharacterNetwork(post.content || "");

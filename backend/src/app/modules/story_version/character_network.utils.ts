@@ -28,30 +28,156 @@ export interface ICharacterNetworkResponse {
 }
 
 const COMMON_STOP_WORDS = new Set([
-  "the", "a", "an", "and", "or", "but", "if", "then", "else", "when", "where",
-  "why", "how", "who", "whom", "this", "that", "these", "those", "i", "you",
-  "he", "she", "it", "we", "they", "me", "him", "her", "us", "them", "his",
-  "my", "your", "their", "our", "its", "mine", "yours", "hers", "ours", "theirs",
-  "in", "on", "at", "by", "for", "with", "about", "against", "between", "into",
-  "through", "during", "before", "after", "above", "below", "to", "from", "up",
-  "down", "in", "out", "off", "over", "under", "again", "further", "then", "once",
-  "here", "there", "all", "any", "both", "each", "few", "more", "most", "other",
-  "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too",
-  "very", "s", "t", "can", "will", "just", "don", "should", "now", "was", "were",
-  "is", "are", "am", "be", "been", "being", "have", "has", "had", "having",
-  "do", "does", "did", "doing", "would", "could", "should", "one", "two", "three",
-  "four", "five", "first", "second", "third", "mr", "mrs", "ms", "miss", "dr", "prof"
+  "the",
+  "a",
+  "an",
+  "and",
+  "or",
+  "but",
+  "if",
+  "then",
+  "else",
+  "when",
+  "where",
+  "why",
+  "how",
+  "who",
+  "whom",
+  "this",
+  "that",
+  "these",
+  "those",
+  "i",
+  "you",
+  "he",
+  "she",
+  "it",
+  "we",
+  "they",
+  "me",
+  "him",
+  "her",
+  "us",
+  "them",
+  "his",
+  "my",
+  "your",
+  "their",
+  "our",
+  "its",
+  "mine",
+  "yours",
+  "hers",
+  "ours",
+  "theirs",
+  "in",
+  "on",
+  "at",
+  "by",
+  "for",
+  "with",
+  "about",
+  "against",
+  "between",
+  "into",
+  "through",
+  "during",
+  "before",
+  "after",
+  "above",
+  "below",
+  "to",
+  "from",
+  "up",
+  "down",
+  "in",
+  "out",
+  "off",
+  "over",
+  "under",
+  "again",
+  "further",
+  "then",
+  "once",
+  "here",
+  "there",
+  "all",
+  "any",
+  "both",
+  "each",
+  "few",
+  "more",
+  "most",
+  "other",
+  "some",
+  "such",
+  "no",
+  "nor",
+  "not",
+  "only",
+  "own",
+  "same",
+  "so",
+  "than",
+  "too",
+  "very",
+  "s",
+  "t",
+  "can",
+  "will",
+  "just",
+  "don",
+  "should",
+  "now",
+  "was",
+  "were",
+  "is",
+  "are",
+  "am",
+  "be",
+  "been",
+  "being",
+  "have",
+  "has",
+  "had",
+  "having",
+  "do",
+  "does",
+  "did",
+  "doing",
+  "would",
+  "could",
+  "should",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "first",
+  "second",
+  "third",
+  "mr",
+  "mrs",
+  "ms",
+  "miss",
+  "dr",
+  "prof",
 ]);
 
 // Offline fallback extractor using regex and heuristics
-export function extractCharacterNetworkOffline(content: string): ICharacterNetworkResponse {
+export function extractCharacterNetworkOffline(
+  content: string,
+): ICharacterNetworkResponse {
   if (!content || !content.trim()) {
     return { characters: [], relationships: [] };
   }
 
   // 1. Sentence-based split
-  const sentences = content.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
-  
+  const sentences = content
+    .split(/[.!?]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   // 2. Candidate character extraction: Capitalized words
   const rawNamesCount: Record<string, number> = {};
   const sentenceOccurrences: string[][] = [];
@@ -59,7 +185,7 @@ export function extractCharacterNetworkOffline(content: string): ICharacterNetwo
   for (const sentence of sentences) {
     const words = sentence.split(/\s+/);
     const sentenceNames = new Set<string>();
-    
+
     let i = 0;
     while (i < words.length) {
       const cleanWord = words[i].replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, "");
@@ -68,10 +194,17 @@ export function extractCharacterNetworkOffline(content: string): ICharacterNetwo
         if (!COMMON_STOP_WORDS.has(lower) && cleanWord.length > 2) {
           let name = cleanWord;
           if (i + 1 < words.length) {
-            const nextClean = words[i+1].replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, "");
-            if (nextClean && /^[A-Z]/.test(nextClean) && !COMMON_STOP_WORDS.has(nextClean.toLowerCase())) {
+            const nextClean = words[i + 1].replace(
+              /^[^a-zA-Z]+|[^a-zA-Z]+$/g,
+              "",
+            );
+            if (
+              nextClean &&
+              /^[A-Z]/.test(nextClean) &&
+              !COMMON_STOP_WORDS.has(nextClean.toLowerCase())
+            ) {
               name = name + " " + nextClean;
-              i++; 
+              i++;
             }
           }
           sentenceNames.add(name);
@@ -90,14 +223,19 @@ export function extractCharacterNetworkOffline(content: string): ICharacterNetwo
 
   const minAppearances = sentences.length > 15 ? 2 : 1;
   const filteredNames = Object.keys(rawNamesCount).filter(
-    name => rawNamesCount[name] >= minAppearances
+    (name) => rawNamesCount[name] >= minAppearances,
   );
 
   if (filteredNames.length === 0) {
     return {
       characters: [
         { id: "hero", name: "Hero", appearanceCount: 5, importanceScore: 80 },
-        { id: "villain", name: "Villain", appearanceCount: 4, importanceScore: 75 }
+        {
+          id: "villain",
+          name: "Villain",
+          appearanceCount: 4,
+          importanceScore: 75,
+        },
       ],
       relationships: [
         {
@@ -106,44 +244,48 @@ export function extractCharacterNetworkOffline(content: string): ICharacterNetwo
           target: "villain",
           type: "Rival",
           strength: 70,
-          interactionCount: 3
-        }
-      ]
+          interactionCount: 3,
+        },
+      ],
     };
   }
 
-  const characters: ICharacter[] = filteredNames.map(name => {
+  const characters: ICharacter[] = filteredNames.map((name) => {
     const id = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
     return {
       id,
       name,
       appearanceCount: rawNamesCount[name],
-      importanceScore: 0
+      importanceScore: 0,
     };
   });
 
   const charMap = new Map<string, ICharacter>();
-  characters.forEach(c => charMap.set(c.name, c));
+  characters.forEach((c) => charMap.set(c.name, c));
 
-  const pairInteractions: Record<string, { source: string; target: string; count: number }> = {};
-  
+  const pairInteractions: Record<
+    string,
+    { source: string; target: string; count: number }
+  > = {};
+
   for (const occurrences of sentenceOccurrences) {
-    const validOccurrences = occurrences.filter(name => charMap.has(name));
+    const validOccurrences = occurrences.filter((name) => charMap.has(name));
     for (let x = 0; x < validOccurrences.length; x++) {
       for (let y = x + 1; y < validOccurrences.length; y++) {
         const nameA = validOccurrences[x];
         const nameB = validOccurrences[y];
         const charA = charMap.get(nameA)!;
         const charB = charMap.get(nameB)!;
-        
-        const [first, second] = charA.id < charB.id ? [charA, charB] : [charB, charA];
+
+        const [first, second] =
+          charA.id < charB.id ? [charA, charB] : [charB, charA];
         const pairKey = `${first.id}-${second.id}`;
-        
+
         if (!pairInteractions[pairKey]) {
           pairInteractions[pairKey] = {
             source: first.id,
             target: second.id,
-            count: 0
+            count: 0,
           };
         }
         pairInteractions[pairKey].count += 1;
@@ -151,27 +293,48 @@ export function extractCharacterNetworkOffline(content: string): ICharacterNetwo
     }
   }
 
-  const relationshipTypes = ["Friend", "Rival", "Mentor", "Enemy", "Ally", "Romantic Interest", "Family", "Unknown"];
+  const relationshipTypes = [
+    "Friend",
+    "Rival",
+    "Mentor",
+    "Enemy",
+    "Ally",
+    "Romantic Interest",
+    "Family",
+    "Unknown",
+  ];
 
-  const relationships: IRelationship[] = Object.entries(pairInteractions).map(([id, data]) => {
-    const hash = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const type = relationshipTypes[hash % relationshipTypes.length];
-    const strength = Math.min(100, Math.max(10, data.count * 15));
-    
-    return {
-      id,
-      source: data.source,
-      target: data.target,
-      type,
-      strength,
-      interactionCount: data.count
-    };
-  });
+  const relationships: IRelationship[] = Object.entries(pairInteractions).map(
+    ([id, data]) => {
+      const hash = id
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const type = relationshipTypes[hash % relationshipTypes.length];
+      const strength = Math.min(100, Math.max(10, data.count * 15));
 
-  characters.forEach(char => {
-    const charRelationships = relationships.filter(r => r.source === char.id || r.target === char.id);
-    const totalInteractions = charRelationships.reduce((acc, r) => acc + r.interactionCount, 0);
-    const rawScore = char.appearanceCount * 3 + charRelationships.length * 10 + totalInteractions * 2;
+      return {
+        id,
+        source: data.source,
+        target: data.target,
+        type,
+        strength,
+        interactionCount: data.count,
+      };
+    },
+  );
+
+  characters.forEach((char) => {
+    const charRelationships = relationships.filter(
+      (r) => r.source === char.id || r.target === char.id,
+    );
+    const totalInteractions = charRelationships.reduce(
+      (acc, r) => acc + r.interactionCount,
+      0,
+    );
+    const rawScore =
+      char.appearanceCount * 3 +
+      charRelationships.length * 10 +
+      totalInteractions * 2;
     char.importanceScore = Math.min(100, Math.max(10, Math.round(rawScore)));
   });
 
@@ -179,11 +342,15 @@ export function extractCharacterNetworkOffline(content: string): ICharacterNetwo
 }
 
 // Main analyzer function with Gemini AI and offline fallback
-export async function analyzeCharacterNetwork(content: string): Promise<ICharacterNetworkResponse> {
+export async function analyzeCharacterNetwork(
+  content: string,
+): Promise<ICharacterNetworkResponse> {
   const geminiApiKey = config.gemini_api_key?.trim();
-  
+
   if (!geminiApiKey) {
-    console.log("[AI] Gemini key not configured, falling back to offline character network extraction.");
+    console.log(
+      "[AI] Gemini key not configured, falling back to offline character network extraction.",
+    );
     return extractCharacterNetworkOffline(content);
   }
 
@@ -226,13 +393,15 @@ Return ONLY valid JSON format containing:
       text,
       CharacterNetworkResponseSchema,
       extractCharacterNetworkOffline(content),
-      { label: "Gemini character network" }
+      { label: "Gemini character network" },
     );
 
     return parsed;
   } catch (error) {
     console.error("[AI] Gemini character network analysis failed:", error);
-    console.log("[AI] Executing fallback offline character network extraction.");
+    console.log(
+      "[AI] Executing fallback offline character network extraction.",
+    );
     return extractCharacterNetworkOffline(content);
   }
 }

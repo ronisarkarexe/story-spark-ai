@@ -12,7 +12,7 @@ export const getFirstDayOfMonth = (referenceDate: Date = new Date()): Date =>
 export const effectiveRequestCount = (
   requestsThisMonth: number,
   lastRequestDate: Date | null | undefined,
-  firstDayOfMonth: Date
+  firstDayOfMonth: Date,
 ): number => {
   if (!lastRequestDate || lastRequestDate < firstDayOfMonth) {
     return 0;
@@ -75,7 +75,7 @@ export const reserveUserQuota = async (email: string): Promise<void> => {
         },
       },
     ],
-    { new: true }
+    { new: true },
   );
 
   if (!reserved) {
@@ -83,10 +83,7 @@ export const reserveUserQuota = async (email: string): Promise<void> => {
     if (!userExists) {
       throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
     }
-    throw new ApiError(
-      httpStatus.CONFLICT,
-      "Monthly request limit exceeded!"
-    );
+    throw new ApiError(httpStatus.CONFLICT, "Monthly request limit exceeded!");
   }
 };
 
@@ -94,18 +91,15 @@ export const reserveUserQuota = async (email: string): Promise<void> => {
  * Refunds a previously reserved slot (idempotent when paired with QuotaRefundGuard).
  */
 export const refundUserQuota = async (email: string): Promise<void> => {
-  await User.findOneAndUpdate(
-    { email, requestsThisMonth: { $gt: 0 } },
-    [
-      {
-        $set: {
-          requestsThisMonth: {
-            $max: [0, { $subtract: ["$requestsThisMonth", 1] }],
-          },
+  await User.findOneAndUpdate({ email, requestsThisMonth: { $gt: 0 } }, [
+    {
+      $set: {
+        requestsThisMonth: {
+          $max: [0, { $subtract: ["$requestsThisMonth", 1] }],
         },
       },
-    ]
-  );
+    },
+  ]);
 };
 
 /**
@@ -119,20 +113,23 @@ export const reserveGuestQuota = async (guestId: string): Promise<void> => {
         $inc: { requestCount: 1 },
         $set: { lastRequestAt: new Date() },
       },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
+      { new: true, upsert: true, setDefaultsOnInsert: true },
     );
 
     if (!reserved) {
       throw new ApiError(
         httpStatus.FORBIDDEN,
-        "You have reached the maximum limit of 3 story generations."
+        "You have reached the maximum limit of 3 story generations.",
       );
     }
   } catch (error: any) {
-    if (error.code === 11000 || (error.name === "MongoServerError" && error.code === 11000)) {
+    if (
+      error.code === 11000 ||
+      (error.name === "MongoServerError" && error.code === 11000)
+    ) {
       throw new ApiError(
         httpStatus.FORBIDDEN,
-        "You have reached the maximum limit of 3 story generations."
+        "You have reached the maximum limit of 3 story generations.",
       );
     }
     throw error;
@@ -140,20 +137,16 @@ export const reserveGuestQuota = async (guestId: string): Promise<void> => {
 };
 
 export const refundGuestQuota = async (guestId: string): Promise<void> => {
-  await GuestUsage.findOneAndUpdate(
-    { guestId, requestCount: { $gt: 0 } },
-    [
-      {
-        $set: {
-          requestCount: {
-            $max: [0, { $subtract: ["$requestCount", 1] }],
-          },
+  await GuestUsage.findOneAndUpdate({ guestId, requestCount: { $gt: 0 } }, [
+    {
+      $set: {
+        requestCount: {
+          $max: [0, { $subtract: ["$requestCount", 1] }],
         },
       },
-    ]
-  );
+    },
+  ]);
 };
 
-export const isSuccessfulGeneration = (
-  result: unknown
-): result is unknown[] => Array.isArray(result) && result.length > 0;
+export const isSuccessfulGeneration = (result: unknown): result is unknown[] =>
+  Array.isArray(result) && result.length > 0;

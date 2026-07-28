@@ -51,7 +51,10 @@ export const SearchBar: React.FC = () => {
   // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -90,9 +93,10 @@ export const SearchBar: React.FC = () => {
         ref={containerRef}
         className={`
           relative transition-all duration-300
-          ${expanded
-            ? "fixed inset-x-4 top-3 z-[60] sm:static sm:inset-auto sm:z-auto"
-            : "hidden sm:block"
+          ${
+            expanded
+              ? "fixed inset-x-4 top-3 z-[60] sm:static sm:inset-auto sm:z-auto"
+              : "hidden sm:block"
           }
         `}
       >

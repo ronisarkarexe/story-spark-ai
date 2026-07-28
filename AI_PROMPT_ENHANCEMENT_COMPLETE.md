@@ -3,6 +3,7 @@
 ## 🎯 Overview
 
 A comprehensive, production-ready feature that analyzes user prompts before story generation, providing:
+
 - **Creativity Score**: 0-100 machine learning-based assessment
 - **Enhanced Prompt**: AI-refined version using Gemini API
 - **Improvement Suggestions**: 3-5 actionable, specific recommendations
@@ -14,6 +15,7 @@ A comprehensive, production-ready feature that analyzes user prompts before stor
 ## 📦 What Has Been Created
 
 ### Backend Implementation (6 Files)
+
 Located at: `backend/src/app/modules/prompt_analysis/`
 
 1. **prompt_analysis.interface.ts** - TypeScript interfaces and types
@@ -24,11 +26,13 @@ Located at: `backend/src/app/modules/prompt_analysis/`
 6. **prompt_analysis.service.test.ts** - Comprehensive unit tests
 
 **Backend Integration:**
+
 - ✅ Registered in `router/index.ts`
 - ✅ Ready for immediate use
 - ✅ No database changes needed
 
 ### Frontend Implementation (7 Files)
+
 Located at: `frontend/src/components/prompt_analysis/`
 
 1. **PromptAnalysisCard.tsx** - Main orchestrator component (400+ lines)
@@ -66,6 +70,7 @@ Located at: `frontend/src/components/prompt_analysis/`
    - Type exports
 
 ### API Service (1 File)
+
 Located at: `frontend/src/services/prompt_analysis.service.ts`
 
 - `analyzePrompt()` - Full analysis with all metrics
@@ -108,14 +113,18 @@ Located at: `frontend/src/services/prompt_analysis.service.ts`
 ## 🚀 Getting Started
 
 ### 1. Backend is Already Ready
+
 No additional configuration needed! The backend is:
+
 - ✅ Created and integrated
 - ✅ Registered in the router
 - ✅ Uses existing Gemini API key
 - ✅ Ready to handle requests
 
 ### 2. Frontend is Already Ready
+
 All components are created:
+
 - ✅ Uses existing Tailwind CSS
 - ✅ Uses existing Framer Motion
 - ✅ Uses existing lucide-react icons
@@ -127,11 +136,13 @@ All components are created:
 **File:** `frontend/src/components/stories/stories.component.tsx`
 
 **Step 1:** Add import (around line 20)
+
 ```typescript
 import PromptAnalysisIntegration from "../prompt_analysis/PromptAnalysisIntegration";
 ```
 
 **Step 2:** Add handler (around line 500)
+
 ```typescript
 const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
   setTextareaValue(enhancedPrompt);
@@ -140,6 +151,7 @@ const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
 ```
 
 **Step 3:** Add component JSX (after textarea, before generate button)
+
 ```typescript
 {textareaValue.trim().length >= 10 && (
   <PromptAnalysisIntegration
@@ -158,6 +170,7 @@ const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
 ## 🎨 Features in Detail
 
 ### Creativity Score Algorithm
+
 The creativity score (0-100) is calculated using:
 
 1. **Base Score**: 50 points
@@ -169,12 +182,15 @@ The creativity score (0-100) is calculated using:
 7. **AI Enhancement Boost** (+15 pts): Gemini API analysis adds value
 
 **Score Interpretation:**
+
 - 75-100: Excellent - Highly creative, well-structured, engaging
 - 50-74: Good - Decent creativity, could use more specifics
 - 0-49: Fair - Needs improvement, review suggestions
 
 ### Enhanced Prompt Generation
+
 Uses Google Gemini 1.5 Flash API to:
+
 - Improve specificity and clarity
 - Add more vivid descriptions
 - Better narrative structure
@@ -183,7 +199,9 @@ Uses Google Gemini 1.5 Flash API to:
 **If API unavailable:** Falls back to pre-built enhancement patterns
 
 ### Improvement Suggestions
+
 Provides 3-5 specific, actionable suggestions such as:
+
 - "Add character name or background details"
 - "Specify the time period and setting"
 - "Define the central conflict or mystery"
@@ -191,7 +209,9 @@ Provides 3-5 specific, actionable suggestions such as:
 - "Clarify the stakes and consequences"
 
 ### Sentiment Analysis
+
 Breaks down emotional tone:
+
 - **Positive**: Uplifting, optimistic language (0-1)
 - **Neutral**: Factual, balanced language (0-1)
 - **Negative**: Dark, serious language (0-1)
@@ -199,14 +219,18 @@ Breaks down emotional tone:
 Displayed with animated progress bars.
 
 ### Keyword Extraction
+
 Automatically identifies top 10 keywords:
+
 - Filters stop words (the, and, a, etc.)
 - Ranks by frequency and relevance
 - Helps understand prompt themes
 - Useful for story generation context
 
 ### Complexity Assessment
+
 Categorizes prompt as:
+
 - **Simple**: Short, straightforward prompts
 - **Moderate**: Balanced detail and structure
 - **Complex**: Sophisticated, nuanced prompts
@@ -214,6 +238,7 @@ Categorizes prompt as:
 ## 📊 Technical Architecture
 
 ### Backend Stack
+
 - **Language**: TypeScript
 - **Framework**: Express.js
 - **Validation**: Zod
@@ -221,6 +246,7 @@ Categorizes prompt as:
 - **Response Format**: JSON with standardized error handling
 
 ### Frontend Stack
+
 - **Framework**: React 19
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
@@ -230,7 +256,9 @@ Categorizes prompt as:
 - **HTTP Client**: Axios
 
 ### No New Dependencies
+
 All dependencies already installed:
+
 - ✅ React, TypeScript, Tailwind CSS
 - ✅ Framer Motion, Lucide React
 - ✅ react-hot-toast, Axios
@@ -239,11 +267,13 @@ All dependencies already installed:
 ## 📱 Responsive Design
 
 ### Mobile-First Approach
+
 - **Mobile (default)**: Single column, stacked elements
 - **Tablet (640px+)**: Two-column grids where appropriate
 - **Desktop (1024px+)**: Full multi-column layouts
 
 ### Touch-Friendly
+
 - Large clickable areas (48px minimum)
 - Simplified interactions on mobile
 - Readable font sizes on all devices
@@ -278,6 +308,7 @@ All dependencies already installed:
 ## 🧪 Testing
 
 **Unit Tests Included:**
+
 - Creativity score calculation
 - Keyword extraction and filtering
 - Sentiment analysis accuracy
@@ -287,6 +318,7 @@ All dependencies already installed:
 - Language support
 
 **Manual Testing Checklist Provided:**
+
 - UI interaction tests
 - API endpoint tests
 - Mobile responsiveness tests
@@ -296,6 +328,7 @@ All dependencies already installed:
 ## 🔄 API Endpoints
 
 ### 1. Analyze Prompt
+
 ```
 POST /api/v1/prompt-analysis/analyze
 
@@ -320,6 +353,7 @@ Response:
 ```
 
 ### 2. Enhance Prompt (Quick)
+
 ```
 POST /api/v1/prompt-analysis/enhance
 
@@ -328,6 +362,7 @@ Returns only: enhancedPrompt, improvements, keywords
 ```
 
 ### 3. Batch Analyze
+
 ```
 POST /api/v1/prompt-analysis/batch
 
@@ -337,6 +372,7 @@ Analyze up to 10 prompts in one request
 ## 📋 Integration Checklist
 
 ### Pre-Integration
+
 - [x] Backend files created
 - [x] Frontend files created
 - [x] Components tested individually
@@ -344,6 +380,7 @@ Analyze up to 10 prompts in one request
 - [x] No type errors
 
 ### Integration
+
 - [ ] Add import to stories.component.tsx
 - [ ] Add handler function
 - [ ] Add JSX component
@@ -352,6 +389,7 @@ Analyze up to 10 prompts in one request
 - [ ] Verify no console errors
 
 ### Deployment
+
 - [ ] Frontend builds successfully
 - [ ] Backend responds to requests
 - [ ] No API errors
@@ -362,6 +400,7 @@ Analyze up to 10 prompts in one request
 ## 🎓 Learning Resources
 
 Located in project:
+
 - `INTEGRATION_GUIDE.md` - Detailed integration steps
 - `README.md` - API documentation
 - `IMPLEMENTATION_EXAMPLE.tsx` - Working code examples
@@ -372,20 +411,25 @@ Located in project:
 ### Common Issues & Solutions
 
 **Q: "Prompt analysis failed" error**
+
 - A: Check backend is running, verify GEMINI_API_KEY, check network
 
 **Q: Enhanced prompt looks the same**
+
 - A: This happens with already well-crafted prompts, review suggestions instead
 
 **Q: Mobile layout looks wrong**
+
 - A: Clear cache, verify Tailwind CSS configured, check viewport meta tag
 
 **Q: Creativity score always same value**
+
 - A: Verify Gemini API connection, check API hasn't hit quota
 
 ## 📞 Support
 
 For questions or issues:
+
 1. Review the INTEGRATION_GUIDE.md
 2. Check README.md for API details
 3. Look at IMPLEMENTATION_EXAMPLE.tsx for code samples
@@ -395,6 +439,7 @@ For questions or issues:
 ## 🎯 Success Metrics
 
 After integration, you can measure:
+
 - **Feature adoption rate**: % of users trying analysis
 - **Enhancement usage**: % of users applying enhanced prompts
 - **Suggestion implementation**: % of prompts improved
@@ -405,12 +450,14 @@ After integration, you can measure:
 ## 🔮 Future Enhancements
 
 **Phase 2:**
+
 - User preference learning
 - Historical analysis trends
 - Community benchmarks
 - Custom scoring algorithms
 
 **Phase 3:**
+
 - Template-based prompt generation
 - Genre-specific metrics
 - Real-time collaborative analysis
@@ -419,6 +466,7 @@ After integration, you can measure:
 ## 📝 File Summary
 
 ### Backend Files (6)
+
 ```
 backend/src/app/modules/prompt_analysis/
 ├── prompt_analysis.interface.ts       (Type definitions)
@@ -434,6 +482,7 @@ backend/src/router/index.ts            (Router registration)
 ```
 
 ### Frontend Files (7)
+
 ```
 frontend/src/components/prompt_analysis/
 ├── PromptAnalysisCard.tsx             (Main orchestrator, ~400 lines)
@@ -453,6 +502,7 @@ frontend/src/components/prompt_analysis/
 ```
 
 ### Documentation (4)
+
 ```
 FEATURE_IMPLEMENTATION_CHECKLIST.md    (Project checklist)
 frontend/src/components/prompt_analysis/INTEGRATION_GUIDE.md
@@ -490,6 +540,6 @@ Everything needed for a complete, professional "AI Prompt Enhancement & Creativi
 
 ---
 
-*For detailed integration instructions, see [INTEGRATION_GUIDE.md](./frontend/src/components/prompt_analysis/INTEGRATION_GUIDE.md)*
+_For detailed integration instructions, see [INTEGRATION_GUIDE.md](./frontend/src/components/prompt_analysis/INTEGRATION_GUIDE.md)_
 
-*For complete implementation reference, see [FEATURE_IMPLEMENTATION_CHECKLIST.md](./FEATURE_IMPLEMENTATION_CHECKLIST.md)*
+_For complete implementation reference, see [FEATURE_IMPLEMENTATION_CHECKLIST.md](./FEATURE_IMPLEMENTATION_CHECKLIST.md)_

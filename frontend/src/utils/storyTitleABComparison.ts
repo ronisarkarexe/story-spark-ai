@@ -8,9 +8,7 @@ export interface StoryTitleOption {
   feedback: string;
 }
 
-export function generateStoryTitleOptions(
-  story: string
-): StoryTitleOption[] {
+export function generateStoryTitleOptions(story: string): StoryTitleOption[] {
   if (!story.trim()) return [];
 
   return [
@@ -21,8 +19,7 @@ export function generateStoryTitleOptions(
       relevance: 90,
       memorability: 89,
       emotionalAppeal: 91,
-      feedback:
-        "Strong emotional appeal with a memorable and intriguing tone.",
+      feedback: "Strong emotional appeal with a memorable and intriguing tone.",
     },
     {
       id: 2,
@@ -47,8 +44,6 @@ export function generateStoryTitleOptions(
   ];
 }
 
-export function regenerateStoryTitles(
-  story: string
-) {
+export function regenerateStoryTitles(story: string) {
   return generateStoryTitleOptions(story);
 }

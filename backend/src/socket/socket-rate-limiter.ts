@@ -18,14 +18,19 @@ const DEFAULT_CONFIG: RateLimiterConfig = {
  * Creates a Socket.IO middleware that rate limits connection attempts based on IP address.
  * Uses the existing MongoDB-backed rate limit store for consistency with HTTP rate limiting.
  */
-export const createSocketRateLimiter = (config: Partial<RateLimiterConfig> = {}) => {
-  const { windowMs, maxRequests, blockTimeMs } = { ...DEFAULT_CONFIG, ...config };
+export const createSocketRateLimiter = (
+  config: Partial<RateLimiterConfig> = {},
+) => {
+  const { windowMs, maxRequests, blockTimeMs } = {
+    ...DEFAULT_CONFIG,
+    ...config,
+  };
 
   return async (socket: Socket, next: (err?: Error) => void) => {
     try {
       // Extract IP from socket handshake
       const ip = socket.handshake.address;
-      
+
       if (!ip) {
         logger.warn("Socket.IO connection attempt without IP address");
         return next(new Error("Unable to determine client IP address"));
@@ -41,7 +46,11 @@ export const createSocketRateLimiter = (config: Partial<RateLimiterConfig> = {})
 
       if (!allowed) {
         logger.warn(`Socket.IO rate limit exceeded for IP: ${ip}`);
-        return next(new Error(`Rate limit exceeded. Please try again in ${retryAfterSec} seconds.`));
+        return next(
+          new Error(
+            `Rate limit exceeded. Please try again in ${retryAfterSec} seconds.`,
+          ),
+        );
       }
 
       // Allow connection

@@ -28,7 +28,9 @@ const loadCookiePreferences = (): CookiePreferences => {
 
 const updateAppCookieState = (preferences: CookiePreferences) => {
   if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent("cookieConsentChange", { detail: preferences }));
+  window.dispatchEvent(
+    new CustomEvent("cookieConsentChange", { detail: preferences }),
+  );
 };
 
 const saveCookiePreferences = (preferences: CookiePreferences) => {
@@ -51,7 +53,12 @@ type ToggleSwitchProps = {
   isDark: boolean;
 };
 
-const ToggleSwitch: FC<ToggleSwitchProps> = ({ checked, onChange, label, isDark }) => {
+const ToggleSwitch: FC<ToggleSwitchProps> = ({
+  checked,
+  onChange,
+  label,
+  isDark,
+}) => {
   const trackClasses = checked
     ? "bg-gradient-to-r from-blue-600 to-indigo-600"
     : isDark
@@ -76,8 +83,12 @@ const ToggleSwitch: FC<ToggleSwitchProps> = ({ checked, onChange, label, isDark 
   );
 };
 
-const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) => {
-  const [preferences, setPreferences] = useState<CookiePreferences | null>(null);
+const CookieConsentBanner: FC<CookieConsentBannerProps> = ({
+  onLayoutChange,
+}) => {
+  const [preferences, setPreferences] = useState<CookiePreferences | null>(
+    null,
+  );
   const [showModal, setShowModal] = useState(false);
   const { isDark } = useTheme();
 
@@ -107,11 +118,14 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
     saveCookiePreferences(updated);
   };
 
-  const handleAcceptAll = () => commit({ saved: true, functional: true, analytics: true });
-  const handleEssentialOnly = () => commit({ saved: true, functional: false, analytics: false });
+  const handleAcceptAll = () =>
+    commit({ saved: true, functional: true, analytics: true });
+  const handleEssentialOnly = () =>
+    commit({ saved: true, functional: false, analytics: false });
   const handleSavePreferences = () => commit({ ...preferences, saved: true });
 
-  const overlayClasses = "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4";
+  const overlayClasses =
+    "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4";
 
   const modalClasses = isDark
     ? "w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-2xl sm:p-8"
@@ -140,15 +154,32 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
   ];
 
   return (
-    <div className={overlayClasses} role="dialog" aria-modal="true" aria-labelledby="cookie-consent-title" aria-describedby="cookie-consent-description">
+    <div
+      className={overlayClasses}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cookie-consent-title"
+      aria-describedby="cookie-consent-description"
+    >
       <div className={modalClasses}>
-        <p className={`text-xs font-bold uppercase tracking-[0.24em] ${mutedText}`}>Cookie preferences</p>
-        <h2 id="cookie-consent-title" className={`mt-1.5 text-xl font-bold tracking-tight sm:text-2xl ${primaryText}`}>
+        <p
+          className={`text-xs font-bold uppercase tracking-[0.24em] ${mutedText}`}
+        >
+          Cookie preferences
+        </p>
+        <h2
+          id="cookie-consent-title"
+          className={`mt-1.5 text-xl font-bold tracking-tight sm:text-2xl ${primaryText}`}
+        >
           Manage your cookie settings
         </h2>
-        <p id="cookie-consent-description" className={`mt-2.5 text-sm leading-relaxed sm:text-base ${secondaryText}`}>
-          StorySpark AI uses cookies to keep the experience secure and smooth. Select which cookie
-          categories you want to allow, or accept all for the best experience.{" "}
+        <p
+          id="cookie-consent-description"
+          className={`mt-2.5 text-sm leading-relaxed sm:text-base ${secondaryText}`}
+        >
+          StorySpark AI uses cookies to keep the experience secure and smooth.
+          Select which cookie categories you want to allow, or accept all for
+          the best experience.{" "}
           <Link
             to="/cookie-policy"
             className="font-medium text-blue-600 underline transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
@@ -159,9 +190,13 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
         </p>
 
         <div className="mt-6">
-          <div className={`flex items-center justify-between border-t py-3.5 ${rowBorder}`}>
+          <div
+            className={`flex items-center justify-between border-t py-3.5 ${rowBorder}`}
+          >
             <div className="pr-4">
-              <p className={`text-sm font-bold ${primaryText}`}>Essential cookies</p>
+              <p className={`text-sm font-bold ${primaryText}`}>
+                Essential cookies
+              </p>
               <p className={`mt-0.5 text-xs leading-normal ${mutedText}`}>
                 Always active for secure login and basic app functionality.
               </p>
@@ -177,12 +212,18 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
               className={`flex items-center justify-between border-t py-3.5 ${rowBorder}`}
             >
               <div className="pr-4">
-                <p className={`text-sm font-bold ${primaryText}`}>{category.title}</p>
-                <p className={`mt-0.5 text-xs leading-normal ${mutedText}`}>{category.description}</p>
+                <p className={`text-sm font-bold ${primaryText}`}>
+                  {category.title}
+                </p>
+                <p className={`mt-0.5 text-xs leading-normal ${mutedText}`}>
+                  {category.description}
+                </p>
               </div>
               <ToggleSwitch
                 checked={preferences[category.key]}
-                onChange={(checked) => setPreferences({ ...preferences, [category.key]: checked })}
+                onChange={(checked) =>
+                  setPreferences({ ...preferences, [category.key]: checked })
+                }
                 label={`Toggle ${category.title.toLowerCase()}`}
                 isDark={isDark}
               />

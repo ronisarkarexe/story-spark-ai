@@ -165,9 +165,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
           Prev
         </button>
 
-        <div className="flex items-center gap-1">
-          {renderPageNumbers()}
-        </div>
+        <div className="flex items-center gap-1">{renderPageNumbers()}</div>
 
         <button
           onClick={() => handlePageChange(current + 1)}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import  { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
+import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
 
 interface AudioNarrationProps {
   text: string;
@@ -55,7 +55,8 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
   );
 
   const hasText = text && text.trim().length > 0;
-  const canPlay = hasText && !isSpeaking && !isLoading && isSupported && enabled;
+  const canPlay =
+    hasText && !isSpeaking && !isLoading && isSupported && enabled;
   const canPause = isSpeaking && !isPaused;
   const canResume = isSpeaking && isPaused;
 
@@ -115,7 +116,11 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
             aria-label="Play story narration"
             className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
-            {isLoading ? "Loading..." : isSpeaking && !isPaused ? "Playing..." : "▶ Play"}
+            {isLoading
+              ? "Loading..."
+              : isSpeaking && !isPaused
+                ? "Playing..."
+                : "▶ Play"}
           </button>
 
           {canPause && (

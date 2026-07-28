@@ -12,9 +12,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryVersionController.getVersionsByStoryId
+  StoryVersionController.getVersionsByStoryId,
 );
 
 // Retrieve character relationship network analysis
@@ -24,9 +24,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryVersionController.getCharacterNetwork
+  StoryVersionController.getCharacterNetwork,
 );
 
 router.get(
@@ -35,9 +35,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryVersionController.getStoryTree
+  StoryVersionController.getStoryTree,
 );
 
 // Retrieve a specific version snapshot
@@ -47,9 +47,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryVersionController.getVersionById
+  StoryVersionController.getVersionById,
 );
 
 router.get(
@@ -58,9 +58,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryVersionController.getBranchPath
+  StoryVersionController.getBranchPath,
 );
 
 router.post(
@@ -69,9 +69,9 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryVersionController.createBranchVersion
+  StoryVersionController.createBranchVersion,
 );
 
 // Restore to a specific version snapshot
@@ -81,9 +81,9 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryVersionController.restoreVersion
+  StoryVersionController.restoreVersion,
 );
 
 // Enhance a story prompt using AI
@@ -93,9 +93,9 @@ router.post(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  StoryVersionController.enhancePrompt
+  StoryVersionController.enhancePrompt,
 );
 
 export const StoryVersionRouter = router;

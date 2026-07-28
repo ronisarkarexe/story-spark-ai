@@ -97,7 +97,8 @@ describe("getPersonalizedRecommendations edge cases", () => {
     });
     createPostQuery([post1, post2]);
 
-    const result = await RecommendationService.getPersonalizedRecommendations(token);
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toHaveLength(2);
     expect(mockedPost.find).toHaveBeenCalledWith({
@@ -127,7 +128,8 @@ describe("getPersonalizedRecommendations edge cases", () => {
     // Second call returns 10 posts (fallback) — limit should be 7
     createPostQuery(posts.slice(3, 10));
 
-    const result = await RecommendationService.getPersonalizedRecommendations(token);
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toHaveLength(10);
   });
@@ -146,7 +148,8 @@ describe("getPersonalizedRecommendations edge cases", () => {
     });
     createPostQuery(posts);
 
-    const result = await RecommendationService.getPersonalizedRecommendations(token);
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toHaveLength(12);
     expect(mockedPost.find).toHaveBeenCalledTimes(1);
@@ -168,7 +171,8 @@ describe("getPersonalizedRecommendations edge cases", () => {
     createPostQuery(posts.slice(0, 5));
     createPostQuery(posts.slice(5, 10));
 
-    const result = await RecommendationService.getPersonalizedRecommendations(token);
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toHaveLength(10);
     const ids = result.map((p) => String((p as any)._id));
@@ -202,9 +206,8 @@ describe("getPersonalizedRecommendations edge cases", () => {
     await RecommendationService.getPersonalizedRecommendations(token);
 
     const queryArg = mockedPost.find.mock.calls[0][0];
-    const genreFilter = queryArg.$or.find(
-      (f: any) => f.genre != null,
-    ) as { genre: { $in: string[] } } | undefined;
+    const genreFilter = queryArg.$or.find((f: any) => f.genre != null) as
+      { genre: { $in: string[] } } | undefined;
     expect(genreFilter?.genre.$in).toContain("Fantasy");
     expect(genreFilter?.genre.$in).toContain("Romance");
     expect(genreFilter?.genre.$in).toContain("Sci-Fi");
@@ -238,9 +241,8 @@ describe("getPersonalizedRecommendations edge cases", () => {
     await RecommendationService.getPersonalizedRecommendations(token);
 
     const queryArg = mockedPost.find.mock.calls[0][0];
-    const emotionFilter = queryArg.$or.find(
-      (f: any) => f.emotions != null,
-    ) as { emotions: { $in: string[] } } | undefined;
+    const emotionFilter = queryArg.$or.find((f: any) => f.emotions != null) as
+      { emotions: { $in: string[] } } | undefined;
     expect(emotionFilter?.emotions.$in).toContain("Joy");
     expect(emotionFilter?.emotions.$in).toContain("Calm");
     expect(emotionFilter?.emotions.$in).toContain("Wonder");
@@ -292,7 +294,8 @@ describe("getPersonalizedRecommendations edge cases", () => {
       lean: jest.fn().mockResolvedValue([]),
     });
 
-    const result = await RecommendationService.getPersonalizedRecommendations(token);
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toHaveLength(0);
     expect(mockedPost.find).toHaveBeenCalledTimes(2);

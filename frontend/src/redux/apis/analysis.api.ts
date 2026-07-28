@@ -25,7 +25,10 @@ const analysisApi = baseApi.injectEndpoints({
       }) => response.data,
       providesTags: [tagTypes.post, tagTypes.user],
     }),
-    analyzeStory: build.mutation<{ suggestions: ISuggestion[] }, { content: string }>({
+    analyzeStory: build.mutation<
+      { suggestions: ISuggestion[] },
+      { content: string }
+    >({
       query: (data) => ({
         url: `/${ANALYSIS_URL}/analyze-story`,
         method: "POST",
@@ -40,5 +43,5 @@ const analysisApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetDashboardAnalysisQuery, useAnalyzeStoryMutation } = analysisApi;
-
+export const { useGetDashboardAnalysisQuery, useAnalyzeStoryMutation } =
+  analysisApi;

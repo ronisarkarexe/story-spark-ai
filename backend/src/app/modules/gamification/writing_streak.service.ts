@@ -5,7 +5,9 @@ import { ACHIEVEMENT_DEFINITIONS } from "./achievements.constant";
 import { GamificationService } from "./gamification.service";
 
 const getUtcDateOnly = (date: Date) => {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
 };
 
 const updateStreakAndUnlocks = async (userId: string) => {
@@ -154,7 +156,9 @@ const getAchievements = async (userId: string) => {
 
   // Get unlocks
   const unlocks = await AchievementUnlock.find({ userId });
-  const unlocksMap = new Map(unlocks.map((u) => [u.achievementId, u.unlockedAt]));
+  const unlocksMap = new Map(
+    unlocks.map((u) => [u.achievementId, u.unlockedAt]),
+  );
 
   // Return mapped achievements
   return ACHIEVEMENT_DEFINITIONS.map((def) => {

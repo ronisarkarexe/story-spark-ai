@@ -101,7 +101,7 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
 
   it("uses lean projected reads for user and preferred post recommendations", async () => {
     const post = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439013")
+      new Types.ObjectId("507f1f77bcf86cd799439013"),
     );
     const user = {
       readingPreferences: {
@@ -117,9 +117,8 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     const userQuery = createUserQuery(user);
     const preferredPostQuery = createPostQuery(Array(10).fill(post));
 
-    const result = await RecommendationService.getPersonalizedRecommendations(
-      token
-    );
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toHaveLength(10);
     expect(result[0]).toEqual(
@@ -131,7 +130,7 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
         author: expect.objectContaining({
           name: "Reader Writer",
         }),
-      })
+      }),
     );
 
     expect(mockedUser.findById).toHaveBeenCalledWith(token._id);
@@ -149,10 +148,10 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     });
     expect(preferredPostQuery.populate).toHaveBeenCalledWith(
       "author",
-      AUTHOR_RECOMMENDATION_FIELDS
+      AUTHOR_RECOMMENDATION_FIELDS,
     );
     expect(preferredPostQuery.select).toHaveBeenCalledWith(
-      POST_RECOMMENDATION_FIELDS
+      POST_RECOMMENDATION_FIELDS,
     );
     expect(preferredPostQuery.sort).toHaveBeenCalledWith({
       likesCount: -1,
@@ -181,9 +180,8 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     const preferredPostQuery = createPostQuery([preferredPost]);
     const fallbackPostQuery = createPostQuery([fallbackPost]);
 
-    const result = await RecommendationService.getPersonalizedRecommendations(
-      token
-    );
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toEqual([preferredPost, fallbackPost]);
     expect(mockedPost.find).toHaveBeenCalledTimes(2);
@@ -195,14 +193,17 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     expect(preferredPostQuery.limit).toHaveBeenCalledWith(10);
     expect(fallbackPostQuery.limit).toHaveBeenCalledWith(9);
     expect(fallbackPostQuery.select).toHaveBeenCalledWith(
-      POST_RECOMMENDATION_FIELDS
+      POST_RECOMMENDATION_FIELDS,
     );
     expect(fallbackPostQuery.lean).toHaveBeenCalledTimes(1);
   });
 
   it("caps the reading history exclusion list to 100 items for highly active users", async () => {
     // 1. Arrange: Create a reading history with 150 unique post IDs
-    const massiveHistory = Array.from({ length: 150 }, () => new Types.ObjectId());
+    const massiveHistory = Array.from(
+      { length: 150 },
+      () => new Types.ObjectId(),
+    );
 
     createUserQuery({
       readingPreferences: undefined, // Forces fallback behavior to isolate $nin testing
@@ -227,7 +228,7 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
 
   it("uses fallback popular posts when no preferences are available", async () => {
     const fallbackPost = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439016")
+      new Types.ObjectId("507f1f77bcf86cd799439016"),
     );
 
     createUserQuery({
@@ -235,9 +236,8 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     });
     const fallbackPostQuery = createPostQuery([fallbackPost]);
 
-    const result = await RecommendationService.getPersonalizedRecommendations(
-      token
-    );
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toEqual([fallbackPost]);
     expect(mockedPost.find).toHaveBeenCalledTimes(1);
@@ -247,7 +247,7 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
       _id: { $nin: [readPostId] },
     });
     expect(fallbackPostQuery.select).toHaveBeenCalledWith(
-      POST_RECOMMENDATION_FIELDS
+      POST_RECOMMENDATION_FIELDS,
     );
     expect(fallbackPostQuery.limit).toHaveBeenCalledWith(10);
   });
@@ -259,7 +259,7 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     });
 
     await expect(
-      RecommendationService.getPersonalizedRecommendations(token)
+      RecommendationService.getPersonalizedRecommendations(token),
     ).rejects.toThrow("User not found");
 
     expect(mockedUser.findById).toHaveBeenCalledWith(token._id);
@@ -267,7 +267,7 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
 
   it("falls back to popular posts when readingPreferences is undefined", async () => {
     const fallbackPost = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439017")
+      new Types.ObjectId("507f1f77bcf86cd799439017"),
     );
 
     createUserQuery({
@@ -276,9 +276,8 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     });
     const fallbackPostQuery = createPostQuery([fallbackPost]);
 
-    const result = await RecommendationService.getPersonalizedRecommendations(
-      token
-    );
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toEqual([fallbackPost]);
     expect(mockedPost.find).toHaveBeenCalledTimes(1);
@@ -292,7 +291,7 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
 
   it("falls back to popular posts when favoriteGenres and favoriteEmotions are empty", async () => {
     const fallbackPost = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439018")
+      new Types.ObjectId("507f1f77bcf86cd799439018"),
     );
 
     createUserQuery({
@@ -304,9 +303,8 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     });
     const fallbackPostQuery = createPostQuery([fallbackPost]);
 
-    const result = await RecommendationService.getPersonalizedRecommendations(
-      token
-    );
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toEqual([fallbackPost]);
     expect(mockedPost.find).toHaveBeenCalledTimes(1);
@@ -355,7 +353,7 @@ describe("recommendation query indexes", () => {
     createUserQuery(null);
 
     await expect(
-      RecommendationService.getPersonalizedRecommendations(token)
+      RecommendationService.getPersonalizedRecommendations(token),
     ).rejects.toMatchObject({
       statusCode: 404,
       message: "User not found",
@@ -363,105 +361,102 @@ describe("recommendation query indexes", () => {
   });
 
   it("builds recommendation query when only favorite emotions exist", async () => {
-  const post = createRecommendationPost(
-    new Types.ObjectId("507f1f77bcf86cd799439020")
-  );
+    const post = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439020"),
+    );
 
-  createUserQuery({
-    readingPreferences: {
-      favoriteGenres: [],
-      favoriteEmotions: [
-        { name: "Joy", count: 5 },
-        { name: "Wonder", count: 2 },
+    createUserQuery({
+      readingPreferences: {
+        favoriteGenres: [],
+        favoriteEmotions: [
+          { name: "Joy", count: 5 },
+          { name: "Wonder", count: 2 },
+        ],
+      },
+      readingHistory: [readPostId],
+    });
+
+    createPostQuery(Array(10).fill(post));
+
+    await RecommendationService.getPersonalizedRecommendations(token);
+
+    expect(mockedPost.find).toHaveBeenCalledWith({
+      isDeleted: false,
+      isPublished: true,
+      _id: { $nin: [readPostId] },
+      $or: [
+        {
+          emotions: {
+            $in: ["Joy", "Wonder"],
+          },
+        },
       ],
-    },
-    readingHistory: [readPostId],
+    });
   });
 
-  createPostQuery(Array(10).fill(post));
+  it("builds recommendation query when only favorite genres exist", async () => {
+    const post = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439021"),
+    );
 
-  await RecommendationService.getPersonalizedRecommendations(token);
-
-  expect(mockedPost.find).toHaveBeenCalledWith({
-    isDeleted: false,
-    isPublished: true,
-    _id: { $nin: [readPostId] },
-    $or: [
-      {
-        emotions: {
-          $in: ["Joy", "Wonder"],
-        },
+    createUserQuery({
+      readingPreferences: {
+        favoriteGenres: [
+          { name: "Fantasy", count: 5 },
+          { name: "Mystery", count: 2 },
+        ],
+        favoriteEmotions: [],
       },
-    ],
-  });
-});
+      readingHistory: [readPostId],
+    });
 
-it("builds recommendation query when only favorite genres exist", async () => {
-  const post = createRecommendationPost(
-    new Types.ObjectId("507f1f77bcf86cd799439021")
-  );
+    createPostQuery(Array(10).fill(post));
 
-  createUserQuery({
-    readingPreferences: {
-      favoriteGenres: [
-        { name: "Fantasy", count: 5 },
-        { name: "Mystery", count: 2 },
+    await RecommendationService.getPersonalizedRecommendations(token);
+
+    expect(mockedPost.find).toHaveBeenCalledWith({
+      isDeleted: false,
+      isPublished: true,
+      _id: { $nin: [readPostId] },
+      $or: [
+        {
+          genre: {
+            $in: ["Fantasy", "Mystery"],
+          },
+        },
       ],
-      favoriteEmotions: [],
-    },
-    readingHistory: [readPostId],
+    });
   });
 
-  createPostQuery(Array(10).fill(post));
+  it("handles empty reading history without adding exclusion filters", async () => {
+    const post = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439022"),
+    );
 
-  await RecommendationService.getPersonalizedRecommendations(token);
-
-  expect(mockedPost.find).toHaveBeenCalledWith({
-    isDeleted: false,
-    isPublished: true,
-    _id: { $nin: [readPostId] },
-    $or: [
-      {
-        genre: {
-          $in: ["Fantasy", "Mystery"],
-        },
+    createUserQuery({
+      readingPreferences: {
+        favoriteGenres: [{ name: "Fantasy", count: 1 }],
+        favoriteEmotions: [],
       },
-    ],
-  });
-});
+      readingHistory: [],
+    });
 
-it("handles empty reading history without adding exclusion filters", async () => {
-  const post = createRecommendationPost(
-    new Types.ObjectId("507f1f77bcf86cd799439022")
-  );
+    createPostQuery(Array(10).fill(post));
 
-  createUserQuery({
-    readingPreferences: {
-      favoriteGenres: [{ name: "Fantasy", count: 1 }],
-      favoriteEmotions: [],
-    },
-    readingHistory: [],
-  });
+    await RecommendationService.getPersonalizedRecommendations(token);
 
-  createPostQuery(Array(10).fill(post));
-
-  await RecommendationService.getPersonalizedRecommendations(token);
-
-  expect(mockedPost.find).toHaveBeenCalledWith({
-    isDeleted: false,
-    isPublished: true,
-    $or: [
-      {
-        genre: {
-          $in: ["Fantasy"],
+    expect(mockedPost.find).toHaveBeenCalledWith({
+      isDeleted: false,
+      isPublished: true,
+      $or: [
+        {
+          genre: {
+            $in: ["Fantasy"],
+          },
         },
-      },
-    ],
+      ],
+    });
   });
-});
-
-
-
 
   it("registers indexes for published popularity and preference recommendation queries", () => {
     const indexKeys = PostSchema.indexes().map(([keys]) => keys);
@@ -488,10 +483,9 @@ it("handles empty reading history without adding exclusion filters", async () =>
           likesCount: -1,
           viewsCount: -1,
         },
-      ])
+      ]),
     );
   });
-
 
   it("throws NOT_FOUND when user does not exist", async () => {
     mockedUser.findById.mockReturnValueOnce({
@@ -500,13 +494,13 @@ it("handles empty reading history without adding exclusion filters", async () =>
     });
 
     await expect(
-      RecommendationService.getPersonalizedRecommendations(token)
+      RecommendationService.getPersonalizedRecommendations(token),
     ).rejects.toThrow("User not found");
   });
 
   it("uses only genres for preferred query when no emotions are set", async () => {
     const post = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439020")
+      new Types.ObjectId("507f1f77bcf86cd799439020"),
     );
     createUserQuery({
       readingPreferences: {
@@ -527,7 +521,7 @@ it("handles empty reading history without adding exclusion filters", async () =>
 
   it("uses only emotions for preferred query when no genres are set", async () => {
     const post = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439021")
+      new Types.ObjectId("507f1f77bcf86cd799439021"),
     );
     createUserQuery({
       readingPreferences: {
@@ -548,7 +542,7 @@ it("handles empty reading history without adding exclusion filters", async () =>
 
   it("selects top 3 genres and emotions sorted by count", async () => {
     const post = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439022")
+      new Types.ObjectId("507f1f77bcf86cd799439022"),
     );
     createUserQuery({
       readingPreferences: {
@@ -579,10 +573,10 @@ it("handles empty reading history without adding exclusion filters", async () =>
 
   it("falls back to popular posts when preferred query returns fewer than 10", async () => {
     const preferredPost = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439023")
+      new Types.ObjectId("507f1f77bcf86cd799439023"),
     );
     const fallbackPost = createRecommendationPost(
-      new Types.ObjectId("507f1f77bcf86cd799439024")
+      new Types.ObjectId("507f1f77bcf86cd799439024"),
     );
     createUserQuery({
       readingPreferences: {
@@ -594,9 +588,8 @@ it("handles empty reading history without adding exclusion filters", async () =>
     createPostQuery(Array(3).fill(preferredPost));
     createPostQuery(Array(7).fill(fallbackPost));
 
-    const result = await RecommendationService.getPersonalizedRecommendations(
-      token
-    );
+    const result =
+      await RecommendationService.getPersonalizedRecommendations(token);
 
     expect(result).toHaveLength(10);
     expect(mockedPost.find).toHaveBeenCalledTimes(2);

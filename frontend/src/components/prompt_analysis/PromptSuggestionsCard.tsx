@@ -43,13 +43,17 @@ const PromptSuggestionsCard: React.FC<PromptSuggestionsCardProps> = ({
       {/* Header */}
       <div className="mb-6 flex items-center gap-2">
         <Lightbulb className="h-5 w-5 text-amber-400" />
-        <h3 className="text-lg font-semibold text-white">Improvement Suggestions</h3>
+        <h3 className="text-lg font-semibold text-white">
+          Improvement Suggestions
+        </h3>
       </div>
 
       {/* Improvements List */}
       {improvements.length > 0 && (
         <div className="mb-6">
-          <h4 className="mb-3 text-sm font-semibold text-slate-300">Quick Tips</h4>
+          <h4 className="mb-3 text-sm font-semibold text-slate-300">
+            Quick Tips
+          </h4>
           <div className="space-y-2">
             {improvements.map((improvement, idx) => (
               <motion.div
@@ -72,7 +76,9 @@ const PromptSuggestionsCard: React.FC<PromptSuggestionsCardProps> = ({
       {/* Recommendations Accordion */}
       {recommendations.length > 0 && (
         <div>
-          <h4 className="mb-3 text-sm font-semibold text-slate-300">Detailed Recommendations</h4>
+          <h4 className="mb-3 text-sm font-semibold text-slate-300">
+            Detailed Recommendations
+          </h4>
           <div className="space-y-2">
             {recommendations.map((recommendation, idx) => (
               <motion.div
@@ -130,13 +136,15 @@ const PromptSuggestionsCard: React.FC<PromptSuggestionsCardProps> = ({
       )}
 
       {/* Empty State */}
-      {improvements.length === 0 && recommendations.length === 0 && !isLoading && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-6 text-center">
-          <p className="text-sm text-slate-400">
-            No suggestions available. Your prompt is already well-crafted!
-          </p>
-        </div>
-      )}
+      {improvements.length === 0 &&
+        recommendations.length === 0 &&
+        !isLoading && (
+          <div className="rounded-lg border border-white/10 bg-white/5 p-6 text-center">
+            <p className="text-sm text-slate-400">
+              No suggestions available. Your prompt is already well-crafted!
+            </p>
+          </div>
+        )}
 
       {/* Loading State */}
       {isLoading && (

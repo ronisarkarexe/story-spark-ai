@@ -24,35 +24,35 @@ router.post(
   "/",
   collectionLimiter,
   auth(...ALL_AUTH),
-  CollectionController.createCollection
+  CollectionController.createCollection,
 );
 
 router.patch(
   "/:id",
   collectionLimiter,
   auth(...ALL_AUTH),
-  CollectionController.updateCollection
+  CollectionController.updateCollection,
 );
 
 router.post(
   "/:id/stories",
   collectionLimiter,
   auth(...ALL_AUTH),
-  CollectionController.addStoryToCollection
+  CollectionController.addStoryToCollection,
 );
 
 router.delete(
   "/:id/stories/:storyId",
   collectionLimiter,
   auth(...ALL_AUTH),
-  CollectionController.removeStoryFromCollection
+  CollectionController.removeStoryFromCollection,
 );
 
 router.delete(
   "/:id",
   collectionLimiter,
   auth(...ALL_AUTH),
-  CollectionController.deleteCollection
+  CollectionController.deleteCollection,
 );
 
 router.get("/:id", CollectionController.getCollectionById);

@@ -13,7 +13,7 @@ const MAX_COLLECTIONS_PER_USER = 50;
 /** ── Create ─────────────────────────────────────────────────────────────── */
 const createCollection = async (
   payload: Partial<ICollection>,
-  token: ITokenPayload
+  token: ITokenPayload,
 ) => {
   const user = await User.findOne({ email: token.email });
   if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
@@ -25,7 +25,7 @@ const createCollection = async (
   if (existing >= MAX_COLLECTIONS_PER_USER) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      `You can have at most ${MAX_COLLECTIONS_PER_USER} collections.`
+      `You can have at most ${MAX_COLLECTIONS_PER_USER} collections.`,
     );
   }
 
@@ -45,7 +45,7 @@ const createCollection = async (
 const updateCollection = async (
   collectionId: string,
   payload: Partial<ICollection>,
-  token: ITokenPayload
+  token: ITokenPayload,
 ) => {
   const user = await User.findOne({ email: token.email });
   if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
@@ -54,7 +54,8 @@ const updateCollection = async (
     _id: collectionId,
     isDeleted: { $ne: true },
   });
-  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
+  if (!collection)
+    throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
 
   if (collection.ownerId.toString() !== user._id.toString()) {
     throw new ApiError(httpStatus.FORBIDDEN, "You do not own this collection.");
@@ -80,7 +81,7 @@ const updateCollection = async (
 /** ── Get a single collection (public or owner) ──────────────────────────── */
 const getCollectionById = async (
   collectionId: string,
-  token: ITokenPayload | null
+  token: ITokenPayload | null,
 ) => {
   const collection = await Collection.findOne({
     _id: collectionId,
@@ -92,10 +93,12 @@ const getCollectionById = async (
     select: "title imageURL tag author likesCount commentsCount createdAt",
   });
 
-  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
+  if (!collection)
+    throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
 
   if (collection.visibility === "private") {
-    if (!token) throw new ApiError(httpStatus.FORBIDDEN, "This collection is private.");
+    if (!token)
+      throw new ApiError(httpStatus.FORBIDDEN, "This collection is private.");
     const user = await User.findOne({ email: token.email });
     if (!user || collection.ownerId.toString() !== user._id.toString()) {
       throw new ApiError(httpStatus.FORBIDDEN, "This collection is private.");
@@ -108,12 +111,12 @@ const getCollectionById = async (
 /** ── List a user's collections ──────────────────────────────────────────── */
 const getUserCollections = async (
   userId: string,
-  requestToken: ITokenPayload | null
+  requestToken: ITokenPayload | null,
 ) => {
   const isOwner =
     requestToken !== null &&
     (await User.findOne({ email: requestToken.email }).then(
-      (u) => u?._id?.toString() === userId
+      (u) => u?._id?.toString() === userId,
     ));
 
   const filter: Record<string, unknown> = {
@@ -141,7 +144,7 @@ const getUserCollections = async (
 const addStoryToCollection = async (
   collectionId: string,
   storyId: string,
-  token: ITokenPayload
+  token: ITokenPayload,
 ) => {
   const user = await User.findOne({ email: token.email });
   if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
@@ -150,7 +153,8 @@ const addStoryToCollection = async (
     _id: collectionId,
     isDeleted: { $ne: true },
   });
-  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
+  if (!collection)
+    throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
 
   if (collection.ownerId.toString() !== user._id.toString()) {
     throw new ApiError(httpStatus.FORBIDDEN, "You do not own this collection.");
@@ -171,22 +175,25 @@ const addStoryToCollection = async (
   if (!post) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "Story not found or you are not its author."
+      "Story not found or you are not its author.",
     );
   }
 
   const storyObjectId = new Types.ObjectId(storyId);
   const alreadyIn = collection.storyIds.some(
-    (id) => id.toString() === storyObjectId.toString()
+    (id) => id.toString() === storyObjectId.toString(),
   );
   if (alreadyIn) {
-    throw new ApiError(httpStatus.CONFLICT, "Story is already in this collection.");
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      "Story is already in this collection.",
+    );
   }
 
   if (collection.storyIds.length >= MAX_STORIES_PER_COLLECTION) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      `A collection can have at most ${MAX_STORIES_PER_COLLECTION} stories.`
+      `A collection can have at most ${MAX_STORIES_PER_COLLECTION} stories.`,
     );
   }
 
@@ -200,7 +207,7 @@ const addStoryToCollection = async (
 const removeStoryFromCollection = async (
   collectionId: string,
   storyId: string,
-  token: ITokenPayload
+  token: ITokenPayload,
 ) => {
   const user = await User.findOne({ email: token.email });
   if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
@@ -214,7 +221,8 @@ const removeStoryFromCollection = async (
     _id: collectionId,
     isDeleted: { $ne: true },
   });
-  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
+  if (!collection)
+    throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
 
   if (collection.ownerId.toString() !== user._id.toString()) {
     throw new ApiError(httpStatus.FORBIDDEN, "You do not own this collection.");
@@ -222,10 +230,13 @@ const removeStoryFromCollection = async (
 
   const before = collection.storyIds.length;
   collection.storyIds = collection.storyIds.filter(
-    (id) => id.toString() !== storyId
+    (id) => id.toString() !== storyId,
   );
   if (collection.storyIds.length === before) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story not found in this collection.");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Story not found in this collection.",
+    );
   }
 
   await collection.save();
@@ -233,10 +244,7 @@ const removeStoryFromCollection = async (
 };
 
 /** ── Delete a collection (soft-delete) ──────────────────────────────────── */
-const deleteCollection = async (
-  collectionId: string,
-  token: ITokenPayload
-) => {
+const deleteCollection = async (collectionId: string, token: ITokenPayload) => {
   const user = await User.findOne({ email: token.email });
   if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
 
@@ -244,7 +252,8 @@ const deleteCollection = async (
     _id: collectionId,
     isDeleted: { $ne: true },
   });
-  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
+  if (!collection)
+    throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
 
   if (collection.ownerId.toString() !== user._id.toString()) {
     throw new ApiError(httpStatus.FORBIDDEN, "You do not own this collection.");

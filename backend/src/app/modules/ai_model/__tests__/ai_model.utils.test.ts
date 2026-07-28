@@ -36,7 +36,7 @@ describe("ai_model.utils Gemini configuration", () => {
 
   it("fails alternate endings when GEMINI_API_KEY is missing", async () => {
     await expect(
-      generateAlternateEndingsWithGemini("Title", "Story body", "Adventure")
+      generateAlternateEndingsWithGemini("Title", "Story body", "Adventure"),
     ).rejects.toMatchObject({
       statusCode: httpStatus.INTERNAL_SERVER_ERROR,
       message: expect.stringContaining("Gemini API key is not configured"),

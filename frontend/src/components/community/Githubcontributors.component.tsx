@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from "react";
 import githubHero from "../../assets/github-hero.png";
 import ImageFallback from "../ImageFallback";
 interface GitHubContributor {
@@ -9,59 +9,61 @@ interface GitHubContributor {
 }
 
 const GithubcontributorsComponent: React.FC = () => {
-
-  const [githubcontributors, setGitHubContributors] = useState<GitHubContributor[]>([]);
+  const [githubcontributors, setGitHubContributors] = useState<
+    GitHubContributor[]
+  >([]);
   const [showAll, setShowAll] = useState(false);
   const [repoStars, setRepoStars] = useState(0);
   const contributorsRef = useRef<HTMLDivElement | null>(null);
 
-  const owner = "ronisarkarexe"
-  const repo = "story-spark-ai"
-
+  const owner = "ronisarkarexe";
+  const repo = "story-spark-ai";
 
   useEffect(() => {
     const controller = new AbortController();
-  
-const GithubcontributorData = async () => {
-  try {
-    const [githubRes, repoRes] = await Promise.all([
-      fetch(`https://api.github.com/repos/${owner}/${repo}/contributors`, {
-        headers: {
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-        signal: controller.signal,
-      }),
-      fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-        headers: {
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-        signal: controller.signal,
-      }),
-    ]);
 
-    const data = await githubRes.json();
-    const repoData = await repoRes.json();
+    const GithubcontributorData = async () => {
+      try {
+        const [githubRes, repoRes] = await Promise.all([
+          fetch(`https://api.github.com/repos/${owner}/${repo}/contributors`, {
+            headers: {
+              Accept: "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+            signal: controller.signal,
+          }),
+          fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+            headers: {
+              Accept: "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+            signal: controller.signal,
+          }),
+        ]);
 
-    if (!controller.signal.aborted) {
-      setGitHubContributors(data);
-      setRepoStars(repoData.stargazers_count);
-    }
-  } catch (err: unknown) {
-    if ((err as Error).name !== "AbortError") {
-      console.error("Failed to load GitHub data", err);
-    }
-  }
-};
+        const data = await githubRes.json();
+        const repoData = await repoRes.json();
+
+        if (!controller.signal.aborted) {
+          setGitHubContributors(data);
+          setRepoStars(repoData.stargazers_count);
+        }
+      } catch (err: unknown) {
+        if ((err as Error).name !== "AbortError") {
+          console.error("Failed to load GitHub data", err);
+        }
+      }
+    };
     GithubcontributorData();
-  
+
     return () => {
       controller.abort();
     };
   }, []);
 
-  const DisplayedContributors = showAll ? githubcontributors : githubcontributors.slice(0, 6);
+  const DisplayedContributors = showAll
+    ? githubcontributors
+    : githubcontributors.slice(0, 6);
 
   return (
     <section
@@ -76,13 +78,10 @@ const GithubcontributorData = async () => {
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto">
-
         {/* HERO */}
         <div className="grid lg:grid-cols-2 gap-14 items-center mb-16">
-
           {/* LEFT */}
           <div className="max-w-3xl">
-
             <h1
               className="
               text-[56px] md:text-[72px]
@@ -117,7 +116,6 @@ const GithubcontributorData = async () => {
             </p>
 
             <div className="mt-12 space-y-3">
-
               <p
                 className="
                 text-[18px] md:text-[20px]
@@ -137,16 +135,13 @@ const GithubcontributorData = async () => {
               >
                 Thank you for building, improving and inspiring together.
               </p>
-
             </div>
           </div>
 
           {/* RIGHT IMAGE */}
           <div className="hidden lg:flex justify-center items-center relative">
-
             {/* Floating Glow Particles */}
 
-          
             <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-violet-500/5 to-fuchsia-500/10 blur-3xl"></div>
 
             <div className="absolute top-12 left-20 w-3 h-3 bg-cyan-400 rounded-full blur-[2px] animate-pulse"></div>
@@ -163,7 +158,7 @@ const GithubcontributorData = async () => {
 
             <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-fuchsia-400 rounded-full blur-[1px] animate-pulse"></div>
 
-            <div className="absolute bottom-15 left-1/3 w-4 h-4 bg-violet-300 rounded-full blur-[3px] animate-pulse"></div> 
+            <div className="absolute bottom-15 left-1/3 w-4 h-4 bg-violet-300 rounded-full blur-[3px] animate-pulse"></div>
 
             <img
               src={githubHero}
@@ -175,13 +170,11 @@ const GithubcontributorData = async () => {
             animate-[float_5s_ease-in-out_infinite]
             "
             />
-
           </div>
         </div>
 
         {/* STATS */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-6 mb-24">
-
           {[
             {
               title: "Contributors",
@@ -193,7 +186,7 @@ const GithubcontributorData = async () => {
               title: "Commits",
               value: githubcontributors.reduce(
                 (acc, curr) => acc + curr.contributions,
-                0
+                0,
               ),
               icon: "fa-star",
               color: "yellow",
@@ -227,36 +220,36 @@ const GithubcontributorData = async () => {
             >
               {/* LEFT */}
               <div className="flex items-center gap-4">
-
                 {/* ICON */}
                 <div
                   className={`
                   w-14 h-14 rounded-2xl
                   flex items-center justify-center
 
-                  ${item.color === "violet"
+                  ${
+                    item.color === "violet"
                       ? "bg-violet-500/15"
                       : item.color === "yellow"
                         ? "bg-yellow-500/15"
                         : item.color === "green"
                           ? "bg-green-500/15"
                           : "bg-pink-500/15"
-
-                    }
+                  }
                 `}
                 >
                   <i
                     className={`
                     fa-solid ${item.icon} text-2xl
 
-                    ${item.color === "violet"
+                    ${
+                      item.color === "violet"
                         ? "text-violet-400"
                         : item.color === "yellow"
                           ? "text-yellow-400"
                           : item.color === "green"
                             ? "text-green-400"
                             : "text-pink-400"
-                      }
+                    }
                   `}
                   ></i>
                 </div>
@@ -278,27 +271,24 @@ const GithubcontributorData = async () => {
                 className={`
                 fa-solid fa-chart-line text-4xl opacity-60
 
-                ${item.color === "violet"
+                ${
+                  item.color === "violet"
                     ? "text-violet-400"
                     : item.color === "yellow"
                       ? "text-yellow-400"
                       : item.color === "green"
                         ? "text-green-400"
                         : "text-pink-400"
-                  }
+                }
               `}
               ></i>
             </div>
           ))}
         </div>
 
-
-
         {/* TOP CONTRIBUTOR HEADER */}
         <div className="flex items-center justify-between mb-10">
-
           <div className="flex items-start gap-4">
-
             <div
               className="
         w-16 h-16 rounded-full
@@ -347,27 +337,22 @@ const GithubcontributorData = async () => {
 
         {/* CONTRIBUTOR GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-
           {DisplayedContributors.map((contributor, index) => {
-
             const rankStyles = [
               {
                 border:
                   "border-yellow-500/40 shadow-[0_0_40px_rgba(250,204,21,0.18)]",
-                badge:
-                  "bg-yellow-500/10 border-yellow-500/30 text-yellow-400",
+                badge: "bg-yellow-500/10 border-yellow-500/30 text-yellow-400",
               },
               {
                 border:
                   "border-gray-300/40 shadow-[0_0_40px_rgba(255,255,255,0.12)]",
-                badge:
-                  "bg-gray-400/10 border-gray-400/30 text-gray-300",
+                badge: "bg-gray-400/10 border-gray-400/30 text-gray-300",
               },
               {
                 border:
                   "border-orange-500/40 shadow-[0_0_40px_rgba(251,146,60,0.16)]",
-                badge:
-                  "bg-orange-500/10 border-orange-500/30 text-orange-400",
+                badge: "bg-orange-500/10 border-orange-500/30 text-orange-400",
               },
             ];
 
@@ -376,8 +361,7 @@ const GithubcontributorData = async () => {
               badge: "bg-violet-500/10 border-violet-500/20 text-violet-400",
             };
 
-            const style =
-              index < 3 ? rankStyles[index] : defaultStyle;
+            const style = index < 3 ? rankStyles[index] : defaultStyle;
 
             return (
               <div
@@ -397,17 +381,17 @@ const GithubcontributorData = async () => {
               >
                 {/* Glow */}
                 {/* Premium Gradient Background */}
-             <div
-  className={`absolute inset-0 opacity-100 ${
-    index === 0
-      ? "bg-yellow-500/10"
-      : index === 1
-      ? "bg-blue-500/10"
-      : index === 2
-      ? "bg-orange-500/10"
-      : "bg-violet-500/10"
-  }`}
-/>
+                <div
+                  className={`absolute inset-0 opacity-100 ${
+                    index === 0
+                      ? "bg-yellow-500/10"
+                      : index === 1
+                        ? "bg-blue-500/10"
+                        : index === 2
+                          ? "bg-orange-500/10"
+                          : "bg-violet-500/10"
+                  }`}
+                />
 
                 {/* Secondary Glow */}
                 <div
@@ -415,29 +399,30 @@ const GithubcontributorData = async () => {
     absolute bottom-0 right-0 w-[220px] h-[220px]
     blur-[90px] rounded-full opacity-30
 
-    ${index === 0
-                      ? "bg-yellow-500"
-                      : index === 1
-                        ? "bg-blue-400"
-                        : index === 2
-                          ? "bg-orange-500"
-                          : "bg-violet-500"
-                    }
+    ${
+      index === 0
+        ? "bg-yellow-500"
+        : index === 1
+          ? "bg-blue-400"
+          : index === 2
+            ? "bg-orange-500"
+            : "bg-violet-500"
+    }
   `}
                 ></div>
 
                 {/* Avatar */}
                 <div className="flex justify-center mb-5">
                   <ImageFallback
-                      src={contributor.avatar_url}
-                      alt={contributor.login}
-                      className="
+                    src={contributor.avatar_url}
+                    alt={contributor.login}
+                    className="
                       w-24 h-24 rounded-full
                       object-cover
                       border-4 border-white/20
                       shadow-2xl
                     "
-                    />
+                  />
                 </div>
 
                 {/* Username */}
@@ -493,9 +478,9 @@ const GithubcontributorData = async () => {
           </button>
         </div>
 
-      {/* CTA */}
-<div
-  className="
+        {/* CTA */}
+        <div
+          className="
     mt-20 rounded-[36px]
     border border-violet-500/20
     bg-white dark:bg-white/[0.03]
@@ -505,17 +490,17 @@ const GithubcontributorData = async () => {
     items-center justify-between
     gap-5
   "
->
-  <div>
-    <h3 className="text-4xl font-bold text-gray-900 dark:text-white">
-      Want to contribute?
-    </h3>
+        >
+          <div>
+            <h3 className="text-4xl font-bold text-gray-900 dark:text-white">
+              Want to contribute?
+            </h3>
 
-    <p className="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-2xl">
-      Check out our contributing guidelines and start making an impact today.
-    </p>
-  </div>
-
+            <p className="mt-4 text-lg text-gray-500 dark:text-gray-400 max-w-2xl">
+              Check out our contributing guidelines and start making an impact
+              today.
+            </p>
+          </div>
 
           <a
             href={`https://github.com/${owner}/${repo}`}
@@ -533,16 +518,9 @@ const GithubcontributorData = async () => {
             Contribute Now →
           </a>
         </div>
-
-  
-  
-
       </div>
-
-    </section >
+    </section>
   );
-
-}
-
+};
 
 export default GithubcontributorsComponent;

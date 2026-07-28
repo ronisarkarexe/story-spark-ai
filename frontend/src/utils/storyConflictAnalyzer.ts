@@ -13,9 +13,7 @@ export interface StoryConflict {
   suggestion: string;
 }
 
-export function analyzeStoryConflicts(
-  story: string
-): StoryConflict[] {
+export function analyzeStoryConflicts(story: string): StoryConflict[] {
   if (!story.trim()) return [];
 
   return [
@@ -25,8 +23,7 @@ export function analyzeStoryConflicts(
       type: "Character vs Character",
       strength: 92,
       section: "Chapter 2",
-      suggestion:
-        "Increase emotional tension before the confrontation."
+      suggestion: "Increase emotional tension before the confrontation.",
     },
     {
       id: 2,
@@ -34,8 +31,7 @@ export function analyzeStoryConflicts(
       type: "Character vs Self",
       strength: 80,
       section: "Chapter 4",
-      suggestion:
-        "Expand the protagonist's internal thoughts."
+      suggestion: "Expand the protagonist's internal thoughts.",
     },
     {
       id: 3,
@@ -43,14 +39,11 @@ export function analyzeStoryConflicts(
       type: "Character vs Society",
       strength: 74,
       section: "Chapter 5",
-      suggestion:
-        "Show stronger societal consequences."
-    }
+      suggestion: "Show stronger societal consequences.",
+    },
   ];
 }
 
-export function reanalyzeStoryConflicts(
-  story: string
-) {
+export function reanalyzeStoryConflicts(story: string) {
   return analyzeStoryConflicts(story);
 }

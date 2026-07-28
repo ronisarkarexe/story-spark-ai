@@ -9,9 +9,7 @@ export interface OpeningHookReport {
   suggestedOpening: string;
 }
 
-export function evaluateOpeningHook(
-  story: string
-): OpeningHookReport {
+export function evaluateOpeningHook(story: string): OpeningHookReport {
   if (!story.trim()) {
     return {
       engagement: 0,
@@ -45,8 +43,6 @@ export function evaluateOpeningHook(
   };
 }
 
-export function regenerateOpeningEvaluation(
-  story: string
-) {
+export function regenerateOpeningEvaluation(story: string) {
   return evaluateOpeningHook(story);
 }

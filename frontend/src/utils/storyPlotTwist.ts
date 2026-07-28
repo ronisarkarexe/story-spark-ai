@@ -4,9 +4,7 @@ export interface PlotTwist {
   description: string;
 }
 
-export function generatePlotTwists(
-  story: string
-): PlotTwist[] {
+export function generatePlotTwists(story: string): PlotTwist[] {
   if (!story.trim()) return [];
 
   return [
@@ -31,8 +29,6 @@ export function generatePlotTwists(
   ];
 }
 
-export function regeneratePlotTwists(
-  story: string
-): PlotTwist[] {
+export function regeneratePlotTwists(story: string): PlotTwist[] {
   return generatePlotTwists(story);
 }

@@ -20,7 +20,10 @@ const getRazorpay = () => {
   return razorpayInstance;
 };
 
-const PLANS: Record<string, { amountPaise: number; durationDays: number; label: string }> = {
+const PLANS: Record<
+  string,
+  { amountPaise: number; durationDays: number; label: string }
+> = {
   monthly: {
     amountPaise: 49900,
     durationDays: 30,
@@ -36,7 +39,7 @@ const PLANS: Record<string, { amountPaise: number; durationDays: number; label: 
 export const createOrder = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = (req as any).user?._id;
@@ -60,7 +63,9 @@ export const createOrder = async (
 
     const razorpay = getRazorpay();
     if (!razorpay) {
-      res.status(500).json({ success: false, error: "Payment gateway not configured" });
+      res
+        .status(500)
+        .json({ success: false, error: "Payment gateway not configured" });
       return;
     }
 
@@ -108,11 +113,11 @@ export const createOrder = async (
 async function grantEntitlementAndRespond(
   order: IOrder,
   res: Response,
-  { respond }: { respond: boolean }
+  { respond }: { respond: boolean },
 ): Promise<void> {
   const selectedPlan = PLANS[order.plan];
   const subscriptionExpiry = new Date(
-    Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
+    Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000,
   );
 
   const updatedUser = await User.findByIdAndUpdate(
@@ -123,7 +128,7 @@ async function grantEntitlementAndRespond(
       lastPaymentId: order.razorpayPaymentId,
       lastOrderId: order.razorpayOrderId,
     },
-    { new: true, select: "email subscriptionType subscriptionExpiry" }
+    { new: true, select: "email subscriptionType subscriptionExpiry" },
   );
 
   if (!updatedUser) {
@@ -131,7 +136,7 @@ async function grantEntitlementAndRespond(
     // stuck in limbo forever, and this is a legitimate "created" retry state.
     await Order.findOneAndUpdate(
       { _id: order._id, status: "paid_pending_entitlement" },
-      { status: "created", razorpayPaymentId: null }
+      { status: "created", razorpayPaymentId: null },
     );
     if (respond) {
       res.status(404).json({ success: false, error: "User not found." });
@@ -143,7 +148,7 @@ async function grantEntitlementAndRespond(
   // call (or the reconciliation job) racing this one is a safe no-op.
   await Order.findOneAndUpdate(
     { _id: order._id, status: "paid_pending_entitlement" },
-    { status: "paid" }
+    { status: "paid" },
   );
 
   if (respond) {
@@ -161,23 +166,21 @@ async function grantEntitlementAndRespond(
 export const verifyPayment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = req.body as {
-      razorpay_order_id: string;
-      razorpay_payment_id: string;
-      razorpay_signature: string;
-    };
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body as {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+      };
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       res.status(400).json({
         success: false,
-        error: "Missing required payment fields: order ID, payment ID, or signature.",
+        error:
+          "Missing required payment fields: order ID, payment ID, or signature.",
       });
       return;
     }
@@ -197,7 +200,8 @@ export const verifyPayment = async (
     if (!isSignatureValid) {
       res.status(400).json({
         success: false,
-        error: "Payment signature verification failed. This request may be tampered.",
+        error:
+          "Payment signature verification failed. This request may be tampered.",
       });
       return;
     }
@@ -205,11 +209,15 @@ export const verifyPayment = async (
     const userId = req.user?._id;
 
     if (!userId) {
-      res.status(401).json({ success: false, error: "Unauthorised. Please log in." });
+      res
+        .status(401)
+        .json({ success: false, error: "Unauthorised. Please log in." });
       return;
     }
 
-    const localOrder = await Order.findOne({ razorpayOrderId: razorpay_order_id });
+    const localOrder = await Order.findOne({
+      razorpayOrderId: razorpay_order_id,
+    });
     if (!localOrder) {
       res.status(400).json({ success: false, error: "Unknown order." });
       return;
@@ -233,7 +241,7 @@ export const verifyPayment = async (
         replayedPayment.userId.toString() === userId.toString()
       ) {
         const existingUser = await User.findById(userId).select(
-          "email subscriptionType subscriptionExpiry"
+          "email subscriptionType subscriptionExpiry",
         );
         if (!existingUser) {
           res.status(404).json({ success: false, error: "User not found." });
@@ -251,18 +259,24 @@ export const verifyPayment = async (
         return;
       }
 
-      res.status(409).json({ success: false, error: "Payment already redeemed." });
+      res
+        .status(409)
+        .json({ success: false, error: "Payment already redeemed." });
       return;
     }
 
     if (localOrder.status === "paid") {
-      res.status(409).json({ success: false, error: "Order already fulfilled." });
+      res
+        .status(409)
+        .json({ success: false, error: "Order already fulfilled." });
       return;
     }
 
     const razorpay = getRazorpay();
     if (!razorpay) {
-      res.status(500).json({ success: false, error: "Payment gateway not configured" });
+      res
+        .status(500)
+        .json({ success: false, error: "Payment gateway not configured" });
       return;
     }
 
@@ -315,13 +329,15 @@ export const verifyPayment = async (
         status: "paid_pending_entitlement",
         razorpayPaymentId: razorpay_payment_id,
       },
-      { new: true }
+      { new: true },
     );
 
     if (!claimedOrder) {
       // Raced with another request that claimed it between our read above
       // and this write. Re-read and let the normal status branches handle it.
-      res.status(409).json({ success: false, error: "Order already fulfilled." });
+      res
+        .status(409)
+        .json({ success: false, error: "Order already fulfilled." });
       return;
     }
 
@@ -337,7 +353,7 @@ export const verifyPayment = async (
 export const getSubscriptionStatus = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user?._id;
@@ -348,7 +364,7 @@ export const getSubscriptionStatus = async (
     }
 
     const user = await User.findById(userId).select(
-      "subscriptionType subscriptionExpiry"
+      "subscriptionType subscriptionExpiry",
     );
 
     if (!user) {

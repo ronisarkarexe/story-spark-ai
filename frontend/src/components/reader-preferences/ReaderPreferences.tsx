@@ -93,7 +93,7 @@ const ReaderPreferencesPanel = ({
                     onClick={() =>
                       updatePreference(
                         group.key,
-                        option.value as ReaderPreferences[typeof group.key]
+                        option.value as ReaderPreferences[typeof group.key],
                       )
                     }
                     className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors ${

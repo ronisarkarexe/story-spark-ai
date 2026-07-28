@@ -10,7 +10,13 @@ interface Props {
   onClose: () => void;
 }
 
-export default function StoryTrailer({ title, content, tag, isLogin, onClose }: Props) {
+export default function StoryTrailer({
+  title,
+  content,
+  tag,
+  isLogin,
+  onClose,
+}: Props) {
   const [scenes, setScenes] = useState<string[]>([]);
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -56,14 +62,22 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
           }
         }
         // Fallback scenes if AI fails
-        const fallback = content.split(/[.!?]+/).filter(s => s.trim().length > 20).slice(0, 5).map(s => s.trim().split(" ").slice(0, 8).join(" "));
-        setScenes(fallback.length >= 3 ? fallback : [
-          "A story begins in the shadows",
-          "Nothing is as it seems",
-          "The truth changes everything",
-          "There is no turning back now",
-          "The end is only the beginning",
-        ]);
+        const fallback = content
+          .split(/[.!?]+/)
+          .filter((s) => s.trim().length > 20)
+          .slice(0, 5)
+          .map((s) => s.trim().split(" ").slice(0, 8).join(" "));
+        setScenes(
+          fallback.length >= 3
+            ? fallback
+            : [
+                "A story begins in the shadows",
+                "Nothing is as it seems",
+                "The truth changes everything",
+                "There is no turning back now",
+                "The end is only the beginning",
+              ],
+        );
         setIsPlaying(true);
       } catch {
         setError("Failed to generate trailer. Please try again.");
@@ -118,27 +132,35 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
     >
       {/* Loading state */}
       {isLoading && (
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#000",
-          zIndex: 200,
-        }}>
-          <div style={{
-            fontSize: "48px",
-            marginBottom: "16px",
-            animation: "pulse 1s infinite",
-          }}>🎬</div>
-          <p style={{
-            color: "rgba(255,255,255,0.6)",
-            fontSize: "14px",
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-          }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#000",
+            zIndex: 200,
+          }}
+        >
+          <div
+            style={{
+              fontSize: "48px",
+              marginBottom: "16px",
+              animation: "pulse 1s infinite",
+            }}
+          >
+            🎬
+          </div>
+          <p
+            style={{
+              color: "rgba(255,255,255,0.6)",
+              fontSize: "14px",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+            }}
+          >
             Generating your trailer...
           </p>
         </div>
@@ -146,25 +168,32 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
 
       {/* Error state */}
       {error && (
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#000",
-          zIndex: 200,
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#000",
+            zIndex: 200,
+          }}
+        >
           <p style={{ color: "#ef4444", marginBottom: "16px" }}>{error}</p>
-          <button onClick={onClose} style={{
-            padding: "8px 24px",
-            background: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "8px",
-            color: "#fff",
-            cursor: "pointer",
-          }}>Close</button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: "8px 24px",
+              background: "rgba(255,255,255,0.1)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: "8px",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            Close
+          </button>
         </div>
       )}
 
@@ -198,81 +227,118 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
 
       {/* Controls */}
       {!isLoading && !error && (
-        <div style={{
-          position: "absolute",
-          bottom: "14%",
-          left: 0,
-          right: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "16px",
-          zIndex: 50,
-        }}>
-          <button onClick={handlePrev} disabled={currentScene === 0} style={{
-            width: "40px", height: "40px",
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            color: "#fff", fontSize: "16px", cursor: "pointer",
-            opacity: currentScene === 0 ? 0.3 : 1,
-          }}>‹</button>
+        <div
+          style={{
+            position: "absolute",
+            bottom: "14%",
+            left: 0,
+            right: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "16px",
+            zIndex: 50,
+          }}
+        >
+          <button
+            onClick={handlePrev}
+            disabled={currentScene === 0}
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              background: "rgba(255,255,255,0.1)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              color: "#fff",
+              fontSize: "16px",
+              cursor: "pointer",
+              opacity: currentScene === 0 ? 0.3 : 1,
+            }}
+          >
+            ‹
+          </button>
 
           <button
             onClick={() => setIsPlaying(!isPlaying)}
             style={{
-              width: "48px", height: "48px",
+              width: "48px",
+              height: "48px",
               borderRadius: "50%",
               background: "rgba(255,255,255,0.15)",
               border: "1px solid rgba(255,255,255,0.3)",
-              color: "#fff", fontSize: "18px", cursor: "pointer",
+              color: "#fff",
+              fontSize: "18px",
+              cursor: "pointer",
             }}
           >
             {isPlaying ? "⏸" : "▶"}
           </button>
 
-          <button onClick={handleNext} disabled={currentScene === totalSlides - 1} style={{
-            width: "40px", height: "40px",
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            color: "#fff", fontSize: "16px", cursor: "pointer",
-            opacity: currentScene === totalSlides - 1 ? 0.3 : 1,
-          }}>›</button>
-
-          {!isPlaying && currentScene === totalSlides - 1 && (
-            <button onClick={handleReplay} style={{
-              padding: "8px 20px",
-              borderRadius: "20px",
+          <button
+            onClick={handleNext}
+            disabled={currentScene === totalSlides - 1}
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
               background: "rgba(255,255,255,0.1)",
               border: "1px solid rgba(255,255,255,0.2)",
-              color: "#fff", fontSize: "12px", cursor: "pointer",
-              letterSpacing: "0.1em",
-            }}>↺ REPLAY</button>
+              color: "#fff",
+              fontSize: "16px",
+              cursor: "pointer",
+              opacity: currentScene === totalSlides - 1 ? 0.3 : 1,
+            }}
+          >
+            ›
+          </button>
+
+          {!isPlaying && currentScene === totalSlides - 1 && (
+            <button
+              onClick={handleReplay}
+              style={{
+                padding: "8px 20px",
+                borderRadius: "20px",
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                color: "#fff",
+                fontSize: "12px",
+                cursor: "pointer",
+                letterSpacing: "0.1em",
+              }}
+            >
+              ↺ REPLAY
+            </button>
           )}
         </div>
       )}
 
       {/* Progress dots */}
       {!isLoading && !error && (
-        <div style={{
-          position: "absolute",
-          bottom: "10%",
-          left: 0, right: 0,
-          display: "flex",
-          justifyContent: "center",
-          gap: "8px",
-          zIndex: 50,
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            bottom: "10%",
+            left: 0,
+            right: 0,
+            display: "flex",
+            justifyContent: "center",
+            gap: "8px",
+            zIndex: 50,
+          }}
+        >
           {Array.from({ length: totalSlides }).map((_, i) => (
             <div
               key={i}
-              onClick={() => { setCurrentScene(i); setIsPlaying(false); }}
+              onClick={() => {
+                setCurrentScene(i);
+                setIsPlaying(false);
+              }}
               style={{
                 width: i === currentScene ? "24px" : "8px",
                 height: "8px",
                 borderRadius: "4px",
-                background: i === currentScene ? "#fff" : "rgba(255,255,255,0.3)",
+                background:
+                  i === currentScene ? "#fff" : "rgba(255,255,255,0.3)",
                 transition: "all 0.3s ease",
                 cursor: "pointer",
               }}
@@ -292,14 +358,18 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
           background: "rgba(255,255,255,0.1)",
           border: "1px solid rgba(255,255,255,0.2)",
           borderRadius: "50%",
-          width: "36px", height: "36px",
-          color: "#fff", fontSize: "16px",
+          width: "36px",
+          height: "36px",
+          color: "#fff",
+          fontSize: "16px",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
-      >✕</button>
+      >
+        ✕
+      </button>
     </div>
   );
 }

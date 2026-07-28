@@ -3,7 +3,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
-import useWorkspacePreferences, { getSavedWorkspacePreferences } from "../useWorkspacePreferences";
+import useWorkspacePreferences, {
+  getSavedWorkspacePreferences,
+} from "../useWorkspacePreferences";
 
 const LOCAL_STORAGE_MOCK = {
   store: {} as Record<string, string>,

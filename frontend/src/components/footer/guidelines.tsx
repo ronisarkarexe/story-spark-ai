@@ -142,8 +142,8 @@ const Guidelines = () => {
             Contributing to StorySparkAI
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            A set of shared norms that keep StorySparkAI a welcoming, productive,
-            and high-quality open-source community.
+            A set of shared norms that keep StorySparkAI a welcoming,
+            productive, and high-quality open-source community.
           </p>
         </div>
       </section>
@@ -172,7 +172,10 @@ const Guidelines = () => {
                 </div>
                 <ul className="space-y-2 pl-1">
                   {section.points.map((point) => (
-                    <li key={point} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <li
+                      key={point}
+                      className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300"
+                    >
                       <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
                       {point}
                     </li>

@@ -34,10 +34,19 @@ const DocumentStatsPanel: React.FC<Props> = ({ stats, chapterAvgWords }) => {
         <dl className="grid grid-cols-2 gap-3 px-5 pb-4 text-xs">
           <Stat label="Words" value={stats.totalWords.toLocaleString()} />
           <Stat label="Reading time" value={`${stats.readingTimeMin} min`} />
-          <Stat label="Chapter avg" value={Math.round(chapterAvgWords).toLocaleString()} />
-          <Stat label="Unique words" value={stats.uniqueWords.toLocaleString()} />
+          <Stat
+            label="Chapter avg"
+            value={Math.round(chapterAvgWords).toLocaleString()}
+          />
+          <Stat
+            label="Unique words"
+            value={stats.uniqueWords.toLocaleString()}
+          />
           <Stat label="Richness" value={stats.vocabularyRichness.toFixed(2)} />
-          <Stat label="Est. pages" value={Math.round(stats.estimatedPages).toString()} />
+          <Stat
+            label="Est. pages"
+            value={Math.round(stats.estimatedPages).toString()}
+          />
         </dl>
       </div>
     </div>

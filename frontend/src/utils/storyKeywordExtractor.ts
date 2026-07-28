@@ -7,22 +7,32 @@ export interface StoryKeywordResult {
 }
 
 const STOP_WORDS = new Set([
-  "the", "a", "an", "and", "or", "to", "of",
-  "in", "on", "with", "for", "is", "was",
-  "were", "it", "that", "this", "at", "by"
+  "the",
+  "a",
+  "an",
+  "and",
+  "or",
+  "to",
+  "of",
+  "in",
+  "on",
+  "with",
+  "for",
+  "is",
+  "was",
+  "were",
+  "it",
+  "that",
+  "this",
+  "at",
+  "by",
 ]);
 
-export function extractKeywords(
-  story: string
-): StoryKeywordResult {
+export function extractKeywords(story: string): StoryKeywordResult {
   const words = story
     .replace(/[^\w\s]/g, "")
     .split(/\s+/)
-    .filter(
-      (word) =>
-        word.length > 3 &&
-        !STOP_WORDS.has(word.toLowerCase())
-    );
+    .filter((word) => word.length > 3 && !STOP_WORDS.has(word.toLowerCase()));
 
   const unique = [...new Set(words)];
 
@@ -35,9 +45,6 @@ export function extractKeywords(
   };
 }
 
-export function removeKeyword(
-  keywords: string[],
-  keyword: string
-) {
+export function removeKeyword(keywords: string[], keyword: string) {
   return keywords.filter((item) => item !== keyword);
 }

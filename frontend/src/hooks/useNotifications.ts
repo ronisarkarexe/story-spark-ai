@@ -14,7 +14,9 @@ import type { NotificationItem, INotification } from "../models/notification";
  */
 export const useNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [realtimeNotifications, setRealtimeNotifications] = useState<INotification[]>([]);
+  const [realtimeNotifications, setRealtimeNotifications] = useState<
+    INotification[]
+  >([]);
   const isAuthed = isLoggedIn();
 
   const { data, isFetching, refetch } = useGetNotificationsQuery(undefined, {
@@ -29,7 +31,10 @@ export const useNotifications = () => {
     const baseNotifications = data ?? [];
     const merged = new Map<string, NotificationItem>();
 
-    for (const notification of [...realtimeNotifications, ...baseNotifications]) {
+    for (const notification of [
+      ...realtimeNotifications,
+      ...baseNotifications,
+    ]) {
       merged.set(notification._id, notification);
     }
 
@@ -60,7 +65,7 @@ export const useNotifications = () => {
     await markAllRead().unwrap();
     // Optimistically clear realtime state so the badge drops immediately
     setRealtimeNotifications((prev) =>
-      prev.map((n) => ({ ...n, isRead: true }))
+      prev.map((n) => ({ ...n, isRead: true })),
     );
   };
 
@@ -93,7 +98,7 @@ export const useNotifications = () => {
       // Real-time: mark-all-read fired by another tab or the server
       const handleAllRead = () => {
         setRealtimeNotifications((prev) =>
-          prev.map((n) => ({ ...n, isRead: true }))
+          prev.map((n) => ({ ...n, isRead: true })),
         );
         void refetch();
       };
@@ -118,7 +123,10 @@ export const useNotifications = () => {
         socket.off("notification:all-read", handleAllRead);
       };
     } catch (error) {
-      console.warn("[Story Spark] Failed to set up Socket.IO notifications:", error);
+      console.warn(
+        "[Story Spark] Failed to set up Socket.IO notifications:",
+        error,
+      );
     }
   }, [isAuthed, refreshNotifications, refetch]);
 

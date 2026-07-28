@@ -25,7 +25,9 @@ export default function BookOpen({ story, onClose }: Props) {
         style={{
           width: "100%",
           maxWidth: "800px",
-          transform: isOpened ? "scale(1) rotateX(0deg)" : "scale(0.8) rotateX(20deg)",
+          transform: isOpened
+            ? "scale(1) rotateX(0deg)"
+            : "scale(0.8) rotateX(20deg)",
           opacity: isOpened ? 1 : 0,
           transition: "all 0.4s ease",
           perspective: "1000px",
@@ -56,52 +58,66 @@ export default function BookOpen({ story, onClose }: Props) {
             }}
           >
             {/* Decorative corner */}
-            <div style={{
-              position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
-              background: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.02) 10px, rgba(255,255,255,0.02) 11px)",
-              pointerEvents: "none",
-            }} />
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background:
+                  "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.02) 10px, rgba(255,255,255,0.02) 11px)",
+                pointerEvents: "none",
+              }}
+            />
 
             <div>
-              <div style={{
-                display: "inline-block",
-                background: "rgba(255,255,255,0.15)",
-                border: `1px solid ${colors.glow}60`,
-                borderRadius: "20px",
-                padding: "4px 12px",
-                fontSize: "11px",
-                fontWeight: "700",
-                color: colors.text,
-                marginBottom: "16px",
-                letterSpacing: "0.1em",
-              }}>
+              <div
+                style={{
+                  display: "inline-block",
+                  background: "rgba(255,255,255,0.15)",
+                  border: `1px solid ${colors.glow}60`,
+                  borderRadius: "20px",
+                  padding: "4px 12px",
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  color: colors.text,
+                  marginBottom: "16px",
+                  letterSpacing: "0.1em",
+                }}
+              >
                 {story.tag.toUpperCase()}
               </div>
 
-              <h2 style={{
-                fontSize: "24px",
-                fontWeight: "800",
-                color: "#ffffff",
-                lineHeight: "1.3",
-                marginBottom: "16px",
-                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
-              }}>
+              <h2
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "800",
+                  color: "#ffffff",
+                  lineHeight: "1.3",
+                  marginBottom: "16px",
+                  textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                }}
+              >
                 {story.title}
               </h2>
 
-              <div style={{
-                height: "2px",
-                background: `linear-gradient(90deg, ${colors.glow}, transparent)`,
-                marginBottom: "16px",
-              }} />
+              <div
+                style={{
+                  height: "2px",
+                  background: `linear-gradient(90deg, ${colors.glow}, transparent)`,
+                  marginBottom: "16px",
+                }}
+              />
 
-              <p style={{
-                fontSize: "12px",
-                color: "rgba(255,255,255,0.6)",
-                lineHeight: "1.6",
-                fontStyle: "italic",
-              }}>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "rgba(255,255,255,0.6)",
+                  lineHeight: "1.6",
+                  fontStyle: "italic",
+                }}
+              >
                 "{story.content.slice(0, 120)}..."
               </p>
             </div>
@@ -111,14 +127,33 @@ export default function BookOpen({ story, onClose }: Props) {
                 { label: "Words", value: wordCount },
                 { label: "Min Read", value: readingTime },
               ].map((stat) => (
-                <div key={stat.label} style={{
-                  textAlign: "center",
-                  background: "rgba(0,0,0,0.2)",
-                  borderRadius: "8px",
-                  padding: "8px 12px",
-                }}>
-                  <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>{stat.value}</div>
-                  <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.5)", marginTop: "2px" }}>{stat.label}</div>
+                <div
+                  key={stat.label}
+                  style={{
+                    textAlign: "center",
+                    background: "rgba(0,0,0,0.2)",
+                    borderRadius: "8px",
+                    padding: "8px 12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "700",
+                      color: "#fff",
+                    }}
+                  >
+                    {stat.value}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "rgba(255,255,255,0.5)",
+                      marginTop: "2px",
+                    }}
+                  >
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -135,13 +170,16 @@ export default function BookOpen({ story, onClose }: Props) {
             }}
           >
             {/* Page lines */}
-            <div style={{
-              position: "absolute",
-              inset: 0,
-              background: "repeating-linear-gradient(transparent, transparent 27px, #e8e0d0 27px, #e8e0d0 28px)",
-              pointerEvents: "none",
-              opacity: 0.4,
-            }} />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "repeating-linear-gradient(transparent, transparent 27px, #e8e0d0 27px, #e8e0d0 28px)",
+                pointerEvents: "none",
+                opacity: 0.4,
+              }}
+            />
 
             {/* Close button */}
             <button
@@ -166,15 +204,17 @@ export default function BookOpen({ story, onClose }: Props) {
               ✕
             </button>
 
-            <h3 style={{
-              fontSize: "14px",
-              fontWeight: "700",
-              color: "#333",
-              marginBottom: "16px",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              position: "relative",
-            }}>
+            <h3
+              style={{
+                fontSize: "14px",
+                fontWeight: "700",
+                color: "#333",
+                marginBottom: "16px",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                position: "relative",
+              }}
+            >
               Chapter I
             </h3>
 
@@ -194,14 +234,16 @@ export default function BookOpen({ story, onClose }: Props) {
             </div>
 
             {/* Page number */}
-            <div style={{
-              textAlign: "center",
-              fontSize: "11px",
-              color: "#999",
-              marginTop: "12px",
-              fontStyle: "italic",
-              position: "relative",
-            }}>
+            <div
+              style={{
+                textAlign: "center",
+                fontSize: "11px",
+                color: "#999",
+                marginTop: "12px",
+                fontStyle: "italic",
+                position: "relative",
+              }}
+            >
               — 1 —
             </div>
           </div>

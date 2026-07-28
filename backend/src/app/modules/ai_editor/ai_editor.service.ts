@@ -32,7 +32,9 @@ export interface IAnalysisResponse {
   plot_holes: IPlotHole[];
 }
 
-const analyzeStoryText = async (storyText: string): Promise<IAnalysisResponse> => {
+const analyzeStoryText = async (
+  storyText: string,
+): Promise<IAnalysisResponse> => {
   if (!storyText || storyText.trim().length === 0) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Story text cannot be empty.");
   }
@@ -71,7 +73,7 @@ If the story is perfectly logical and has zero plot holes or inconsistencies, re
       {
         label: "Gemini plot hole analysis",
         errorMessage: "AI returned invalid JSON for plot hole analysis",
-      }
+      },
     );
 
     return result;
@@ -82,7 +84,7 @@ If the story is perfectly logical and has zero plot holes or inconsistencies, re
     const errorMsg = error instanceof Error ? error.message : String(error);
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      `AI analysis failed: ${errorMsg}`
+      `AI analysis failed: ${errorMsg}`,
     );
   }
 };

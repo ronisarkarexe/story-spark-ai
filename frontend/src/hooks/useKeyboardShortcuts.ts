@@ -56,7 +56,6 @@ const useKeyboardShortcuts = ({
         return;
       }
 
-
       if (isTyping) return;
 
       if (e.key === "/") {

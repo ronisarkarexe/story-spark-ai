@@ -55,32 +55,31 @@ const ChatComponent: React.FC = () => {
       const botMessage: IChatMessage = { role: "model", parts: response };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error: unknown) {
-  console.error("Chat error:", error);
+      console.error("Chat error:", error);
 
-  const errorMessage =
-    error &&
-    typeof error === "object" &&
-    "response" in error &&
-    error.response &&
-    typeof error.response === "object" &&
-    "data" in error.response &&
-    error.response.data &&
-    typeof error.response.data === "object" &&
-    "message" in error.response.data &&
-    typeof error.response.data.message === "string"
-      ? error.response.data.message
-      : "Failed to get AI response";
+      const errorMessage =
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "data" in error.response &&
+        error.response.data &&
+        typeof error.response.data === "object" &&
+        "message" in error.response.data &&
+        typeof error.response.data.message === "string"
+          ? error.response.data.message
+          : "Failed to get AI response";
 
-  toast.error(errorMessage);
+      toast.error(errorMessage);
 
-  const botErrorMessage: IChatMessage = {
-    role: "model",
-    parts: `⚠️ ${errorMessage}`,
-  };
+      const botErrorMessage: IChatMessage = {
+        role: "model",
+        parts: `⚠️ ${errorMessage}`,
+      };
 
-  setMessages((prev) => [...prev, botErrorMessage]);
-}
-     finally {
+      setMessages((prev) => [...prev, botErrorMessage]);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -220,7 +219,11 @@ const ChatComponent: React.FC = () => {
                         onClick={clearChat}
                         disabled={isChatEmpty}
                         className="p-2 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-slate-400"
-                        title={isChatEmpty ? "No chat history to clear" : "Clear chat"}
+                        title={
+                          isChatEmpty
+                            ? "No chat history to clear"
+                            : "Clear chat"
+                        }
                       >
                         <Trash2 size={20} />
                       </button>

@@ -20,7 +20,7 @@ describe("backend config startup validation", () => {
     process.env.JWT_REFRESH_SECRET = "refresh-secret";
 
     expect(() => require("../index").default).toThrow(
-      "JWT_SECRET environment variable is required"
+      "JWT_SECRET environment variable is required",
     );
   });
 
@@ -30,7 +30,7 @@ describe("backend config startup validation", () => {
     delete process.env.JWT_REFRESH_SECRET;
 
     expect(() => require("../index").default).toThrow(
-      "JWT_REFRESH_SECRET environment variable is required"
+      "JWT_REFRESH_SECRET environment variable is required",
     );
   });
 

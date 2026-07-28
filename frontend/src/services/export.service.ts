@@ -12,7 +12,7 @@ export interface IExportStory {
 }
 
 export interface IExportOptions {
-  fontSize?: 'small' | 'medium' | 'large';
+  fontSize?: "small" | "medium" | "large";
 }
 
 /**
@@ -30,7 +30,10 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
         return await cachedResponse.blob();
       }
     } catch (e) {
-      console.warn("[ExportService] Failed to match image in Cache Storage:", e);
+      console.warn(
+        "[ExportService] Failed to match image in Cache Storage:",
+        e,
+      );
     }
   }
 
@@ -53,8 +56,11 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
 
     return blob;
   } catch (error) {
-    console.warn("Direct image fetch failed (CORS or network). Trying HTML Canvas fallback...", error);
-    
+    console.warn(
+      "Direct image fetch failed (CORS or network). Trying HTML Canvas fallback...",
+      error,
+    );
+
     // Canvas fallback using Image element with crossOrigin
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -73,9 +79,12 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
           canvas.toBlob((blob) => {
             if (blob) {
               if ("caches" in window) {
-                caches.open(CACHE_NAME).then((cache) => {
-                  cache.put(url, new Response(blob));
-                }).catch(() => {});
+                caches
+                  .open(CACHE_NAME)
+                  .then((cache) => {
+                    cache.put(url, new Response(blob));
+                  })
+                  .catch(() => {});
               }
               resolve(blob);
             } else {
@@ -86,7 +95,8 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
           reject(canvasError);
         }
       };
-      img.onerror = (err) => reject(new Error("Image element load failed: " + String(err)));
+      img.onerror = (err) =>
+        reject(new Error("Image element load failed: " + String(err)));
       img.src = url;
     });
   }
@@ -112,10 +122,10 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
 export const exportStoryToPDF = async (
   story: IExportStory,
   base64Image: string | null,
-  options?: IExportOptions
+  options?: IExportOptions,
 ): Promise<void> => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  
+
   // --- Page 1: Full-Bleed Cover ---
   // Background solid color
   doc.setFillColor(15, 23, 42); // slate-900
@@ -146,11 +156,11 @@ export const exportStoryToPDF = async (
     const badgeWidth = textWidth + 12;
     const badgeHeight = 7;
     const badgeX = 105 - badgeWidth / 2;
-    
+
     // Draw rounded background (simulation)
     doc.setFillColor(99, 102, 241); // indigo-500
     doc.rect(badgeX, coverY, badgeWidth, badgeHeight, "F");
-    
+
     doc.setTextColor(255, 255, 255);
     doc.text(badgeText, 105, coverY + 4.8, { align: "center" });
     coverY += badgeHeight + 10;
@@ -180,7 +190,7 @@ export const exportStoryToPDF = async (
   doc.setFontSize(14);
   doc.setTextColor(255, 255, 255);
   doc.text("StorySparkAI", 105, 250, { align: "center" });
-  
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(148, 163, 184); // slate-400
@@ -188,7 +198,7 @@ export const exportStoryToPDF = async (
 
   // --- Page 2: Story Content Layout ---
   doc.addPage();
-  
+
   const leftMargin = 20;
   const rightMargin = 20;
   const topMargin = 25;
@@ -211,7 +221,10 @@ export const exportStoryToPDF = async (
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   doc.setTextColor(15, 23, 42); // slate-900
-  const contentTitleLines = doc.splitTextToSize(story.title || "Untitled Story", printableWidth);
+  const contentTitleLines = doc.splitTextToSize(
+    story.title || "Untitled Story",
+    printableWidth,
+  );
   contentTitleLines.forEach((line: string) => {
     if (yCursor + 10 > maxY) {
       doc.addPage();
@@ -220,7 +233,7 @@ export const exportStoryToPDF = async (
     doc.text(line, leftMargin, yCursor);
     yCursor += 9;
   });
-  
+
   // Divider line
   if (yCursor + 5 > maxY) {
     doc.addPage();
@@ -234,15 +247,17 @@ export const exportStoryToPDF = async (
   // Story Text rendering
   doc.setFont("helvetica", "normal");
   const fontSizeMap = { small: 9, medium: 11, large: 13 };
-  const contentFontSize = options?.fontSize ? fontSizeMap[options.fontSize] : 11;
+  const contentFontSize = options?.fontSize
+    ? fontSizeMap[options.fontSize]
+    : 11;
   doc.setFontSize(contentFontSize);
   doc.setTextColor(51, 65, 85); // slate-700
-  
+
   const paragraphs = story.content.split(/\n+/);
   paragraphs.forEach((para) => {
     const cleanPara = para.trim();
     if (!cleanPara) return;
-    
+
     const lines = doc.splitTextToSize(cleanPara, printableWidth);
     lines.forEach((line: string) => {
       // 7mm spacing per line
@@ -253,7 +268,7 @@ export const exportStoryToPDF = async (
       doc.text(line, leftMargin, yCursor);
       yCursor += 6.5;
     });
-    
+
     // Gap between paragraphs
     yCursor += 4.5;
   });
@@ -262,16 +277,22 @@ export const exportStoryToPDF = async (
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    
+
     if (i === 1) continue; // Skip cover page
 
     // Running Header
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184); // slate-400
-    doc.text(story.title.length > 40 ? story.title.substring(0, 40) + "..." : story.title, leftMargin, 15);
+    doc.text(
+      story.title.length > 40
+        ? story.title.substring(0, 40) + "..."
+        : story.title,
+      leftMargin,
+      15,
+    );
     doc.text("StorySparkAI", 190, 15, { align: "right" });
-    
+
     doc.setDrawColor(241, 245, 249);
     doc.setLineWidth(0.25);
     doc.line(leftMargin, 18, 190, 18);
@@ -283,7 +304,9 @@ export const exportStoryToPDF = async (
   }
 
   // Trigger file download
-  const cleanFileName = (story.title || "story").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const cleanFileName = (story.title || "story")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-");
   doc.save(`${cleanFileName || "story"}.pdf`);
 };
 
@@ -293,14 +316,16 @@ export const exportStoryToPDF = async (
 export const exportStoryToEPUB = async (
   story: IExportStory,
   imageBlob: Blob | null,
-  options?: IExportOptions
+  options?: IExportOptions,
 ): Promise<void> => {
   const zip = new JSZip();
   const uuid = story.uuid || Math.random().toString(36).substring(2, 15);
   const dateStr = new Date().toISOString().split(".")[0] + "Z"; // Standard UTC format
   const language = story.language || "en";
-  const cleanFileName = (story.title || "story").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  
+  const cleanFileName = (story.title || "story")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-");
+
   // 1. mimetype (MUST be uncompressed)
   zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
 
@@ -312,7 +337,7 @@ export const exportStoryToEPUB = async (
   <rootfiles>
     <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
   </rootfiles>
-</container>`
+</container>`,
   );
 
   // 3. OEBPS/style.css
@@ -324,7 +349,7 @@ export const exportStoryToEPUB = async (
   margin: 20px;
   color: #111111;
   background-color: #ffffff;
-  font-size: ${options?.fontSize === 'small' ? '0.9em' : options?.fontSize === 'large' ? '1.2em' : '1em'};
+  font-size: ${options?.fontSize === "small" ? "0.9em" : options?.fontSize === "large" ? "1.2em" : "1em"};
 }
 h1, h2 {
   text-align: center;
@@ -383,7 +408,7 @@ p:first-of-type {
   height: auto;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}`
+}`,
   );
 
   const hasImage = !!imageBlob;
@@ -406,7 +431,7 @@ p:first-of-type {
     ${hasImage ? `<div class="cover-image-container"><img class="cover-img" src="images/illustration.png" alt="Story Cover"/></div>` : ""}
   </div>
 </body>
-</html>`
+</html>`,
   );
 
   // 5. OEBPS/nav.xhtml
@@ -428,7 +453,7 @@ p:first-of-type {
     </ol>
   </nav>
 </body>
-</html>`
+</html>`,
   );
 
   // 6. OEBPS/content.xhtml
@@ -459,7 +484,7 @@ p:first-of-type {
     </div>
   </section>
 </body>
-</html>`
+</html>`,
   );
 
   // 7. OEBPS/toc.ncx (for EPUB2 e-readers)
@@ -486,7 +511,7 @@ p:first-of-type {
       <content src="content.xhtml"/>
     </navPoint>
   </navMap>
-</ncx>`
+</ncx>`,
   );
 
   // 8. OEBPS/content.opf (Manifest & Spine configuration)
@@ -515,7 +540,7 @@ p:first-of-type {
     <itemref idref="nav"/>
     <itemref idref="content"/>
   </spine>
-</package>`
+</package>`,
   );
 
   // 9. Embed image if present
@@ -524,7 +549,10 @@ p:first-of-type {
   }
 
   // 10. Generate and trigger download
-  const epubBlob = await zip.generateAsync({ type: "blob", mimeType: "application/epub+zip" });
+  const epubBlob = await zip.generateAsync({
+    type: "blob",
+    mimeType: "application/epub+zip",
+  });
   saveAs(epubBlob, `${cleanFileName || "story"}.epub`);
 };
 
@@ -534,12 +562,18 @@ p:first-of-type {
 function escapeXml(unsafe: string): string {
   return unsafe.replace(/[<>&'"]/g, (c) => {
     switch (c) {
-      case "<": return "&lt;";
-      case ">": return "&gt;";
-      case "&": return "&amp;";
-      case "'": return "&apos;";
-      case "\"": return "&quot;";
-      default: return c;
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case "&":
+        return "&amp;";
+      case "'":
+        return "&apos;";
+      case '"':
+        return "&quot;";
+      default:
+        return c;
     }
   });
 }

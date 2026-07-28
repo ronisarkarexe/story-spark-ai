@@ -16,41 +16,119 @@ const HTML_ESCAPE_MAP: Record<string, string> = {
 };
 
 const HTML_UNESCAPE_MAP: Record<string, string> = Object.fromEntries(
-  Object.entries(HTML_ESCAPE_MAP).map(([k, v]) => [v, k])
+  Object.entries(HTML_ESCAPE_MAP).map(([k, v]) => [v, k]),
 );
 
 // Dangerous HTML tags that must be completely stripped
 const DANGEROUS_TAGS = [
-  "script", "iframe", "object", "embed", "form", "input",
-  "textarea", "button", "select", "option", "link", "style",
-  "meta", "base", "head", "title", "body", "html", "svg",
-  "math", "frame", "frameset", "applet", "param", "marquee",
-  "blink", "xmp", "listing", "plaintext", "noscript",
+  "script",
+  "iframe",
+  "object",
+  "embed",
+  "form",
+  "input",
+  "textarea",
+  "button",
+  "select",
+  "option",
+  "link",
+  "style",
+  "meta",
+  "base",
+  "head",
+  "title",
+  "body",
+  "html",
+  "svg",
+  "math",
+  "frame",
+  "frameset",
+  "applet",
+  "param",
+  "marquee",
+  "blink",
+  "xmp",
+  "listing",
+  "plaintext",
+  "noscript",
 ];
 
 // Dangerous attributes that can execute JavaScript
 const DANGEROUS_ATTRIBUTES = [
-  "onerror", "onload", "onclick", "onmouseover", "onmouseout",
-  "onmousedown", "onmouseup", "onmousemove", "onkeydown",
-  "onkeyup", "onkeypress", "onsubmit", "onchange", "onfocus",
-  "onblur", "ondblclick", "oncontextmenu", "onwheel",
-  "ontouchstart", "ontouchend", "ontouchmove", "ondrag",
-  "ondrop", "onscroll", "onresize", "onpageshow", "onpagehide",
-  "onhashchange", "onbeforeunload", "onpopstate",
-  "onanimationstart", "onanimationend", "ontransitionend",
-  "onreadystatechange", "onpointerenter", "onpointerleave",
-  "onpointermove", "onpointerdown", "onpointerup", "onabort",
-  "oncanplay", "oncanplaythrough", "ondurationchange",
-  "onemptied", "onended", "onloadeddata", "onloadedmetadata",
-  "onloadstart", "onpause", "onplay", "onplaying", "onprogress",
-  "onratechange", "onseeked", "onseeking", "onstalled",
-  "onsuspend", "ontimeupdate", "onvolumechange", "onwaiting",
+  "onerror",
+  "onload",
+  "onclick",
+  "onmouseover",
+  "onmouseout",
+  "onmousedown",
+  "onmouseup",
+  "onmousemove",
+  "onkeydown",
+  "onkeyup",
+  "onkeypress",
+  "onsubmit",
+  "onchange",
+  "onfocus",
+  "onblur",
+  "ondblclick",
+  "oncontextmenu",
+  "onwheel",
+  "ontouchstart",
+  "ontouchend",
+  "ontouchmove",
+  "ondrag",
+  "ondrop",
+  "onscroll",
+  "onresize",
+  "onpageshow",
+  "onpagehide",
+  "onhashchange",
+  "onbeforeunload",
+  "onpopstate",
+  "onanimationstart",
+  "onanimationend",
+  "ontransitionend",
+  "onreadystatechange",
+  "onpointerenter",
+  "onpointerleave",
+  "onpointermove",
+  "onpointerdown",
+  "onpointerup",
+  "onabort",
+  "oncanplay",
+  "oncanplaythrough",
+  "ondurationchange",
+  "onemptied",
+  "onended",
+  "onloadeddata",
+  "onloadedmetadata",
+  "onloadstart",
+  "onpause",
+  "onplay",
+  "onplaying",
+  "onprogress",
+  "onratechange",
+  "onseeked",
+  "onseeking",
+  "onstalled",
+  "onsuspend",
+  "ontimeupdate",
+  "onvolumechange",
+  "onwaiting",
 ];
 
 // Dangerous URL protocols
 const DANGEROUS_PROTOCOLS = [
-  "javascript:", "data:", "vbscript:", "mocha:", "livescript:",
-  "about:", "file:", "view-source:", "jar:", "apt:",
+  "javascript:",
+  "data:",
+  "vbscript:",
+  "mocha:",
+  "livescript:",
+  "about:",
+  "file:",
+  "view-source:",
+  "jar:",
+  "apt:",
 ];
 
 /**
@@ -70,7 +148,7 @@ export const unescapeHtml = (input: string | undefined | null): string => {
   if (!input || typeof input !== "string") return "";
   return input.replace(
     /&(?:amp|lt|gt|quot|#x27|#x2F|#x5C|#96|#x2d|#x20);/g,
-    (entity) => HTML_UNESCAPE_MAP[entity] || entity
+    (entity) => HTML_UNESCAPE_MAP[entity] || entity,
   );
 };
 
@@ -105,12 +183,21 @@ export const sanitizeRichText = (input: string | undefined | null): string => {
   let sanitized = input;
 
   // Remove script and style tags with their contents
-  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
-  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "");
+  sanitized = sanitized.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    "",
+  );
+  sanitized = sanitized.replace(
+    /<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi,
+    "",
+  );
 
   // Remove dangerous tags
   for (const tag of DANGEROUS_TAGS) {
-    const regex = new RegExp(`<${tag}\\b[^>]*>[\\s\\S]*?<\\/${tag}>|<${tag}\\b[^>]*/?>`, "gi");
+    const regex = new RegExp(
+      `<${tag}\\b[^>]*>[\\s\\S]*?<\\/${tag}>|<${tag}\\b[^>]*/?>`,
+      "gi",
+    );
     sanitized = sanitized.replace(regex, "");
   }
 
@@ -122,12 +209,18 @@ export const sanitizeRichText = (input: string | undefined | null): string => {
 
   // Remove javascript: and data: protocols from href/src attributes
   for (const protocol of DANGEROUS_PROTOCOLS) {
-    const regex = new RegExp(`(href|src|action|background|dynsrc|lowsrc|formaction)=["']${protocol}[^"']*["']`, "gi");
+    const regex = new RegExp(
+      `(href|src|action|background|dynsrc|lowsrc|formaction)=["']${protocol}[^"']*["']`,
+      "gi",
+    );
     sanitized = sanitized.replace(regex, '$1="#blocked"');
   }
 
   // Remove event handlers as inline attributes (catch-all), including unquoted attributes
-  sanitized = sanitized.replace(/\son\w+\s*=\s*(?:["'][^"']*["']|[^\s>]+)/gi, " ");
+  sanitized = sanitized.replace(
+    /\son\w+\s*=\s*(?:["'][^"']*["']|[^\s>]+)/gi,
+    " ",
+  );
 
   // Remove expression() and binding() for older IE
   sanitized = sanitized.replace(/expression\s*\(/gi, "( ");
@@ -180,7 +273,7 @@ export const sanitizeUrl = (input: string | undefined | null): string => {
  */
 export const sanitizeObjectStrings = <T extends Record<string, any>>(
   obj: T,
-  sanitizer: (input: string) => string = sanitizeText
+  sanitizer: (input: string) => string = sanitizeText,
 ): T => {
   if (!obj || typeof obj !== "object") return obj;
 
@@ -190,8 +283,11 @@ export const sanitizeObjectStrings = <T extends Record<string, any>>(
       result[key] = sanitizer(result[key]);
     } else if (Array.isArray(result[key])) {
       result[key] = result[key].map((item: any) =>
-        typeof item === "string" ? sanitizer(item) :
-        typeof item === "object" ? sanitizeObjectStrings(item, sanitizer) : item
+        typeof item === "string"
+          ? sanitizer(item)
+          : typeof item === "object"
+            ? sanitizeObjectStrings(item, sanitizer)
+            : item,
       );
     } else if (typeof result[key] === "object" && result[key] !== null) {
       result[key] = sanitizeObjectStrings(result[key], sanitizer);
@@ -205,7 +301,7 @@ export const sanitizeObjectStrings = <T extends Record<string, any>>(
  */
 export const truncateText = (
   input: string | undefined | null,
-  maxLength: number = 200
+  maxLength: number = 200,
 ): string => {
   if (!input || typeof input !== "string") return "";
   if (input.length <= maxLength) return input;
@@ -216,8 +312,10 @@ export const truncateText = (
  * Comprehensive sanitization for a complete story payload.
  * Used before saving any story to the database.
  */
-export const sanitizeStoryPayload = <T extends { title?: string; content?: string; prompt?: string; tag?: string }>(
-  payload: T
+export const sanitizeStoryPayload = <
+  T extends { title?: string; content?: string; prompt?: string; tag?: string },
+>(
+  payload: T,
 ): T => {
   const sanitized = { ...payload };
 

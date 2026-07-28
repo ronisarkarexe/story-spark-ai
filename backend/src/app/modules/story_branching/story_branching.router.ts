@@ -30,26 +30,40 @@ router.get("/:storyId/tree", StoryBranchingController.getBranchTree);
  * Record user choice and track progress
  * Requires: Authentication
  */
-router.post("/choices/record", auth(), StoryBranchingController.recordUserChoice);
+router.post(
+  "/choices/record",
+  auth(),
+  StoryBranchingController.recordUserChoice,
+);
 
 /**
  * GET /story-branches/:storyId/progress
  * Get user's progress through a branching story
  * Requires: Authentication
  */
-router.get("/:storyId/progress", auth(), StoryBranchingController.getUserProgress);
+router.get(
+  "/:storyId/progress",
+  auth(),
+  StoryBranchingController.getUserProgress,
+);
 
 /**
  * GET /story-branches/:storyId/statistics
  * Get choice statistics for a story
  */
-router.get("/:storyId/statistics", StoryBranchingController.getChoiceStatistics);
+router.get(
+  "/:storyId/statistics",
+  StoryBranchingController.getChoiceStatistics,
+);
 
 /**
  * GET /story-branches/:storyId/statistics/summary
  * Get choice statistics summary
  */
-router.get("/:storyId/statistics/summary", StoryBranchingController.getStatisticsSummary);
+router.get(
+  "/:storyId/statistics/summary",
+  StoryBranchingController.getStatisticsSummary,
+);
 
 /**
  * POST /story-branches/validate
@@ -62,6 +76,10 @@ router.post("/validate", StoryBranchingController.validateBranchIntegrity);
  * Delete a segment and its children
  * Requires: Authentication
  */
-router.delete("/segments/:segmentId", auth(), StoryBranchingController.deleteSegment);
+router.delete(
+  "/segments/:segmentId",
+  auth(),
+  StoryBranchingController.deleteSegment,
+);
 
 export const StoryBranchingRouter = router;

@@ -24,13 +24,23 @@ interface RateLimiterOptions {
  * Each prefix tracks its endpoint independently.
  */
 export const createRateLimiter = (options: RateLimiterOptions) => {
-  const { windowMs, maxRequests, blockTimeMs, keyPrefix, actionLabel = "request", buildMessage } = options;
+  const {
+    windowMs,
+    maxRequests,
+    blockTimeMs,
+    keyPrefix,
+    actionLabel = "request",
+    buildMessage,
+  } = options;
 
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const ip = req.ip;
       if (!ip) {
-        throw new ApiError(httpStatus.FORBIDDEN, "Could not determine client IP address.");
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          "Could not determine client IP address.",
+        );
       }
 
       const { allowed, retryAfterSec } = await consumeRateLimit({
@@ -59,7 +69,7 @@ export const createRateLimiter = (options: RateLimiterOptions) => {
 
 /** Registration: 5 attempts per hour, 24-hour block (original behaviour) */
 export const ipRateLimiter = createRateLimiter({
-  windowMs: 60 * 60 * 1000,        // 1 hour
+  windowMs: 60 * 60 * 1000, // 1 hour
   maxRequests: 5,
   blockTimeMs: 24 * 60 * 60 * 1000, // 24 hours
   keyPrefix: "reg",
@@ -68,7 +78,7 @@ export const ipRateLimiter = createRateLimiter({
 
 /** Login: 10 attempts per 15 minutes, 15-minute block */
 export const loginRateLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
+  windowMs: 15 * 60 * 1000, // 15 minutes
   maxRequests: 10,
   blockTimeMs: 15 * 60 * 1000, // 15 minutes
   keyPrefix: "login",
@@ -77,7 +87,7 @@ export const loginRateLimiter = createRateLimiter({
 
 /** Forgot Password: 3 attempts per hour, 1-hour block (prevents email spam) */
 export const forgotPasswordRateLimiter = createRateLimiter({
-  windowMs: 60 * 60 * 1000,  // 1 hour
+  windowMs: 60 * 60 * 1000, // 1 hour
   maxRequests: 3,
   blockTimeMs: 60 * 60 * 1000, // 1 hour
   keyPrefix: "forgot_pw",
@@ -86,13 +96,12 @@ export const forgotPasswordRateLimiter = createRateLimiter({
 
 /** Reset Password: 5 attempts per hour, 1-hour block */
 export const resetPasswordRateLimiter = createRateLimiter({
-  windowMs: 60 * 60 * 1000,  // 1 hour
+  windowMs: 60 * 60 * 1000, // 1 hour
   maxRequests: 5,
   blockTimeMs: 60 * 60 * 1000, // 1 hour
   keyPrefix: "reset_pw",
   actionLabel: "password reset",
 });
-
 
 export const aiGenerationRateLimiter = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
@@ -102,10 +111,9 @@ export const aiGenerationRateLimiter = createRateLimiter({
   actionLabel: "AI generation",
 });
 
-
 /** Payment: 20 attempts per 15 minutes, 15-minute block */
 export const paymentRateLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
+  windowMs: 15 * 60 * 1000, // 15 minutes
   maxRequests: 20,
   blockTimeMs: 15 * 60 * 1000, // 15 minutes
   keyPrefix: "payment",
@@ -114,7 +122,7 @@ export const paymentRateLimiter = createRateLimiter({
 
 /** Bug report submit: 10 per hour, 1-hour block */
 export const bugReportRateLimiter = createRateLimiter({
-  windowMs: 60 * 60 * 1000,  // 1 hour
+  windowMs: 60 * 60 * 1000, // 1 hour
   maxRequests: 10,
   blockTimeMs: 60 * 60 * 1000, // 1 hour
   keyPrefix: "bug_report",
@@ -123,7 +131,7 @@ export const bugReportRateLimiter = createRateLimiter({
 
 /** Contact form (sends email): 5 per hour, 1-hour block */
 export const contactRateLimiter = createRateLimiter({
-  windowMs: 60 * 60 * 1000,  // 1 hour
+  windowMs: 60 * 60 * 1000, // 1 hour
   maxRequests: 5,
   blockTimeMs: 60 * 60 * 1000, // 1 hour
   keyPrefix: "contact",
@@ -132,7 +140,7 @@ export const contactRateLimiter = createRateLimiter({
 
 /** Newsletter subscribe (sends email): 5 per hour, 1-hour block */
 export const newsletterRateLimiter = createRateLimiter({
-  windowMs: 60 * 60 * 1000,  // 1 hour
+  windowMs: 60 * 60 * 1000, // 1 hour
   maxRequests: 5,
   blockTimeMs: 60 * 60 * 1000, // 1 hour
   keyPrefix: "newsletter",
@@ -144,7 +152,7 @@ export const newsletterRateLimiter = createRateLimiter({
  * (prevents token rotation abuse)
  */
 export const refreshTokenRateLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
+  windowMs: 15 * 60 * 1000, // 15 minutes
   maxRequests: 10,
   blockTimeMs: 15 * 60 * 1000, // 15 minutes
   keyPrefix: "refresh_token",

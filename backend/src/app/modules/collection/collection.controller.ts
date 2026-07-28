@@ -25,8 +25,9 @@ interface AddStoryBody {
   storyId: string;
 }
 
-
-const getOptionalToken = async (req: Request): Promise<ITokenPayload  | null> => {
+const getOptionalToken = async (
+  req: Request,
+): Promise<ITokenPayload | null> => {
   try {
     return getToken(req);
   } catch {
@@ -39,9 +40,9 @@ const getOptionalToken = async (req: Request): Promise<ITokenPayload  | null> =>
 const createCollection = catchAsync(async (req: Request, res: Response) => {
   const token = await getToken(req);
   const body = req.body as CreateCollectionBody;
-  
+
   const result = await CollectionService.createCollection(body, token);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -54,9 +55,9 @@ const updateCollection = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
   const token = await getToken(req);
   const body = req.body as UpdateCollectionBody;
-  
+
   const result = await CollectionService.updateCollection(id, body, token);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -68,9 +69,9 @@ const updateCollection = catchAsync(async (req: Request, res: Response) => {
 const getCollectionById = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
   const token = getOptionalToken(req); // Cleaned up DRY logic
-  
+
   const result = await CollectionService.getCollectionById(id, token);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -82,9 +83,9 @@ const getCollectionById = catchAsync(async (req: Request, res: Response) => {
 const getUserCollections = catchAsync(async (req: Request, res: Response) => {
   const userId = routeParam(req.params.userId);
   const token = getOptionalToken(req); // Cleaned up DRY logic
-  
+
   const result = await CollectionService.getUserCollections(userId, token);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -97,9 +98,13 @@ const addStoryToCollection = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
   const { storyId } = req.body as AddStoryBody;
   const token = await getToken(req);
-  
-  const result = await CollectionService.addStoryToCollection(id, storyId, token);
-  
+
+  const result = await CollectionService.addStoryToCollection(
+    id,
+    storyId,
+    token,
+  );
+
   sendResponse(res, {
     statusCode: httpStatus.CREATED, // Updated to 201 Created
     success: true,
@@ -108,27 +113,33 @@ const addStoryToCollection = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const removeStoryFromCollection = catchAsync(async (req: Request, res: Response) => {
-  const id = routeParam(req.params.id);
-  const storyId = routeParam(req.params.storyId);
-  const token = await getToken(req);
-  
-  const result = await CollectionService.removeStoryFromCollection(id, storyId, token);
-  
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Story removed from collection!",
-    data: result,
-  });
-});
+const removeStoryFromCollection = catchAsync(
+  async (req: Request, res: Response) => {
+    const id = routeParam(req.params.id);
+    const storyId = routeParam(req.params.storyId);
+    const token = await getToken(req);
+
+    const result = await CollectionService.removeStoryFromCollection(
+      id,
+      storyId,
+      token,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Story removed from collection!",
+      data: result,
+    });
+  },
+);
 
 const deleteCollection = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
   const token = await getToken(req);
-  
+
   const result = await CollectionService.deleteCollection(id, token);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -146,4 +157,3 @@ export const CollectionController = {
   removeStoryFromCollection,
   deleteCollection,
 };
-    

@@ -11,7 +11,9 @@ jest.mock("../app/middleware/rate_limit.store", () => ({
 import { createSocketRateLimiter } from "../socket/socket-rate-limiter";
 import { consumeRateLimit } from "../app/middleware/rate_limit.store";
 
-const mockConsumeRateLimit = consumeRateLimit as jest.MockedFunction<typeof consumeRateLimit>;
+const mockConsumeRateLimit = consumeRateLimit as jest.MockedFunction<
+  typeof consumeRateLimit
+>;
 
 describe("Socket.IO Rate Limiter", () => {
   let mockSocket: any;
@@ -20,14 +22,14 @@ describe("Socket.IO Rate Limiter", () => {
 
   beforeEach(() => {
     mockConsumeRateLimit.mockReset();
-    
+
     // Create mock socket with handshake
     mockSocket = {
       handshake: {
         address: "127.0.0.1",
       },
     };
-    
+
     mockNext = jest.fn();
     rateLimiter = createSocketRateLimiter();
   });
@@ -63,7 +65,7 @@ describe("Socket.IO Rate Limiter", () => {
     await rateLimiter(mockSocket, mockNext);
 
     expect(mockNext).toHaveBeenCalledWith(
-      new Error("Rate limit exceeded. Please try again in 120 seconds.")
+      new Error("Rate limit exceeded. Please try again in 120 seconds."),
     );
     expect(mockNext).toHaveBeenCalledTimes(1);
   });
@@ -75,7 +77,7 @@ describe("Socket.IO Rate Limiter", () => {
 
     expect(mockConsumeRateLimit).not.toHaveBeenCalled();
     expect(mockNext).toHaveBeenCalledWith(
-      new Error("Unable to determine client IP address")
+      new Error("Unable to determine client IP address"),
     );
   });
 
@@ -84,9 +86,7 @@ describe("Socket.IO Rate Limiter", () => {
 
     await rateLimiter(mockSocket, mockNext);
 
-    expect(mockNext).toHaveBeenCalledWith(
-      new Error("Rate limit check failed")
-    );
+    expect(mockNext).toHaveBeenCalledWith(new Error("Rate limit check failed"));
   });
 
   it("uses custom configuration when provided", async () => {

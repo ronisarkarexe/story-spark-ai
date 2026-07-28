@@ -1,4 +1,5 @@
-const CRAWLER_RE = /Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|facebookexternalhit|Slack-ImgProxy|facebot|Pinterest/i;
+const CRAWLER_RE =
+  /Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|facebookexternalhit|Slack-ImgProxy|facebot|Pinterest/i;
 
 const STORY_ROUTE = /^\/post\/([^/?#]+)/;
 
@@ -15,7 +16,9 @@ export const config = {
   matcher: ["/post/:id"],
 };
 
-export default async function middleware(request: Request): Promise<Response | undefined> {
+export default async function middleware(
+  request: Request,
+): Promise<Response | undefined> {
   const url = new URL(request.url);
   const match = url.pathname.match(STORY_ROUTE);
 
@@ -29,7 +32,8 @@ export default async function middleware(request: Request): Promise<Response | u
     ? `${API_BASE.replace(/\/+$/, "")}/post/${storyId}`
     : null;
 
-  let story: { title?: string; content?: string; imageURL?: string } | null = null;
+  let story: { title?: string; content?: string; imageURL?: string } | null =
+    null;
 
   if (apiUrl) {
     try {

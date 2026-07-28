@@ -49,7 +49,7 @@ const toggleBookmark = async (storyId: string, token: ITokenPayload) => {
 const getBookmarks = async (
   token: ITokenPayload,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ) => {
   const { email } = token;
   const user = await User.findOne({ email });
@@ -72,7 +72,7 @@ const getBookmarks = async (
     },
     { $unwind: "$story" },
     { $match: { "story.isDeleted": { $ne: true }, "story.isPublished": true } },
-    { $count: "count" }
+    { $count: "count" },
   ]);
   const total = totalAgg[0]?.count || 0;
 
@@ -98,24 +98,25 @@ const getBookmarks = async (
   const activeBookmarkIds = activeBookmarkDocs.map((doc) => doc._id);
 
   // Fetch full details and populate nested paths
-  const bookmarks = await Bookmark.find({ _id: { $in: activeBookmarkIds } })
-    .populate({
-      path: "storyId",
-      populate: [
-        { path: "author", select: "name email createdAt" },
-        {
-          path: "reactions",
-          populate: { path: "userId", select: "email" },
-        },
-      ],
-    });
+  const bookmarks = await Bookmark.find({
+    _id: { $in: activeBookmarkIds },
+  }).populate({
+    path: "storyId",
+    populate: [
+      { path: "author", select: "name email createdAt" },
+      {
+        path: "reactions",
+        populate: { path: "userId", select: "email" },
+      },
+    ],
+  });
 
   // Maintain the sorted order from aggregation
   const activeBookmarkIdStrings = activeBookmarkIds.map((id) => id.toString());
   bookmarks.sort(
     (a, b) =>
       activeBookmarkIdStrings.indexOf(a._id.toString()) -
-      activeBookmarkIdStrings.indexOf(b._id.toString())
+      activeBookmarkIdStrings.indexOf(b._id.toString()),
   );
 
   // Map to extract only the fully populated story objects, filtering out any orphaned references
@@ -185,5 +186,3 @@ export const BookmarkService = {
   checkBookmarkStatus,
   deleteBookmark,
 };
-
-

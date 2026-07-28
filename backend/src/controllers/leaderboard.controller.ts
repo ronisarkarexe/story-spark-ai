@@ -3,7 +3,7 @@ import { getWeeklyLeaderboard } from "../services/leaderboard.service";
 
 export const weeklyLeaderboardController = async (
   _req: Request,
-  res: Response
+  res: Response,
 ) => {
   try {
     const data = await getWeeklyLeaderboard();

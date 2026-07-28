@@ -8,9 +8,19 @@ import { paymentRateLimiter } from "../app/middleware/ip.rate-limiter";
 const paymentRouter = Router();
 
 // Route to create a new Razorpay order — requires a valid user session
-paymentRouter.post("/create-order", paymentRateLimiter, auth(ENUM_USER_ROLE.USER), createOrder);
+paymentRouter.post(
+  "/create-order",
+  paymentRateLimiter,
+  auth(ENUM_USER_ROLE.USER),
+  createOrder,
+);
 
 // Route to verify payment signature after successful payment — requires a valid user session
-paymentRouter.post("/verify", paymentRateLimiter, auth(ENUM_USER_ROLE.USER), verifyPayment);
+paymentRouter.post(
+  "/verify",
+  paymentRateLimiter,
+  auth(ENUM_USER_ROLE.USER),
+  verifyPayment,
+);
 
 export default paymentRouter;

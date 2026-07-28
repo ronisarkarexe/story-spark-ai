@@ -19,10 +19,14 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
   const storageKey = `story-progress-${storyId}`;
 
   // Custom formatting states
-  const [fontFamily, setFontFamily] = useState<"helvetica" | "times" | "courier">("helvetica");
+  const [fontFamily, setFontFamily] = useState<
+    "helvetica" | "times" | "courier"
+  >("helvetica");
   const [fontSize, setFontSize] = useState<number>(11);
   const [lineHeight, setLineHeight] = useState<number>(1.5);
-  const [themeStyle, setThemeStyle] = useState<"standard" | "classic" | "modern">("standard");
+  const [themeStyle, setThemeStyle] = useState<
+    "standard" | "classic" | "modern"
+  >("standard");
 
   useEffect(() => {
     const container = containerRef.current;
@@ -79,7 +83,11 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
     }
 
     try {
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
       const leftMargin = 20;
       const printableWidth = 170;
       let yCursor = 25;
@@ -101,7 +109,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       const titleLines = doc.splitTextToSize(storyTitle, printableWidth);
       titleLines.forEach((line: string) => {
         doc.text(line, leftMargin, yCursor);
-        yCursor += (fontSize / 2) + 4;
+        yCursor += fontSize / 2 + 4;
       });
       yCursor += 4;
 
@@ -117,11 +125,17 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
         }
         doc.setFont(fontFamily, "bold");
         doc.setFontSize(fontSize + 3);
-        const chTitleLines = doc.splitTextToSize(chapter.title || `Chapter ${idx + 1}`, printableWidth);
+        const chTitleLines = doc.splitTextToSize(
+          chapter.title || `Chapter ${idx + 1}`,
+          printableWidth,
+        );
         chTitleLines.forEach((line: string) => {
-          if (yCursor > maxY) { doc.addPage(); yCursor = 25; }
+          if (yCursor > maxY) {
+            doc.addPage();
+            yCursor = 25;
+          }
           doc.text(line, leftMargin, yCursor);
-          yCursor += (fontSize / 2) + 3;
+          yCursor += fontSize / 2 + 3;
         });
         yCursor += 3;
 
@@ -134,7 +148,10 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
           if (!clean) return;
           const lines = doc.splitTextToSize(clean, printableWidth);
           lines.forEach((line: string) => {
-            if (yCursor > maxY) { doc.addPage(); yCursor = 25; }
+            if (yCursor > maxY) {
+              doc.addPage();
+              yCursor = 25;
+            }
             doc.text(line, leftMargin, yCursor);
             yCursor += (fontSize * lineHeight) / 2.2;
           });
@@ -154,7 +171,11 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
         doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
       }
 
-      const safeName = storyTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "story";
+      const safeName =
+        storyTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "story";
       doc.save(`${safeName}.pdf`);
       toast.success("PDF downloaded with custom styles!");
     } catch (error) {
@@ -172,7 +193,11 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
     try {
       const zip = new JSZip();
       const storyTitle = chapters[0]?.title || "Untitled Story";
-      const safeName = storyTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "story";
+      const safeName =
+        storyTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "story";
 
       // 1. mimetype (MUST be first and uncompressed)
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
@@ -185,11 +210,16 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
   <rootfiles>
     <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
   </rootfiles>
-</container>`
+</container>`,
       );
 
       // 3. Stylesheet (Formatting settings dynamically converted to CSS)
-      const fontStack = fontFamily === "serif" || fontFamily === "times" ? "Times New Roman, Times, serif" : fontFamily === "courier" ? "Courier New, Courier, monospace" : "Helvetica, Arial, sans-serif";
+      const fontStack =
+        fontFamily === "serif" || fontFamily === "times"
+          ? "Times New Roman, Times, serif"
+          : fontFamily === "courier"
+            ? "Courier New, Courier, monospace"
+            : "Helvetica, Arial, sans-serif";
       const cssContent = `
 body {
   font-family: ${fontStack};
@@ -311,7 +341,8 @@ ${ncxNavPoints}  </navMap>
       {truncated && (
         <div className="sticky top-0 z-30 bg-yellow-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
           <span className="text-sm text-yellow-200">
-            Your story was truncated because it exceeded the maximum length. Try a shorter prompt.
+            Your story was truncated because it exceeded the maximum length. Try
+            a shorter prompt.
           </span>
         </div>
       )}
@@ -347,13 +378,17 @@ ${ncxNavPoints}  </navMap>
         </div>
         <div className="flex justify-between items-center mt-2 mb-4">
           <span className="text-sm text-zinc-400">Reading Progress</span>
-          <span className="text-sm font-medium text-indigo-400">{progress}%</span>
+          <span className="text-sm font-medium text-indigo-400">
+            {progress}%
+          </span>
         </div>
 
         {/* Dynamic Typography Controls */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-t border-b border-zinc-800 mb-4">
           <div>
-            <label className="block text-xs text-zinc-400 mb-1">Font Family</label>
+            <label className="block text-xs text-zinc-400 mb-1">
+              Font Family
+            </label>
             <select
               value={fontFamily}
               onChange={(e) => setFontFamily(e.target.value as any)}
@@ -366,7 +401,9 @@ ${ncxNavPoints}  </navMap>
           </div>
 
           <div>
-            <label className="block text-xs text-zinc-400 mb-1">Text Size</label>
+            <label className="block text-xs text-zinc-400 mb-1">
+              Text Size
+            </label>
             <select
               value={fontSize}
               onChange={(e) => setFontSize(Number(e.target.value))}
@@ -379,7 +416,9 @@ ${ncxNavPoints}  </navMap>
           </div>
 
           <div>
-            <label className="block text-xs text-zinc-400 mb-1">Line Height</label>
+            <label className="block text-xs text-zinc-400 mb-1">
+              Line Height
+            </label>
             <select
               value={lineHeight}
               onChange={(e) => setLineHeight(Number(e.target.value))}
@@ -392,7 +431,9 @@ ${ncxNavPoints}  </navMap>
           </div>
 
           <div>
-            <label className="block text-xs text-zinc-400 mb-1">Theme Style</label>
+            <label className="block text-xs text-zinc-400 mb-1">
+              Theme Style
+            </label>
             <select
               value={themeStyle}
               onChange={(e) => setThemeStyle(e.target.value as any)}

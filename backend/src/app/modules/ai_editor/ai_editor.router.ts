@@ -5,6 +5,6 @@ import freeAiRateLimiter from "../../middleware/free-ai.rate-limiter";
 const router = express.Router();
 
 // Publicly available to support both guest authors and registered writers
-router.post("/analyze",freeAiRateLimiter , AiEditorController.analyzeStory);
+router.post("/analyze", freeAiRateLimiter, AiEditorController.analyzeStory);
 
 export const AIEditorRouter = router;

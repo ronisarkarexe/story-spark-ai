@@ -59,7 +59,7 @@ describe("send_response", () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         meta: { page: 2, limit: 20, total: 57 },
-      })
+      }),
     );
   });
 
@@ -77,7 +77,7 @@ describe("send_response", () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         data: null,
-      })
+      }),
     );
   });
 
@@ -93,7 +93,7 @@ describe("send_response", () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         message: null,
-      })
+      }),
     );
   });
 });

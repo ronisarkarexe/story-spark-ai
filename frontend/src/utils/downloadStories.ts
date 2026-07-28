@@ -1,4 +1,5 @@
-const isBrowser = typeof window !== "undefined" && typeof document !== "undefined";
+const isBrowser =
+  typeof window !== "undefined" && typeof document !== "undefined";
 
 export const downloadTXT = (story: any) => {
   if (!isBrowser) {

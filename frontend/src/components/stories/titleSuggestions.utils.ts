@@ -1,6 +1,6 @@
 export const generateTitleSuggestions = (
   content: string,
-  tag: string
+  tag: string,
 ): string[] => {
   const keywords = tag || "Story";
 

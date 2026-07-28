@@ -1,6 +1,9 @@
 // backend/src/services/ai.service.ts
 
-import { validateAndFormatPrompt, validateOutput } from "../utils/promptSecurity";
+import {
+  validateAndFormatPrompt,
+  validateOutput,
+} from "../utils/promptSecurity";
 import { buildStoryPrompt, PromptOptions } from "../utils/promptBuilder";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -10,7 +13,6 @@ import { StoryCache } from "../models/storyCache.model";
 import { assertAIProviderConfigured } from "../config";
 import { getNextApiKey } from "./apiKeyRotationService";
 
-
 let openai: OpenAI | null = null;
 let genAI: GoogleGenerativeAI | null = null;
 let anthropic: Anthropic | null = null;
@@ -19,7 +21,9 @@ export function getGeminiClient(): GoogleGenerativeAI {
   if (!genAI) {
     const key = process.env.GEMINI_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("Gemini API key is required. Set GEMINI_API_KEY or AI_API_KEYS.");
+      throw new Error(
+        "Gemini API key is required. Set GEMINI_API_KEY or AI_API_KEYS.",
+      );
     }
     genAI = new GoogleGenerativeAI(key);
   }
@@ -28,9 +32,12 @@ export function getGeminiClient(): GoogleGenerativeAI {
 
 export function getOpenAIClient(): OpenAI {
   if (!openai) {
-    const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY || getNextApiKey();
+    const key =
+      process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("OpenAI API key is required. Set OPEN_AI_KEY or AI_API_KEYS.");
+      throw new Error(
+        "OpenAI API key is required. Set OPEN_AI_KEY or AI_API_KEYS.",
+      );
     }
     openai = new OpenAI({ apiKey: key });
   }
@@ -41,7 +48,9 @@ export function getAnthropicClient(): Anthropic {
   if (!anthropic) {
     const key = process.env.ANTHROPIC_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("Anthropic API key is required. Set ANTHROPIC_API_KEY or AI_API_KEYS.");
+      throw new Error(
+        "Anthropic API key is required. Set ANTHROPIC_API_KEY or AI_API_KEYS.",
+      );
     }
     anthropic = new Anthropic({ apiKey: key });
   }
@@ -50,7 +59,7 @@ export function getAnthropicClient(): Anthropic {
 
 export const GEMINI_MODEL = "gemini-2.5-flash";
 export const CLAUDE_MODEL = "claude-3-5-sonnet-20241022";
-export const OPENAI_MODEL = "gpt-4o-mini"; 
+export const OPENAI_MODEL = "gpt-4o-mini";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -62,20 +71,25 @@ interface AIResponse {
 
 // ─── OpenAI call ─────────────────────────────────────────────────────────────
 
-async function generateWithOpenAI(systemPrompt: string, userPrompt: string): Promise<string> {
+async function generateWithOpenAI(
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<string> {
   const client = getOpenAIClient();
-  const response = await aiLimit(() => client.chat.completions.create(
-    {
-      model: OPENAI_MODEL,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 1500,
-    },
-    { timeout: 60000 }
-  ));
+  const response = await aiLimit(() =>
+    client.chat.completions.create(
+      {
+        model: OPENAI_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 1500,
+      },
+      { timeout: 60000 },
+    ),
+  );
 
   const text = response.choices[0]?.message?.content;
   if (!text) throw new Error("OpenAI returned an empty response");
@@ -84,17 +98,22 @@ async function generateWithOpenAI(systemPrompt: string, userPrompt: string): Pro
 
 // ─── Anthropic call ──────────────────────────────────────────────────────────
 
-async function generateWithAnthropic(systemPrompt: string, userPrompt: string): Promise<string> {
+async function generateWithAnthropic(
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<string> {
   const client = getAnthropicClient();
-  const response = await aiLimit(() => client.messages.create(
-    {
-      model: CLAUDE_MODEL,
-      system: systemPrompt,
-      max_tokens: 1500,
-      messages: [{ role: "user", content: userPrompt }],
-    },
-    { timeout: 60000 }
-  ));
+  const response = await aiLimit(() =>
+    client.messages.create(
+      {
+        model: CLAUDE_MODEL,
+        system: systemPrompt,
+        max_tokens: 1500,
+        messages: [{ role: "user", content: userPrompt }],
+      },
+      { timeout: 60000 },
+    ),
+  );
 
   const textBlock = response.content.find((block) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text : "";
@@ -104,22 +123,27 @@ async function generateWithAnthropic(systemPrompt: string, userPrompt: string): 
 
 // ─── Gemini call ─────────────────────────────────────────────────────────────
 
-async function generateWithGemini(systemPrompt: string, userPrompt: string): Promise<string> {
+async function generateWithGemini(
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<string> {
   const client = getGeminiClient();
-  
+
   // Use systemInstruction for gemini-2.5 models
-  const model = client.getGenerativeModel({ 
+  const model = client.getGenerativeModel({
     model: GEMINI_MODEL,
-    systemInstruction: systemPrompt 
+    systemInstruction: systemPrompt,
   });
-  
-  const result = await aiLimit(() => model.generateContent({
-    contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-    generationConfig: {
-      responseMimeType: "application/json",
-    }
-  }));
-  
+
+  const result = await aiLimit(() =>
+    model.generateContent({
+      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
+    }),
+  );
+
   const text = result.response.text();
   if (!text) throw new Error("Gemini returned an empty response");
   return text;
@@ -133,16 +157,14 @@ function isRetryableError(error: unknown): boolean {
   const msg = error.message.toLowerCase();
 
   // Rate limits, timeouts, server errors → fallback
-  if (msg.includes("rate limit"))      return true;
-  if (msg.includes("timeout"))         return true;
-  if (msg.includes("503") ||
-      msg.includes("502") ||
-      msg.includes("500"))             return true;
-  if (msg.includes("empty response"))  return true;
+  if (msg.includes("rate limit")) return true;
+  if (msg.includes("timeout")) return true;
+  if (msg.includes("503") || msg.includes("502") || msg.includes("500"))
+    return true;
+  if (msg.includes("empty response")) return true;
 
   // Bad API key -> don't bother with fallback since it won't help
-  if (msg.includes("401") ||
-      msg.includes("invalid api key")) return false;
+  if (msg.includes("401") || msg.includes("invalid api key")) return false;
 
   return true; // fallback by default
 }
@@ -150,12 +172,11 @@ function isRetryableError(error: unknown): boolean {
 // ─── Main exported function ───────────────────────────────────────────────────
 
 export async function generateStory(
-  prompt: string, 
-  provider?: string, 
-  options?: PromptOptions
+  prompt: string,
+  provider?: string,
+  options?: PromptOptions,
 ): Promise<AIResponse> {
-
-  assertAIProviderConfigured(); 
+  assertAIProviderConfigured();
 
   // ── Security layer: validate and wrap input ─────────────────────────
   const securePrompt = validateAndFormatPrompt(prompt);
@@ -166,7 +187,7 @@ export async function generateStory(
   // ── Cache Lookup Step ───────────────────────────────────────────────
   // Combine prompt and key options to build a unique cache signature
   const cacheKey = `${securePrompt.trim()}_${options?.genre || "default"}_${options?.length || "medium"}`;
-  
+
   try {
     const existingCache = await StoryCache.findOne({ promptKey: cacheKey });
     if (existingCache) {
@@ -174,7 +195,7 @@ export async function generateStory(
       return {
         story: existingCache.storyData,
         provider: existingCache.provider as "openai" | "gemini" | "anthropic",
-        fallbackUsed: false
+        fallbackUsed: false,
       };
     }
   } catch (cacheError) {
@@ -196,12 +217,14 @@ export async function generateStory(
     } catch (anthropicError) {
       console.warn(
         "[AI] Anthropic failed:",
-        anthropicError instanceof Error ? anthropicError.message : anthropicError
+        anthropicError instanceof Error
+          ? anthropicError.message
+          : anthropicError,
       );
 
       if (!isRetryableError(anthropicError)) {
         throw new Error(
-          "Anthropic request failed with a non-retryable error. Please check your API key."
+          "Anthropic request failed with a non-retryable error. Please check your API key.",
         );
       }
       didFallbackToGemini = true;
@@ -214,17 +237,16 @@ export async function generateStory(
       story = validateOutput(story); // Security layer: validate output
       console.log("[AI] Story generated successfully via OpenAI");
       finalResult = { story, provider: "openai", fallbackUsed: false };
-
     } catch (openAIError) {
       console.warn(
         "[AI] OpenAI failed:",
-        openAIError instanceof Error ? openAIError.message : openAIError
+        openAIError instanceof Error ? openAIError.message : openAIError,
       );
 
       // Only fall back if the error type warrants it
       if (!isRetryableError(openAIError)) {
         throw new Error(
-          "OpenAI request failed with a non-retryable error. Please check your API key."
+          "OpenAI request failed with a non-retryable error. Please check your API key.",
         );
       }
 
@@ -243,18 +265,23 @@ export async function generateStory(
     try {
       let story = await generateWithGemini(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
-      finalResult = { story, provider: "gemini", fallbackUsed: didFallbackToGemini };
-
+      console.log(
+        `[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`,
+      );
+      finalResult = {
+        story,
+        provider: "gemini",
+        fallbackUsed: didFallbackToGemini,
+      };
     } catch (geminiError) {
       console.error(
         "[AI] Gemini also failed.",
-        geminiError instanceof Error ? geminiError.message : geminiError
+        geminiError instanceof Error ? geminiError.message : geminiError,
       );
 
       // All failed — throw a clean user-facing error
       throw new Error(
-        "Story generation failed. All AI providers are currently unavailable. Please try again later."
+        "Story generation failed. All AI providers are currently unavailable. Please try again later.",
       );
     }
   }
@@ -264,11 +291,14 @@ export async function generateStory(
     await StoryCache.create({
       promptKey: cacheKey,
       provider: finalResult.provider,
-      storyData: finalResult.story
+      storyData: finalResult.story,
     });
     console.log("[CACHE STORED] New AI story cached to MongoDB successfully");
   } catch (saveCacheError) {
-    console.warn("[CACHE ERROR] Failed to save story generation to cache:", saveCacheError);
+    console.warn(
+      "[CACHE ERROR] Failed to save story generation to cache:",
+      saveCacheError,
+    );
   }
 
   return finalResult;

@@ -19,13 +19,16 @@ const CardCollection: React.FC<CardCollectionProps> = ({
   const sortedStories = [...stories].sort(
     (a, b) =>
       getStoryCardRank(getStoryCardRarity(b.content)) -
-      getStoryCardRank(getStoryCardRarity(a.content))
+      getStoryCardRank(getStoryCardRarity(a.content)),
   );
-  const rarityCounts = sortedStories.reduce<Record<string, number>>((acc, story) => {
-    const rarity = getStoryCardRarity(story.content);
-    acc[rarity] = (acc[rarity] || 0) + 1;
-    return acc;
-  }, {});
+  const rarityCounts = sortedStories.reduce<Record<string, number>>(
+    (acc, story) => {
+      const rarity = getStoryCardRarity(story.content);
+      acc[rarity] = (acc[rarity] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
 
   if (stories.length === 0) {
     return null;

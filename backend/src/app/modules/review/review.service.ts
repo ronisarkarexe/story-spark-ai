@@ -48,7 +48,12 @@ const getPublishedReviews = async () => {
   // Populate cache (best-effort)
   if (redis.status === "ready") {
     try {
-      await redis.set(PUBLISHED_REVIEWS_KEY, JSON.stringify(result), "EX", REVIEWS_CACHE_TTL);
+      await redis.set(
+        PUBLISHED_REVIEWS_KEY,
+        JSON.stringify(result),
+        "EX",
+        REVIEWS_CACHE_TTL,
+      );
     } catch (err) {
       console.warn("Redis SET failed (getPublishedReviews):", err);
     }
@@ -73,7 +78,7 @@ const approveReview = async (id: string) => {
     },
     {
       new: true,
-    }
+    },
   );
 
   if (!result) {

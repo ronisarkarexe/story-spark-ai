@@ -25,7 +25,8 @@ const recommendations = [
   {
     genre: "Romance",
     title: "A Heart Across Time",
-    reason: "Suggested based on emotional storytelling and character connections.",
+    reason:
+      "Suggested based on emotional storytelling and character connections.",
   },
   {
     genre: "Science Fiction",
@@ -39,8 +40,7 @@ const StoryRecommendations: React.FC<StoryRecommendationsProps> = ({
   onClose,
 }) => {
   const filteredRecommendations = recommendations.filter(
-    (item) =>
-      item.genre.toLowerCase() === story.tag.toLowerCase()
+    (item) => item.genre.toLowerCase() === story.tag.toLowerCase(),
   );
 
   const displayRecommendations =
@@ -51,7 +51,6 @@ const StoryRecommendations: React.FC<StoryRecommendationsProps> = ({
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="bg-slate-800 rounded-2xl w-full max-w-3xl p-6 border border-slate-700">
-        
         <div className="flex justify-between items-center mb-5">
           <h2 className="text-2xl font-bold text-white">
             📚 Personalized Story Recommendations
@@ -66,7 +65,8 @@ const StoryRecommendations: React.FC<StoryRecommendationsProps> = ({
         </div>
 
         <p className="text-slate-300 mb-6">
-          Recommendations based on your current story genre and reading preferences.
+          Recommendations based on your current story genre and reading
+          preferences.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -83,9 +83,7 @@ const StoryRecommendations: React.FC<StoryRecommendationsProps> = ({
                 {item.title}
               </h3>
 
-              <p className="text-slate-300 text-sm mt-2">
-                {item.reason}
-              </p>
+              <p className="text-slate-300 text-sm mt-2">{item.reason}</p>
 
               <button className="mt-4 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg">
                 Explore Story

@@ -34,4 +34,3 @@ const TrendingTopicComponent = () => {
 };
 
 export default TrendingTopicComponent;
-

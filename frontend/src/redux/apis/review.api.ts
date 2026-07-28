@@ -8,20 +8,16 @@ const reviewApi = baseApi.injectEndpoints({
         url: "/review/lists",
         method: "GET",
       }),
-      transformResponse: (response: {
-        data: Review[];
-        message: string;
-      }) => response.data,
+      transformResponse: (response: { data: Review[]; message: string }) =>
+        response.data,
     }),
     getPendingReviews: build.query({
       query: () => ({
         url: "/review/pending",
         method: "GET",
       }),
-      transformResponse: (response: {
-        data: Review[];
-        message: string;
-      }) => response.data,
+      transformResponse: (response: { data: Review[]; message: string }) =>
+        response.data,
     }),
     approveReview: build.mutation({
       query: (id: string) => ({

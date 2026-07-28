@@ -1,9 +1,5 @@
 export type ReadingLevel =
-  | "Children's"
-  | "Middle School"
-  | "High School"
-  | "College"
-  | "Advanced";
+  "Children's" | "Middle School" | "High School" | "College" | "Advanced";
 
 export interface ReadingLevelReport {
   level: ReadingLevel;
@@ -13,9 +9,7 @@ export interface ReadingLevelReport {
   suggestions: string[];
 }
 
-export function analyzeReadingLevel(
-  story: string
-): ReadingLevelReport {
+export function analyzeReadingLevel(story: string): ReadingLevelReport {
   if (!story.trim()) {
     return {
       level: "Children's",
@@ -40,8 +34,6 @@ export function analyzeReadingLevel(
   };
 }
 
-export function reanalyzeReadingLevel(
-  story: string
-) {
+export function reanalyzeReadingLevel(story: string) {
   return analyzeReadingLevel(story);
 }

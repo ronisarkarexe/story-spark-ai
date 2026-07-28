@@ -15,12 +15,15 @@ const highlight = (text: string, query: string) => {
   const parts = text.split(new RegExp(`(${escaped})`, "gi"));
   return parts.map((part, i) =>
     part.toLowerCase() === query.toLowerCase() ? (
-      <mark key={i} className="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 rounded px-0.5">
+      <mark
+        key={i}
+        className="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 rounded px-0.5"
+      >
         {part}
       </mark>
     ) : (
       part
-    )
+    ),
   );
 };
 
@@ -38,13 +41,18 @@ export const ResultDropdown: React.FC<Props> = ({
       {loading && (
         <div className="space-y-3 p-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-4 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+            <div
+              key={i}
+              className="h-4 animate-pulse rounded bg-slate-200 dark:bg-slate-700"
+            />
           ))}
         </div>
       )}
 
       {!loading && error && (
-        <p className="p-4 text-sm text-red-500">Something went wrong. Please try again.</p>
+        <p className="p-4 text-sm text-red-500">
+          Something went wrong. Please try again.
+        </p>
       )}
 
       {!loading && !error && results && (

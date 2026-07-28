@@ -44,11 +44,15 @@ describe("searchRateLimiter", () => {
     for (let i = 0; i < 30; i++) {
       await request(app).get("/test").set("x-forwarded-for", forwardedIp);
     }
-    const blocked = await request(app).get("/test").set("x-forwarded-for", forwardedIp);
+    const blocked = await request(app)
+      .get("/test")
+      .set("x-forwarded-for", forwardedIp);
     expect(blocked.status).toBe(429);
 
     // A different forwarded IP should have its own separate limit
-    const allowed = await request(app).get("/test").set("x-forwarded-for", "198.51.100.7");
+    const allowed = await request(app)
+      .get("/test")
+      .set("x-forwarded-for", "198.51.100.7");
     expect(allowed.status).toBe(200);
   });
 });

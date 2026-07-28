@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export const useAccessibility = () => {
   const [highContrast, setHighContrast] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const saved = localStorage.getItem('accessibility-contrast');
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("accessibility-contrast");
     if (saved) setHighContrast(JSON.parse(saved));
   }, []);
 
   const toggle = (setter, key) => {
-    if (typeof window === 'undefined') return;
-    setter(v => {
+    if (typeof window === "undefined") return;
+    setter((v) => {
       localStorage.setItem(key, !v);
       return !v;
     });
@@ -21,7 +21,7 @@ export const useAccessibility = () => {
   return {
     highContrast,
     reducedMotion,
-    toggleContrast: () => toggle(setHighContrast, 'accessibility-contrast'),
-    toggleMotion: () => toggle(setReducedMotion, 'accessibility-motion'),
+    toggleContrast: () => toggle(setHighContrast, "accessibility-contrast"),
+    toggleMotion: () => toggle(setReducedMotion, "accessibility-motion"),
   };
 };

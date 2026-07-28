@@ -46,7 +46,10 @@ const routeTitles: Record<string, string> = {
 
 const getPageTitle = (pathname: string): string => {
   // Clean pathname: remove trailing slash except for root
-  const path = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname;
+  const path =
+    pathname.endsWith("/") && pathname !== "/"
+      ? pathname.slice(0, -1)
+      : pathname;
 
   if (path === "/") {
     return `${baseTitle} - Generate and Share Story Variations`;

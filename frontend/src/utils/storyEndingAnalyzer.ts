@@ -1,25 +1,17 @@
 export interface EndingAnalysis {
   score: number;
-  quality:
-    | "Excellent"
-    | "Good"
-    | "Needs Improvement";
+  quality: "Excellent" | "Good" | "Needs Improvement";
 
   emotionalImpact: number;
   completeness: number;
   predictability: number;
-  endingType:
-    | "Complete"
-    | "Open-ended"
-    | "Abrupt";
+  endingType: "Complete" | "Open-ended" | "Abrupt";
 
   weaknesses: string[];
   suggestions: string[];
 }
 
-export function analyzeStoryEnding(
-  story: string
-): EndingAnalysis {
+export function analyzeStoryEnding(story: string): EndingAnalysis {
   if (!story.trim()) {
     return {
       score: 0,
@@ -52,8 +44,6 @@ export function analyzeStoryEnding(
   };
 }
 
-export function regenerateEndingPrompt(
-  story: string
-): string {
+export function regenerateEndingPrompt(story: string): string {
   return `Rewrite only the ending while preserving the story's style and characters:\n\n${story}`;
 }

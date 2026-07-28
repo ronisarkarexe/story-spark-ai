@@ -7,9 +7,7 @@ export interface SceneDuration {
 
 const WORDS_PER_MINUTE = 200;
 
-export function estimateSceneDurations(
-  story: string
-): {
+export function estimateSceneDurations(story: string): {
   scenes: SceneDuration[];
   totalReadingTime: number;
 } {
@@ -30,16 +28,13 @@ export function estimateSceneDurations(
         id: index + 1,
         title: `Scene ${index + 1}`,
         wordCount,
-        readingTime: Math.max(
-          1,
-          Math.ceil(wordCount / WORDS_PER_MINUTE)
-        ),
+        readingTime: Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE)),
       };
     });
 
   const totalReadingTime = scenes.reduce(
     (sum, scene) => sum + scene.readingTime,
-    0
+    0,
   );
 
   return {
@@ -48,8 +43,6 @@ export function estimateSceneDurations(
   };
 }
 
-export function refreshSceneDurations(
-  story: string
-) {
+export function refreshSceneDurations(story: string) {
   return estimateSceneDurations(story);
 }

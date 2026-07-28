@@ -35,14 +35,14 @@ export const perspectiveOptions: PerspectiveOption[] = [
 
 export const buildPerspectivePrompt = (
   perspective: StoryPerspective,
-  story: string
+  story: string,
 ) => {
   return `Rewrite the following story in ${perspective} perspective:\n\n${story}`;
 };
 
 export const regeneratePerspective = (
   perspective: StoryPerspective,
-  story: string
+  story: string,
 ) => {
   return buildPerspectivePrompt(perspective, story);
 };

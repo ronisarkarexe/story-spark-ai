@@ -15,36 +15,38 @@ import { ZodError } from "zod";
 /**
  * Create a new branching story
  */
-export const createBranchingStory = catchAsync(async (req: Request, res: Response) => {
-  try {
-    const payload = CreateBranchingStorySchema.parse(req.body);
-    const userId = (req.user as any)?.id;
+export const createBranchingStory = catchAsync(
+  async (req: Request, res: Response) => {
+    try {
+      const payload = CreateBranchingStorySchema.parse(req.body);
+      const userId = (req.user as any)?.id;
 
-    const result = await StoryBranchingService.createBranchingStory(
-      payload.storyId,
-      userId,
-      payload.initialContent,
-      payload.choices
-    );
+      const result = await StoryBranchingService.createBranchingStory(
+        payload.storyId,
+        userId,
+        payload.initialContent,
+        payload.choices,
+      );
 
-    return sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.CREATED,
-      message: "Branching story created successfully",
-      data: result,
-    });
-  } catch (error: any) {
-    if (error instanceof ZodError) {
       return sendResponse(res, {
-        success: false,
-        statusCode: httpStatus.BAD_REQUEST,
-        message: "Validation failed",
-        data: error.errors,
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "Branching story created successfully",
+        data: result,
       });
+    } catch (error: any) {
+      if (error instanceof ZodError) {
+        return sendResponse(res, {
+          success: false,
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Validation failed",
+          data: error.errors,
+        });
+      }
+      throw error;
     }
-    throw error;
-  }
-});
+  },
+);
 
 /**
  * Create a new segment in the story tree
@@ -59,7 +61,7 @@ export const createSegment = catchAsync(async (req: Request, res: Response) => {
       payload.parentSegmentId,
       userId,
       payload.content,
-      payload.choices
+      payload.choices,
     );
 
     return sendResponse(res, {
@@ -88,10 +90,15 @@ export const getBranchTree = catchAsync(async (req: Request, res: Response) => {
   try {
     const payload = GetBranchTreeSchema.parse({
       storyId: req.params.storyId,
-      maxDepth: req.query.maxDepth ? parseInt(req.query.maxDepth as string) : undefined,
+      maxDepth: req.query.maxDepth
+        ? parseInt(req.query.maxDepth as string)
+        : undefined,
     });
 
-    const result = await StoryBranchingService.getBranchTree(payload.storyId, payload.maxDepth);
+    const result = await StoryBranchingService.getBranchTree(
+      payload.storyId,
+      payload.maxDepth,
+    );
 
     return sendResponse(res, {
       success: true,
@@ -115,114 +122,129 @@ export const getBranchTree = catchAsync(async (req: Request, res: Response) => {
 /**
  * Record user choice and track progress
  */
-export const recordUserChoice = catchAsync(async (req: Request, res: Response) => {
-  try {
-    const payload = RecordChoiceSchema.parse(req.body);
-    const userId = (req.user as any)?.id;
+export const recordUserChoice = catchAsync(
+  async (req: Request, res: Response) => {
+    try {
+      const payload = RecordChoiceSchema.parse(req.body);
+      const userId = (req.user as any)?.id;
 
-    const result = await StoryBranchingService.recordUserChoice(
-      userId,
-      payload.storyId,
-      payload.currentSegmentId,
-      payload.choiceId,
-      payload.choiceText
-    );
+      const result = await StoryBranchingService.recordUserChoice(
+        userId,
+        payload.storyId,
+        payload.currentSegmentId,
+        payload.choiceId,
+        payload.choiceText,
+      );
 
-    return sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.OK,
-      message: "Choice recorded successfully",
-      data: result,
-    });
-  } catch (error: any) {
-    if (error instanceof ZodError) {
       return sendResponse(res, {
-        success: false,
-        statusCode: httpStatus.BAD_REQUEST,
-        message: "Validation failed",
-        data: error.errors,
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Choice recorded successfully",
+        data: result,
       });
+    } catch (error: any) {
+      if (error instanceof ZodError) {
+        return sendResponse(res, {
+          success: false,
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Validation failed",
+          data: error.errors,
+        });
+      }
+      throw error;
     }
-    throw error;
-  }
-});
+  },
+);
 
 /**
  * Get user's progress through a branching story
  */
-export const getUserProgress = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req.user as any)?.id;
-  const { storyId } = req.params;
+export const getUserProgress = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = (req.user as any)?.id;
+    const { storyId } = req.params;
 
-  const result = await StoryBranchingService.getUserProgress(userId, storyId);
+    const result = await StoryBranchingService.getUserProgress(userId, storyId);
 
-  return sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "User progress retrieved successfully",
-    data: result,
-  });
-});
+    return sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "User progress retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 /**
  * Get choice statistics for a story
  */
-export const getChoiceStatistics = catchAsync(async (req: Request, res: Response) => {
-  const { storyId } = req.params;
+export const getChoiceStatistics = catchAsync(
+  async (req: Request, res: Response) => {
+    const { storyId } = req.params;
 
-  const result = await StoryBranchingService.getChoiceStatistics(storyId);
+    const result = await StoryBranchingService.getChoiceStatistics(storyId);
 
-  return sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Choice statistics retrieved successfully",
-    data: result,
-  });
-});
+    return sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Choice statistics retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 /**
  * Get choice statistics summary
  */
-export const getStatisticsSummary = catchAsync(async (req: Request, res: Response) => {
-  const { storyId } = req.params;
+export const getStatisticsSummary = catchAsync(
+  async (req: Request, res: Response) => {
+    const { storyId } = req.params;
 
-  const result = await StoryBranchingService.getBranchStatisticsSummary(storyId);
+    const result =
+      await StoryBranchingService.getBranchStatisticsSummary(storyId);
 
-  return sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Statistics summary retrieved successfully",
-    data: result,
-  });
-});
+    return sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Statistics summary retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 /**
  * Validate branch integrity
  */
-export const validateBranchIntegrity = catchAsync(async (req: Request, res: Response) => {
-  try {
-    const payload = ValidateBranchSchema.parse(req.body);
+export const validateBranchIntegrity = catchAsync(
+  async (req: Request, res: Response) => {
+    try {
+      const payload = ValidateBranchSchema.parse(req.body);
 
-    const result = await StoryBranchingService.validateBranchIntegrity(payload.storyId);
+      const result = await StoryBranchingService.validateBranchIntegrity(
+        payload.storyId,
+      );
 
-    return sendResponse(res, {
-      success: result.isValid,
-      statusCode: result.isValid ? httpStatus.OK : httpStatus.BAD_REQUEST,
-      message: result.isValid ? "Branch structure is valid" : "Branch structure has issues",
-      data: result,
-    });
-  } catch (error: any) {
-    if (error instanceof ZodError) {
       return sendResponse(res, {
-        success: false,
-        statusCode: httpStatus.BAD_REQUEST,
-        message: "Validation failed",
-        data: error.errors,
+        success: result.isValid,
+        statusCode: result.isValid ? httpStatus.OK : httpStatus.BAD_REQUEST,
+        message: result.isValid
+          ? "Branch structure is valid"
+          : "Branch structure has issues",
+        data: result,
       });
+    } catch (error: any) {
+      if (error instanceof ZodError) {
+        return sendResponse(res, {
+          success: false,
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Validation failed",
+          data: error.errors,
+        });
+      }
+      throw error;
     }
-    throw error;
-  }
-});
+  },
+);
 
 /**
  * Delete a segment

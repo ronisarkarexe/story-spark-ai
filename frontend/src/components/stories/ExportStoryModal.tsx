@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import React, { useState } from "react";
+import toast from "react-hot-toast";
 import {
   exportStoryToPDF,
   exportStoryToEPUB,
   fetchImageAsBlob,
   blobToBase64,
   IExportStory,
-  IExportOptions
-} from '../../services/export.service';
+  IExportOptions,
+} from "../../services/export.service";
 
 interface ExportStoryModalProps {
   isOpen: boolean;
@@ -15,9 +15,14 @@ interface ExportStoryModalProps {
   story: IExportStory;
 }
 
-const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, story }) => {
-  const [format, setFormat] = useState<'pdf' | 'epub'>('pdf');
-  const [fontSize, setFontSize] = useState<IExportOptions['fontSize']>('medium');
+const ExportStoryModal: React.FC<ExportStoryModalProps> = ({
+  isOpen,
+  onClose,
+  story,
+}) => {
+  const [format, setFormat] = useState<"pdf" | "epub">("pdf");
+  const [fontSize, setFontSize] =
+    useState<IExportOptions["fontSize"]>("medium");
   const [isExporting, setIsExporting] = useState(false);
 
   if (!isOpen) return null;
@@ -26,14 +31,14 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
     setIsExporting(true);
     try {
       const options: IExportOptions = { fontSize };
-      
+
       let imageBlob: Blob | null = null;
       let base64Image: string | null = null;
-      
+
       if (story.imageURL) {
         try {
           imageBlob = await fetchImageAsBlob(story.imageURL);
-          if (format === 'pdf' && imageBlob) {
+          if (format === "pdf" && imageBlob) {
             base64Image = await blobToBase64(imageBlob);
           }
         } catch (error) {
@@ -42,7 +47,7 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
         }
       }
 
-      if (format === 'pdf') {
+      if (format === "pdf") {
         await exportStoryToPDF(story, base64Image, options);
       } else {
         await exportStoryToEPUB(story, imageBlob, options);
@@ -62,18 +67,20 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-2xl w-full max-w-md animate-fade-in-up">
         <h2 className="text-2xl font-bold text-slate-100 mb-6">Export Story</h2>
-        
+
         <div className="space-y-4">
           <div>
-            <label className="block text-slate-300 mb-2 font-medium">Format</label>
+            <label className="block text-slate-300 mb-2 font-medium">
+              Format
+            </label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="format"
                   value="pdf"
-                  checked={format === 'pdf'}
-                  onChange={() => setFormat('pdf')}
+                  checked={format === "pdf"}
+                  onChange={() => setFormat("pdf")}
                   className="form-radio text-indigo-500 bg-slate-700 border-slate-600"
                 />
                 <span className="text-slate-200">PDF</span>
@@ -83,8 +90,8 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
                   type="radio"
                   name="format"
                   value="epub"
-                  checked={format === 'epub'}
-                  onChange={() => setFormat('epub')}
+                  checked={format === "epub"}
+                  onChange={() => setFormat("epub")}
                   className="form-radio text-indigo-500 bg-slate-700 border-slate-600"
                 />
                 <span className="text-slate-200">EPUB</span>
@@ -93,7 +100,9 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
           </div>
 
           <div>
-            <label className="block text-slate-300 mb-2 font-medium">Font Size</label>
+            <label className="block text-slate-300 mb-2 font-medium">
+              Font Size
+            </label>
             <select
               value={fontSize}
               onChange={(e) => setFontSize(e.target.value as any)}
@@ -119,7 +128,7 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
             disabled={isExporting}
             className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            {isExporting ? 'Exporting...' : 'Export'}
+            {isExporting ? "Exporting..." : "Export"}
           </button>
         </div>
       </div>

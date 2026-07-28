@@ -138,12 +138,12 @@ flowchart TD
 
 This workflow provides a high-level view of how different layers of the application interact and can help contributors quickly identify the relevant area of the codebase when working on:
 
-* Story generation features
-* Authentication and authorization
-* Database persistence
-* AI integrations
-* Real-time notifications
-* Frontend story rendering
+- Story generation features
+- Authentication and authorization
+- Database persistence
+- AI integrations
+- Real-time notifications
+- Frontend story rendering
 
 ### 📁 Related Components
 
@@ -159,16 +159,17 @@ This workflow provides a high-level view of how different layers of the applicat
 
 ### ⛔ Common Failure Scenarios
 
-* Invalid or expired JWT token → Authentication error returned.
-* Invalid request payload → Validation error returned.
-* AI provider unavailable → Story generation request may fail or use fallback logic if configured.
-* Database write failure → Story cannot be saved and an error response is returned.
+- Invalid or expired JWT token → Authentication error returned.
+- Invalid request payload → Validation error returned.
+- AI provider unavailable → Story generation request may fail or use fallback logic if configured.
+- Database write failure → Story cannot be saved and an error response is returned.
 
 > **Note:** The AI layer is responsible only for content generation. All persistence operations are handled through the backend controllers and MongoDB models.
 
 ## 🧱 Layer-by-Layer Breakdown
 
 ### 1. ⚛️ Frontend — `frontend/`
+
 React + Vite + TypeScript SPA running on port **4001**.
 
 - **`VITE_BASE_URL`** — points to the backend REST API (`http://localhost:5000/api/v1`)
@@ -176,40 +177,44 @@ React + Vite + TypeScript SPA running on port **4001**.
 - **`VITE_GOOGLE_CLIENT_ID`** — used for Google OAuth login on the client side
 
 Key pages:
-| Page | Purpose |
-|---|---|
-| Landing | Introduction and entry point |
-| Story Generator | Prompt input, AI story output, multiple variations |
-| Bookmarks / History | Saved and previously generated stories |
-| Login / Register | JWT auth + Google OAuth |
+
+| Page                | Purpose                                            |
+| ------------------- | -------------------------------------------------- |
+| Landing             | Introduction and entry point                       |
+| Story Generator     | Prompt input, AI story output, multiple variations |
+| Bookmarks / History | Saved and previously generated stories             |
+| Login / Register    | JWT auth + Google OAuth                            |
 
 ---
 
 ### 2. ⚙️ Backend — `backend/`
+
 Node.js + Express REST API running on port **5000** (configurable via `PORT`).
 
 **Request lifecycle:**
+
 ```
 REST Route → JWT Middleware → Controller → DB / AI / Socket.IO
 ```
 
 Key route groups:
 
-| Route prefix | Handles |
-|---|---|
-| `/api/v1/auth` | Register, login, refresh token, Google OAuth, email verify |
-| `/api/v1/stories` | Create, read, bookmark, delete stories |
-| `/api/v1/ai` | AI generation, analysis, critique |
-| `/api/v1/users` | User profile management |
+| Route prefix      | Handles                                                    |
+| ----------------- | ---------------------------------------------------------- |
+| `/api/v1/auth`    | Register, login, refresh token, Google OAuth, email verify |
+| `/api/v1/stories` | Create, read, bookmark, delete stories                     |
+| `/api/v1/ai`      | AI generation, analysis, critique                          |
+| `/api/v1/users`   | User profile management                                    |
 
 ---
 
 ### 3. 🔐 Auth & Security
+
 Two-token JWT strategy:
 
-| Token | Env var | Purpose |
-|---|---|---|
-| Access token | `JWT_SECRET` + `JWT_EXPIRES_IN` | Short-lived API access |
+| Token         | Env var                                         | Purpose                    |
+| ------------- | ----------------------------------------------- | -------------------------- |
+| Access token  | `JWT_SECRET` + `JWT_EXPIRES_IN`                 | Short-lived API access     |
 | Refresh token | `JWT_REFRESH_SECRET` + `JWT_REFRESH_EXPIRES_IN` | Long-lived session renewal |
 
 Password hashing uses **bcrypt** (`SALT_ROUNDS`). Google OAuth is handled via `GOOGLE_CLIENT_ID` on both frontend and backend. Email verification uses SMTP (`VERIFY_EMAIL` + `VERIFY_PASSWORD`).
@@ -217,13 +222,14 @@ Password hashing uses **bcrypt** (`SALT_ROUNDS`). Google OAuth is handled via `G
 ---
 
 ### 4. 🤖 AI Layer
+
 StorySparkAI supports two AI providers — switchable via environment variables:
 
-| Provider | Env var | Used for |
-|---|---|---|
-| OpenAI | `OPEN_AI_KEY` | Story generation + analysis |
-| Google Gemini | `GEMINI_API_KEY` | Story generation + analysis |
-| Unsplash | `UNSPLASH_KEY_API` | Story cover image fetching |
+| Provider      | Env var            | Used for                    |
+| ------------- | ------------------ | --------------------------- |
+| OpenAI        | `OPEN_AI_KEY`      | Story generation + analysis |
+| Google Gemini | `GEMINI_API_KEY`   | Story generation + analysis |
+| Unsplash      | `UNSPLASH_KEY_API` | Story cover image fetching  |
 
 AI is used **only** for generation and analysis — all story data, user data, and bookmarks are stored in MongoDB.
 
@@ -231,15 +237,16 @@ AI is used **only** for generation and analysis — all story data, user data, a
 
 ### 5. 🗄️ Database — MongoDB + Mongoose — `backend/`
 
-| Model | Stores |
-|---|---|
-| `User` | Email, hashed password, Google OAuth ID, roles, verification status |
-| `Story` | Prompt, AI-generated variations, cover image, author reference |
-| `Bookmark` | User–Story reference for saved stories |
+| Model      | Stores                                                              |
+| ---------- | ------------------------------------------------------------------- |
+| `User`     | Email, hashed password, Google OAuth ID, roles, verification status |
+| `Story`    | Prompt, AI-generated variations, cover image, author reference      |
+| `Bookmark` | User–Story reference for saved stories                              |
 
 ---
 
 ### 6. 🔔 Real-Time — Socket.IO
+
 The backend runs a Socket.IO server for real-time notifications (story generation updates, etc.).
 
 - Frontend connects via `VITE_SOCKET_URL` using the logged-in user's access token
@@ -249,15 +256,15 @@ The backend runs a Socket.IO server for real-time notifications (story generatio
 
 ## 📂 Key Files for New Contributors
 
-| What you're working on | Start here |
-|---|---|
-| Adding a new API endpoint | `backend/src/routes/` → `backend/src/controllers/` |
-| Changing auth logic | `backend/src/middleware/` (JWT) |
-| Modifying DB schema | `backend/src/models/` |
-| Switching AI provider | `backend/src/controllers/ai*` + `.env` keys |
-| Frontend UI changes | `frontend/src/` pages and components |
-| Real-time notifications | Socket.IO setup in `backend/src/` + `VITE_SOCKET_URL` |
-| Environment config | `backend/.env.example` · `frontend/.env.example` |
+| What you're working on    | Start here                                            |
+| ------------------------- | ----------------------------------------------------- |
+| Adding a new API endpoint | `backend/src/routes/` → `backend/src/controllers/`    |
+| Changing auth logic       | `backend/src/middleware/` (JWT)                       |
+| Modifying DB schema       | `backend/src/models/`                                 |
+| Switching AI provider     | `backend/src/controllers/ai*` + `.env` keys           |
+| Frontend UI changes       | `frontend/src/` pages and components                  |
+| Real-time notifications   | Socket.IO setup in `backend/src/` + `VITE_SOCKET_URL` |
+| Environment config        | `backend/.env.example` · `frontend/.env.example`      |
 
 ---
 
@@ -286,10 +293,10 @@ npm run dev
 
 Two separate Vercel projects from the same monorepo:
 
-| Project | Root directory |
-|---|---|
-| Frontend | `frontend/` |
-| Backend API | `backend/` |
+| Project     | Root directory |
+| ----------- | -------------- |
+| Frontend    | `frontend/`    |
+| Backend API | `backend/`     |
 
 > Socket.IO **cannot** run on Vercel serverless. Use a persistent host (e.g. Render) for `VITE_SOCKET_URL`.
 

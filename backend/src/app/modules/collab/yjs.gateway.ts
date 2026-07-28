@@ -1,8 +1,11 @@
-import { Server, Socket, Namespace } from 'socket.io';
-import * as Y from 'yjs';
-import { CollabService } from './collab.service';
+import { Server, Socket, Namespace } from "socket.io";
+import * as Y from "yjs";
+import { CollabService } from "./collab.service";
 
-function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): (...args: Parameters<T>) => void {
+function debounce<T extends (...args: any[]) => void>(
+  fn: T,
+  delay: number,
+): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<T>) => {
     if (timeoutId !== null) {
@@ -25,12 +28,12 @@ export class YjsGateway {
   private readonly saveDelay = 2000; // ms
 
   constructor(io: Server) {
-    this.io = io.of('/yjs');
+    this.io = io.of("/yjs");
     this.setup();
   }
 
   private setup() {
-    this.io.on('connection', (socket: Socket) => {
+    this.io.on("connection", (socket: Socket) => {
       const { storyId } = socket.handshake.query as { storyId: string };
       if (!storyId) {
         socket.disconnect(true);
@@ -41,29 +44,29 @@ export class YjsGateway {
         doc = new Y.Doc();
         this.docs.set(storyId, doc);
         // Load persisted state if any
-        CollabService.getCollabState(storyId).then(state => {
+        CollabService.getCollabState(storyId).then((state) => {
           if (state) {
-            const update = Uint8Array.from(Buffer.from(state, 'base64'));
+            const update = Uint8Array.from(Buffer.from(state, "base64"));
             Y.applyUpdate(doc!, update);
           }
-          socket.emit('sync', Y.encodeStateAsUpdate(doc!));
+          socket.emit("sync", Y.encodeStateAsUpdate(doc!));
         });
       }
       // Broadcast updates from this socket to others
-      socket.on('update', (update: Uint8Array) => {
+      socket.on("update", (update: Uint8Array) => {
         Y.applyUpdate(doc!, update);
-        socket.broadcast.emit('update', update);
+        socket.broadcast.emit("update", update);
         this.scheduleSave(storyId, doc!);
       });
       // Awareness (cursors/selection)
-      const awareness = new (require('y-protocols/awareness')).Awareness(doc);
-      awareness.setLocalStateField('user', {
+      const awareness = new (require("y-protocols/awareness").Awareness)(doc);
+      awareness.setLocalStateField("user", {
         name: socket.id,
         color: this.randomColor(),
       });
-      socket.on('awareness', (aw: Uint8Array) => {
+      socket.on("awareness", (aw: Uint8Array) => {
         awareness.applyUpdate(aw);
-        socket.broadcast.emit('awareness', aw);
+        socket.broadcast.emit("awareness", aw);
       });
     });
   }
@@ -72,7 +75,7 @@ export class YjsGateway {
     if (!this.debouncedSaves.has(storyId)) {
       const fn = debounce(() => {
         const update = Y.encodeStateAsUpdate(doc);
-        const base64 = Buffer.from(update).toString('base64');
+        const base64 = Buffer.from(update).toString("base64");
         CollabService.updateCollabState(storyId, base64);
       }, this.saveDelay);
       this.debouncedSaves.set(storyId, fn);
@@ -81,8 +84,8 @@ export class YjsGateway {
   }
 
   private randomColor(): string {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
+    const letters = "0123456789ABCDEF";
+    let color = "#";
     for (let i = 0; i < 6; i++) {
       color += letters[Math.floor(Math.random() * 16)];
     }

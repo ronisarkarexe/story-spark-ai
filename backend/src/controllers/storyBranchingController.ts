@@ -45,8 +45,7 @@ export interface BranchingValidationSuccess {
 }
 
 export type BranchingValidationResult =
-  | BranchingValidationError
-  | BranchingValidationSuccess;
+  BranchingValidationError | BranchingValidationSuccess;
 
 /**
  * Pure validation helper — no side effects.
@@ -58,16 +57,26 @@ export type BranchingValidationResult =
  *
  * Returns a discriminated union so callers can narrow on `result.valid`.
  */
-export function validateBranchingRequest(body: Record<string, unknown>): BranchingValidationResult {
+export function validateBranchingRequest(
+  body: Record<string, unknown>,
+): BranchingValidationResult {
   const { storyContext, selectedChoice, genre } = body;
 
   // --- storyContext ---
   if (typeof storyContext !== "string") {
-    return { valid: false, status: 400, message: "storyContext must be a string." };
+    return {
+      valid: false,
+      status: 400,
+      message: "storyContext must be a string.",
+    };
   }
   const trimmedContext = storyContext.trim();
   if (trimmedContext.length === 0) {
-    return { valid: false, status: 400, message: "storyContext cannot be empty." };
+    return {
+      valid: false,
+      status: 400,
+      message: "storyContext cannot be empty.",
+    };
   }
   if (trimmedContext.length > MAX_STORY_CONTEXT_LENGTH) {
     return {
@@ -79,11 +88,19 @@ export function validateBranchingRequest(body: Record<string, unknown>): Branchi
 
   // --- selectedChoice ---
   if (typeof selectedChoice !== "string") {
-    return { valid: false, status: 400, message: "selectedChoice must be a string." };
+    return {
+      valid: false,
+      status: 400,
+      message: "selectedChoice must be a string.",
+    };
   }
   const trimmedChoice = selectedChoice.trim();
   if (trimmedChoice.length === 0) {
-    return { valid: false, status: 400, message: "selectedChoice cannot be empty." };
+    return {
+      valid: false,
+      status: 400,
+      message: "selectedChoice cannot be empty.",
+    };
   }
   if (trimmedChoice.length > MAX_CHOICE_LENGTH) {
     return {
@@ -157,7 +174,9 @@ const buildCompressedContext = (storyContext: string): string => {
 export const StoryBranchingController = {
   createBranchingStory: async (req: Request, res: Response) => {
     // --- Input validation ---
-    const validation = validateBranchingRequest(req.body as Record<string, unknown>);
+    const validation = validateBranchingRequest(
+      req.body as Record<string, unknown>,
+    );
     if (!validation.valid) {
       return sendResponse(res, {
         success: false,
@@ -199,8 +218,12 @@ Task:
 `;
 
       const rawProvider = req.headers?.["x-model-provider"];
-      const provider = Array.isArray(rawProvider) ? rawProvider[0] : rawProvider;
-      const result = await storyQueue.enqueue(() => generateStory(prompt, provider));
+      const provider = Array.isArray(rawProvider)
+        ? rawProvider[0]
+        : rawProvider;
+      const result = await storyQueue.enqueue(() =>
+        generateStory(prompt, provider),
+      );
 
       let parsed: { storySegment: string; choices: string[] };
       try {
@@ -210,7 +233,10 @@ Task:
           throw new Error("Missing required fields in parsed JSON");
         }
       } catch (e) {
-        console.warn("[Branching] JSON parsing failed, attempting fallback. Error:", e);
+        console.warn(
+          "[Branching] JSON parsing failed, attempting fallback. Error:",
+          e,
+        );
         const jsonMatch = result.story.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           try {
@@ -244,7 +270,11 @@ Task:
         success: true,
         statusCode: 200,
         message: "Story generated successfully",
-        data: { storySegment: parsed.storySegment, choices: parsed.choices, segmentIndex },
+        data: {
+          storySegment: parsed.storySegment,
+          choices: parsed.choices,
+          segmentIndex,
+        },
       });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
@@ -252,7 +282,8 @@ Task:
       return sendResponse(res, {
         success: false,
         statusCode: 503,
-        message: "Story generation is temporarily unavailable. Please try again later.",
+        message:
+          "Story generation is temporarily unavailable. Please try again later.",
         data: null,
       });
     }

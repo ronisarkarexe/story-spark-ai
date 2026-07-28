@@ -8,14 +8,9 @@
 
 <!-- Drag & drop or paste. For non-UI work, you can use tests output, logs, or API responses. Write “N/A” in the checklist if you skip this section. -->
 
-
-
 ## What this PR does
 
 <!-- Short summary: what problem does this solve, and how? -->
-
-
-
 
 ## Type of change
 
@@ -30,13 +25,9 @@ Check all that apply (if more than one, explain in “What this PR does”).
 
 <!-- Example: Closes #123 or Fixes #45. Use “None” if there is no issue. -->
 
-
-
 ## More screenshots (optional)
 
 <!-- Extra before/after images, flows, or recordings for reviewers. -->
-
-
 
 ## Checklist
 

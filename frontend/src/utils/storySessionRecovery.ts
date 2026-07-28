@@ -11,10 +11,7 @@ export function saveDraft(content: string) {
     savedAt: new Date().toISOString(),
   };
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(draft)
-  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
 
   return draft;
 }

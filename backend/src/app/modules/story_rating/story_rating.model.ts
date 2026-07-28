@@ -26,7 +26,7 @@ const StoryRatingSchema = new Schema<IStoryRating, StoryRatingModel>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Prevent duplicate ratings for the same story by the same user
@@ -37,5 +37,5 @@ StoryRatingSchema.index({ storyId: 1, rating: -1 });
 
 export const StoryRating = model<IStoryRating, StoryRatingModel>(
   "StoryRating",
-  StoryRatingSchema
+  StoryRatingSchema,
 );

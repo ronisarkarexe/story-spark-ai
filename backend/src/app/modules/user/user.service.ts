@@ -15,7 +15,14 @@ import config from "../../../config";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 
-const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
+const allowedSocialFields = [
+  "facebook",
+  "twitter",
+  "linkedin",
+  "instagram",
+  "github",
+  "discord",
+] as const;
 
 const getAllUsers = async (): Promise<IUser[]> => {
   const result = await User.find({}).select("-password");
@@ -63,10 +70,12 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
   // ─── ADDED: PARSE WRITING GOALS PAYLOADS FOR INJECTION ───
   if (payload.writingGoals) {
     if (typeof payload.writingGoals.dailyWordCount === "number") {
-      updateData["writingGoals.dailyWordCount"] = payload.writingGoals.dailyWordCount;
+      updateData["writingGoals.dailyWordCount"] =
+        payload.writingGoals.dailyWordCount;
     }
     if (typeof payload.writingGoals.weeklyWordCount === "number") {
-      updateData["writingGoals.weeklyWordCount"] = payload.writingGoals.weeklyWordCount;
+      updateData["writingGoals.weeklyWordCount"] =
+        payload.writingGoals.weeklyWordCount;
     }
   }
 
@@ -88,7 +97,7 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
             pendingEmailToken,
             pendingEmailTokenExpires,
           },
-        }
+        },
       );
       // Attempt to send verification email, silently fall back to token-only
       try {
@@ -114,13 +123,17 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
       }
       return {
         pendingEmail: newEmail,
-        message: "A verification link has been sent to your new email address. Please check your inbox to confirm the change.",
+        message:
+          "A verification link has been sent to your new email address. Please check your inbox to confirm the change.",
       };
     }
   }
 
   if (Object.keys(updateData).length === 0) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No valid user fields provided!");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "No valid user fields provided!",
+    );
   }
 
   const result = await User.findOneAndUpdate(
@@ -129,7 +142,7 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
 
   if (!result) {
@@ -179,7 +192,10 @@ const applyForWriter = async (token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   if (user.isApplyForWriter) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "You have already applied for writer!");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "You have already applied for writer!",
+    );
   }
   const result = await User.findOneAndUpdate(
     { email: email },
@@ -187,7 +203,7 @@ const applyForWriter = async (token: ITokenPayload) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
   return result;
 };
@@ -207,7 +223,7 @@ const approveWriterApplication = async (email: string) => {
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
     return result;
   } catch (error) {
@@ -280,7 +296,7 @@ const getFollowStatus = async (token: ITokenPayload, authorId: string) => {
     return { isFollowing: false };
   }
   const isFollowing = currentUser.following.some(
-    (id) => id.toString() === authorId
+    (id) => id.toString() === authorId,
   );
   return { isFollowing };
 };

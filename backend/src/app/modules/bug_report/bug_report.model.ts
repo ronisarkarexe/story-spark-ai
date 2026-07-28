@@ -18,7 +18,10 @@ const bugReportSchema = new Schema<IBugReport>(
     },
     screenshotUrl: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const BugReport = mongoose.model<IBugReport>("BugReport", bugReportSchema);
+export const BugReport = mongoose.model<IBugReport>(
+  "BugReport",
+  bugReportSchema,
+);

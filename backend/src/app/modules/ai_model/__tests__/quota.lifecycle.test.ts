@@ -1,15 +1,14 @@
 import { refundUserQuota } from "../quota.service";
-import {
-  createUserQuotaGuard,
-  runWithQuotaCleanup,
-} from "../quota.lifecycle";
+import { createUserQuotaGuard, runWithQuotaCleanup } from "../quota.lifecycle";
 
 jest.mock("../quota.service", () => ({
   ...jest.requireActual("../quota.service"),
   refundUserQuota: jest.fn(),
 }));
 
-const mockedRefund = refundUserQuota as jest.MockedFunction<typeof refundUserQuota>;
+const mockedRefund = refundUserQuota as jest.MockedFunction<
+  typeof refundUserQuota
+>;
 
 describe("QuotaRefundGuard", () => {
   beforeEach(() => {
@@ -47,7 +46,7 @@ describe("runWithQuotaCleanup", () => {
     await expect(
       runWithQuotaCleanup(guard, async () => {
         throw new Error("token failure");
-      })
+      }),
     ).rejects.toThrow("token failure");
 
     expect(mockedRefund).toHaveBeenCalledTimes(1);

@@ -14,8 +14,12 @@ import { StoryBranchingController } from "../controllers/storyBranchingControlle
 import { generateStory } from "../services/ai.service";
 import sendResponse from "../shared/send_response";
 
-const mockGenerateStory = generateStory as jest.MockedFunction<typeof generateStory>;
-const mockSendResponse = sendResponse as jest.MockedFunction<typeof sendResponse>;
+const mockGenerateStory = generateStory as jest.MockedFunction<
+  typeof generateStory
+>;
+const mockSendResponse = sendResponse as jest.MockedFunction<
+  typeof sendResponse
+>;
 
 describe("StoryBranchingController", () => {
   let mockReq: Partial<Request>;
@@ -36,18 +40,22 @@ describe("StoryBranchingController", () => {
   it("should successfully parse valid JSON response from AI and return standard sendResponse structure", async () => {
     mockGenerateStory.mockResolvedValueOnce({
       story: JSON.stringify({
-        storySegment: "You step through the glowing blue portal and find yourself in a silent forest.",
+        storySegment:
+          "You step through the glowing blue portal and find yourself in a silent forest.",
         choices: [
           "Walk along the ancient cobblestone path",
           "Climb a nearby massive oak tree to look around",
-          "Wait quietly to see if the portal closes"
-        ]
+          "Wait quietly to see if the portal closes",
+        ],
       }),
       provider: "openai",
       fallbackUsed: false,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq as Request,
+      mockRes as Response,
+    );
 
     expect(mockGenerateStory).toHaveBeenCalledTimes(1);
     expect(mockSendResponse).toHaveBeenCalledWith(mockRes, {
@@ -55,11 +63,12 @@ describe("StoryBranchingController", () => {
       statusCode: 200,
       message: "Story generated successfully",
       data: {
-        storySegment: "You step through the glowing blue portal and find yourself in a silent forest.",
+        storySegment:
+          "You step through the glowing blue portal and find yourself in a silent forest.",
         choices: [
           "Walk along the ancient cobblestone path",
           "Climb a nearby massive oak tree to look around",
-          "Wait quietly to see if the portal closes"
+          "Wait quietly to see if the portal closes",
         ],
         segmentIndex: 1, // 0 choices in history so far
       },
@@ -67,27 +76,33 @@ describe("StoryBranchingController", () => {
   });
 
   it("should calculate correct segmentIndex when history contains multiple selection steps", async () => {
-    mockReq.body.storyContext = 
+    mockReq.body.storyContext =
       "Once upon a time.\n[Player chose: Option 1]\n\n" +
       "Scene two.\n[Player chose: Option 2]\n\n" +
       "Scene three.";
-    
+
     mockGenerateStory.mockResolvedValueOnce({
       story: JSON.stringify({
         storySegment: "Scene four outcome.",
-        choices: ["Option A", "Option B", "Option C"]
+        choices: ["Option A", "Option B", "Option C"],
       }),
       provider: "gemini",
       fallbackUsed: true,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq as Request,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      data: expect.objectContaining({
-        segmentIndex: 3, // 2 player choices in history, so index 3
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          segmentIndex: 3, // 2 player choices in history, so index 3
+        }),
       }),
-    }));
+    );
   });
 
   it("should fall back gracefully to raw text parser if AI response is not JSON", async () => {
@@ -97,18 +112,22 @@ describe("StoryBranchingController", () => {
       fallbackUsed: false,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq as Request,
+      mockRes as Response,
+    );
 
     expect(mockSendResponse).toHaveBeenCalledWith(mockRes, {
       success: true,
       statusCode: 200,
       message: "Story generated successfully",
       data: {
-        storySegment: "This is a plain text story continuation with no JSON at all.",
+        storySegment:
+          "This is a plain text story continuation with no JSON at all.",
         choices: [
           "Explore the surroundings",
           "Search for another way",
-          "Wait and see what happens"
+          "Wait and see what happens",
         ],
         segmentIndex: 1,
       },
@@ -117,19 +136,26 @@ describe("StoryBranchingController", () => {
 
   it("should strip markdown code fences before parsing", async () => {
     mockGenerateStory.mockResolvedValueOnce({
-      story: '```json\n{\n  "storySegment": "Markdown-wrapped segment.",\n  "choices": ["A", "B", "C"]\n}\n```',
+      story:
+        '```json\n{\n  "storySegment": "Markdown-wrapped segment.",\n  "choices": ["A", "B", "C"]\n}\n```',
       provider: "openai",
       fallbackUsed: false,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq as Request,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      data: expect.objectContaining({
-        storySegment: "Markdown-wrapped segment.",
-        choices: ["A", "B", "C"],
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          storySegment: "Markdown-wrapped segment.",
+          choices: ["A", "B", "C"],
+        }),
       }),
-    }));
+    );
   });
 
   it("should recover from truncated JSON by falling back to raw text", async () => {
@@ -139,15 +165,23 @@ describe("StoryBranchingController", () => {
       fallbackUsed: false,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq as Request,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      success: true,
-      statusCode: 200,
-      data: expect.objectContaining({
-        storySegment: expect.stringContaining('{ "title": "The Quest", "branches": [ { "id": 1,'),
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        success: true,
+        statusCode: 200,
+        data: expect.objectContaining({
+          storySegment: expect.stringContaining(
+            '{ "title": "The Quest", "branches": [ { "id": 1,',
+          ),
+        }),
       }),
-    }));
+    );
   });
 
   it("should fall back when AI returns invalid keys", async () => {
@@ -160,15 +194,25 @@ describe("StoryBranchingController", () => {
       fallbackUsed: false,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq as Request,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      success: true,
-      statusCode: 200,
-      data: expect.objectContaining({
-        choices: ["Explore the surroundings", "Search for another way", "Wait and see what happens"],
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        success: true,
+        statusCode: 200,
+        data: expect.objectContaining({
+          choices: [
+            "Explore the surroundings",
+            "Search for another way",
+            "Wait and see what happens",
+          ],
+        }),
       }),
-    }));
+    );
   });
 
   it("should normalize choices to exactly 3 when fewer are provided", async () => {
@@ -181,13 +225,19 @@ describe("StoryBranchingController", () => {
       fallbackUsed: false,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq as Request,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      data: expect.objectContaining({
-        choices: ["Only choice", "Option 2", "Option 3"],
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          choices: ["Only choice", "Option 2", "Option 3"],
+        }),
       }),
-    }));
+    );
   });
 
   it("should truncate choices to exactly 3 when more are provided", async () => {
@@ -200,13 +250,19 @@ describe("StoryBranchingController", () => {
       fallbackUsed: false,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq as Request,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      data: expect.objectContaining({
-        choices: ["A", "B", "C"],
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          choices: ["A", "B", "C"],
+        }),
       }),
-    }));
+    );
   });
 });
 
@@ -240,7 +296,10 @@ describe("validateBranchingRequest", () => {
   });
 
   it("returns 400 when genre is an object (non-string type)", () => {
-    const result = validateBranchingRequest({ ...validBody, genre: { name: "fantasy" } });
+    const result = validateBranchingRequest({
+      ...validBody,
+      genre: { name: "fantasy" },
+    });
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.status).toBe(400);
@@ -288,7 +347,10 @@ describe("validateBranchingRequest", () => {
 
   it("returns 400 when storyContext exceeds MAX_STORY_CONTEXT_LENGTH characters", () => {
     const longContext = "a".repeat(MAX_STORY_CONTEXT_LENGTH + 1);
-    const result = validateBranchingRequest({ ...validBody, storyContext: longContext });
+    const result = validateBranchingRequest({
+      ...validBody,
+      storyContext: longContext,
+    });
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.status).toBe(400);
@@ -298,7 +360,10 @@ describe("validateBranchingRequest", () => {
 
   it("accepts storyContext of exactly MAX_STORY_CONTEXT_LENGTH characters", () => {
     const exactContext = "a".repeat(MAX_STORY_CONTEXT_LENGTH);
-    const result = validateBranchingRequest({ ...validBody, storyContext: exactContext });
+    const result = validateBranchingRequest({
+      ...validBody,
+      storyContext: exactContext,
+    });
     expect(result.valid).toBe(true);
   });
 
@@ -311,7 +376,10 @@ describe("validateBranchingRequest", () => {
   });
 
   it("returns 400 when storyContext is not a string", () => {
-    const result = validateBranchingRequest({ ...validBody, storyContext: 123 });
+    const result = validateBranchingRequest({
+      ...validBody,
+      storyContext: 123,
+    });
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.status).toBe(400);
@@ -321,7 +389,10 @@ describe("validateBranchingRequest", () => {
   // --- selectedChoice guards ---
 
   it("returns 400 when selectedChoice is an empty string", () => {
-    const result = validateBranchingRequest({ ...validBody, selectedChoice: "" });
+    const result = validateBranchingRequest({
+      ...validBody,
+      selectedChoice: "",
+    });
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.status).toBe(400);
@@ -331,7 +402,10 @@ describe("validateBranchingRequest", () => {
 
   it("returns 400 when selectedChoice exceeds MAX_CHOICE_LENGTH characters", () => {
     const longChoice = "b".repeat(MAX_CHOICE_LENGTH + 1);
-    const result = validateBranchingRequest({ ...validBody, selectedChoice: longChoice });
+    const result = validateBranchingRequest({
+      ...validBody,
+      selectedChoice: longChoice,
+    });
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.status).toBe(400);
@@ -341,12 +415,18 @@ describe("validateBranchingRequest", () => {
 
   it("accepts selectedChoice of exactly MAX_CHOICE_LENGTH characters", () => {
     const exactChoice = "b".repeat(MAX_CHOICE_LENGTH);
-    const result = validateBranchingRequest({ ...validBody, selectedChoice: exactChoice });
+    const result = validateBranchingRequest({
+      ...validBody,
+      selectedChoice: exactChoice,
+    });
     expect(result.valid).toBe(true);
   });
 
   it("returns 400 when selectedChoice is not a string", () => {
-    const result = validateBranchingRequest({ ...validBody, selectedChoice: true });
+    const result = validateBranchingRequest({
+      ...validBody,
+      selectedChoice: true,
+    });
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.status).toBe(400);
@@ -403,12 +483,18 @@ describe("StoryBranchingController — validation integration", () => {
       headers: {},
     } as unknown as Request;
 
-    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      success: false,
-      statusCode: 400,
-    }));
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        success: false,
+        statusCode: 400,
+      }),
+    );
     expect(mockGenerateStory).not.toHaveBeenCalled();
   });
 
@@ -422,12 +508,18 @@ describe("StoryBranchingController — validation integration", () => {
       headers: {},
     } as unknown as Request;
 
-    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      success: false,
-      statusCode: 400,
-    }));
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        success: false,
+        statusCode: 400,
+      }),
+    );
     expect(mockGenerateStory).not.toHaveBeenCalled();
   });
 
@@ -441,12 +533,18 @@ describe("StoryBranchingController — validation integration", () => {
       headers: {},
     } as unknown as Request;
 
-    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      success: false,
-      statusCode: 400,
-    }));
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        success: false,
+        statusCode: 400,
+      }),
+    );
     expect(mockGenerateStory).not.toHaveBeenCalled();
   });
 
@@ -460,12 +558,18 @@ describe("StoryBranchingController — validation integration", () => {
       headers: {},
     } as unknown as Request;
 
-    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq,
+      mockRes as Response,
+    );
 
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      success: false,
-      statusCode: 400,
-    }));
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        success: false,
+        statusCode: 400,
+      }),
+    );
     expect(mockGenerateStory).not.toHaveBeenCalled();
   });
 
@@ -488,12 +592,18 @@ describe("StoryBranchingController — validation integration", () => {
       fallbackUsed: false,
     });
 
-    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+    await StoryBranchingController.createBranchingStory(
+      mockReq,
+      mockRes as Response,
+    );
 
     expect(mockGenerateStory).toHaveBeenCalledTimes(1);
-    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
-      success: true,
-      statusCode: 200,
-    }));
+    expect(mockSendResponse).toHaveBeenCalledWith(
+      mockRes,
+      expect.objectContaining({
+        success: true,
+        statusCode: 200,
+      }),
+    );
   });
 });

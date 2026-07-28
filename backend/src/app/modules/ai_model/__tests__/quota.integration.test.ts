@@ -33,7 +33,7 @@ describe("quota integration (mongodb-memory-server)", () => {
   const createUser = async (
     email: string,
     subscriptionType: string,
-    requestsThisMonth: number
+    requestsThisMonth: number,
   ) =>
     User.create({
       email,
@@ -46,15 +46,11 @@ describe("quota integration (mongodb-memory-server)", () => {
 
   it("allows exactly one parallel reserve at the free-tier boundary", async () => {
     const email = "boundary-free@test.com";
-    await createUser(
-      email,
-      SUBSCRIPTION_TYPE.FREE,
-      REQUEST_LIMITS.free - 1
-    );
+    await createUser(email, SUBSCRIPTION_TYPE.FREE, REQUEST_LIMITS.free - 1);
 
     const attempts = 8;
     const results = await Promise.allSettled(
-      Array.from({ length: attempts }, () => reserveUserQuota(email))
+      Array.from({ length: attempts }, () => reserveUserQuota(email)),
     );
 
     const succeeded = results.filter((r) => r.status === "fulfilled").length;
@@ -69,14 +65,10 @@ describe("quota integration (mongodb-memory-server)", () => {
 
   it("never exceeds pro tier limit under parallel load", async () => {
     const email = "boundary-pro@test.com";
-    await createUser(
-      email,
-      SUBSCRIPTION_TYPE.PRO,
-      REQUEST_LIMITS.pro - 1
-    );
+    await createUser(email, SUBSCRIPTION_TYPE.PRO, REQUEST_LIMITS.pro - 1);
 
     const results = await Promise.allSettled(
-      Array.from({ length: 10 }, () => reserveUserQuota(email))
+      Array.from({ length: 10 }, () => reserveUserQuota(email)),
     );
 
     expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
@@ -102,7 +94,7 @@ describe("quota integration (mongodb-memory-server)", () => {
     await GuestUsage.create({ guestId, requestCount: 0 });
 
     const results = await Promise.allSettled(
-      Array.from({ length: 8 }, () => reserveGuestQuota(guestId))
+      Array.from({ length: 8 }, () => reserveGuestQuota(guestId)),
     );
 
     const succeeded = results.filter((r) => r.status === "fulfilled").length;

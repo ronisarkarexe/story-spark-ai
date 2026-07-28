@@ -1,6 +1,7 @@
 import config from "../config";
 
-const OPENAI_IMAGE_GENERATION_URL = "https://api.openai.com/v1/images/generations";
+const OPENAI_IMAGE_GENERATION_URL =
+  "https://api.openai.com/v1/images/generations";
 const IMAGE_REQUEST_TIMEOUT_MS = 45000;
 const IMAGE_DOWNLOAD_TIMEOUT_MS = 20000;
 
@@ -16,20 +17,16 @@ const getProvider = (): string => {
 };
 
 const getApiKey = (): string => {
-  return (
-    config.image_generation_api_key ||
-    config.openai_key ||
-    ""
-  ).trim();
+  return (config.image_generation_api_key || config.openai_key || "").trim();
 };
 const persistTemporaryImageUrl = async (
   temporaryUrl: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string | null> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(
     () => controller.abort(),
-    IMAGE_DOWNLOAD_TIMEOUT_MS
+    IMAGE_DOWNLOAD_TIMEOUT_MS,
   );
 
   let abortHandler: (() => void) | null = null;
@@ -68,7 +65,7 @@ const persistTemporaryImageUrl = async (
 
 const generateWithOpenAI = async (
   prompt: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string | null> => {
   const apiKey = getApiKey();
   if (!apiKey) {
@@ -78,7 +75,7 @@ const generateWithOpenAI = async (
   const controller = new AbortController();
   const timeoutId = setTimeout(
     () => controller.abort(),
-    IMAGE_REQUEST_TIMEOUT_MS
+    IMAGE_REQUEST_TIMEOUT_MS,
   );
 
   let abortHandler: (() => void) | null = null;
@@ -156,7 +153,7 @@ const getGoogleApiKey = (): string => {
 
 const generateWithGoogle = async (
   prompt: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string | null> => {
   const apiKey = getGoogleApiKey();
   if (!apiKey) {
@@ -169,7 +166,7 @@ const generateWithGoogle = async (
   const controller = new AbortController();
   const timeoutId = setTimeout(
     () => controller.abort(),
-    IMAGE_REQUEST_TIMEOUT_MS
+    IMAGE_REQUEST_TIMEOUT_MS,
   );
 
   let abortHandler: (() => void) | null = null;
@@ -225,7 +222,7 @@ const generateWithGoogle = async (
 
 export const generateStoryboardImage = async (
   prompt: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string | null> => {
   const provider = getProvider();
 

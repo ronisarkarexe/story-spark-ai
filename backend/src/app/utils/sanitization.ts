@@ -6,16 +6,16 @@
 
 // Dangerous URL protocols that can be used for XSS attacks
 const DANGEROUS_URL_PROTOCOLS = [
-  'javascript:',
-  'data:',
-  'vbscript:',
-  'mocha:',
-  'livescript:',
-  'about:',
-  'file:',
-  'view-source:',
-  'jar:',
-  'apt:',
+  "javascript:",
+  "data:",
+  "vbscript:",
+  "mocha:",
+  "livescript:",
+  "about:",
+  "file:",
+  "view-source:",
+  "jar:",
+  "apt:",
 ];
 
 /**
@@ -24,7 +24,7 @@ const DANGEROUS_URL_PROTOCOLS = [
  * can be used for XSS attacks and should be rejected.
  */
 export const isAllowedUrlProtocol = (url: string): boolean => {
-  if (!url || typeof url !== 'string') return false;
+  if (!url || typeof url !== "string") return false;
   const lower = url.trim().toLowerCase();
   for (const protocol of DANGEROUS_URL_PROTOCOLS) {
     if (lower.startsWith(protocol)) return false;
@@ -37,11 +37,8 @@ export const isAllowedUrlProtocol = (url: string): boolean => {
  * if the protocol is safe, otherwise returns the provided fallback value.
  * This prevents XSS via javascript:, data:, and other dangerous protocols.
  */
-export const sanitizeUrl = (
-  url: string,
-  fallback = '',
-): string => {
-  if (!url || typeof url !== 'string') return fallback;
+export const sanitizeUrl = (url: string, fallback = ""): string => {
+  if (!url || typeof url !== "string") return fallback;
   return isAllowedUrlProtocol(url) ? url.trim() : fallback;
 };
 
@@ -52,13 +49,13 @@ export const sanitizeUrl = (
  * tag-like sequences starting with <.
  */
 export const stripHtmlTags = (input: string): string => {
-  if (!input) return '';
+  if (!input) return "";
   // First pass: remove all complete HTML tags
-  let result = input.replace(/<[^>]*>/g, '');
+  let result = input.replace(/<[^>]*>/g, "");
   // Second pass: remove any remaining tag-like openers (e.g. <script without >)
-  result = result.replace(/<[a-z\/!][^>]*$/gi, '');
+  result = result.replace(/<[a-z\/!][^>]*$/gi, "");
   // Third pass: remove standalone < characters that are tag-like
-  result = result.replace(/<[^>]+$/gi, '');
+  result = result.replace(/<[^>]+$/gi, "");
   return result.trim();
 };
 
@@ -69,9 +66,9 @@ export const stripHtmlTags = (input: string): string => {
 export const truncate = (
   input: string,
   maxLength: number,
-  suffix = '...'
+  suffix = "...",
 ): string => {
-  if (!input) return '';
+  if (!input) return "";
   if (input.length <= maxLength) return input;
   return input.slice(0, maxLength - suffix.length) + suffix;
 };
@@ -81,6 +78,6 @@ export const truncate = (
  * and trims leading/trailing whitespace.
  */
 export const normalizeWhitespace = (input: string): string => {
-  if (!input) return '';
-  return input.replace(/\s+/g, ' ').trim();
+  if (!input) return "";
+  return input.replace(/\s+/g, " ").trim();
 };

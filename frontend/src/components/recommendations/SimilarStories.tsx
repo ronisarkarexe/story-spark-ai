@@ -23,9 +23,7 @@ const SimilarStories: React.FC<SimilarStoriesProps> = ({
 
   return (
     <div className="mt-10">
-      <h2 className="text-2xl font-bold text-white mb-6">
-        📚 Similar Stories
-      </h2>
+      <h2 className="text-2xl font-bold text-white mb-6">📚 Similar Stories</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {stories.map((story) => (
@@ -41,13 +39,9 @@ const SimilarStories: React.FC<SimilarStoriesProps> = ({
               />
             )}
 
-            <h3 className="text-lg font-semibold text-white">
-              {story.title}
-            </h3>
+            <h3 className="text-lg font-semibold text-white">{story.title}</h3>
 
-            <p className="text-sm text-zinc-400 mt-1">
-              {story.genre}
-            </p>
+            <p className="text-sm text-zinc-400 mt-1">{story.genre}</p>
 
             <div className="flex flex-wrap gap-2 mt-3">
               {story.tags.map((tag) => (

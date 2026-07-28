@@ -31,18 +31,14 @@ describe("Character portrait generation", () => {
       });
 
       expect(prompt).toContain(
-        "Create a high-quality fictional character portrait of Aria Vale."
+        "Create a high-quality fictional character portrait of Aria Vale.",
       );
       expect(prompt).toContain("Role: Protagonist");
       expect(prompt).toContain("Age: 27");
+      expect(prompt).toContain("Personality: Brave and compassionate");
+      expect(prompt).toContain("Appearance: Long silver hair and green eyes");
       expect(prompt).toContain(
-        "Personality: Brave and compassionate"
-      );
-      expect(prompt).toContain(
-        "Appearance: Long silver hair and green eyes"
-      );
-      expect(prompt).toContain(
-        "Background: Raised in a remote mountain village"
+        "Background: Raised in a remote mountain village",
       );
       expect(prompt).toContain("Traits: loyal, curious");
       expect(prompt).toContain("no text, no watermark");
@@ -54,7 +50,7 @@ describe("Character portrait generation", () => {
       });
 
       expect(prompt).toContain(
-        "Create a high-quality fictional character portrait of Kai."
+        "Create a high-quality fictional character portrait of Kai.",
       );
       expect(prompt).not.toContain("Role:");
       expect(prompt).not.toContain("Age:");
@@ -68,7 +64,7 @@ describe("Character portrait generation", () => {
   describe("generateCharacterPortrait", () => {
     it("uses the existing image-generation infrastructure", async () => {
       mockGenerateStoryboardImage.mockResolvedValue(
-        "data:image/png;base64,generated-portrait"
+        "data:image/png;base64,generated-portrait",
       );
 
       const result = await generateCharacterPortrait({
@@ -79,16 +75,13 @@ describe("Character portrait generation", () => {
 
       expect(mockGenerateStoryboardImage).toHaveBeenCalledTimes(1);
 
-      const generatedPrompt =
-        mockGenerateStoryboardImage.mock.calls[0][0];
+      const generatedPrompt = mockGenerateStoryboardImage.mock.calls[0][0];
 
       expect(generatedPrompt).toContain("Aria Vale");
       expect(generatedPrompt).toContain("Role: Protagonist");
       expect(generatedPrompt).toContain("Traits: brave");
 
-      expect(result).toBe(
-        "data:image/png;base64,generated-portrait"
-      );
+      expect(result).toBe("data:image/png;base64,generated-portrait");
     });
 
     it("returns null when the image provider cannot generate a portrait", async () => {

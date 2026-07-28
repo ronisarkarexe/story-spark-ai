@@ -45,13 +45,9 @@ const StoryVoiceNarrator: React.FC<StoryVoiceNarratorProps> = ({
 
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(
-      `${title}. ${text}`
-    );
+    const utterance = new SpeechSynthesisUtterance(`${title}. ${text}`);
 
-    const voice = voices.find(
-      (v) => v.name === selectedVoice
-    );
+    const voice = voices.find((v) => v.name === selectedVoice);
 
     if (voice) {
       utterance.voice = voice;
@@ -109,9 +105,7 @@ const StoryVoiceNarrator: React.FC<StoryVoiceNarratorProps> = ({
 
       {/* Voice Selection */}
       <div className="mb-4">
-        <label className="text-slate-300 text-sm">
-          Select Voice
-        </label>
+        <label className="text-slate-300 text-sm">Select Voice</label>
 
         <select
           className="w-full mt-2 bg-slate-700 text-white rounded-lg p-2"
@@ -177,7 +171,8 @@ const StoryVoiceNarrator: React.FC<StoryVoiceNarratorProps> = ({
       </div>
 
       <p className="text-slate-400 text-sm mt-4">
-        Listen to your generated story with customizable voices and playback controls.
+        Listen to your generated story with customizable voices and playback
+        controls.
       </p>
     </div>
   );

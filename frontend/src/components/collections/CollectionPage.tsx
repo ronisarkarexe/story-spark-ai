@@ -8,7 +8,11 @@ import CollectionDetailCard from "./CollectionDetailCard";
 
 const CollectionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: collection, isLoading, isError } = useGetCollectionByIdQuery(id || "");
+  const {
+    data: collection,
+    isLoading,
+    isError,
+  } = useGetCollectionByIdQuery(id || "");
   const currentUser = getUserInfo();
 
   if (isLoading) return <LoadingAnimation />;
@@ -22,8 +26,9 @@ const CollectionPage: React.FC = () => {
     );
   }
 
-  const isOwner = currentUser?.userId === (collection.ownerId as any)?._id?.toString()
-    || currentUser?.userId === collection.ownerId?.toString();
+  const isOwner =
+    currentUser?.userId === (collection.ownerId as any)?._id?.toString() ||
+    currentUser?.userId === collection.ownerId?.toString();
 
   return <CollectionDetailCard collection={collection} isOwner={isOwner} />;
 };

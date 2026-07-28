@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  Navigate,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo, removeUserInfo } from "../../services/auth.service";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -105,7 +111,9 @@ const DashboardLayout: React.FC = () => {
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                 Dashboard
               </p>
-              <h1 className="truncate text-base font-semibold sm:text-lg">{pageTitle}</h1>
+              <h1 className="truncate text-base font-semibold sm:text-lg">
+                {pageTitle}
+              </h1>
             </div>
           </div>
 
@@ -228,7 +236,9 @@ const DashboardLayout: React.FC = () => {
                   <button
                     type="button"
                     aria-label={item.name}
-                    aria-expanded={item.subRoutes ? expanded[item.name] : undefined}
+                    aria-expanded={
+                      item.subRoutes ? expanded[item.name] : undefined
+                    }
                     onClick={() => handleNavigation(item)}
                     className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition ${
                       isActive
@@ -238,7 +248,9 @@ const DashboardLayout: React.FC = () => {
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <i className={`${item.icon} shrink-0`}></i>
-                      <span className={`truncate ${isSidebarCollapsed ? "lg:hidden" : ""}`}>
+                      <span
+                        className={`truncate ${isSidebarCollapsed ? "lg:hidden" : ""}`}
+                      >
                         {item.name}
                       </span>
                     </div>
@@ -253,7 +265,9 @@ const DashboardLayout: React.FC = () => {
                   </button>
 
                   {item.subRoutes && expanded[item.name] && (
-                    <div className={`ml-6 mt-1 space-y-1 ${isSidebarCollapsed ? "lg:hidden" : ""}`}>
+                    <div
+                      className={`ml-6 mt-1 space-y-1 ${isSidebarCollapsed ? "lg:hidden" : ""}`}
+                    >
                       {item.subRoutes.map((subItem) => (
                         <Link
                           key={subItem.name}
@@ -281,14 +295,18 @@ const DashboardLayout: React.FC = () => {
               type="button"
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
               className="w-full rounded-lg bg-white px-3 py-2 text-sm text-slate-900 transition hover:bg-slate-100 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.1]"
-              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={
+                isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+              }
             >
               <i
                 className={`fas ${
                   isSidebarCollapsed ? "fa-chevron-right" : "fa-chevron-left"
                 }`}
               ></i>
-              {!isSidebarCollapsed && <span className="ml-2">Collapse Sidebar</span>}
+              {!isSidebarCollapsed && (
+                <span className="ml-2">Collapse Sidebar</span>
+              )}
             </button>
           </div>
         </aside>

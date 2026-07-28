@@ -10,8 +10,9 @@ const RedirectComponent = ({ defaultPath = "/" }: RedirectComponentProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const redirectPath = location.state && location.state.from ? location.state.from : defaultPath;
-    
+    const redirectPath =
+      location.state && location.state.from ? location.state.from : defaultPath;
+
     if (redirectPath !== location.pathname) {
       navigate(redirectPath);
     }
@@ -21,4 +22,3 @@ const RedirectComponent = ({ defaultPath = "/" }: RedirectComponentProps) => {
 };
 
 export default RedirectComponent;
-

@@ -12,7 +12,7 @@ type ReactionType = "like" | "love" | "laugh" | "angry" | "sad";
 const toggleReaction = async (
   postId: string,
   type: ReactionType = "like",
-  token: ITokenPayload
+  token: ITokenPayload,
 ) => {
   const { email } = token;
 
@@ -28,7 +28,7 @@ const toggleReaction = async (
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-  
+
   verifyPostAccess(post, user);
 
   // Check if reaction already exists
@@ -37,7 +37,6 @@ const toggleReaction = async (
     userId: user._id,
     type: type,
   });
-
 
   if (existingReaction) {
     // Remove reaction atomically
@@ -48,7 +47,7 @@ const toggleReaction = async (
         $pull: { reactions: existingReaction._id },
         $inc: { likesCount: -1 },
       },
-      { new: true }
+      { new: true },
     );
     // Ensure likesCount never goes below 0
     if (updatedPost && updatedPost.likesCount < 0) {
@@ -71,7 +70,7 @@ const toggleReaction = async (
         $addToSet: { reactions: newReaction._id },
         $inc: { likesCount: 1 },
       },
-      { new: true }
+      { new: true },
     );
     return {
       message: "Reaction added",

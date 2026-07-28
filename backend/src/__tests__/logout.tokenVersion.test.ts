@@ -64,13 +64,13 @@ describe("AuthService.logout – token revocation", () => {
     // Assert: refresh session is revoked
     expect(RefreshSession.updateOne).toHaveBeenCalledWith(
       { jti: fakeJti },
-      { revoked: true }
+      { revoked: true },
     );
 
     // Assert: tokenVersion is bumped — this is the regression guard
     expect(User.updateOne).toHaveBeenCalledWith(
       { _id: fakeUserId },
-      { $inc: { tokenVersion: 1 } }
+      { $inc: { tokenVersion: 1 } },
     );
   });
 

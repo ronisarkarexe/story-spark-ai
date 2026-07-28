@@ -58,7 +58,6 @@ if (redisUrl) {
     // Redis is available and ready to serve commands.
   });
 
-
   redis.on("error", (...args: unknown[]) => {
     const err = args[0] as Error;
     if (err && (err as any).code === "ECONNREFUSED") {

@@ -31,7 +31,7 @@ describe("SearchController.search", () => {
 
     expect(mockSendResponse).toHaveBeenCalledWith(
       res,
-      expect.objectContaining({ statusCode: 400, success: false })
+      expect.objectContaining({ statusCode: 400, success: false }),
     );
     expect(SearchService.search).not.toHaveBeenCalled();
   });
@@ -45,7 +45,7 @@ describe("SearchController.search", () => {
 
     expect(mockSendResponse).toHaveBeenCalledWith(
       res,
-      expect.objectContaining({ statusCode: 400, success: false })
+      expect.objectContaining({ statusCode: 400, success: false }),
     );
   });
 
@@ -53,18 +53,32 @@ describe("SearchController.search", () => {
     const fakeResults = { stories: null, users: null, tags: null };
     (SearchService.search as jest.Mock).mockResolvedValue(fakeResults);
 
-    const req = makeReq({ q: "dragon", type: "story", page: "2", limit: "5" }) as Request;
+    const req = makeReq({
+      q: "dragon",
+      type: "story",
+      page: "2",
+      limit: "5",
+    }) as Request;
     const res = makeRes() as Response;
     const next = jest.fn();
 
     await SearchController.search(req, res, next);
 
     expect(SearchService.search).toHaveBeenCalledWith(
-      expect.objectContaining({ q: "dragon", type: "story", page: 2, limit: 5 })
+      expect.objectContaining({
+        q: "dragon",
+        type: "story",
+        page: 2,
+        limit: 5,
+      }),
     );
     expect(mockSendResponse).toHaveBeenCalledWith(
       res,
-      expect.objectContaining({ statusCode: 200, success: true, data: fakeResults })
+      expect.objectContaining({
+        statusCode: 200,
+        success: true,
+        data: fakeResults,
+      }),
     );
   });
 
@@ -78,7 +92,7 @@ describe("SearchController.search", () => {
     await SearchController.search(req, res, next);
 
     expect(SearchService.search).toHaveBeenCalledWith(
-      expect.objectContaining({ limit: 50 })
+      expect.objectContaining({ limit: 50 }),
     );
   });
 });

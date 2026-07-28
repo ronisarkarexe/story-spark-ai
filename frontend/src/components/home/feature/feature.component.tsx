@@ -13,18 +13,25 @@ import ImageFallback from "../../ImageFallback";
 import { SkeletonGrid } from "../../cards/SkeletonCard";
 
 const FeatureComponent = () => {
-  const { data, isLoading, isError, refetch } = useGetFeaturedListsQuery(undefined);
+  const { data, isLoading, isError, refetch } =
+    useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
 
-
-  const handleCopyLink = (e: React.MouseEvent, postId: string, postUrl: string) => {
+  const handleCopyLink = (
+    e: React.MouseEvent,
+    postId: string,
+    postUrl: string,
+  ) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(postUrl).then(() => {
-      setCopiedId(postId);
-      setTimeout(() => setCopiedId(null), 2000);
-    }).catch(() => {});
+    navigator.clipboard
+      .writeText(postUrl)
+      .then(() => {
+        setCopiedId(postId);
+        setTimeout(() => setCopiedId(null), 2000);
+      })
+      .catch(() => {});
   };
 
   const handleRetry = async () => {
@@ -55,14 +62,18 @@ const FeatureComponent = () => {
         </h2>
         <div className="rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 px-6 py-8 flex flex-col items-center gap-4 text-center">
           <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-            <i className="fa-solid fa-triangle-exclamation text-red-500 dark:text-red-400 text-lg" aria-hidden="true" />
+            <i
+              className="fa-solid fa-triangle-exclamation text-red-500 dark:text-red-400 text-lg"
+              aria-hidden="true"
+            />
           </div>
           <div>
             <p className="font-semibold text-red-700 dark:text-red-300 mb-1">
               Failed to load featured posts
             </p>
             <p className="text-sm text-red-600/80 dark:text-red-400/70">
-              There was a problem connecting to the server. Please check your connection and try again.
+              There was a problem connecting to the server. Please check your
+              connection and try again.
             </p>
           </div>
           <button
@@ -73,7 +84,10 @@ const FeatureComponent = () => {
           >
             {isRetrying ? (
               <>
-                <i className="fa-solid fa-circle-notch fa-spin" aria-hidden="true" />
+                <i
+                  className="fa-solid fa-circle-notch fa-spin"
+                  aria-hidden="true"
+                />
                 Retrying…
               </>
             ) : (
@@ -138,7 +152,8 @@ const FeatureComponent = () => {
                             </span>
 
                             <p className="text-xs text-purple-400 font-medium flex items-center gap-1">
-                              <i className="fa-solid fa-clock"></i> {calculateReadingTime(post.content)} min read
+                              <i className="fa-solid fa-clock"></i>{" "}
+                              {calculateReadingTime(post.content)} min read
                             </p>
                           </div>
                         </div>
@@ -171,7 +186,10 @@ const FeatureComponent = () => {
                         {post.likesCount ?? 0}
                       </span>
                       <span className="flex items-center">
-                        <i className="far fa-comment mr-1" aria-hidden="true"></i>
+                        <i
+                          className="far fa-comment mr-1"
+                          aria-hidden="true"
+                        ></i>
                         {post.commentsCount ?? 0}
                       </span>
                     </div>
@@ -179,7 +197,7 @@ const FeatureComponent = () => {
                     <div className="flex items-center gap-4 text-slate-500 dark:text-gray-400">
                       <a
                         href={`https://x.com/intent/tweet?url=${encodeURIComponent(
-                          postUrl
+                          postUrl,
                         )}&text=${encodeURIComponent(post.title || "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -213,10 +231,14 @@ const FeatureComponent = () => {
                       <button
                         type="button"
                         onClick={(e) => handleCopyLink(e, post._id, postUrl)}
-                        title={copiedId === post._id ? "Link copied!" : "Copy link"}
+                        title={
+                          copiedId === post._id ? "Link copied!" : "Copy link"
+                        }
                         aria-label="Copy post link"
                         className={`transition-colors duration-200 focus:outline-none ${
-                          copiedId === post._id ? "text-green-400" : "hover:text-blue-400"
+                          copiedId === post._id
+                            ? "text-green-400"
+                            : "hover:text-blue-400"
                         }`}
                       >
                         <FaLink size={16} />
@@ -231,7 +253,10 @@ const FeatureComponent = () => {
       ) : (
         <div className="rounded-3xl border border-dashed border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-12 text-center box-border max-w-full">
           <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-5 border border-slate-200/60 dark:border-white/5">
-            <i className="fa-solid fa-star text-slate-400 dark:text-slate-500 text-xl" aria-hidden="true"></i>
+            <i
+              className="fa-solid fa-star text-slate-400 dark:text-slate-500 text-xl"
+              aria-hidden="true"
+            ></i>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
             No featured nodes are highlighted inside the stream right now.

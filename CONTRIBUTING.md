@@ -64,12 +64,12 @@ story-spark-ai/
 
 Before setting up the project locally, ensure you have the following installed:
 
-| Tool | Required Version | Download / Reference |
-|------|------------------|----------------------|
-| **Node.js** | `v20.x` (LTS recommended) | [nodejs.org](https://nodejs.org) |
-| **Package Manager** | `pnpm v9.15.9` (recommended) or `npm v9+` | [pnpm.io](https://pnpm.io) |
-| **MongoDB** | Community Server (Local) or MongoDB Atlas | [mongodb.com](https://www.mongodb.com/try/download/community) |
-| **Git** | Latest version | [git-scm.com](https://git-scm.com) |
+| Tool                | Required Version                          | Download / Reference                                          |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------- |
+| **Node.js**         | `v20.x` (LTS recommended)                 | [nodejs.org](https://nodejs.org)                              |
+| **Package Manager** | `pnpm v9.15.9` (recommended) or `npm v9+` | [pnpm.io](https://pnpm.io)                                    |
+| **MongoDB**         | Community Server (Local) or MongoDB Atlas | [mongodb.com](https://www.mongodb.com/try/download/community) |
+| **Git**             | Latest version                            | [git-scm.com](https://git-scm.com)                            |
 
 > 💡 **Tip:** We recommend using a Node version manager such as **nvm** (macOS/Linux) or **nvm-windows** / **Volta** (cross-platform) to manage Node versions easily.
 
@@ -121,6 +121,7 @@ npm install
 If you prefer installing dependencies for each project individually:
 
 **Frontend Dependencies:**
+
 ```bash
 cd frontend
 pnpm install # or npm install
@@ -128,6 +129,7 @@ cd ..
 ```
 
 **Backend Dependencies:**
+
 ```bash
 cd backend
 pnpm install # or npm install
@@ -143,12 +145,14 @@ Both the frontend and backend require `.env` configuration files. Template files
 ### Creating the `.env` files
 
 **On macOS / Linux (Bash):**
+
 ```bash
 cp frontend/.env.example frontend/.env
 cp backend/.env.example backend/.env
 ```
 
 **On Windows (PowerShell):**
+
 ```powershell
 Copy-Item frontend\.env.example frontend\.env
 Copy-Item backend\.env.example backend\.env
@@ -249,6 +253,7 @@ This starts both the **Express Backend** (on `http://localhost:5000`) and the **
 You can run each service in a separate terminal window:
 
 **Terminal 1 — Backend:**
+
 ```bash
 # From repository root
 pnpm dev:backend   # or npm run dev:backend
@@ -259,6 +264,7 @@ npm run dev
 ```
 
 **Terminal 2 — Frontend:**
+
 ```bash
 # From repository root
 pnpm dev:frontend  # or npm run dev:frontend
@@ -269,6 +275,7 @@ npm run dev
 ```
 
 Once started:
+
 - Access the **Frontend UI**: `http://localhost:4001` or `http://localhost:5173`
 - Access the **Backend API**: `http://localhost:5000/api/v1`
 
@@ -287,6 +294,7 @@ npm run typecheck
 ```
 
 Or typecheck individual projects:
+
 - Frontend: `npm run typecheck -w story-spark-ai-frontend` (or `cd frontend && npm run typecheck`)
 - Backend: `npm run typecheck -w story-spark-ai-backend` (or `cd backend && npm run typecheck`)
 
@@ -299,6 +307,7 @@ npm run test
 ```
 
 Or test individually:
+
 - **Backend Tests (Jest):** `cd backend && npm test`
 - **Frontend Tests (Vitest):** `cd frontend && npm test`
 
@@ -341,15 +350,15 @@ git checkout -b <type>/<short-description>
 
 Use the following prefixes when naming your branch:
 
-| Prefix | Usage / Purpose | Example Branch Name |
-|--------|-----------------|---------------------|
-| `feat/` | New features or functionality | `feat/character-consistency-checker` |
-| `fix/` | Bug fixes and corrections | `fix/jwt-auth-middleware-expiry` |
-| `docs/` | Documentation improvements | `docs/improve-contributing-guide` |
-| `refactor/` | Code refactoring (no functional changes) | `refactor/story-workspace-state` |
-| `style/` | Formatting, CSS adjustments, UI tweaks | `style/fix-input-padding` |
-| `test/` | Adding or updating tests | `test/character-portrait-controller` |
-| `chore/` | Maintenance tasks, dependency updates | `chore/update-dependencies` |
+| Prefix      | Usage / Purpose                          | Example Branch Name                  |
+| ----------- | ---------------------------------------- | ------------------------------------ |
+| `feat/`     | New features or functionality            | `feat/character-consistency-checker` |
+| `fix/`      | Bug fixes and corrections                | `fix/jwt-auth-middleware-expiry`     |
+| `docs/`     | Documentation improvements               | `docs/improve-contributing-guide`    |
+| `refactor/` | Code refactoring (no functional changes) | `refactor/story-workspace-state`     |
+| `style/`    | Formatting, CSS adjustments, UI tweaks   | `style/fix-input-padding`            |
+| `test/`     | Adding or updating tests                 | `test/character-portrait-controller` |
+| `chore/`    | Maintenance tasks, dependency updates    | `chore/update-dependencies`          |
 
 ---
 
@@ -362,6 +371,7 @@ StorySparkAI enforces the **Conventional Commits** specification. Commit message
 ```
 
 #### Message Components:
+
 1. **`type`** (Required): Must be one of:
    - `feat`: A new feature
    - `fix`: A bug fix
@@ -409,6 +419,7 @@ git push origin <type>/<short-description>
 When submitting a Pull Request that introduces user-facing changes, bug fixes, or notable enhancements, please update `CHANGELOG.md`:
 
 Add your entry under the `[Unreleased]` header under the appropriate sub-category:
+
 - `Added` for new features.
 - `Changed` for changes in existing functionality.
 - `Deprecated` for soon-to-be removed features.
@@ -421,6 +432,7 @@ Add your entry under the `[Unreleased]` header under the appropriate sub-categor
 ## 8. Common Troubleshooting
 
 ### `pnpm install` or `npm install` fails
+
 - Ensure you are running Node.js version `v20.x` (`node -v`).
 - Clear cache and reinstall:
   ```bash
@@ -429,6 +441,7 @@ Add your entry under the `[Unreleased]` header under the appropriate sub-categor
   ```
 
 ### Port already in use (`5000`, `4001`, or `5173`)
+
 - Kill the process listening on the port:
   ```bash
   # Windows PowerShell
@@ -439,10 +452,12 @@ Add your entry under the `[Unreleased]` header under the appropriate sub-categor
   ```
 
 ### Environment variables not loading
+
 - Verify `.env` files exist in both `frontend/` and `backend/` directories (copied from `.env.example`).
 - Restart the development servers after changing any `.env` file.
 
 ### MongoDB Connection Errors
+
 - Check that your MongoDB server is active (`mongod` or local MongoDB Windows Service).
 - Verify `DATABASE_URL` in `backend/.env` points to a valid MongoDB URI.
 

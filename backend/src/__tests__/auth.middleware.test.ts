@@ -60,7 +60,7 @@ describe("auth middleware", () => {
       expect.objectContaining({
         statusCode: httpStatus.UNAUTHORIZED,
         message: expect.stringContaining("Cookie-based authentication"),
-      })
+      }),
     );
   });
 

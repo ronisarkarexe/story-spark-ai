@@ -12,7 +12,6 @@ import AuthContext from "../../auth.context";
 import { ProfileCompletionIndicator } from "./ProfileCompletionIndicator";
 import { instance } from "../../../helpers/axios/axiosInstance";
 
-
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();
   const [updateProfile] = useUpdateProfileMutation();
@@ -40,7 +39,7 @@ const ProfileComponent = () => {
     }
 
     const confirmed = window.confirm(
-      "This will permanently delete your account and all related data. Continue?"
+      "This will permanently delete your account and all related data. Continue?",
     );
 
     if (!confirmed) {
@@ -74,7 +73,7 @@ const ProfileComponent = () => {
               {/* Basic Info Section */}
               <div>
                 <div className="h-6 bg-slate-200 dark:bg-slate-700/50 rounded-md w-36 mb-6 border-b border-slate-200 dark:border-slate-800 pb-2" />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <div className="h-4 bg-slate-200 dark:bg-slate-700/40 rounded-md w-20 mb-2" />
@@ -98,7 +97,7 @@ const ProfileComponent = () => {
               {/* Social Links Section */}
               <div>
                 <div className="h-6 bg-slate-200 dark:bg-slate-700/50 rounded-md w-28 mb-6 border-b border-slate-200 dark:border-slate-800 pb-2" />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[...Array(4)].map((_, i) => (
                     <div key={i}>
@@ -112,10 +111,13 @@ const ProfileComponent = () => {
               {/* Account Status Section */}
               <div>
                 <div className="h-6 bg-slate-200 dark:bg-slate-700/50 rounded-md w-32 mb-6 border-b border-slate-200 dark:border-slate-800 pb-2" />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="bg-slate-100 border border-slate-200 dark:bg-slate-900/40 p-4 rounded-lg dark:border-slate-700/30">
+                    <div
+                      key={i}
+                      className="bg-slate-100 border border-slate-200 dark:bg-slate-900/40 p-4 rounded-lg dark:border-slate-700/30"
+                    >
                       <div className="h-4 bg-slate-200 dark:bg-slate-700/40 rounded-md w-12 mb-2" />
                       <div className="h-6 bg-slate-200 dark:bg-slate-700/50 rounded-md w-20" />
                     </div>
@@ -161,7 +163,5 @@ const ProfileComponent = () => {
     </div>
   );
 };
-
-
 
 export default ProfileComponent;

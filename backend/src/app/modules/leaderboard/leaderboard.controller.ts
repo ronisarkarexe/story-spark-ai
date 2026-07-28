@@ -3,7 +3,10 @@ import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
 import httpStatus from "http-status";
 
-export const getWeeklyLeaderboard = async (_req: Request, res: Response): Promise<void> => {
+export const getWeeklyLeaderboard = async (
+  _req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);

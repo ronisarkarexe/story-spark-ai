@@ -4,7 +4,7 @@ export type StoryExportExtension = "md" | "docx" | "pdf";
 
 export const getSafeFileName = (
   title: string,
-  extension: StoryExportExtension
+  extension: StoryExportExtension,
 ): string => {
   const safeTitle = (title || "story")
     .trim()
@@ -89,15 +89,18 @@ export const createWorkspaceDocxBlob = ({
   dateStr,
   chapters,
 }: WorkspaceDocxParams): Blob => {
-  const chaptersHtml = chapters.length === 0
-    ? "<p><em>No chapters in this story.</em></p>"
-    : chapters.map((ch) => {
-        const paragraphs = ch.content
-          .split(/\n+/)
-          .map((p) => `<p>${escapeHtml(p.trim())}</p>`)
-          .join("");
-        return `<h2>${escapeHtml(ch.title)}</h2>${paragraphs}`;
-      }).join("<hr/>");
+  const chaptersHtml =
+    chapters.length === 0
+      ? "<p><em>No chapters in this story.</em></p>"
+      : chapters
+          .map((ch) => {
+            const paragraphs = ch.content
+              .split(/\n+/)
+              .map((p) => `<p>${escapeHtml(p.trim())}</p>`)
+              .join("");
+            return `<h2>${escapeHtml(ch.title)}</h2>${paragraphs}`;
+          })
+          .join("<hr/>");
 
   const html = `<!doctype html>
 <html>
@@ -207,7 +210,10 @@ export const exportWorkspacePDF = ({
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(99, 102, 241);
-      const splitChTitle = doc.splitTextToSize(chapter.title || `Chapter ${index + 1}`, printableWidth);
+      const splitChTitle = doc.splitTextToSize(
+        chapter.title || `Chapter ${index + 1}`,
+        printableWidth,
+      );
       splitChTitle.forEach((line: string) => {
         if (yCursor > maxY) {
           doc.addPage();
@@ -271,7 +277,8 @@ export const exportWorkspacePDF = ({
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
-      const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
+      const headerTitle =
+        title.length > 50 ? title.substring(0, 50) + "..." : title;
       doc.text(headerTitle, 190, 14, { align: "right" });
 
       doc.setDrawColor(241, 245, 249);

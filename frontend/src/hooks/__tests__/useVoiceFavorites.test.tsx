@@ -116,7 +116,7 @@ describe("useVoiceFavorites", () => {
 
     expect(global.localStorage.setItem).toHaveBeenCalledWith(
       FAVORITES_STORAGE_KEY,
-      expect.any(String)
+      expect.any(String),
     );
   });
 

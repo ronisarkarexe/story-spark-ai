@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const LazyImage = ({ src, alt, className, ...props }) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -35,19 +35,19 @@ const LazyImage = ({ src, alt, className, ...props }) => {
 
   return (
     <div
-      className={`lazy-image-container ${className || ''}`}
+      className={`lazy-image-container ${className || ""}`}
       style={{
-        filter: isLoaded ? 'none' : 'blur(10px)',
-        transition: 'filter 0.3s',
+        filter: isLoaded ? "none" : "blur(10px)",
+        transition: "filter 0.3s",
       }}
     >
       <img
-        src={hasError ? '' : src}
+        src={hasError ? "" : src}
         alt={alt}
         loading="lazy"
         style={{
           opacity: isLoaded ? 1 : 0,
-          transition: 'opacity 0.3s',
+          transition: "opacity 0.3s",
         }}
         {...props}
       />

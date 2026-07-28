@@ -23,9 +23,9 @@ Thank you for helping keep **StorySparkAI** and its users safe. We take security
 
 We actively maintain and apply security fixes to the following versions:
 
-| Version / Branch | Supported          |
-| ---------------- | ------------------ |
-| `main` (latest)  | ✅ Actively supported |
+| Version / Branch | Supported                         |
+| ---------------- | --------------------------------- |
+| `main` (latest)  | ✅ Actively supported             |
 | Older branches   | ❌ Not supported — please upgrade |
 
 Only the `main` branch receives security patches. If you are running a forked or older version, we strongly recommend syncing with `main`.
@@ -80,13 +80,13 @@ The more detail you provide, the faster we can act.
 
 Once you submit a report, here is what to expect:
 
-| Timeline | Action |
-| -------- | ------ |
-| **Within 48 hours** | We acknowledge receipt of your report |
-| **Within 5 days** | We confirm whether the issue is valid and assess severity |
-| **Within 14 days** | We aim to have a patch ready for valid high/critical issues |
-| **Within 30 days** | We aim to resolve all valid reported issues |
-| **After fix is released** | We coordinate public disclosure with you |
+| Timeline                  | Action                                                      |
+| ------------------------- | ----------------------------------------------------------- |
+| **Within 48 hours**       | We acknowledge receipt of your report                       |
+| **Within 5 days**         | We confirm whether the issue is valid and assess severity   |
+| **Within 14 days**        | We aim to have a patch ready for valid high/critical issues |
+| **Within 30 days**        | We aim to resolve all valid reported issues                 |
+| **After fix is released** | We coordinate public disclosure with you                    |
 
 We will keep you updated throughout the process and credit you in the release notes (unless you prefer to remain anonymous).
 
@@ -102,6 +102,7 @@ We follow a **coordinated disclosure** model:
 4. We publicly disclose the vulnerability (after the fix is live), crediting you if you wish
 
 We ask that you:
+
 - Give us a reasonable amount of time to fix the issue before any public disclosure
 - Avoid exploiting the vulnerability beyond what is needed to demonstrate it
 - Do not access or modify other users' data without explicit permission
@@ -113,6 +114,7 @@ We ask that you:
 The following are **in scope** for security reports:
 
 ### Authentication & Authorization
+
 - JWT token issues (weak secrets, missing expiry, algorithm confusion)
 - Google OAuth misconfiguration or token leakage
 - OTP verification bypass or brute-force vulnerabilities
@@ -121,6 +123,7 @@ The following are **in scope** for security reports:
 - Privilege escalation (e.g., regular user accessing admin endpoints)
 
 ### API & Backend (Node.js / Express)
+
 - Injection attacks (SQL, NoSQL/MongoDB injection, command injection)
 - Broken access control on REST API endpoints
 - Sensitive data exposure in API responses (passwords, tokens, keys)
@@ -130,6 +133,7 @@ The following are **in scope** for security reports:
 - Server-Side Request Forgery (SSRF)
 
 ### Frontend (React / Vite / TypeScript)
+
 - Cross-Site Scripting (XSS) — stored, reflected, or DOM-based
 - Cross-Site Request Forgery (CSRF)
 - Sensitive data (API keys, tokens) exposed in client-side code or `.env` files
@@ -137,15 +141,18 @@ The following are **in scope** for security reports:
 - Clickjacking vulnerabilities
 
 ### Data & Storage
+
 - MongoDB misconfiguration or unauthorized data access
 - Exposure of user PII (names, emails, passwords)
 - Insecure storage of secrets or credentials
 
 ### AI Integration
+
 - Prompt injection attacks that manipulate AI-generated story output maliciously
 - Leakage of AI API keys through responses or client bundles
 
 ### Infrastructure / Configuration
+
 - Exposed `.env` files or secrets committed to the repository
 - Misconfigured CORS policy allowing unauthorized origins
 - Security headers missing (CSP, HSTS, X-Frame-Options, etc.)
@@ -174,28 +181,33 @@ The following are **not considered valid** security reports for this project:
 If you are contributing code to StorySparkAI, please follow these guidelines:
 
 ### Environment & Secrets
+
 - **Never commit** `.env` files, API keys, JWT secrets, or database credentials
 - Use `.env.example` with placeholder values for documentation
 - All secrets must be injected via environment variables — never hardcoded
 
 ### Authentication
+
 - Always validate and sanitize user input on both frontend and backend
 - JWT tokens must have a reasonable expiry (`expiresIn`)
 - Refresh token rotation should invalidate old tokens on use
 - Always verify OTP server-side — never trust client-side OTP checks
 
 ### API Design
+
 - Apply authentication middleware to all protected routes
 - Validate request body schemas (use libraries like `zod` or `joi`)
 - Never expose raw MongoDB `_id` fields or internal error stack traces in API responses
 - Apply rate limiting to login, signup, OTP, and password-reset endpoints
 
 ### Dependencies
+
 - Keep `npm` dependencies up to date
 - Run `npm audit` regularly and address high/critical findings before opening a PR
 - Do not add dependencies with known unpatched vulnerabilities
 
 ### Frontend
+
 - Never store JWT tokens in `localStorage` — prefer `httpOnly` cookies or memory
 - Sanitize any user-generated content before rendering it in the DOM
 - Do not expose backend URLs, API keys, or secrets in the Vite client bundle
@@ -206,14 +218,14 @@ If you are contributing code to StorySparkAI, please follow these guidelines:
 
 The following areas of the codebase handle sensitive logic and deserve extra care during review and contribution:
 
-| Area | Sensitivity | Notes |
-| ---- | ----------- | ----- |
-| Authentication controllers and middleware | 🔴 High | Login, signup, Google OAuth, OTP handling |
-| JWT utility / helper modules | 🔴 High | Token generation, signing, and verification |
-| User controller / profile management | 🟠 Medium | User deletion, profile updates, account actions |
-| Signup / Login frontend pages | 🟠 Medium | Form validation, password handling, token storage |
-| Environment configuration files (`.env`) | 🔴 High | Must never be committed — contains API keys and secrets |
-| AI story generation endpoints | 🟠 Medium | Prompt injection surface — sanitize all user input |
+| Area                                      | Sensitivity | Notes                                                   |
+| ----------------------------------------- | ----------- | ------------------------------------------------------- |
+| Authentication controllers and middleware | 🔴 High     | Login, signup, Google OAuth, OTP handling               |
+| JWT utility / helper modules              | 🔴 High     | Token generation, signing, and verification             |
+| User controller / profile management      | 🟠 Medium   | User deletion, profile updates, account actions         |
+| Signup / Login frontend pages             | 🟠 Medium   | Form validation, password handling, token storage       |
+| Environment configuration files (`.env`)  | 🔴 High     | Must never be committed — contains API keys and secrets |
+| AI story generation endpoints             | 🟠 Medium   | Prompt injection surface — sanitize all user input      |
 
 ---
 
@@ -221,7 +233,7 @@ The following areas of the codebase handle sensitive logic and deserve extra car
 
 We sincerely thank everyone who has responsibly disclosed security issues to us. Your efforts make StorySparkAI safer for everyone.
 
-*No disclosures yet — be the first! 🛡️*
+_No disclosures yet — be the first! 🛡️_
 
 ---
 

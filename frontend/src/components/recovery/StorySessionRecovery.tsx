@@ -10,10 +10,7 @@ interface Props {
   onRestore?: (story: string) => void;
 }
 
-export default function StorySessionRecovery({
-  story,
-  onRestore,
-}: Props) {
+export default function StorySessionRecovery({ story, onRestore }: Props) {
   const [draft, setDraft] = useState(getRecoveredDraft());
 
   useEffect(() => {
@@ -24,10 +21,7 @@ export default function StorySessionRecovery({
 
   return (
     <div className="bg-yellow-100 border border-yellow-400 rounded-xl p-6 mb-6">
-
-      <h2 className="text-xl font-bold">
-        💾 Recovered Draft Available
-      </h2>
+      <h2 className="text-xl font-bold">💾 Recovered Draft Available</h2>
 
       <p className="mt-2">
         Last Auto Save:
@@ -35,7 +29,6 @@ export default function StorySessionRecovery({
       </p>
 
       <div className="flex gap-3 mt-6">
-
         <button
           onClick={() => onRestore?.(draft.content)}
           className="px-4 py-2 bg-green-600 text-white rounded"
@@ -52,9 +45,7 @@ export default function StorySessionRecovery({
         >
           Discard
         </button>
-
       </div>
-
     </div>
   );
 }

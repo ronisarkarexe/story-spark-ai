@@ -8,7 +8,7 @@ export interface PromptOptions {
   tone?: string;
   genre?: string;
   targetAudience?: string;
-  length?: 'short' | 'medium' | 'long';
+  length?: "short" | "medium" | "long";
 }
 
 export interface StructuredPrompt {
@@ -65,7 +65,7 @@ const normalizeGenre = (genre?: string): string => {
 };
 
 const getGenreInstruction = (
-  genre?: string
+  genre?: string,
 ): { genre: string; instruction: string } => {
   const normalizedGenre = normalizeGenre(genre);
 
@@ -85,13 +85,13 @@ const getGenreInstruction = (
 
 export const buildStoryPrompt = (
   userInput: string,
-  options: PromptOptions = {}
+  options: PromptOptions = {},
 ): StructuredPrompt => {
   const {
-    tone = 'creative and engaging',
-    genre = 'general fiction',
-    targetAudience = 'general audience',
-    length = 'medium'
+    tone = "creative and engaging",
+    genre = "general fiction",
+    targetAudience = "general audience",
+    length = "medium",
   } = options;
 
   const resolvedGenre = getGenreInstruction(genre);
@@ -121,6 +121,6 @@ EXPECTED JSON SCHEMA:
 
   return {
     systemPrompt,
-    userPrompt
+    userPrompt,
   };
 };

@@ -9,7 +9,9 @@ export const ProfileSavedStoriesSection = () => {
     limit: 1,
   });
 
-  const [sessionCount, setSessionCount] = useState(() => getSessionBookmarks().length);
+  const [sessionCount, setSessionCount] = useState(
+    () => getSessionBookmarks().length,
+  );
 
   useEffect(() => {
     const handleBookmarkChange = () => {
@@ -17,7 +19,10 @@ export const ProfileSavedStoriesSection = () => {
     };
     window.addEventListener("session_bookmarks_changed", handleBookmarkChange);
     return () => {
-      window.removeEventListener("session_bookmarks_changed", handleBookmarkChange);
+      window.removeEventListener(
+        "session_bookmarks_changed",
+        handleBookmarkChange,
+      );
     };
   }, []);
 

@@ -44,7 +44,7 @@ const getPublishedPostsByAuthor = catchAsync(
     const result = await PostService.getPublishedPostsByAuthor(
       token,
       filters,
-      pagination
+      pagination,
     );
 
     sendResponse<IPost[]>(res, {
@@ -54,7 +54,7 @@ const getPublishedPostsByAuthor = catchAsync(
       data: result.data,
       meta: result.meta,
     });
-  }
+  },
 );
 
 const getLatestPosts = catchAsync(async (req: Request, res: Response) => {
@@ -90,7 +90,7 @@ const doFeaturedPosts = catchAsync(async (req: Request, res: Response) => {
 
 const getSinglePost = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
-  
+
   let token = null;
   try {
     token = await getToken(req);

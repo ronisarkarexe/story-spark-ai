@@ -20,16 +20,10 @@ export const hasIssues = (analysis: PlotAnalysis) => {
   return analysis.issues.length > 0;
 };
 
-export const getHighSeverityIssues = (
-  analysis: PlotAnalysis
-) => {
-  return analysis.issues.filter(
-    (issue) => issue.severity === "High"
-  );
+export const getHighSeverityIssues = (analysis: PlotAnalysis) => {
+  return analysis.issues.filter((issue) => issue.severity === "High");
 };
 
-export const rerunAnalysis = (
-  story: string
-): PlotAnalysis => {
+export const rerunAnalysis = (story: string): PlotAnalysis => {
   return analyzeStory(story);
 };

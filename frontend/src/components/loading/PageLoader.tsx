@@ -9,7 +9,8 @@ const PageLoader: React.FC = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #0b1120 0%, #111827 50%, #0f172a 100%)",
+        background:
+          "linear-gradient(180deg, #0b1120 0%, #111827 50%, #0f172a 100%)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -35,7 +36,8 @@ const PageLoader: React.FC = () => {
             height: 56,
             borderRadius: "16px",
             background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa)",
-            boxShadow: "0 0 32px rgba(99,102,241,0.5), 0 0 64px rgba(139,92,246,0.2)",
+            boxShadow:
+              "0 0 32px rgba(99,102,241,0.5), 0 0 64px rgba(139,92,246,0.2)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

@@ -11,7 +11,9 @@ export const getSessionBookmarks = (): IStories[] => {
     if (!data) return [];
     const parsed = JSON.parse(data);
     if (!Array.isArray(parsed)) {
-      console.warn("Session bookmarks data is corrupted (not an array). Resetting.");
+      console.warn(
+        "Session bookmarks data is corrupted (not an array). Resetting.",
+      );
       sessionStorage.removeItem(SESSION_KEY);
       return [];
     }

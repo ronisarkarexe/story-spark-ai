@@ -68,7 +68,9 @@ describe("loadRazorpayScript", () => {
     expect(appendSpy).toHaveBeenCalled();
     const appendedScript = appendSpy.mock.calls[0][0] as HTMLScriptElement;
     expect(appendedScript.id).toBe("razorpay-script");
-    expect(appendedScript.src).toBe("https://checkout.razorpay.com/v1/checkout.js");
+    expect(appendedScript.src).toBe(
+      "https://checkout.razorpay.com/v1/checkout.js",
+    );
 
     // Trigger onload to resolve the promise
     appendedScript.onload?.({} as Event);

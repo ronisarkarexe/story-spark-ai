@@ -12,13 +12,17 @@ const limiter = createRateLimiter({
   actionLabel: "free generation",
   buildMessage: (retryAfterSec) =>
     `Daily limit for free generations reached. Try again after ${Math.ceil(
-      retryAfterSec / 3600
+      retryAfterSec / 3600,
     )} hours or sign in to use your monthly quota.`,
 });
 
 // Skip the IP-based free limiter for authenticated users.
 // Authenticated users are governed by the per-user storyGenerationRateLimiter instead.
-export const freeAiRateLimiter = (req: Request, res: Response, next: NextFunction) => {
+export const freeAiRateLimiter = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   if ((req as any).user) return next();
   return limiter(req, res, next);
 };

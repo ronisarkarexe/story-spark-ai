@@ -14,17 +14,16 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  AnalysisController.getDashboardAnalysis
+  AnalysisController.getDashboardAnalysis,
 );
 
 // Route to analyze generated story content
 router.post(
   "/analyze-story",
   validateRequest(AnalysisValidator.analyzeStorySchema),
-  AnalysisController.analyzeStory
+  AnalysisController.analyzeStory,
 );
 
 export const AnalysisRouter = router;
-

@@ -22,9 +22,7 @@ const StoryVersionHistory = ({
 
   // Load saved versions
   useEffect(() => {
-    const savedVersions = localStorage.getItem(
-      `story-versions-${story.uuid}`
-    );
+    const savedVersions = localStorage.getItem(`story-versions-${story.uuid}`);
 
     if (savedVersions) {
       setVersions(JSON.parse(savedVersions));
@@ -42,9 +40,7 @@ const StoryVersionHistory = ({
     };
 
     setVersions((prev) => {
-      const exists = prev.some(
-        (version) => version.content === story.content
-      );
+      const exists = prev.some((version) => version.content === story.content);
 
       if (exists) return prev;
 
@@ -52,7 +48,7 @@ const StoryVersionHistory = ({
 
       localStorage.setItem(
         `story-versions-${story.uuid}`,
-        JSON.stringify(updatedVersions)
+        JSON.stringify(updatedVersions),
       );
 
       return updatedVersions;
@@ -81,9 +77,7 @@ const StoryVersionHistory = ({
                   <p className="text-white font-semibold">
                     Version {versions.length - index}
                   </p>
-                  <p className="text-xs text-slate-400">
-                    {version.timestamp}
-                  </p>
+                  <p className="text-xs text-slate-400">{version.timestamp}</p>
                 </div>
 
                 <button

@@ -46,10 +46,7 @@ const ReviewSchema = new Schema<IReview, ReviewModel>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export const Review = model<IReview, ReviewModel>(
-  "Review",
-  ReviewSchema
-);
+export const Review = model<IReview, ReviewModel>("Review", ReviewSchema);

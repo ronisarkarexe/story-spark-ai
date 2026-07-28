@@ -21,7 +21,10 @@ const Blog = () => {
 
   return (
     <div className="relative min-h-screen bg-white text-slate-900 px-6 py-16 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white overflow-hidden">
-      <div className="absolute top-10 left-16 w-3 h-3 rounded-full bg-yellow-400 opacity-70" aria-hidden="true" />
+      <div
+        className="absolute top-10 left-16 w-3 h-3 rounded-full bg-yellow-400 opacity-70"
+        aria-hidden="true"
+      />
       <div className="absolute top-24 right-24 w-2 h-2 rounded-full bg-pink-400 opacity-60" />
       <div className="absolute bottom-32 right-16 w-3 h-3 rounded-full bg-purple-400 opacity-60" />
 
@@ -34,7 +37,8 @@ const Blog = () => {
         </h1>
 
         <p className="text-lg text-slate-600 leading-8 dark:text-gray-300">
-          Explore articles, updates, and creative insights from the StorySparkAI community.
+          Explore articles, updates, and creative insights from the StorySparkAI
+          community.
         </p>
 
         <div className="mt-10 bg-gray-50 p-6 rounded-2xl border border-gray-200 dark:bg-zinc-900 dark:border-zinc-800">
@@ -42,9 +46,15 @@ const Blog = () => {
             Latest Topics
           </h2>
           <ul className="space-y-2 text-slate-600 dark:text-gray-300">
-            <li><span aria-hidden="true">📖</span> AI-powered storytelling</li>
-            <li><span aria-hidden="true">✍️</span> Creative writing tips</li>
-            <li><span aria-hidden="true">🚀</span> Open-source updates</li>
+            <li>
+              <span aria-hidden="true">📖</span> AI-powered storytelling
+            </li>
+            <li>
+              <span aria-hidden="true">✍️</span> Creative writing tips
+            </li>
+            <li>
+              <span aria-hidden="true">🚀</span> Open-source updates
+            </li>
           </ul>
         </div>
 
@@ -56,11 +66,13 @@ const Blog = () => {
                 index === 0
                   ? "bg-gradient-to-br from-blue-600 to-indigo-700"
                   : index === 1
-                  ? "bg-gradient-to-br from-violet-600 to-purple-700"
-                  : "bg-gradient-to-br from-pink-500 to-rose-600"
+                    ? "bg-gradient-to-br from-violet-600 to-purple-700"
+                    : "bg-gradient-to-br from-pink-500 to-rose-600"
               }`}
             >
-              <h3 className="text-xl font-semibold mb-2 text-white">{post.title}</h3>
+              <h3 className="text-xl font-semibold mb-2 text-white">
+                {post.title}
+              </h3>
               <p className="text-white/80">{post.description}</p>
               <a
                 href={post.link}

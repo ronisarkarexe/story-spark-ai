@@ -29,7 +29,8 @@ export interface IAlternateEnding {
   fullStory: string;
 }
 
-export type RemixType = "setting" | "perspective" | "time_period" | "tone" | "gender_swap";
+export type RemixType =
+  "setting" | "perspective" | "time_period" | "tone" | "gender_swap";
 
 export interface ITranslatePayload {
   title: string;

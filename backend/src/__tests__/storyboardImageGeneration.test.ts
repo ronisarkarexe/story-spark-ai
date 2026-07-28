@@ -61,7 +61,7 @@ describe("storyboard_image_generation", () => {
           headers: expect.objectContaining({
             Authorization: "Bearer sk-mock-openai-key",
           }),
-        })
+        }),
       );
       expect(result).toBe("data:image/png;base64,mockbase64openai");
     });
@@ -71,7 +71,9 @@ describe("storyboard_image_generation", () => {
       config.gemini_api_key = "mock-gemini-key";
 
       const mockJsonPromise = Promise.resolve({
-        predictions: [{ bytesBase64Encoded: "mockbase64google", mimeType: "image/jpeg" }],
+        predictions: [
+          { bytesBase64Encoded: "mockbase64google", mimeType: "image/jpeg" },
+        ],
       });
       const mockFetchPromise = Promise.resolve({
         ok: true,
@@ -95,7 +97,7 @@ describe("storyboard_image_generation", () => {
               outputMimeType: "image/jpeg",
             },
           }),
-        })
+        }),
       );
       expect(result).toBe("data:image/jpeg;base64,mockbase64google");
     });
@@ -105,7 +107,9 @@ describe("storyboard_image_generation", () => {
       config.gemini_api_key = "mock-gemini-key";
 
       const mockJsonPromise = Promise.resolve({
-        predictions: [{ bytesBase64Encoded: "mockbase64google", mimeType: "image/png" }],
+        predictions: [
+          { bytesBase64Encoded: "mockbase64google", mimeType: "image/png" },
+        ],
       });
       const mockFetchPromise = Promise.resolve({
         ok: true,
@@ -136,7 +140,7 @@ describe("storyboard_image_generation", () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
       expect(global.fetch).toHaveBeenCalledWith(
         "https://api.openai.com/v1/images/generations",
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(result).toBe("https://openai.com/mock.png");
     });
@@ -157,7 +161,7 @@ describe("storyboard_image_generation", () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
       expect(global.fetch).toHaveBeenCalledWith(
         "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=mock-gemini-key",
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(result).toBe("data:image/jpeg;base64,mockbase64google");
     });

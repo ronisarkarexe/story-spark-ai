@@ -5,17 +5,11 @@ interface Props {
   story: string;
 }
 
-export default function StoryComplexityAnalyzer({
-  story,
-}: Props) {
-  const analysis = useMemo(
-    () => analyzeStoryComplexity(story),
-    [story]
-  );
+export default function StoryComplexityAnalyzer({ story }: Props) {
+  const analysis = useMemo(() => analyzeStoryComplexity(story), [story]);
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-
       <h2 className="text-2xl font-bold text-white mb-6">
         📊 Story Complexity Analyzer
       </h2>
@@ -32,7 +26,6 @@ export default function StoryComplexityAnalyzer({
       </div>
 
       <div className="grid md:grid-cols-2 gap-4 mb-6">
-
         <div>📚 Vocabulary: {analysis.vocabularyScore}</div>
 
         <div>📝 Sentence Structure: {analysis.sentenceScore}</div>
@@ -40,23 +33,17 @@ export default function StoryComplexityAnalyzer({
         <div>📖 Narrative Depth: {analysis.narrativeScore}</div>
 
         <div>🎯 Plot Development: {analysis.plotScore}</div>
-
       </div>
 
       <div>
-
-        <h3 className="font-semibold text-white mb-3">
-          Suggestions
-        </h3>
+        <h3 className="font-semibold text-white mb-3">Suggestions</h3>
 
         <ul className="list-disc ml-5 text-gray-300">
           {analysis.suggestions.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
-
       </div>
-
     </div>
   );
 }

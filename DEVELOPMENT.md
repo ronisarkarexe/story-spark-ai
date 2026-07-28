@@ -6,9 +6,9 @@ This document provides a concise, step-by-step guide to set up, run, and test th
 
 ## Prerequisites
 
-* Node.js 20.x (recommended)
-* npm 9+ or pnpm 9+
-* Python 3.10+ (required only to run the optional ML demo)
+- Node.js 20.x (recommended)
+- npm 9+ or pnpm 9+
+- Python 3.10+ (required only to run the optional ML demo)
 
 Use a version manager (for example `nvm` or `volta`) to manage Node.js versions.
 
@@ -70,9 +70,9 @@ Follow the output of each command for service URLs and status messages.
 
 ## Project structure
 
-* `frontend/` — React + Vite application (UI)
-* `backend/` — Express API, services, and ML helpers
-* `ARCHITECTURE.md` — architecture and design documentation
+- `frontend/` — React + Vite application (UI)
+- `backend/` — Express API, services, and ML helpers
+- `ARCHITECTURE.md` — architecture and design documentation
 
 ## Environment Variables
 
@@ -94,9 +94,9 @@ Copy-Item frontend\.env.example frontend\.env
 
 Typical development placeholders:
 
-* `MONGODB_URI` (e.g. `mongodb://localhost:27017/storyspark-dev`)
-* `JWT_SECRET` (a random string for local development)
-* `OPENAI_API_KEY` or `GOOGLE_GEMINI_KEY` (if available)
+- `MONGODB_URI` (e.g. `mongodb://localhost:27017/storyspark-dev`)
+- `JWT_SECRET` (a random string for local development)
+- `OPENAI_API_KEY` or `GOOGLE_GEMINI_KEY` (if available)
 
 If API keys are not provided, features that depend on external services will not function; core frontend and backend functionality can still be exercised.
 
@@ -136,13 +136,13 @@ After starting both services, verify that the development environment is working
 
 Frontend:
 
-* Open the Vite development URL in your browser.
-* Confirm that the application loads without errors.
+- Open the Vite development URL in your browser.
+- Confirm that the application loads without errors.
 
 Backend:
 
-* Confirm that the server starts successfully.
-* Check startup logs for successful initialization and database connection messages.
+- Confirm that the server starts successfully.
+- Check startup logs for successful initialization and database connection messages.
 
 ## Tests and linters
 
@@ -186,32 +186,32 @@ Install `concurrently` as a development dependency if this pattern is used.
 
 ## Common troubleshooting
 
-* Streamlit `FileNotFoundError`: verify that required ML artifacts are available under the configured artifacts directory (for example `backend/ml/saved/`).
-* Rate limiting during local testing: review rate-limiter middleware in `backend/src/app/middleware` and adjust settings for development if necessary.
-* Seeding an admin user: review and run the seed script in `backend/scripts/seed-admin.ts` if needed.
-* Windows path issues: use PowerShell examples above or WSL when applicable.
+- Streamlit `FileNotFoundError`: verify that required ML artifacts are available under the configured artifacts directory (for example `backend/ml/saved/`).
+- Rate limiting during local testing: review rate-limiter middleware in `backend/src/app/middleware` and adjust settings for development if necessary.
+- Seeding an admin user: review and run the seed script in `backend/scripts/seed-admin.ts` if needed.
+- Windows path issues: use PowerShell examples above or WSL when applicable.
 
 ## First-Time Contributor Checklist
 
 Before creating your first pull request, ensure that:
 
-* [ ] Dependencies are installed successfully.
-* [ ] Environment variables are configured.
-* [ ] Database services are running and accessible.
-* [ ] Frontend starts successfully.
-* [ ] Backend starts successfully.
-* [ ] Tests pass locally.
-* [ ] Linters pass locally.
-* [ ] `CONTRIBUTING.md` has been reviewed.
+- [ ] Dependencies are installed successfully.
+- [ ] Environment variables are configured.
+- [ ] Database services are running and accessible.
+- [ ] Frontend starts successfully.
+- [ ] Backend starts successfully.
+- [ ] Tests pass locally.
+- [ ] Linters pass locally.
+- [ ] `CONTRIBUTING.md` has been reviewed.
 
 ## Contributing notes
 
-* Follow the project's `CONTRIBUTING.md` for PR conventions and code style.
-* Keep changes focused and incremental; open an issue for larger proposals before implementing.
-* When adding environment variables, update `backend/.env.example` and this document accordingly.
+- Follow the project's `CONTRIBUTING.md` for PR conventions and code style.
+- Keep changes focused and incremental; open an issue for larger proposals before implementing.
+- When adding environment variables, update `backend/.env.example` and this document accordingly.
 
 ## References
 
-* Project overview: `README.md`
-* Contribution guidelines: `CONTRIBUTING.md`
-* Architecture: `ARCHITECTURE.md`
+- Project overview: `README.md`
+- Contribution guidelines: `CONTRIBUTING.md`
+- Architecture: `ARCHITECTURE.md`

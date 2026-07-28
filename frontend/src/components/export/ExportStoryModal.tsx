@@ -24,13 +24,9 @@ export default function ExportStoryModal({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="mb-4 text-2xl font-bold">
-          Export Story
-        </h2>
+        <h2 className="mb-4 text-2xl font-bold">Export Story</h2>
 
-        <label className="mb-2 block font-medium">
-          Choose Theme
-        </label>
+        <label className="mb-2 block font-medium">Choose Theme</label>
 
         <select
           value={theme}

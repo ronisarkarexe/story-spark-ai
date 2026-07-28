@@ -19,21 +19,28 @@ const PublicProfileComponent = () => {
   const isLogin = isLoggedIn();
   const isOwnProfile = currentUser?.userId === id;
 
-  const { data: user, isLoading: isUserLoading, isError: isUserError } = useGetUserByIdQuery(id || "");
+  const {
+    data: user,
+    isLoading: isUserLoading,
+    isError: isUserError,
+  } = useGetUserByIdQuery(id || "");
   const { data: postsData, isLoading: isPostsLoading } = useGetPostListsQuery(
     { author: id || "", limit: 12 },
-    { skip: !id }
+    { skip: !id },
   );
 
   const { data: followData } = useGetFollowStatusQuery(id || "", {
     skip: !id || !isLogin || isOwnProfile,
   });
 
-  const [toggleFollowMutation, { isLoading: isFollowToggling }] = useToggleFollowMutation();
+  const [toggleFollowMutation, { isLoading: isFollowToggling }] =
+    useToggleFollowMutation();
 
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"stories" | "collections">("stories");
+  const [activeTab, setActiveTab] = useState<"stories" | "collections">(
+    "stories",
+  );
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -72,9 +79,12 @@ const PublicProfileComponent = () => {
         <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center text-rose-500 mb-6 border border-rose-500/20">
           <i className="fas fa-exclamation-triangle text-3xl"></i>
         </div>
-        <h2 className="text-3xl font-black text-slate-800 dark:text-white mb-2">Writer Not Found</h2>
+        <h2 className="text-3xl font-black text-slate-800 dark:text-white mb-2">
+          Writer Not Found
+        </h2>
         <p className="text-slate-500 dark:text-gray-400 max-w-md mb-8 leading-relaxed">
-          The writer profile you are looking for does not exist or has been deactivated.
+          The writer profile you are looking for does not exist or has been
+          deactivated.
         </p>
         <button
           onClick={() => navigate("/")}
@@ -92,17 +102,20 @@ const PublicProfileComponent = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#070c18] py-12 px-4 sm:py-16 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-10">
-        
         {/* PROFILE CARD */}
         <div className="relative rounded-2xl border border-slate-200 bg-white/70 shadow-2xl backdrop-blur-md dark:border-white/[0.06] dark:bg-slate-900/60 overflow-hidden">
           {/* Header Banner Accent */}
           <div className="h-32 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
-          
+
           <div className="px-6 pb-8 sm:px-10 sm:pb-10 relative">
             {/* Avatar & Action Button Row */}
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-16 mb-6 gap-4">
               <div className="inline-block relative p-1 bg-white dark:bg-slate-900 rounded-full shadow-lg">
-                <SSProfile name={user.name} imageUrl={user.profile?.avatar} size="h-28 w-28" />
+                <SSProfile
+                  name={user.name}
+                  imageUrl={user.profile?.avatar}
+                  size="h-28 w-28"
+                />
               </div>
 
               <div className="flex gap-3">
@@ -149,7 +162,11 @@ const PublicProfileComponent = () => {
                   )}
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
-                  Joined on {new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
+                  Joined on{" "}
+                  {new Date(user.createdAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                  })}
                 </p>
               </div>
 
@@ -164,76 +181,77 @@ const PublicProfileComponent = () => {
               )}
 
               {/* Social Links */}
-              {user.profile?.social && Object.values(user.profile.social).some(Boolean) && (
-                <div className="flex flex-wrap gap-3 pt-2">
-                  {user.profile.social.github && (
-                    <a
-                      href={user.profile.social.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-                      title="GitHub"
-                    >
-                      <i className="fab fa-github text-lg"></i>
-                    </a>
-                  )}
-                  {user.profile.social.linkedin && (
-                    <a
-                      href={user.profile.social.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition"
-                      title="LinkedIn"
-                    >
-                      <i className="fab fa-linkedin text-lg"></i>
-                    </a>
-                  )}
-                  {user.profile.social.twitter && (
-                    <a
-                      href={user.profile.social.twitter}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-blue-400 dark:hover:text-blue-300 transition"
-                      title="Twitter"
-                    >
-                      <i className="fab fa-twitter text-lg"></i>
-                    </a>
-                  )}
-                  {user.profile.social.facebook && (
-                    <a
-                      href={user.profile.social.facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
-                      title="Facebook"
-                    >
-                      <i className="fab fa-facebook text-lg"></i>
-                    </a>
-                  )}
-                  {user.profile.social.instagram && (
-                    <a
-                      href={user.profile.social.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-pink-650 dark:hover:text-pink-400 transition"
-                      title="Instagram"
-                    >
-                      <i className="fab fa-instagram text-lg"></i>
-                    </a>
-                  )}
-                  {user.profile.social.discord && (
-                    <a
-                      href={user.profile.social.discord}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-indigo-500 dark:hover:text-indigo-400 transition"
-                      title="Discord"
-                    >
-                      <i className="fab fa-discord text-lg"></i>
-                    </a>
-                  )}
-                </div>
-              )}
+              {user.profile?.social &&
+                Object.values(user.profile.social).some(Boolean) && (
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    {user.profile.social.github && (
+                      <a
+                        href={user.profile.social.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                        title="GitHub"
+                      >
+                        <i className="fab fa-github text-lg"></i>
+                      </a>
+                    )}
+                    {user.profile.social.linkedin && (
+                      <a
+                        href={user.profile.social.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition"
+                        title="LinkedIn"
+                      >
+                        <i className="fab fa-linkedin text-lg"></i>
+                      </a>
+                    )}
+                    {user.profile.social.twitter && (
+                      <a
+                        href={user.profile.social.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-blue-400 dark:hover:text-blue-300 transition"
+                        title="Twitter"
+                      >
+                        <i className="fab fa-twitter text-lg"></i>
+                      </a>
+                    )}
+                    {user.profile.social.facebook && (
+                      <a
+                        href={user.profile.social.facebook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
+                        title="Facebook"
+                      >
+                        <i className="fab fa-facebook text-lg"></i>
+                      </a>
+                    )}
+                    {user.profile.social.instagram && (
+                      <a
+                        href={user.profile.social.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-pink-650 dark:hover:text-pink-400 transition"
+                        title="Instagram"
+                      >
+                        <i className="fab fa-instagram text-lg"></i>
+                      </a>
+                    )}
+                    {user.profile.social.discord && (
+                      <a
+                        href={user.profile.social.discord}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-xl text-slate-700 dark:text-gray-300 hover:text-indigo-500 dark:hover:text-indigo-400 transition"
+                        title="Discord"
+                      >
+                        <i className="fab fa-discord text-lg"></i>
+                      </a>
+                    )}
+                  </div>
+                )}
             </div>
 
             {/* Stats Counter Section */}
@@ -273,7 +291,6 @@ const PublicProfileComponent = () => {
                 </p>
               </button>
             </div>
-
           </div>
         </div>
 
@@ -309,7 +326,10 @@ const PublicProfileComponent = () => {
               {isPostsLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 animate-pulse">
+                    <div
+                      key={i}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 animate-pulse"
+                    >
                       <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
                       <div className="space-y-2">
                         <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
@@ -347,15 +367,22 @@ const PublicProfileComponent = () => {
 
                       <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
                         <div className="flex gap-4">
-                          <span><i className="fas fa-heart text-red-500/70 mr-1.5" />{post.likesCount || 0}</span>
-                          <span><i className="fas fa-eye text-blue-500/70 mr-1.5" />{post.viewsCount || 0}</span>
+                          <span>
+                            <i className="fas fa-heart text-red-500/70 mr-1.5" />
+                            {post.likesCount || 0}
+                          </span>
+                          <span>
+                            <i className="fas fa-eye text-blue-500/70 mr-1.5" />
+                            {post.viewsCount || 0}
+                          </span>
                         </div>
 
                         <Link
                           to={`/post/${post._id}`}
                           className="text-indigo-650 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold transition flex items-center gap-1"
                         >
-                          Read Story <i className="fas fa-arrow-right text-[10px]" />
+                          Read Story{" "}
+                          <i className="fas fa-arrow-right text-[10px]" />
                         </Link>
                       </div>
                     </div>
@@ -365,7 +392,9 @@ const PublicProfileComponent = () => {
                 <div className="rounded-2xl border border-dashed border-slate-350 dark:border-slate-800 bg-white/40 dark:bg-slate-900/10 p-12 text-center text-slate-450 dark:text-slate-500">
                   <i className="fas fa-book-open text-4xl mb-4 text-slate-350 dark:text-slate-700 block" />
                   <p className="font-semibold text-lg">No Stories Published</p>
-                  <p className="text-sm mt-1">This writer hasn't published any stories yet.</p>
+                  <p className="text-sm mt-1">
+                    This writer hasn't published any stories yet.
+                  </p>
                 </div>
               )}
             </>
@@ -395,7 +424,11 @@ const PublicProfileComponent = () => {
                     onClick={() => setShowFollowers(false)}
                     className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 border dark:border-slate-800/50 transition duration-150"
                   >
-                    <SSProfile name={follower.name} imageUrl={follower.profile?.avatar} size="h-10 w-10" />
+                    <SSProfile
+                      name={follower.name}
+                      imageUrl={follower.profile?.avatar}
+                      size="h-10 w-10"
+                    />
                     <p className="font-semibold text-slate-800 dark:text-gray-250 text-sm">
                       {follower.name}
                     </p>
@@ -435,7 +468,11 @@ const PublicProfileComponent = () => {
                     onClick={() => setShowFollowing(false)}
                     className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 border dark:border-slate-800/50 transition duration-150"
                   >
-                    <SSProfile name={followedUser.name} imageUrl={followedUser.profile?.avatar} size="h-10 w-10" />
+                    <SSProfile
+                      name={followedUser.name}
+                      imageUrl={followedUser.profile?.avatar}
+                      size="h-10 w-10"
+                    />
                     <p className="font-semibold text-slate-800 dark:text-gray-250 text-sm">
                       {followedUser.name}
                     </p>

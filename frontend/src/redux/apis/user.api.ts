@@ -73,7 +73,8 @@ const userApi = baseApi.injectEndpoints({
         url: `/${USER_URL}/${id}`,
         method: "GET",
       }),
-      transformResponse: (response: { data: User; message: string }) => response.data,
+      transformResponse: (response: { data: User; message: string }) =>
+        response.data,
       providesTags: [tagTypes.user],
     }),
   }),

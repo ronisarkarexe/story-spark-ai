@@ -14,7 +14,7 @@ jest.mock("razorpay", () =>
       create: (...args: unknown[]) => mockOrdersCreate(...args),
       fetch: (...args: unknown[]) => mockOrdersFetch(...args),
     },
-  }))
+  })),
 );
 
 const makeRes = (): Partial<Response> => ({
@@ -59,12 +59,12 @@ describe("payment.controller", () => {
           plan: "monthly",
           amount: 49900,
           status: "created",
-        })
+        }),
       );
       expect(mockOrdersCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           notes: expect.objectContaining({ userId: userId.toString() }),
-        })
+        }),
       );
       expect(res.status).toHaveBeenCalledWith(201);
     });
@@ -90,7 +90,10 @@ describe("payment.controller", () => {
         body: {
           razorpay_order_id: razorpayOrderId,
           razorpay_payment_id: razorpayPaymentId,
-          razorpay_signature: buildSignature(razorpayOrderId, razorpayPaymentId),
+          razorpay_signature: buildSignature(
+            razorpayOrderId,
+            razorpayPaymentId,
+          ),
         },
       } as unknown as Request;
       const res = makeRes() as Response;
@@ -100,7 +103,10 @@ describe("payment.controller", () => {
 
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ success: false, error: "Order does not belong to this user." })
+        expect.objectContaining({
+          success: false,
+          error: "Order does not belong to this user.",
+        }),
       );
     });
 
@@ -125,7 +131,10 @@ describe("payment.controller", () => {
         body: {
           razorpay_order_id: razorpayOrderId,
           razorpay_payment_id: razorpayPaymentId,
-          razorpay_signature: buildSignature(razorpayOrderId, razorpayPaymentId),
+          razorpay_signature: buildSignature(
+            razorpayOrderId,
+            razorpayPaymentId,
+          ),
         },
       } as unknown as Request;
       const res = makeRes() as Response;
@@ -135,7 +144,10 @@ describe("payment.controller", () => {
 
       expect(res.status).toHaveBeenCalledWith(409);
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ success: false, error: "Payment already redeemed." })
+        expect.objectContaining({
+          success: false,
+          error: "Payment already redeemed.",
+        }),
       );
     });
 
@@ -161,7 +173,10 @@ describe("payment.controller", () => {
         body: {
           razorpay_order_id: razorpayOrderId,
           razorpay_payment_id: razorpayPaymentId,
-          razorpay_signature: buildSignature(razorpayOrderId, razorpayPaymentId),
+          razorpay_signature: buildSignature(
+            razorpayOrderId,
+            razorpayPaymentId,
+          ),
         },
       } as unknown as Request;
       const res = makeRes() as Response;
@@ -174,7 +189,7 @@ describe("payment.controller", () => {
         expect.objectContaining({
           success: false,
           error: "Stored order amount does not match the selected plan.",
-        })
+        }),
       );
     });
 
@@ -212,7 +227,10 @@ describe("payment.controller", () => {
         body: {
           razorpay_order_id: razorpayOrderId,
           razorpay_payment_id: razorpayPaymentId,
-          razorpay_signature: buildSignature(razorpayOrderId, razorpayPaymentId),
+          razorpay_signature: buildSignature(
+            razorpayOrderId,
+            razorpayPaymentId,
+          ),
         },
       } as unknown as Request;
       const res = makeRes() as Response;
@@ -230,7 +248,7 @@ describe("payment.controller", () => {
           status: "paid",
           razorpayPaymentId,
         }),
-        { new: true }
+        { new: true },
       );
       expect(User.findByIdAndUpdate).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);

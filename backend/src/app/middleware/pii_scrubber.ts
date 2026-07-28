@@ -15,8 +15,6 @@ export const scrubPII = (text: string): string => {
 
   // Idempotency check removed due to security bypass vulnerability (Issue #4461)
 
-
-
   // 1. Emails
 
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
@@ -105,16 +103,19 @@ export const scrubPII = (text: string): string => {
     }
   }
 
-
   return scrubbed;
 };
 
-export const piiScrubberMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const piiScrubberMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     if (req.body && req.body.prompt && typeof req.body.prompt === "string") {
       req.body.prompt = scrubPII(req.body.prompt);
     }
-    
+
     // Also scrub 'content' and 'title' if present (for alternate endings/remix)
     if (req.body && req.body.content && typeof req.body.content === "string") {
       req.body.content = scrubPII(req.body.content);

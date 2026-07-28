@@ -9,8 +9,12 @@ const createBugReport = z.object({
     steps: z.string({ required_error: "Steps are required" }),
     expected: z.string({ required_error: "Expected behavior is required" }),
     actual: z.string({ required_error: "Actual behavior is required" }),
-    email: z.string().email("Invalid email address").optional().or(z.literal("")),
-    screenshotUrl: z.string().optional(), 
+    email: z
+      .string()
+      .email("Invalid email address")
+      .optional()
+      .or(z.literal("")),
+    screenshotUrl: z.string().optional(),
   }),
 });
 

@@ -12,7 +12,7 @@ import { verifyPostAccess } from "../post/post.utils";
 
 const createComment = async (
   payload: ICommentPayload,
-  token: ITokenPayload
+  token: ITokenPayload,
 ) => {
   const { _id, email } = token;
   const user = _id ? await User.findById(_id) : await User.findOne({ email });
@@ -33,7 +33,10 @@ const createComment = async (
   try {
     assertContentSafe(payload.comment);
   } catch (moderationError) {
-    const msg = moderationError instanceof Error ? moderationError.message : "Comment blocked by content moderation.";
+    const msg =
+      moderationError instanceof Error
+        ? moderationError.message
+        : "Comment blocked by content moderation.";
     throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, msg);
   }
 
@@ -49,13 +52,13 @@ const createComment = async (
     if (!parentComment) {
       throw new ApiError(
         httpStatus.NOT_FOUND,
-        "Parent comment not found for this post!"
+        "Parent comment not found for this post!",
       );
     }
     if (parentComment.parentCommentId) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        "Replies can only be added to top-level comments!"
+        "Replies can only be added to top-level comments!",
       );
     }
   }
@@ -67,7 +70,7 @@ const createComment = async (
     const updateResult = await Post.updateOne(
       { _id: post._id, isDeleted: { $ne: true } },
       { $inc: { commentsCount: 1 } },
-      { session }
+      { session },
     );
 
     if (updateResult.modifiedCount === 0) {
@@ -95,7 +98,10 @@ const createComment = async (
   }
 };
 
-const getCommentsByPostId = async (postId: string, token?: ITokenPayload | null) => {
+const getCommentsByPostId = async (
+  postId: string,
+  token?: ITokenPayload | null,
+) => {
   const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
@@ -106,7 +112,9 @@ const getCommentsByPostId = async (postId: string, token?: ITokenPayload | null)
   }
   verifyPostAccess(post, user);
 
-  return await Comment.find({ postId }).populate("userId", "name profile.avatar").sort({ createdAt: -1 });
+  return await Comment.find({ postId })
+    .populate("userId", "name profile.avatar")
+    .sort({ createdAt: -1 });
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
@@ -127,7 +135,7 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
   verifyPostAccess(post, user);
-  
+
   // Replace the read-modify-write likes toggle with atomic MongoDB operators.
   const isCurrentlyLiked = await Comment.exists({
     _id: comment._id,
@@ -139,12 +147,15 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
     isCurrentlyLiked
       ? { $pull: { likes: user._id } }
       : { $addToSet: { likes: user._id } },
-    { new: true }
+    { new: true },
   );
   return updatedComment;
 };
 
-const toggleCommentHelpful = async (commentId: string, token: ITokenPayload) => {
+const toggleCommentHelpful = async (
+  commentId: string,
+  token: ITokenPayload,
+) => {
   const { _id, email } = token;
   const user = _id ? await User.findById(_id) : await User.findOne({ email });
   if (!user) {
@@ -172,7 +183,7 @@ const toggleCommentHelpful = async (commentId: string, token: ITokenPayload) => 
     isCurrentlyHelpful
       ? { $pull: { helpful: user._id } }
       : { $addToSet: { helpful: user._id } },
-    { new: true }
+    { new: true },
   );
   return updatedComment;
 };
@@ -199,15 +210,18 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
 
   // Only the comment author or an admin/super-admin can delete
   const isAuthor = comment.userId.toString() === user._id.toString();
-  const isAdmin = role === ENUM_USER_ROLE.ADMIN || role === ENUM_USER_ROLE.SUPER_ADMIN;
+  const isAdmin =
+    role === ENUM_USER_ROLE.ADMIN || role === ENUM_USER_ROLE.SUPER_ADMIN;
   if (!isAuthor && !isAdmin) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "You are not authorized to delete this comment!"
+      "You are not authorized to delete this comment!",
     );
   }
   // Count replies before deleting parent
-  const replyCount = await Comment.countDocuments({ parentCommentId: commentId });
+  const replyCount = await Comment.countDocuments({
+    parentCommentId: commentId,
+  });
 
   await Comment.findByIdAndDelete(commentId);
 
@@ -229,7 +243,7 @@ const hideComment = async (commentId: string) => {
     {
       isHidden: true,
     },
-    { new: true }
+    { new: true },
   );
 
   if (!comment) {
@@ -245,7 +259,7 @@ const restoreComment = async (commentId: string) => {
     {
       isHidden: false,
     },
-    { new: true }
+    { new: true },
   );
 
   if (!comment) {

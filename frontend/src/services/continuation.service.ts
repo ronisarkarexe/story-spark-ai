@@ -25,7 +25,7 @@ Story:
 ${previousContent}
         `,
       },
-      { withCredentials: true }
+      { withCredentials: true },
     );
 
     return response.data.data.continuation;
@@ -43,7 +43,7 @@ ${previousContent}
  */
 export const getContinuations = async (
   chapters: Chapter[],
-  count: number = 3
+  count: number = 3,
 ): Promise<string[]> => {
   const previousContent = chapters.map((c) => c.content).join("\n\n");
   try {
@@ -64,7 +64,7 @@ ${previousContent}
         `,
         count,
       },
-      { withCredentials: true }
+      { withCredentials: true },
     );
     const data = response.data.data;
     if (Array.isArray(data)) {

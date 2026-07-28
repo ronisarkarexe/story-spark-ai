@@ -7,12 +7,7 @@ export interface RelationshipEdge {
   source: string;
   target: string;
   relationship:
-    | "Friend"
-    | "Family"
-    | "Rival"
-    | "Mentor"
-    | "Romance"
-    | "Unknown";
+    "Friend" | "Family" | "Rival" | "Mentor" | "Romance" | "Unknown";
 }
 
 export interface RelationshipGraphData {
@@ -20,9 +15,7 @@ export interface RelationshipGraphData {
   edges: RelationshipEdge[];
 }
 
-export const extractRelationships = (
-  story: string
-): RelationshipGraphData => {
+export const extractRelationships = (story: string): RelationshipGraphData => {
   return {
     nodes: [],
     edges: [],
@@ -30,19 +23,15 @@ export const extractRelationships = (
 };
 
 export const refreshRelationshipGraph = (
-  story: string
+  story: string,
 ): RelationshipGraphData => {
   return extractRelationships(story);
 };
 
-export const getCharacterCount = (
-  graph: RelationshipGraphData
-): number => {
+export const getCharacterCount = (graph: RelationshipGraphData): number => {
   return graph.nodes.length;
 };
 
-export const getRelationshipCount = (
-  graph: RelationshipGraphData
-): number => {
+export const getRelationshipCount = (graph: RelationshipGraphData): number => {
   return graph.edges.length;
 };

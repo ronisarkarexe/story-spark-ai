@@ -10,7 +10,7 @@ router.post(
   "/",
   flexibleChatRateLimiter,
   validateRequest(ChatValidation.chatWithAi),
-  ChatController.chatWithAi
+  ChatController.chatWithAi,
 );
 
 export const ChatRouter = router;

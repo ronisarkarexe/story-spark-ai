@@ -30,46 +30,80 @@ const ScoreRing = ({ score }: { score: number }) => {
   return (
     <div className="flex flex-col items-center gap-2">
       <svg width="120" height="120" viewBox="0 0 120 120">
-        <circle cx="60" cy="60" r="50" fill="none" stroke="#ffffff10" strokeWidth="10" />
         <circle
-          cx="60" cy="60" r="50" fill="none"
-          stroke={color} strokeWidth="10"
+          cx="60"
+          cy="60"
+          r="50"
+          fill="none"
+          stroke="#ffffff10"
+          strokeWidth="10"
+        />
+        <circle
+          cx="60"
+          cy="60"
+          r="50"
+          fill="none"
+          stroke={color}
+          strokeWidth="10"
           strokeDasharray={`${(score / 100) * 314} 314`}
           strokeLinecap="round"
           transform="rotate(-90 60 60)"
           style={{ transition: "stroke-dasharray 1s ease" }}
         />
-        <text x="60" y="55" textAnchor="middle" fill="white" fontSize="24" fontWeight="bold">{score}</text>
-        <text x="60" y="73" textAnchor="middle" fill="#ffffff60" fontSize="11">/100</text>
+        <text
+          x="60"
+          y="55"
+          textAnchor="middle"
+          fill="white"
+          fontSize="24"
+          fontWeight="bold"
+        >
+          {score}
+        </text>
+        <text x="60" y="73" textAnchor="middle" fill="#ffffff60" fontSize="11">
+          /100
+        </text>
       </svg>
       <span className="text-sm font-semibold" style={{ color }}>
-        {score >= 80 ? "Consistent" : score >= 50 ? "Needs Work" : "Many Issues"}
+        {score >= 80
+          ? "Consistent"
+          : score >= 50
+            ? "Needs Work"
+            : "Many Issues"}
       </span>
     </div>
   );
 };
 
 const IssueCard = ({ issue }: { issue: IConsistencyIssue }) => (
-  <div className={`border rounded-xl p-4 space-y-2 ${SEVERITY_COLOR[issue.severity]}`}>
+  <div
+    className={`border rounded-xl p-4 space-y-2 ${SEVERITY_COLOR[issue.severity]}`}
+  >
     <div className="flex items-center justify-between">
       <span className="text-xs font-bold uppercase tracking-wider">
         {TYPE_LABEL[issue.type] ?? issue.type}
       </span>
-      <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${SEVERITY_COLOR[issue.severity]}`}>
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full font-bold border ${SEVERITY_COLOR[issue.severity]}`}
+      >
         {issue.severity}
       </span>
     </div>
     <p className="text-sm text-white/80">{issue.description}</p>
     <p className="text-xs text-white/50">📍 {issue.location}</p>
     <div className="bg-white/5 rounded-lg p-3">
-      <p className="text-xs text-white/70">💡 <span className="font-semibold">Fix:</span> {issue.suggestion}</p>
+      <p className="text-xs text-white/70">
+        💡 <span className="font-semibold">Fix:</span> {issue.suggestion}
+      </p>
     </div>
   </div>
 );
 
 export default function StoryConsistencyGuardian() {
   const [storyText, setStoryText] = useState("");
-  const [activeTab, setActiveTab] = useState<"consistency" | "fact-tracker">("consistency");
+  const [activeTab, setActiveTab] = useState<"consistency" | "fact-tracker">(
+    "consistency",
+  );
 
   // General Consistency state
   const [result, setResult] = useState<IConsistencyResult | null>(null);
@@ -77,7 +111,9 @@ export default function StoryConsistencyGuardian() {
   const [error, setError] = useState("");
 
   // Fact Tracker state
-  const [factResult, setFactResult] = useState<IFactTrackingResult | null>(null);
+  const [factResult, setFactResult] = useState<IFactTrackingResult | null>(
+    null,
+  );
   const [factLoading, setFactLoading] = useState(false);
   const [factError, setFactError] = useState("");
 
@@ -118,14 +154,14 @@ export default function StoryConsistencyGuardian() {
   return (
     <div className="min-h-screen bg-[#0d0d14] text-white px-6 py-10">
       <div className="max-w-4xl mx-auto space-y-8">
-
         {/* Header */}
         <div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
             🛡️ Story Consistency Guardian
           </h1>
           <p className="text-white/40 mt-2">
-            Analyze your narrative structure, track timeline facts, and eliminate plot holes or logical contradictions.
+            Analyze your narrative structure, track timeline facts, and
+            eliminate plot holes or logical contradictions.
           </p>
         </div>
 
@@ -134,7 +170,9 @@ export default function StoryConsistencyGuardian() {
           <button
             onClick={() => setActiveTab("consistency")}
             className={`pb-3 font-semibold text-sm transition relative ${
-              activeTab === "consistency" ? "text-indigo-400" : "text-white/40 hover:text-white/70"
+              activeTab === "consistency"
+                ? "text-indigo-400"
+                : "text-white/40 hover:text-white/70"
             }`}
           >
             🛡️ General Consistency
@@ -145,7 +183,9 @@ export default function StoryConsistencyGuardian() {
           <button
             onClick={() => setActiveTab("fact-tracker")}
             className={`pb-3 font-semibold text-sm transition relative ${
-              activeTab === "fact-tracker" ? "text-indigo-400" : "text-white/40 hover:text-white/70"
+              activeTab === "fact-tracker"
+                ? "text-indigo-400"
+                : "text-white/40 hover:text-white/70"
             }`}
           >
             ⏱️ Time-Aware Fact Tracker
@@ -157,7 +197,9 @@ export default function StoryConsistencyGuardian() {
 
         {/* Input */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-          <label className="text-sm font-semibold text-white/70">Your Story Text</label>
+          <label className="text-sm font-semibold text-white/70">
+            Your Story Text
+          </label>
           <textarea
             value={storyText}
             onChange={(e) => setStoryText(e.target.value)}
@@ -165,7 +207,7 @@ export default function StoryConsistencyGuardian() {
             placeholder="Paste your story here (chapters, scenes, full text)..."
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
           />
-          
+
           {activeTab === "consistency" ? (
             <>
               {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -202,7 +244,10 @@ export default function StoryConsistencyGuardian() {
                 <p className="text-white/60 text-sm">{result.summary}</p>
                 <div className="flex flex-wrap gap-2">
                   {result.charactersFound.map((c) => (
-                    <span key={c} className="text-xs px-2 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300">
+                    <span
+                      key={c}
+                      className="text-xs px-2 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-300"
+                    >
                       👤 {c}
                     </span>
                   ))}
@@ -213,11 +258,16 @@ export default function StoryConsistencyGuardian() {
             {/* Timeline */}
             {result.timelineEvents.length > 0 && (
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <h2 className="text-lg font-semibold mb-4">📅 Timeline Events Detected</h2>
+                <h2 className="text-lg font-semibold mb-4">
+                  📅 Timeline Events Detected
+                </h2>
                 <ol className="space-y-2">
                   {result.timelineEvents.map((e, i) => (
                     <li key={i} className="flex gap-3 text-sm text-white/70">
-                      <span className="text-indigo-400 font-bold">{i + 1}.</span> {e}
+                      <span className="text-indigo-400 font-bold">
+                        {i + 1}.
+                      </span>{" "}
+                      {e}
                     </li>
                   ))}
                 </ol>
@@ -230,7 +280,9 @@ export default function StoryConsistencyGuardian() {
                 ⚠️ Issues Found ({result.issues.length})
               </h2>
               {result.issues.length === 0 ? (
-                <p className="text-green-400 text-sm">✅ No consistency issues detected!</p>
+                <p className="text-green-400 text-sm">
+                  ✅ No consistency issues detected!
+                </p>
               ) : (
                 <div className="space-y-4">
                   {result.issues.map((issue, i) => (
@@ -248,28 +300,51 @@ export default function StoryConsistencyGuardian() {
             {/* Contradictions */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                ⚠️ Timeline Contradictions {factResult.contradictions ? `(${factResult.contradictions.length})` : "(0)"}
+                ⚠️ Timeline Contradictions{" "}
+                {factResult.contradictions
+                  ? `(${factResult.contradictions.length})`
+                  : "(0)"}
               </h2>
-              {!factResult.contradictions || factResult.contradictions.length === 0 ? (
-                <p className="text-green-400 text-sm">✅ No chronological or time-based contradictions detected!</p>
+              {!factResult.contradictions ||
+              factResult.contradictions.length === 0 ? (
+                <p className="text-green-400 text-sm">
+                  ✅ No chronological or time-based contradictions detected!
+                </p>
               ) : (
                 <div className="space-y-4">
                   {factResult.contradictions.map((c: IFactContradiction, i) => (
-                    <div key={i} className={`border rounded-xl p-4 space-y-3 ${SEVERITY_COLOR[c.severity] || "border-white/10 bg-white/5 text-white"}`}>
+                    <div
+                      key={i}
+                      className={`border rounded-xl p-4 space-y-3 ${SEVERITY_COLOR[c.severity] || "border-white/10 bg-white/5 text-white"}`}
+                    >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-wider text-red-400">
                           🚨 Temporal Conflict
                         </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${SEVERITY_COLOR[c.severity] || "border-white/20"}`}>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-bold border ${SEVERITY_COLOR[c.severity] || "border-white/20"}`}
+                        >
                           {c.severity}
                         </span>
                       </div>
                       <p className="text-sm text-white/80">{c.description}</p>
                       <div className="bg-white/5 rounded-lg p-3 space-y-1">
-                        <p className="text-xs text-white/50">❌ <span className="font-semibold text-white/70">Violates Fact:</span> "{c.contradictedFact}"</p>
+                        <p className="text-xs text-white/50">
+                          ❌{" "}
+                          <span className="font-semibold text-white/70">
+                            Violates Fact:
+                          </span>{" "}
+                          "{c.contradictedFact}"
+                        </p>
                       </div>
                       <div className="bg-white/5 rounded-lg p-3">
-                        <p className="text-xs text-white/70">💡 <span className="font-semibold text-white/90">Suggested Edit:</span> {c.suggestion}</p>
+                        <p className="text-xs text-white/70">
+                          💡{" "}
+                          <span className="font-semibold text-white/90">
+                            Suggested Edit:
+                          </span>{" "}
+                          {c.suggestion}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -280,7 +355,9 @@ export default function StoryConsistencyGuardian() {
             {/* Fact Timeline */}
             {factResult.timeline && factResult.timeline.length > 0 && (
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6">
-                <h2 className="text-lg font-semibold mb-4">📅 Temporal Fact Timeline</h2>
+                <h2 className="text-lg font-semibold mb-4">
+                  📅 Temporal Fact Timeline
+                </h2>
                 <div className="relative pl-6 border-l border-white/10 space-y-8 ml-2">
                   {factResult.timeline.map((step: IFactTimelineStep) => (
                     <div key={step.stepNumber} className="relative">
@@ -290,29 +367,39 @@ export default function StoryConsistencyGuardian() {
                         <span className="text-xs text-indigo-400 font-semibold uppercase tracking-wider">
                           Step {step.stepNumber}
                         </span>
-                        <h3 className="text-md font-bold text-white/90">{step.eventSummary}</h3>
-                        
+                        <h3 className="text-md font-bold text-white/90">
+                          {step.eventSummary}
+                        </h3>
+
                         {/* Facts Established */}
-                        {step.factsEstablished && step.factsEstablished.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {step.factsEstablished.map((fact, idx) => (
-                              <span key={idx} className="text-xs px-2.5 py-1 bg-green-500/10 border border-green-500/25 rounded-md text-green-400 font-medium">
-                                ➕ {fact}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        {step.factsEstablished &&
+                          step.factsEstablished.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {step.factsEstablished.map((fact, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-2.5 py-1 bg-green-500/10 border border-green-500/25 rounded-md text-green-400 font-medium"
+                                >
+                                  ➕ {fact}
+                                </span>
+                              ))}
+                            </div>
+                          )}
 
                         {/* Facts Superseded */}
-                        {step.factsSuperseded && step.factsSuperseded.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {step.factsSuperseded.map((fact, idx) => (
-                              <span key={idx} className="text-xs px-2.5 py-1 bg-white/5 border border-white/10 rounded-md text-white/40 line-through font-medium">
-                                ➖ {fact}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        {step.factsSuperseded &&
+                          step.factsSuperseded.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {step.factsSuperseded.map((fact, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-2.5 py-1 bg-white/5 border border-white/10 rounded-md text-white/40 line-through font-medium"
+                                >
+                                  ➖ {fact}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                       </div>
                     </div>
                   ))}
@@ -321,8 +408,7 @@ export default function StoryConsistencyGuardian() {
             )}
           </div>
         )}
-
       </div>
     </div>
   );
-}
+}

@@ -23,7 +23,9 @@
   font-size: 0.9375rem;
   line-height: 1.5;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
   min-width: 0; /* prevents flex/grid blowout */
 }
 

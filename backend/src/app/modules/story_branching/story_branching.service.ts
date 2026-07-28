@@ -1,6 +1,10 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
-import { StorySegment, UserChoiceProgress, BranchStatistics } from "./story_branching.model";
+import {
+  StorySegment,
+  UserChoiceProgress,
+  BranchStatistics,
+} from "./story_branching.model";
 import {
   IStorySegment,
   IUserChoiceProgress,
@@ -21,7 +25,7 @@ export class StoryBranchingService {
     storyId: string,
     userId: string,
     initialContent: string,
-    choices: Array<{ text: string }>
+    choices: Array<{ text: string }>,
   ): Promise<IStorySegment> {
     try {
       // Validate story exists in Post collection
@@ -52,7 +56,10 @@ export class StoryBranchingService {
       return rootSegment;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to create branching story");
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to create branching story",
+      );
     }
   }
 
@@ -64,7 +71,7 @@ export class StoryBranchingService {
     parentSegmentId: string,
     userId: string,
     content: string,
-    choices: Array<{ text: string }>
+    choices: Array<{ text: string }>,
   ): Promise<IStorySegment> {
     try {
       const parentSegment = await StorySegment.findById(parentSegmentId);
@@ -73,7 +80,10 @@ export class StoryBranchingService {
       }
 
       if (parentSegment.storyId.toString() !== storyId) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Segment does not belong to this story");
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "Segment does not belong to this story",
+        );
       }
 
       // Update parent segment to not be a leaf
@@ -102,14 +112,19 @@ export class StoryBranchingService {
       });
 
       // Link parent choice to this segment
-      const choiceId = parentSegment.choices[parentSegment.choices.length - 1]?.id || uuidv4();
-      parentSegment.choices[parentSegment.choices.length - 1].nextSegmentId = newSegment._id;
+      const choiceId =
+        parentSegment.choices[parentSegment.choices.length - 1]?.id || uuidv4();
+      parentSegment.choices[parentSegment.choices.length - 1].nextSegmentId =
+        newSegment._id;
       await parentSegment.save();
 
       return newSegment;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to create segment");
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to create segment",
+      );
     }
   }
 
@@ -147,7 +162,10 @@ export class StoryBranchingService {
 
       // Build edges
       const edges = segments
-        .filter((seg) => seg.parentSegmentId !== null && seg.parentSegmentId !== undefined)
+        .filter(
+          (seg) =>
+            seg.parentSegmentId !== null && seg.parentSegmentId !== undefined,
+        )
         .map((seg) => ({
           source: (seg.parentSegmentId as any).toString(),
           target: seg._id.toString(),
@@ -160,7 +178,10 @@ export class StoryBranchingService {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch branch tree");
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to fetch branch tree",
+      );
     }
   }
 
@@ -172,7 +193,7 @@ export class StoryBranchingService {
     storyId: string,
     currentSegmentId: string,
     choiceId: string,
-    choiceText: string
+    choiceText: string,
   ): Promise<IUserChoiceProgress> {
     try {
       const segment = await StorySegment.findById(currentSegmentId);
@@ -230,7 +251,10 @@ export class StoryBranchingService {
       return progress;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to record choice");
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to record choice",
+      );
     }
   }
 
@@ -239,7 +263,7 @@ export class StoryBranchingService {
    */
   static async getUserProgress(
     userId: string,
-    storyId: string
+    storyId: string,
   ): Promise<IUserChoiceProgress | null> {
     try {
       const progress = await UserChoiceProgress.findOne({
@@ -249,14 +273,19 @@ export class StoryBranchingService {
 
       return progress;
     } catch (error) {
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch user progress");
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to fetch user progress",
+      );
     }
   }
 
   /**
    * Get choice statistics for a story
    */
-  static async getChoiceStatistics(storyId: string): Promise<IBranchStatistics[]> {
+  static async getChoiceStatistics(
+    storyId: string,
+  ): Promise<IBranchStatistics[]> {
     try {
       const stats = await BranchStatistics.find({
         storyId: new Types.ObjectId(storyId),
@@ -266,7 +295,10 @@ export class StoryBranchingService {
 
       return stats;
     } catch (error) {
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch statistics");
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to fetch statistics",
+      );
     }
   }
 
@@ -276,7 +308,7 @@ export class StoryBranchingService {
   private static async updateChoiceStatistics(
     storyId: string,
     segmentId: string,
-    choiceId: string
+    choiceId: string,
   ): Promise<void> {
     try {
       await BranchStatistics.findOneAndUpdate(
@@ -288,7 +320,7 @@ export class StoryBranchingService {
         {
           $inc: { totalSelections: 1 },
         },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
     } catch (error) {
       console.error("Failed to update choice statistics:", error);
@@ -299,7 +331,9 @@ export class StoryBranchingService {
   /**
    * Validate branch integrity - checks for circular references, orphaned segments, etc.
    */
-  static async validateBranchIntegrity(storyId: string): Promise<IBranchValidationResult> {
+  static async validateBranchIntegrity(
+    storyId: string,
+  ): Promise<IBranchValidationResult> {
     try {
       const segments = await StorySegment.find({
         storyId: new Types.ObjectId(storyId),
@@ -317,7 +351,10 @@ export class StoryBranchingService {
 
       // Check for orphaned segments (except root)
       segments.forEach((segment) => {
-        if (segment.parentSegmentId && !segmentIds.has(segment.parentSegmentId.toString())) {
+        if (
+          segment.parentSegmentId &&
+          !segmentIds.has(segment.parentSegmentId.toString())
+        ) {
           orphanedCount++;
           errors.push(`Orphaned segment: ${segment._id} - parent not found`);
         }
@@ -352,11 +389,13 @@ export class StoryBranchingService {
       // Count dead ends (leaf segments without choices or unlinked choices)
       segments.forEach((segment) => {
         if (segment.isLeaf && segment.choices.length > 0) {
-          const unlinkedChoices = segment.choices.filter((c) => !c.nextSegmentId);
+          const unlinkedChoices = segment.choices.filter(
+            (c) => !c.nextSegmentId,
+          );
           if (unlinkedChoices.length > 0) {
             deadEndsCount++;
             warnings.push(
-              `Segment ${segment._id} has ${unlinkedChoices.length} unlinked choice(s)`
+              `Segment ${segment._id} has ${unlinkedChoices.length} unlinked choice(s)`,
             );
           }
         }
@@ -374,7 +413,10 @@ export class StoryBranchingService {
         },
       };
     } catch (error) {
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to validate branch integrity");
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to validate branch integrity",
+      );
     }
   }
 
@@ -391,11 +433,15 @@ export class StoryBranchingService {
         storyId: new Types.ObjectId(storyId),
       });
 
-      const totalSelections = stats.reduce((sum, stat) => sum + stat.totalSelections, 0) || 1;
+      const totalSelections =
+        stats.reduce((sum, stat) => sum + stat.totalSelections, 0) || 1;
 
       const processedStats = stats.map((stat) => ({
         ...stat.toObject(),
-        percentageSelected: ((stat.totalSelections / totalSelections) * 100).toFixed(2),
+        percentageSelected: (
+          (stat.totalSelections / totalSelections) *
+          100
+        ).toFixed(2),
       }));
 
       const mostPopularChoices = processedStats
@@ -409,13 +455,16 @@ export class StoryBranchingService {
         mostPopularChoices,
         avgSegmentsPerPath:
           segments.length > 0
-            ? (segments.reduce((sum, s) => sum + s.branchDepth, 0) / segments.length).toFixed(2)
+            ? (
+                segments.reduce((sum, s) => sum + s.branchDepth, 0) /
+                segments.length
+              ).toFixed(2)
             : 0,
       };
     } catch (error) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to fetch statistics summary"
+        "Failed to fetch statistics summary",
       );
     }
   }
@@ -432,7 +481,10 @@ export class StoryBranchingService {
 
       // Only creator or admin can delete
       if (segment.createdBy.toString() !== userId) {
-        throw new ApiError(httpStatus.FORBIDDEN, "Cannot delete segment created by another user");
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          "Cannot delete segment created by another user",
+        );
       }
 
       // Recursively find and delete children
@@ -454,7 +506,9 @@ export class StoryBranchingService {
         });
 
         if (!siblings) {
-          await StorySegment.findByIdAndUpdate(segment.parentSegmentId, { isLeaf: true });
+          await StorySegment.findByIdAndUpdate(segment.parentSegmentId, {
+            isLeaf: true,
+          });
         }
       }
 
@@ -464,7 +518,10 @@ export class StoryBranchingService {
       });
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to delete segment");
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to delete segment",
+      );
     }
   }
 }

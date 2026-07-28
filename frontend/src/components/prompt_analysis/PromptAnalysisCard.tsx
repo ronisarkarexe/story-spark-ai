@@ -5,7 +5,10 @@ import { AlertCircle, Zap } from "lucide-react";
 import CreativityScoreCard from "./CreativityScoreCard";
 import EnhancedPromptCard from "./EnhancedPromptCard";
 import PromptSuggestionsCard from "./PromptSuggestionsCard";
-import { analyzePrompt, IPromptAnalysisResponse } from "../../services/prompt_analysis.service";
+import {
+  analyzePrompt,
+  IPromptAnalysisResponse,
+} from "../../services/prompt_analysis.service";
 
 interface PromptAnalysisCardProps {
   /** The prompt to analyze */
@@ -33,7 +36,9 @@ const PromptAnalysisCard: React.FC<PromptAnalysisCardProps> = ({
   onAnalysisComplete,
   autoAnalyze = false,
 }) => {
-  const [analysis, setAnalysis] = useState<IPromptAnalysisResponse | null>(null);
+  const [analysis, setAnalysis] = useState<IPromptAnalysisResponse | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);

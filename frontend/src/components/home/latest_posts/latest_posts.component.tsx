@@ -33,9 +33,10 @@ const LatestPostsComponent = () => {
   };
 
   return (
-
     <section className="w-full min-w-0 max-w-full">
-      <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Latest Posts</h2>
+      <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">
+        Latest Posts
+      </h2>
 
       <div className="max-w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {visiblePosts.length > 0 ? (
@@ -46,17 +47,15 @@ const LatestPostsComponent = () => {
               <div
                 key={post._id}
 
-
                 className="motion-card rounded-xl overflow-hidden border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900"
-
               >
                 <button
                   onClick={() => toggleAccordion(post._id)}
                   className="flex w-full min-w-0 items-center justify-between p-4 text-left font-bold text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/20 transition-colors"
                 >
                   <span className="multilingual-title min-w-0 pr-4 text-lg break-words md:text-xl">
-  {post.title}
-</span>
+                    {post.title}
+                  </span>
                   <span className="shrink-0 text-slate-500 dark:text-slate-400 font-mono text-sm transition-transform duration-200 select-none">
                     {isExpanded ? "▼" : "▶"}
                   </span>
@@ -64,12 +63,13 @@ const LatestPostsComponent = () => {
 
                 <div
                   className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isExpanded ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30" : "max-h-0"
+                    isExpanded
+                      ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30"
+                      : "max-h-0"
                   }`}
                 >
                   <div className="min-w-0 p-5 bg-slate-50 dark:bg-slate-800/50">
                     <p className="text-slate-700 dark:text-slate-400 text-sm md:text-base leading-relaxed mb-4 whitespace-pre-wrap break-words">
-
                       {post.content || "No preview content available."}
                     </p>
 
@@ -88,9 +88,7 @@ const LatestPostsComponent = () => {
           })
         ) : (
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
-            
             Posts are not available.
-          
           </div>
         )}
       </div>

@@ -14,9 +14,9 @@ router.get(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
     ENUM_USER_ROLE.USER,
-    ENUM_USER_ROLE.WRITER
+    ENUM_USER_ROLE.WRITER,
   ),
-  AnalyticsController.getProductiveHours
+  AnalyticsController.getProductiveHours,
 );
 router.get(
   "/emotion-distribution",
@@ -24,9 +24,9 @@ router.get(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
     ENUM_USER_ROLE.USER,
-    ENUM_USER_ROLE.WRITER
+    ENUM_USER_ROLE.WRITER,
   ),
-  AnalyticsController.getEmotionDistribution
+  AnalyticsController.getEmotionDistribution,
 );
 router.get(
   "/mood-timeline",
@@ -34,9 +34,9 @@ router.get(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
     ENUM_USER_ROLE.USER,
-    ENUM_USER_ROLE.WRITER
+    ENUM_USER_ROLE.WRITER,
   ),
-  AnalyticsController.getMoodTimeline
+  AnalyticsController.getMoodTimeline,
 );
 
 export const AnalyticsRouter = router;

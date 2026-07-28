@@ -20,12 +20,17 @@ export interface IEnhancePromptResponse {
 
 const enhancePromptApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    enhancePrompt: build.mutation<IEnhancePromptResponse, IEnhancePromptRequest>({
+    enhancePrompt: build.mutation<
+      IEnhancePromptResponse,
+      IEnhancePromptRequest
+    >({
       query: (data) => ({
         url: `/${STORY_VERSION_URL}/enhance-prompt`,
         method: "POST",
         data: { prompt: data.prompt },
-        headers: data.provider ? { "x-model-provider": data.provider } : undefined,
+        headers: data.provider
+          ? { "x-model-provider": data.provider }
+          : undefined,
       }),
       transformResponse: (response: IEnhancePromptResponse) => {
         return { data: response.data, message: response.message };

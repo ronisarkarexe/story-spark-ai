@@ -1,5 +1,8 @@
 export class ApiError extends Error {
-  constructor(public readonly status: number, message: string) {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -36,7 +39,9 @@ export type StorySentenceSegment = {
   endWordIndex: number;
 };
 
-export const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+export const buildSentenceSegments = (
+  content: string,
+): StorySentenceSegment[] => {
   if (!content.trim()) {
     return [];
   }
@@ -67,7 +72,10 @@ export const buildSentenceSegments = (content: string): StorySentenceSegment[] =
   return segments;
 };
 
-export const getSafeFileName = (title: string, extension: "md" | "docx" | "pdf"): string => {
+export const getSafeFileName = (
+  title: string,
+  extension: "md" | "docx" | "pdf",
+): string => {
   const safeTitle = (title || "story")
     .trim()
     .replace(/[^a-z0-9]+/gi, "_")

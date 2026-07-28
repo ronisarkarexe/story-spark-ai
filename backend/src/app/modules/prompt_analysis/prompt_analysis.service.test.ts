@@ -4,7 +4,7 @@ import { PromptAnalysisService } from "./prompt_analysis.service";
 
 /**
  * UNIT TESTS FOR PROMPT ANALYSIS SERVICE
- * 
+ *
  * Run with: npm test -- prompt_analysis.service.test.ts
  */
 
@@ -12,7 +12,8 @@ describe("PromptAnalysisService", () => {
   describe("analyzePrompt", () => {
     it("should analyze a valid prompt and return creativity score", async () => {
       const result = await PromptAnalysisService.analyzePrompt({
-        prompt: "A young wizard discovers a hidden library containing spells of forgotten ages.",
+        prompt:
+          "A young wizard discovers a hidden library containing spells of forgotten ages.",
         language: "English",
       });
 
@@ -42,9 +43,11 @@ describe("PromptAnalysisService", () => {
 
       expect(result.sentimentScore).toBeDefined();
       expect(result.sentimentScore.positive).toBeGreaterThan(0);
-      expect(result.sentimentScore.positive + 
-              result.sentimentScore.neutral + 
-              result.sentimentScore.negative).toBeCloseTo(1, 1);
+      expect(
+        result.sentimentScore.positive +
+          result.sentimentScore.neutral +
+          result.sentimentScore.negative,
+      ).toBeCloseTo(1, 1);
     });
 
     it("should determine complexity correctly", async () => {
@@ -56,7 +59,8 @@ describe("PromptAnalysisService", () => {
 
       // Complex prompt
       const complexResult = await PromptAnalysisService.analyzePrompt({
-        prompt: "In a sprawling, multi-dimensional universe spanning countless galaxies, a brilliant yet troubled scientist discovers a revolutionary technology that could either save humanity or destroy it entirely; now she must navigate political intrigue, personal sacrifice, and the fundamental question of whether some knowledge should remain hidden.",
+        prompt:
+          "In a sprawling, multi-dimensional universe spanning countless galaxies, a brilliant yet troubled scientist discovers a revolutionary technology that could either save humanity or destroy it entirely; now she must navigate political intrigue, personal sacrifice, and the fundamental question of whether some knowledge should remain hidden.",
       });
       expect(complexResult.complexity).toBe("complex");
     });
@@ -90,7 +94,8 @@ describe("PromptAnalysisService", () => {
 
     it("should estimate generation time correctly", async () => {
       const result = await PromptAnalysisService.analyzePrompt({
-        prompt: "A wizard discovers a library. This is a test prompt with multiple words.",
+        prompt:
+          "A wizard discovers a library. This is a test prompt with multiple words.",
       });
 
       expect(result.estimatedGenerationTime).toBeGreaterThan(0);
@@ -143,11 +148,12 @@ describe("PromptAnalysisService", () => {
   describe("Sentiment Analysis", () => {
     it("should detect positive sentiment correctly", async () => {
       const result = await PromptAnalysisService.analyzePrompt({
-        prompt: "A happy, wonderful, beautiful princess experiences joy and love",
+        prompt:
+          "A happy, wonderful, beautiful princess experiences joy and love",
       });
 
       expect(result.sentimentScore.positive).toBeGreaterThan(
-        result.sentimentScore.negative
+        result.sentimentScore.negative,
       );
     });
 
@@ -157,7 +163,7 @@ describe("PromptAnalysisService", () => {
       });
 
       expect(result.sentimentScore.negative).toBeGreaterThan(
-        result.sentimentScore.positive
+        result.sentimentScore.positive,
       );
     });
 
@@ -177,10 +183,13 @@ describe("PromptAnalysisService", () => {
       });
 
       const longResult = await PromptAnalysisService.analyzePrompt({
-        prompt: "A brilliant young wizard with ancient magical powers discovers an enchanted dragon living in a hidden mountain. Together they must save their realm from darkness.",
+        prompt:
+          "A brilliant young wizard with ancient magical powers discovers an enchanted dragon living in a hidden mountain. Together they must save their realm from darkness.",
       });
 
-      expect(longResult.creativityScore).toBeGreaterThan(shortResult.creativityScore);
+      expect(longResult.creativityScore).toBeGreaterThan(
+        shortResult.creativityScore,
+      );
     });
 
     it("should give higher score to prompts with specific details", async () => {
@@ -189,10 +198,13 @@ describe("PromptAnalysisService", () => {
       });
 
       const detailedResult = await PromptAnalysisService.analyzePrompt({
-        prompt: "Elena, a resourceful navigator, discovers an underground city beneath the Arctic ice",
+        prompt:
+          "Elena, a resourceful navigator, discovers an underground city beneath the Arctic ice",
       });
 
-      expect(detailedResult.creativityScore).toBeGreaterThan(vagueResult.creativityScore);
+      expect(detailedResult.creativityScore).toBeGreaterThan(
+        vagueResult.creativityScore,
+      );
     });
 
     it("should recognize intrigue and question words", async () => {
@@ -201,10 +213,13 @@ describe("PromptAnalysisService", () => {
       });
 
       const intriguingResult = await PromptAnalysisService.analyzePrompt({
-        prompt: "What happens when a wizard discovers the tower contains a portal to another dimension?",
+        prompt:
+          "What happens when a wizard discovers the tower contains a portal to another dimension?",
       });
 
-      expect(intriguingResult.creativityScore).toBeGreaterThan(basicResult.creativityScore);
+      expect(intriguingResult.creativityScore).toBeGreaterThan(
+        basicResult.creativityScore,
+      );
     });
   });
 
@@ -215,7 +230,9 @@ describe("PromptAnalysisService", () => {
       });
 
       expect(result.enhancedPrompt).not.toBe(result.prompt);
-      expect(result.enhancedPrompt.length).toBeGreaterThan(result.prompt.length);
+      expect(result.enhancedPrompt.length).toBeGreaterThan(
+        result.prompt.length,
+      );
     });
 
     it("should maintain the core theme in enhancement", async () => {
@@ -235,7 +252,7 @@ describe("PromptAnalysisService", () => {
 
       // Enhanced should have more descriptive words
       expect(result.enhancedPrompt.split(" ").length).toBeGreaterThan(
-        result.prompt.split(" ").length
+        result.prompt.split(" ").length,
       );
     });
   });

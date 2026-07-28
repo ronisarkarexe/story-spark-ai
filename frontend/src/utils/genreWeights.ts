@@ -8,16 +8,13 @@ export interface GenreWeightConfig {
 }
 
 export const normalizeWeights = (
-  config: GenreWeightConfig
+  config: GenreWeightConfig,
 ): GenreWeightConfig => {
   if (config.genres.length === 0) {
     return { genres: [] };
   }
 
-  const total = config.genres.reduce(
-    (sum, g) => sum + g.weight,
-    0
-  );
+  const total = config.genres.reduce((sum, g) => sum + g.weight, 0);
 
   if (total === 0) {
     return { genres: [] };
@@ -31,18 +28,10 @@ export const normalizeWeights = (
   };
 };
 
-export const validateWeights = (
-  config: GenreWeightConfig
-): boolean => {
-  return (
-    config.genres.reduce((s, g) => s + g.weight, 0) === 100
-  );
+export const validateWeights = (config: GenreWeightConfig): boolean => {
+  return config.genres.reduce((s, g) => s + g.weight, 0) === 100;
 };
 
-export const buildGenrePrompt = (
-  config: GenreWeightConfig
-): string => {
-  return config.genres
-    .map((g) => `${g.genre} (${g.weight}%)`)
-    .join(", ");
+export const buildGenrePrompt = (config: GenreWeightConfig): string => {
+  return config.genres.map((g) => `${g.genre} (${g.weight}%)`).join(", ");
 };

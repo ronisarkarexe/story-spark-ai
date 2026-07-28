@@ -16,9 +16,7 @@ export function generateChapters(story: string): StoryChapter[] {
   }));
 }
 
-export function regenerateChapter(
-  chapter: StoryChapter
-): StoryChapter {
+export function regenerateChapter(chapter: StoryChapter): StoryChapter {
   return {
     ...chapter,
     content: chapter.content,

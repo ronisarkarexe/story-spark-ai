@@ -34,7 +34,7 @@ const FooterComponent: React.FC = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ email }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -78,12 +78,28 @@ const FooterComponent: React.FC = () => {
     { label: "Guidelines", to: "/guidelines" },
   ];
 
-const socialLinks = [
-  { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
-  { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
-  { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
-  { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
-];
+  const socialLinks = [
+    {
+      icon: "fa-linkedin",
+      url: "https://www.linkedin.com/in/ronisarkar76/",
+      label: "Connect with us on LinkedIn",
+    },
+    {
+      icon: "fa-x-twitter",
+      url: "https://x.com/ronisarkar_exe",
+      label: "Follow us on X (Twitter)",
+    },
+    {
+      icon: "fa-github",
+      url: "https://github.com/ronisarkarexe",
+      label: "Check out GitHub",
+    },
+    {
+      icon: "fa-envelope",
+      url: "mailto:ronichandrasarkar@gmail.com",
+      label: "Email us",
+    },
+  ];
 
   const currentYear = new Date().getFullYear();
 

@@ -67,15 +67,19 @@ describe("reserveUserQuota", () => {
     mockedUser.findOneAndUpdate.mockResolvedValue(null);
     mockedUser.exists.mockResolvedValue(null);
 
-    await expect(reserveUserQuota("missing@example.com")).rejects.toMatchObject({
-      statusCode: httpStatus.BAD_REQUEST,
-    });
+    await expect(reserveUserQuota("missing@example.com")).rejects.toMatchObject(
+      {
+        statusCode: httpStatus.BAD_REQUEST,
+      },
+    );
     expect(mockedUser.findOne).not.toHaveBeenCalled();
   });
 
   it("throws conflict when atomic reservation fails", async () => {
     mockedUser.findOneAndUpdate.mockResolvedValue(null);
-    mockedUser.exists.mockResolvedValue({ _id: "507f1f77bcf86cd799439011" } as never);
+    mockedUser.exists.mockResolvedValue({
+      _id: "507f1f77bcf86cd799439011",
+    } as never);
 
     await expect(reserveUserQuota("user@example.com")).rejects.toMatchObject({
       statusCode: httpStatus.CONFLICT,
@@ -110,7 +114,7 @@ describe("refundUserQuota", () => {
 
     expect(mockedUser.findOneAndUpdate).toHaveBeenCalledWith(
       { email: "user@example.com", requestsThisMonth: { $gt: 0 } },
-      expect.any(Array)
+      expect.any(Array),
     );
   });
 });
@@ -146,7 +150,7 @@ describe("guest quota", () => {
 
     expect(mockedGuestUsage.findOneAndUpdate).toHaveBeenCalledWith(
       { guestId: "guest-1", requestCount: { $gt: 0 } },
-      expect.any(Array)
+      expect.any(Array),
     );
   });
 });

@@ -9,7 +9,9 @@ import { ENUM_USER_ROLE } from "../enums/user";
 jest.mock("../app/modules/verify_email/verify_email.service", () => ({
   VerifyEmailService: {
     VerifyEmail: jest.fn().mockResolvedValue(true),
-    VerifyOtp: jest.fn().mockResolvedValue({ verified: true, verificationToken: "validToken" }),
+    VerifyOtp: jest
+      .fn()
+      .mockResolvedValue({ verified: true, verificationToken: "validToken" }),
   },
 }));
 
@@ -22,7 +24,7 @@ jest.mock("../app/modules/auth/refresh_session.model", () => ({
 
 describe("Password Reset Flow", () => {
   const mockEmail = "testuser@example.com";
-  
+
   beforeAll(async () => {
     // Setup in-memory db or mock mongoose methods if necessary
     // Here we will mock since we do not have a real connection in this lightweight suite
@@ -55,7 +57,7 @@ describe("Password Reset Flow", () => {
         email: mockEmail,
         password: "NewPassword123!",
         confirmPassword: "NewPassword123!",
-        verificationToken: "valid-token"
+        verificationToken: "valid-token",
       });
 
       expect(res.accessToken).toBeDefined();
@@ -64,7 +66,9 @@ describe("Password Reset Flow", () => {
     });
 
     it("Expired verification token returns 401", async () => {
-      jest.spyOn(User, "findOne").mockResolvedValue({ email: mockEmail } as any);
+      jest
+        .spyOn(User, "findOne")
+        .mockResolvedValue({ email: mockEmail } as any);
       jest.spyOn(OTPModel, "findOne").mockResolvedValue({
         email: mockEmail,
         isVerified: true,
@@ -77,13 +81,20 @@ describe("Password Reset Flow", () => {
           email: mockEmail,
           password: "NewPassword123!",
           confirmPassword: "NewPassword123!",
-          verificationToken: "expired-token"
-        })
-      ).rejects.toThrowError(new ApiError(httpStatus.UNAUTHORIZED, "Verification token has expired. Please verify your email again."));
+          verificationToken: "expired-token",
+        }),
+      ).rejects.toThrowError(
+        new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Verification token has expired. Please verify your email again.",
+        ),
+      );
     });
 
     it("Invalid token returns 401", async () => {
-      jest.spyOn(User, "findOne").mockResolvedValue({ email: mockEmail } as any);
+      jest
+        .spyOn(User, "findOne")
+        .mockResolvedValue({ email: mockEmail } as any);
       jest.spyOn(OTPModel, "findOne").mockResolvedValue(null as any); // simulate token not found
 
       await expect(
@@ -91,9 +102,14 @@ describe("Password Reset Flow", () => {
           email: mockEmail,
           password: "NewPassword123!",
           confirmPassword: "NewPassword123!",
-          verificationToken: "invalid-token"
-        })
-      ).rejects.toThrowError(new ApiError(httpStatus.UNAUTHORIZED, "Invalid or expired verification token. Please verify your email again."));
+          verificationToken: "invalid-token",
+        }),
+      ).rejects.toThrowError(
+        new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Invalid or expired verification token. Please verify your email again.",
+        ),
+      );
     });
 
     it("Weak password rejected", async () => {
@@ -102,9 +118,14 @@ describe("Password Reset Flow", () => {
           email: mockEmail,
           password: "weak",
           confirmPassword: "weak",
-          verificationToken: "valid-token"
-        })
-      ).rejects.toThrowError(new ApiError(httpStatus.BAD_REQUEST, "Password must be at least 8 characters long"));
+          verificationToken: "valid-token",
+        }),
+      ).rejects.toThrowError(
+        new ApiError(
+          httpStatus.BAD_REQUEST,
+          "Password must be at least 8 characters long",
+        ),
+      );
     });
   });
 });

@@ -28,7 +28,9 @@ export interface UseDocumentStatsResult {
  * should be reintroduced at that point using the existing
  * hooks/useDebounce.ts (value-debounce) on the chapters array.
  */
-export function useDocumentStats(chapters: Chapter[] | undefined): UseDocumentStatsResult {
+export function useDocumentStats(
+  chapters: Chapter[] | undefined,
+): UseDocumentStatsResult {
   return useMemo(() => {
     const safeChapters = chapters ?? [];
 
@@ -46,7 +48,7 @@ export function useDocumentStats(chapters: Chapter[] | undefined): UseDocumentSt
 
     const maxChapterWords = chapterStats.reduce(
       (max, c) => Math.max(max, c.totalWords),
-      0
+      0,
     );
 
     return { docStats, chapterStats, chapterAvgWords, maxChapterWords };

@@ -59,7 +59,10 @@ const RecommendedWritersComponent = () => {
           {recommendedWriters.map((writer, index) => (
             <div key={writer.id} className="flex items-center justify-between">
               <div className="flex items-center">
-                <Link to={`/profile/${writer.id}`} className="flex items-center hover:opacity-85 transition">
+                <Link
+                  to={`/profile/${writer.id}`}
+                  className="flex items-center hover:opacity-85 transition"
+                >
                   <img
                     className="h-10 w-10 rounded-full object-cover border dark:border-gray-800"
                     src={writer.image}

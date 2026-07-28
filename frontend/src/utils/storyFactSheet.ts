@@ -8,9 +8,7 @@ export interface StoryFactSheet {
   resolution: string;
 }
 
-export function generateFactSheet(
-  story: string
-): StoryFactSheet {
+export function generateFactSheet(story: string): StoryFactSheet {
   const words = story.split(/\s+/);
 
   return {
@@ -24,9 +22,7 @@ export function generateFactSheet(
   };
 }
 
-export function copyFactSheet(
-  sheet: StoryFactSheet
-) {
+export function copyFactSheet(sheet: StoryFactSheet) {
   return `
 Characters: ${sheet.characters.join(", ")}
 

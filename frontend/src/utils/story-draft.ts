@@ -1,4 +1,8 @@
-import { getFromLocalStorage, removeFromLocalStorage, setToLocalStorage } from "./local-storage";
+import {
+  getFromLocalStorage,
+  removeFromLocalStorage,
+  setToLocalStorage,
+} from "./local-storage";
 
 const STORY_DRAFT_KEY = "storyspark_story_draft_v1";
 

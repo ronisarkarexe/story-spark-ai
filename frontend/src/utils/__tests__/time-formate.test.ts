@@ -1,8 +1,4 @@
-import {
-  getISTTimeFormate,
-  timeAgo,
-  formatDateShort,
-} from "../time-formate";
+import { getISTTimeFormate, timeAgo, formatDateShort } from "../time-formate";
 
 describe("getISTTimeFormate", () => {
   it("returns a non-empty formatted string for a valid timestamp", () => {
@@ -79,7 +75,9 @@ describe("timeAgo", () => {
   });
 
   it("returns 'X months ago' for multiple months in the past", () => {
-    const sixMonthsAgo = new Date(Date.now() - 6 * 30 * 86_400_000).toISOString();
+    const sixMonthsAgo = new Date(
+      Date.now() - 6 * 30 * 86_400_000,
+    ).toISOString();
     expect(timeAgo(sixMonthsAgo)).toBe("6 months ago");
   });
 
@@ -89,7 +87,9 @@ describe("timeAgo", () => {
   });
 
   it("returns 'X years ago' for multiple years in the past", () => {
-    const threeYearsAgo = new Date(Date.now() - 3 * 365 * 86_400_000).toISOString();
+    const threeYearsAgo = new Date(
+      Date.now() - 3 * 365 * 86_400_000,
+    ).toISOString();
     expect(timeAgo(threeYearsAgo)).toBe("3 years ago");
   });
 });

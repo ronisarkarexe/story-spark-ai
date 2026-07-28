@@ -37,7 +37,11 @@ const buildSeedPrompt = (content: string): string =>
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-const ContinueStoryModal = ({ story, onClose, onApply }: ContinueStoryModalProps) => {
+const ContinueStoryModal = ({
+  story,
+  onClose,
+  onApply,
+}: ContinueStoryModalProps) => {
   const auth = useContext(AuthContext);
   const isAuthenticated = !!auth?.accessToken;
 
@@ -69,7 +73,9 @@ const ContinueStoryModal = ({ story, onClose, onApply }: ContinueStoryModalProps
       path.unshift(node);
       currId = node.parentId;
     }
-    const continuations = path.map((node) => node.continuation.trim()).join("\n\n");
+    const continuations = path
+      .map((node) => node.continuation.trim())
+      .join("\n\n");
     return `${story.content.trim()}\n\n${continuations}`;
   };
 
@@ -193,13 +199,17 @@ const ContinueStoryModal = ({ story, onClose, onApply }: ContinueStoryModalProps
 
                   {/* Branch nodes */}
                   {branches.map((branch, idx) => (
-                    <div key={branch.id} className="flex items-start gap-3 ml-4">
+                    <div
+                      key={branch.id}
+                      className="flex items-start gap-3 ml-4"
+                    >
                       <div className="flex flex-col items-center">
                         <div
-                          className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition-all ${branch.id === activeBranchId
+                          className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition-all ${
+                            branch.id === activeBranchId
                               ? "bg-cyan-400 text-slate-950 ring-2 ring-cyan-300/50"
                               : "bg-slate-700 text-slate-300"
-                            }`}
+                          }`}
                         >
                           {idx + 1}
                         </div>
@@ -210,10 +220,11 @@ const ContinueStoryModal = ({ story, onClose, onApply }: ContinueStoryModalProps
                       <button
                         type="button"
                         onClick={() => handleExtendBranch(branch)}
-                        className={`flex-1 rounded-xl border p-3 text-left transition-all duration-200 ${branch.id === activeBranchId
+                        className={`flex-1 rounded-xl border p-3 text-left transition-all duration-200 ${
+                          branch.id === activeBranchId
                             ? "border-cyan-400/40 bg-cyan-400/10"
                             : "border-white/10 bg-white/5 hover:border-indigo-400/30 hover:bg-white/10"
-                          }`}
+                        }`}
                       >
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
                           Branch {idx + 1} · Depth {branch.depth}
@@ -233,7 +244,7 @@ const ContinueStoryModal = ({ story, onClose, onApply }: ContinueStoryModalProps
 
             {/* ── Prompt Editor ───────────────────────────────────────────── */}
             <section>
-             <label
+              <label
                 htmlFor="continue-story-prompt"
                 className="mb-2 block text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400"
               >
@@ -251,9 +262,9 @@ const ContinueStoryModal = ({ story, onClose, onApply }: ContinueStoryModalProps
                   className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/20 transition-all leading-6"
                 />
                 {/* ── Dynamic Character Counter ── */}
-                 <div className="absolute bottom-3 right-4 text-[11px] font-medium text-slate-400 bg-slate-950/80 px-2 py-0.5 rounded-md backdrop-blur-sm pointer-events-none select-none tracking-wider border border-white/5">
-                 {prompt ? prompt.length : 0} / 500
-                 </div>
+                <div className="absolute bottom-3 right-4 text-[11px] font-medium text-slate-400 bg-slate-950/80 px-2 py-0.5 rounded-md backdrop-blur-sm pointer-events-none select-none tracking-wider border border-white/5">
+                  {prompt ? prompt.length : 0} / 500
+                </div>
               </div>
               <p className="mt-1.5 text-[10px] text-slate-600 flex justify-between items-center">
                 <span>

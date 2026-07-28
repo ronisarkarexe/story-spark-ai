@@ -19,14 +19,11 @@ const emotionIcons: Record<string, string> = {
   Excitement: "🔥",
 };
 
-const StoryMoodDashboard: React.FC<StoryMoodDashboardProps> = ({
-  content,
-}) => {
+const StoryMoodDashboard: React.FC<StoryMoodDashboardProps> = ({ content }) => {
   const analysis = analyzeStoryEmotion(content);
 
   return (
     <div className="mt-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-5 shadow-md">
-      
       {/* Header */}
       <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
         🎭 Story Mood & Emotion Analysis
@@ -39,8 +36,7 @@ const StoryMoodDashboard: React.FC<StoryMoodDashboardProps> = ({
         </p>
 
         <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-1">
-          {emotionIcons[analysis.dominantEmotion]}{" "}
-          {analysis.dominantEmotion}
+          {emotionIcons[analysis.dominantEmotion]} {analysis.dominantEmotion}
         </h3>
       </div>
 
@@ -48,15 +44,12 @@ const StoryMoodDashboard: React.FC<StoryMoodDashboardProps> = ({
       <div className="space-y-4">
         {Object.entries(analysis.scores).map(([emotion, value]) => (
           <div key={emotion}>
-            
             <div className="flex justify-between mb-1">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 {emotionIcons[emotion]} {emotion}
               </span>
 
-              <span className="text-sm text-slate-500">
-                {value}%
-              </span>
+              <span className="text-sm text-slate-500">{value}%</span>
             </div>
 
             {/* Progress Bar */}

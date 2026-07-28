@@ -16,8 +16,12 @@ interface GalleryStory {
 
 export default function Gallery() {
   const [stories, setStories] = useState<GalleryStory[]>([]);
-  const [sortBy, setSortBy] = useState<"newest" | "top_rated" | "most_remixed">("newest");
-  const [activeRemixStory, setActiveRemixStory] = useState<GalleryStory | null>(null);
+  const [sortBy, setSortBy] = useState<"newest" | "top_rated" | "most_remixed">(
+    "newest",
+  );
+  const [activeRemixStory, setActiveRemixStory] = useState<GalleryStory | null>(
+    null,
+  );
 
   const fetchGalleryStories = async (sort = sortBy) => {
     try {
@@ -62,19 +66,21 @@ export default function Gallery() {
 
           {/* Sorting Buttons */}
           <div className="flex gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
-            {(["newest", "top_rated", "most_remixed"] as const).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setSortBy(filter)}
-                className={`px-4 py-2 text-xs font-semibold rounded-lg capitalize transition-colors ${
-                  sortBy === filter
-                    ? "bg-purple-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                {filter.replace("_", " ")}
-              </button>
-            ))}
+            {(["newest", "top_rated", "most_remixed"] as const).map(
+              (filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setSortBy(filter)}
+                  className={`px-4 py-2 text-xs font-semibold rounded-lg capitalize transition-colors ${
+                    sortBy === filter
+                      ? "bg-purple-600 text-white shadow-sm"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {filter.replace("_", " ")}
+                </button>
+              ),
+            )}
           </div>
         </div>
 
@@ -87,7 +93,9 @@ export default function Gallery() {
             >
               <div>
                 {/* Story Title & Author */}
-                <h3 className="text-lg font-bold text-slate-100 line-clamp-1">{story.title}</h3>
+                <h3 className="text-lg font-bold text-slate-100 line-clamp-1">
+                  {story.title}
+                </h3>
                 <p className="text-xs text-purple-400 font-medium mb-3">
                   by @{story.author}
                   {story.parent_author && (
@@ -111,7 +119,9 @@ export default function Gallery() {
                         key={star}
                         onClick={() => handleRate(story.id, star)}
                         className={`text-sm ${
-                          star <= Math.round(story.rating) ? "text-amber-400" : "text-slate-600"
+                          star <= Math.round(story.rating)
+                            ? "text-amber-400"
+                            : "text-slate-600"
                         } hover:scale-110 transition-transform`}
                       >
                         ★
@@ -122,12 +132,20 @@ export default function Gallery() {
                     </span>
                   </div>
 
-                  <span className="font-mono text-slate-400">🔀 {story.remix_count} remixes</span>
+                  <span className="font-mono text-slate-400">
+                    🔀 {story.remix_count} remixes
+                  </span>
                 </div>
 
                 {/* Remix Button */}
                 <button
-                  onClick={() => setActiveRemixStory({ uuid: story.id, title: story.title, content: story.content } as any)}
+                  onClick={() =>
+                    setActiveRemixStory({
+                      uuid: story.id,
+                      title: story.title,
+                      content: story.content,
+                    } as any)
+                  }
                   className="w-full py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-2"
                 >
                   🔀 Remix Story

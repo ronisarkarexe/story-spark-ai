@@ -94,8 +94,7 @@ const ParticleField = () => {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `hsla(240, 60%, 70%, ${0.06 * (1 - dist / 100)
-              })`;
+            ctx.strokeStyle = `hsla(240, 60%, 70%, ${0.06 * (1 - dist / 100)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -152,7 +151,7 @@ const AnimatedCounter = ({
           observer.disconnect();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
     observer.observe(ref.current);
@@ -203,7 +202,7 @@ const ContributorCard = ({
 
   const barWidth = `${Math.min(
     (contributor.contributions / Math.max(maxContributions, 1)) * 100,
-    100
+    100,
   )}%`;
 
   // Animate bar on scroll
@@ -222,7 +221,7 @@ const ContributorCard = ({
           observer.disconnect();
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
     observer.observe(barRef.current);
     return () => observer.disconnect();
@@ -258,7 +257,7 @@ const ContributorCard = ({
         duration: 0.3,
       });
     },
-    []
+    [],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -289,8 +288,9 @@ const ContributorCard = ({
         background: isTop3
           ? `linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,27,75,0.7) 50%, rgba(15,23,42,0.9) 100%)`
           : `linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(20,20,50,0.5) 100%)`,
-        border: `1px solid ${isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"
-          }`,
+        border: `1px solid ${
+          isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"
+        }`,
         transformStyle: "preserve-3d",
         transition: "box-shadow 0.3s ease",
       }}
@@ -319,10 +319,11 @@ const ContributorCard = ({
       {/* Avatar */}
       <div className="relative mb-5" style={{ transform: "translateZ(30px)" }}>
         <div
-          className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${isTop3
+          className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${
+            isTop3
               ? "opacity-40 group-hover:opacity-70"
               : "opacity-0 group-hover:opacity-30"
-            }`}
+          }`}
           style={{
             background: isTop3 ? rank!.glow : "rgba(99,102,241,0.4)",
             filter: "blur(12px)",
@@ -396,12 +397,12 @@ const ContributorsComponent = () => {
     const fetchContributors = async () => {
       try {
         const response = await fetch(
-          "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors"
+          "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors",
         );
         const data = await response.json();
         if (Array.isArray(data)) {
           const filtered = data.filter(
-            (c: Contributor) => c.contributions >= 3
+            (c: Contributor) => c.contributions >= 3,
           );
           setContributors(filtered);
         }
@@ -414,10 +415,7 @@ const ContributorsComponent = () => {
     fetchContributors();
   }, []);
 
-  const totalPRs = contributors.reduce(
-    (acc, c) => acc + c.contributions,
-    0
-  );
+  const totalPRs = contributors.reduce((acc, c) => acc + c.contributions, 0);
 
   const maxContributions = contributors.length
     ? Math.max(...contributors.map((c) => c.contributions))
@@ -448,7 +446,7 @@ const ContributorsComponent = () => {
               scale: 1,
               duration: 0.6,
               ease: "back.out(1.7)",
-            }
+            },
           );
         }
 
@@ -464,7 +462,7 @@ const ContributorsComponent = () => {
               duration: 0.8,
               ease: "power3.out",
             },
-            "-=0.3"
+            "-=0.3",
           );
         }
 
@@ -473,7 +471,7 @@ const ContributorsComponent = () => {
             subtitle,
             { y: 20, opacity: 0 },
             { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
-            "-=0.3"
+            "-=0.3",
           );
         }
 
@@ -488,7 +486,7 @@ const ContributorsComponent = () => {
               ease: "elastic.out(1, 0.4)",
               stagger: 0.08,
             },
-            "-=0.3"
+            "-=0.3",
           );
         }
       }
@@ -512,7 +510,7 @@ const ContributorsComponent = () => {
                 start: "top 90%",
                 toggleActions: "play none none none",
               },
-            }
+            },
           );
 
           // Idle floating
@@ -551,7 +549,7 @@ const ContributorsComponent = () => {
                 start: "top 92%",
                 toggleActions: "play none none none",
               },
-            }
+            },
           );
         }
       }
@@ -575,7 +573,7 @@ const ContributorsComponent = () => {
                 start: "top 90%",
                 toggleActions: "play none none none",
               },
-            }
+            },
           );
         }
 

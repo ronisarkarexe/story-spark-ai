@@ -116,7 +116,7 @@ describe("checkRequestLimit() — middleware behaviour", () => {
 
     expect(mockVerifyToken).toHaveBeenCalledWith(
       "valid.jwt.token",
-      "test-secret"
+      "test-secret",
     );
     expect(mockReserveUserQuota).toHaveBeenCalledWith("user@example.com");
     expect(next).toHaveBeenCalledTimes(1);
@@ -161,7 +161,7 @@ describe("checkRequestLimit() — middleware behaviour", () => {
 
     expect(mockVerifyToken).toHaveBeenCalledWith(
       "rawtoken.without.prefix",
-      "test-secret"
+      "test-secret",
     );
     expect(next).toHaveBeenCalledTimes(1);
   });
@@ -231,7 +231,9 @@ describe("checkRequestLimit — quota enforcement (allow vs block)", () => {
   });
 
   it("allows request when quota is not yet exhausted (resolves without throwing)", async () => {
-    mockVerifyToken.mockReturnValueOnce({ email: "quota-ok@example.com" } as any);
+    mockVerifyToken.mockReturnValueOnce({
+      email: "quota-ok@example.com",
+    } as any);
     mockReserveUserQuota.mockResolvedValueOnce(undefined); // quota available
 
     const { req, res, next } = buildMocks("Bearer tok.en.ok");
@@ -248,7 +250,9 @@ describe("checkRequestLimit — quota enforcement (allow vs block)", () => {
       statusCode: httpStatus.CONFLICT,
       message: "Monthly request limit exceeded!",
     };
-    mockVerifyToken.mockReturnValueOnce({ email: "quota-full@example.com" } as any);
+    mockVerifyToken.mockReturnValueOnce({
+      email: "quota-full@example.com",
+    } as any);
     mockReserveUserQuota.mockRejectedValueOnce(limitError);
 
     const { req, res, next } = buildMocks("Bearer tok.en.full");
@@ -306,7 +310,9 @@ describe("checkRequestLimit — regression: /remix and /translate routes no long
   });
 
   it("[/translate] middleware returned by checkRequestLimit() calls next() — request does NOT hang", async () => {
-    mockVerifyToken.mockReturnValueOnce({ email: "translate@example.com" } as any);
+    mockVerifyToken.mockReturnValueOnce({
+      email: "translate@example.com",
+    } as any);
     mockReserveUserQuota.mockResolvedValueOnce(undefined);
 
     const { req, res, next } = buildMocks("Bearer translate.jwt.token");

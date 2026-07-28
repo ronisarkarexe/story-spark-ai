@@ -15,7 +15,9 @@ export const StoryBranchingResponseSchema = z.object({
   choices: z.array(z.string().min(1)).min(1),
 });
 
-export type StoryBranchingResponse = z.infer<typeof StoryBranchingResponseSchema>;
+export type StoryBranchingResponse = z.infer<
+  typeof StoryBranchingResponseSchema
+>;
 
 // ─── Generated Stories ───────────────────────────────────────────────────────
 
@@ -49,7 +51,9 @@ export const AlternateEndingSchema = z.object({
 
 export type AlternateEnding = z.infer<typeof AlternateEndingSchema>;
 
-export const AlternateEndingsArraySchema = z.array(AlternateEndingSchema).min(1);
+export const AlternateEndingsArraySchema = z
+  .array(AlternateEndingSchema)
+  .min(1);
 
 // ─── Remix ───────────────────────────────────────────────────────────────────
 
@@ -116,7 +120,9 @@ export const CharacterNetworkResponseSchema = z.object({
   relationships: z.array(CharacterNetworkRelationshipSchema),
 });
 
-export type CharacterNetworkResponse = z.infer<typeof CharacterNetworkResponseSchema>;
+export type CharacterNetworkResponse = z.infer<
+  typeof CharacterNetworkResponseSchema
+>;
 
 // ─── AI Editor: Plot Hole Analysis ───────────────────────────────────────────
 
@@ -130,7 +136,9 @@ export const PlotHoleAnalysisResponseSchema = z.object({
   plot_holes: z.array(PlotHoleSchema),
 });
 
-export type PlotHoleAnalysisResponse = z.infer<typeof PlotHoleAnalysisResponseSchema>;
+export type PlotHoleAnalysisResponse = z.infer<
+  typeof PlotHoleAnalysisResponseSchema
+>;
 
 // ─── Engagement Analysis ─────────────────────────────────────────────────────
 
@@ -158,4 +166,6 @@ export const EngagementAnalysisResponseSchema = z.object({
   improvementSuggestions: z.array(z.string().min(1)),
 });
 
-export type EngagementAnalysisResponse = z.infer<typeof EngagementAnalysisResponseSchema>;
+export type EngagementAnalysisResponse = z.infer<
+  typeof EngagementAnalysisResponseSchema
+>;

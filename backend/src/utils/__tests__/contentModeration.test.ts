@@ -1,11 +1,10 @@
-import {
-  checkContent,
-  assertContentSafe,
-} from "../../utils/contentModeration";
+import { checkContent, assertContentSafe } from "../../utils/contentModeration";
 
 describe("checkContent", () => {
   it("returns blocked false for safe content", () => {
-    const result = checkContent("Once upon a time, a brave knight went on an adventure.");
+    const result = checkContent(
+      "Once upon a time, a brave knight went on an adventure.",
+    );
     expect(result.blocked).toBe(false);
     expect(result.reason).toBeUndefined();
   });

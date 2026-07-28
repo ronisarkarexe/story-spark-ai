@@ -1,4 +1,8 @@
-import { ReportReason, ReportStatus, ReportTargetType } from "../../../enums/report.enum";
+import {
+  ReportReason,
+  ReportStatus,
+  ReportTargetType,
+} from "../../../enums/report.enum";
 import { Types } from "mongoose";
 
 export interface IReport {

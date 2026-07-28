@@ -51,13 +51,13 @@ export function getNextApiKey(): string {
   if (keys.length === 0) {
     throw new Error(
       "[apiKeyRotationService] No AI API keys found.\n" +
-      "Set AI_API_KEYS=key1,key2,key3 in your .env file.\n" +
-      "Or set OPEN_AI_KEY / GEMINI_API_KEY for single-key mode."
+        "Set AI_API_KEYS=key1,key2,key3 in your .env file.\n" +
+        "Or set OPEN_AI_KEY / GEMINI_API_KEY for single-key mode.",
     );
   }
 
   const key = keys[_index % keys.length];
-  _index     = (_index + 1) % Number.MAX_SAFE_INTEGER; // prevent overflow
+  _index = (_index + 1) % Number.MAX_SAFE_INTEGER; // prevent overflow
   return key;
 }
 

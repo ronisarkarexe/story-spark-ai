@@ -9,9 +9,7 @@ interface CharacterPortraitProps {
   character: CharacterResponse;
 }
 
-const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
-  character,
-}) => {
+const CharacterPortrait: React.FC<CharacterPortraitProps> = ({ character }) => {
   const [generatePortrait, { isLoading }] =
     useGenerateCharacterPortraitMutation();
 
@@ -22,7 +20,7 @@ const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
       toast.success(
         character.portraitUrl
           ? "Character portrait regenerated!"
-          : "Character portrait generated!"
+          : "Character portrait generated!",
       );
     } catch (error) {
       console.error("Failed to generate character portrait:", error);

@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api/v1";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api/v1";
 
 export interface SearchParams {
   q: string;
@@ -35,12 +36,29 @@ export interface TagResult {
 }
 
 export interface SearchResults {
-  stories: { data: StoryResult[]; total: number; page: number; limit: number } | null;
-  users: { data: UserResult[]; total: number; page: number; limit: number } | null;
-  tags: { data: TagResult[]; total: number; page: number; limit: number } | null;
+  stories: {
+    data: StoryResult[];
+    total: number;
+    page: number;
+    limit: number;
+  } | null;
+  users: {
+    data: UserResult[];
+    total: number;
+    page: number;
+    limit: number;
+  } | null;
+  tags: {
+    data: TagResult[];
+    total: number;
+    page: number;
+    limit: number;
+  } | null;
 }
 
-export const searchApi = async (params: SearchParams): Promise<SearchResults> => {
+export const searchApi = async (
+  params: SearchParams,
+): Promise<SearchResults> => {
   const qs = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== "") qs.set(k, String(v));

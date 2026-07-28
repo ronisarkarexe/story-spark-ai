@@ -52,7 +52,9 @@ describe("useWritingMetrics", () => {
       const { result } = renderHook(() =>
         useWritingMetrics({ onSessionReady: mockCallback }),
       );
-      const longText = "The quick brown fox jumps over the lazy dog ".repeat(10);
+      const longText = "The quick brown fox jumps over the lazy dog ".repeat(
+        10,
+      );
       expect(() => result.current.onPromptChange(longText)).not.toThrow();
     });
   });
@@ -187,7 +189,9 @@ describe("useWritingMetrics", () => {
       } as unknown as React.KeyboardEvent<HTMLTextAreaElement>;
       result.current.onKeyDown(keyEvent);
       result.current.onKeyDown(keyEvent);
-      result.current.onKeyDown({ key: "Backspace" } as React.KeyboardEvent<HTMLTextAreaElement>);
+      result.current.onKeyDown({
+        key: "Backspace",
+      } as React.KeyboardEvent<HTMLTextAreaElement>);
 
       result.current.onRegenerate();
       result.current.onPromptChange("A brave hero set forth");

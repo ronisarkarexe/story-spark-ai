@@ -17,14 +17,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
       <div className="relative w-full max-w-lg overflow-hidden bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
-        
         {/* Glow Effects */}
         <div className="absolute -top-40 -left-40 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-pink-600/10 rounded-full blur-3xl" />
 
         {/* Content Container */}
         <div className="relative p-6 md:p-8 flex flex-col items-center text-center text-slate-100">
-          
           {/* Close button */}
           <button
             onClick={onClose}
@@ -44,7 +42,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             Monthly Quota Reached!
           </h3>
           <p className="text-sm text-slate-400 max-w-sm mb-6">
-            You've reached your monthly limit for this action on the <span className="font-semibold text-indigo-400">{plan.toUpperCase()}</span> plan. Upgrade to unlock higher limits and supercharge your creativity!
+            You've reached your monthly limit for this action on the{" "}
+            <span className="font-semibold text-indigo-400">
+              {plan.toUpperCase()}
+            </span>{" "}
+            plan. Upgrade to unlock higher limits and supercharge your
+            creativity!
           </p>
 
           {/* Plan Comparison Table */}
@@ -54,27 +57,39 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               <span className="text-center">Free</span>
               <span className="text-center text-indigo-400">Pro</span>
             </div>
-            
+
             <div className="divide-y divide-white/5 text-xs text-slate-300">
               <div className="grid grid-cols-3 gap-2 px-4 py-2.5">
                 <span>Story Generations</span>
                 <span className="text-center text-slate-400">5 / mo</span>
-                <span className="text-center text-indigo-300 font-semibold">50 / mo</span>
+                <span className="text-center text-indigo-300 font-semibold">
+                  50 / mo
+                </span>
               </div>
               <div className="grid grid-cols-3 gap-2 px-4 py-2.5">
                 <span>Story Continuations</span>
                 <span className="text-center text-slate-400">3 / mo</span>
-                <span className="text-center text-indigo-300 font-semibold">30 / mo</span>
+                <span className="text-center text-indigo-300 font-semibold">
+                  30 / mo
+                </span>
               </div>
               <div className="grid grid-cols-3 gap-2 px-4 py-2.5">
                 <span>Fast AI Models</span>
-                <span className="text-center text-slate-400"><i className="fas fa-check text-indigo-500/50" /></span>
-                <span className="text-center text-indigo-400"><i className="fas fa-check" /></span>
+                <span className="text-center text-slate-400">
+                  <i className="fas fa-check text-indigo-500/50" />
+                </span>
+                <span className="text-center text-indigo-400">
+                  <i className="fas fa-check" />
+                </span>
               </div>
               <div className="grid grid-cols-3 gap-2 px-4 py-2.5">
                 <span>Priority Support</span>
-                <span className="text-center text-slate-500"><i className="fas fa-times" /></span>
-                <span className="text-center text-indigo-400"><i className="fas fa-check" /></span>
+                <span className="text-center text-slate-500">
+                  <i className="fas fa-times" />
+                </span>
+                <span className="text-center text-indigo-400">
+                  <i className="fas fa-check" />
+                </span>
               </div>
             </div>
           </div>
@@ -96,7 +111,6 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               <i className="fas fa-arrow-right text-xs" />
             </Link>
           </div>
-
         </div>
       </div>
     </div>

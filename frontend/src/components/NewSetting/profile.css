@@ -21,7 +21,9 @@
 .card-title {
   font-size: 26px;
   font-weight: 700;
-  color: var(--color-text-title); /* Displays 'Welcome back User!' in solid black */
+  color: var(
+    --color-text-title
+  ); /* Displays 'Welcome back User!' in solid black */
   margin-bottom: 6px;
   letter-spacing: -0.5px;
 }
@@ -39,8 +41,10 @@
 
 .form-section-title {
   font-size: 16px;
-  font-weight: 700;                /* Boosted to heavy bold weight */
-  color: var(--color-text-title); /* Displays 'Social Media Links' heading in black */
+  font-weight: 700; /* Boosted to heavy bold weight */
+  color: var(
+    --color-text-title
+  ); /* Displays 'Social Media Links' heading in black */
   margin-bottom: 20px;
   border-bottom: 1px solid #f3f4f6;
   padding-bottom: 8px;
@@ -73,12 +77,12 @@
 }
 
 .field-label {
-  font-size: 14px;                 /* Slightly adjusted for better readability */
+  font-size: 14px; /* Slightly adjusted for better readability */
   color: var(--color-text-label); /* Displays input titles in black */
 }
 
 .field-label strong {
-  font-weight: 700;                /* Explicit clean bold mapping */
+  font-weight: 700; /* Explicit clean bold mapping */
 }
 
 .input-wrapper {
@@ -88,7 +92,8 @@
 }
 
 /* Simplified input boxes without excessive right padding */
-.custom-input, .custom-textarea {
+.custom-input,
+.custom-textarea {
   width: 100%;
   padding: 14px 16px;
   font-size: 14px;
@@ -100,7 +105,8 @@
   transition: border-color 0.15s ease;
 }
 
-.custom-input:focus, .custom-textarea:focus {
+.custom-input:focus,
+.custom-textarea:focus {
   border-color: #a1a1aa;
 }
 

@@ -1,7 +1,4 @@
-export type DifficultyLevel =
-  | "Beginner"
-  | "Intermediate"
-  | "Advanced";
+export type DifficultyLevel = "Beginner" | "Intermediate" | "Advanced";
 
 export interface ReadingInfo {
   wordCount: number;
@@ -11,13 +8,8 @@ export interface ReadingInfo {
 
 const WORDS_PER_MINUTE = 200;
 
-export function analyzeReadingInfo(
-  story: string
-): ReadingInfo {
-  const words = story
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+export function analyzeReadingInfo(story: string): ReadingInfo {
+  const words = story.trim().split(/\s+/).filter(Boolean);
 
   const wordCount = words.length;
 
@@ -33,10 +25,7 @@ export function analyzeReadingInfo(
 
   return {
     wordCount,
-    readingTime: Math.max(
-      1,
-      Math.ceil(wordCount / WORDS_PER_MINUTE)
-    ),
+    readingTime: Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE)),
     difficulty,
   };
 }

@@ -23,7 +23,9 @@ export default function BookShelfPage() {
       <div className="min-h-screen bg-[#0d0d14] flex items-center justify-center">
         <div className="text-center">
           <p className="text-4xl mb-4 animate-bounce">📚</p>
-          <p className="text-amber-400 animate-pulse text-lg">Loading your bookshelf...</p>
+          <p className="text-amber-400 animate-pulse text-lg">
+            Loading your bookshelf...
+          </p>
         </div>
       </div>
     );

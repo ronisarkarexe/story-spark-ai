@@ -4,9 +4,9 @@ const BlogPost = () => {
   const { id } = useParams();
 
   let title = "Blog Post Not Found";
-  let content = "The blog post you're looking for doesn't exist or may have been removed. Please check the URL or explore other articles.";
+  let content =
+    "The blog post you're looking for doesn't exist or may have been removed. Please check the URL or explore other articles.";
 
-  
   if (id === "1") {
     title = "Introducing StorySparkAI v2.0";
     content =
@@ -24,7 +24,6 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-white px-6 py-12">
       <div className="max-w-2xl mx-auto">
-
         {/* BACK LINK */}
         <Link
           to="/blog"
@@ -34,14 +33,11 @@ const BlogPost = () => {
         </Link>
 
         {/* TITLE */}
-        <h1 className="text-4xl font-bold mb-4 leading-tight">
-          {title}
-        </h1>
+        <h1 className="text-4xl font-bold mb-4 leading-tight">{title}</h1>
 
         {/* META */}
         <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">
           5 min read - StorySpark AI Editorial Team
-
         </div>
 
         {/* CONTENT CARD */}

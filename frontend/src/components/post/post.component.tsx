@@ -2,10 +2,12 @@ import React, { useState, useMemo } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
 import { Link } from "react-router-dom";
-import { useGetPostListsQuery, useGetGenresQuery } from "../../redux/apis/post.api";
+import {
+  useGetPostListsQuery,
+  useGetGenresQuery,
+} from "../../redux/apis/post.api";
 import type { Post } from "../../models/post";
 import { useDebounced } from "../../hooks/global";
-
 
 export const ExploreComponent = () => {
   const [sortBy, setSortBy] = useState<string>("createdAt");
@@ -83,8 +85,12 @@ export const ExploreComponent = () => {
   const filteredSuggestions = useMemo(() => {
     if (!searchTerm.trim()) return [];
     const term = searchTerm.toLowerCase();
-    const tagSuggestions = availableTags.filter(tag => tag.toLowerCase().includes(term));
-    const genreSuggestions = (availableGenres ?? []).filter(g => g.toLowerCase().includes(term)).map(g => `#${g.toLowerCase()}`);
+    const tagSuggestions = availableTags.filter((tag) =>
+      tag.toLowerCase().includes(term),
+    );
+    const genreSuggestions = (availableGenres ?? [])
+      .filter((g) => g.toLowerCase().includes(term))
+      .map((g) => `#${g.toLowerCase()}`);
     return [...new Set([...tagSuggestions, ...genreSuggestions])].slice(0, 8);
   }, [searchTerm, availableTags, availableGenres]);
 
@@ -195,7 +201,7 @@ export const ExploreComponent = () => {
 
                 {/* Tags */}
                 <div>
-                    <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Trending Tags
                   </h4>
 
@@ -218,7 +224,9 @@ export const ExploreComponent = () => {
 
                 {/* Sort */}
                 <div>
-                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">Sort By</h4>
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                    Sort By
+                  </h4>
 
                   <select
                     value={sortBy}
@@ -237,7 +245,9 @@ export const ExploreComponent = () => {
 
                 {/* Order */}
                 <div>
-                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">Order</h4>
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                    Order
+                  </h4>
 
                   <select
                     value={sortOrder}
@@ -301,7 +311,19 @@ export const ExploreComponent = () => {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
-                      {selectedTags.length + (searchTerm.trim() !== "" ? 1 : 0) + (sortBy !== "createdAt" ? 1 : 0) + (sortOrder !== "desc" ? 1 : 0)} filter{selectedTags.length + (searchTerm.trim() !== "" ? 1 : 0) + (sortBy !== "createdAt" ? 1 : 0) + (sortOrder !== "desc" ? 1 : 0) > 1 ? "s" : ""} active
+                      {selectedTags.length +
+                        (searchTerm.trim() !== "" ? 1 : 0) +
+                        (sortBy !== "createdAt" ? 1 : 0) +
+                        (sortOrder !== "desc" ? 1 : 0)}{" "}
+                      filter
+                      {selectedTags.length +
+                        (searchTerm.trim() !== "" ? 1 : 0) +
+                        (sortBy !== "createdAt" ? 1 : 0) +
+                        (sortOrder !== "desc" ? 1 : 0) >
+                      1
+                        ? "s"
+                        : ""}{" "}
+                      active
                     </p>
                     <p className="text-xs text-blue-600/70 dark:text-blue-400/60">
                       Showing filtered results
@@ -405,23 +427,26 @@ export const ExploreComponent = () => {
               )}
             </div>
 
-            {!featuredPost && data?.meta && filteredPosts.length > 0 && filteredPosts.length < data.meta.total && (
-              <div className="flex justify-center mt-8 mb-8 z-20 relative">
-                <button
-                  onClick={loadMore}
-                  disabled={isLoading}
-                  className="cursor-pointer !rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 shadow-lg shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <i className="fas fa-spinner fa-spin"></i> Loading...
-                    </span>
-                  ) : (
-                    "Load More"
-                  )}
-                </button>
-              </div>
-            )}
+            {!featuredPost &&
+              data?.meta &&
+              filteredPosts.length > 0 &&
+              filteredPosts.length < data.meta.total && (
+                <div className="flex justify-center mt-8 mb-8 z-20 relative">
+                  <button
+                    onClick={loadMore}
+                    disabled={isLoading}
+                    className="cursor-pointer !rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 shadow-lg shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <i className="fas fa-spinner fa-spin"></i> Loading...
+                      </span>
+                    ) : (
+                      "Load More"
+                    )}
+                  </button>
+                </div>
+              )}
           </div>
         </div>
       </div>

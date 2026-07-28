@@ -9,7 +9,7 @@ const previewIntro = (intro: string): string =>
   intro.length > 140 ? `${intro.slice(0, 137).trim()}...` : intro;
 
 const createStoryInspiration = async (
-  payload: IStoryInspirationRequest
+  payload: IStoryInspirationRequest,
 ): Promise<IStoryInspirationResponse> => {
   const intro = previewIntro(cleanIntro(payload.intro));
 

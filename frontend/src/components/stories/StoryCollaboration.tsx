@@ -40,9 +40,7 @@ const StoryCollaboration: React.FC = () => {
   };
 
   const removeCollaborator = (id: number) => {
-    setCollaborators(
-      collaborators.filter((user) => user.id !== id)
-    );
+    setCollaborators(collaborators.filter((user) => user.id !== id));
 
     toast.success("Collaborator removed");
   };
@@ -79,9 +77,7 @@ const StoryCollaboration: React.FC = () => {
             className="flex items-center justify-between bg-slate-700/50 rounded-xl p-3"
           >
             <div>
-              <h3 className="text-white font-semibold">
-                {user.name}
-              </h3>
+              <h3 className="text-white font-semibold">{user.name}</h3>
 
               <p className="text-sm text-slate-300">
                 {user.role} • {user.status}
@@ -101,7 +97,8 @@ const StoryCollaboration: React.FC = () => {
       </div>
 
       <p className="text-sm text-slate-400 mt-5">
-        Collaborators can contribute, review changes, and work together on the story.
+        Collaborators can contribute, review changes, and work together on the
+        story.
       </p>
     </div>
   );

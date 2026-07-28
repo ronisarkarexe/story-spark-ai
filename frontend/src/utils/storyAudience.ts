@@ -1,9 +1,5 @@
 export type StoryAudience =
-  | "Children"
-  | "Teenagers"
-  | "Young Adults"
-  | "Adults"
-  | "General Audience";
+  "Children" | "Teenagers" | "Young Adults" | "Adults" | "General Audience";
 
 export interface AudienceOption {
   id: string;
@@ -57,7 +53,7 @@ export const validateAudience = (audience: string): boolean => {
 
 export const buildAudiencePrompt = (
   audience: StoryAudience,
-  prompt: string
+  prompt: string,
 ) => {
   return `
 Generate a story for ${audience}.
@@ -74,5 +70,5 @@ ${prompt}
 
 export const generateAudienceStory = (
   audience: StoryAudience,
-  prompt: string
+  prompt: string,
 ) => buildAudiencePrompt(audience, prompt);

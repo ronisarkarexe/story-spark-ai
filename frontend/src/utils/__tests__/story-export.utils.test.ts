@@ -1,5 +1,11 @@
 /* eslint-disable */
-import { createDocxBlob, downloadBlob, getSafeFileName, createWorkspaceDocxBlob, exportWorkspacePDF } from "../story-export.utils";
+import {
+  createDocxBlob,
+  downloadBlob,
+  getSafeFileName,
+  createWorkspaceDocxBlob,
+  exportWorkspacePDF,
+} from "../story-export.utils";
 import jsPDF from "jspdf";
 
 jest.mock("jspdf", () => {
@@ -26,8 +32,12 @@ describe("story-export.utils", () => {
   describe("getSafeFileName", () => {
     it("sanitizes title and appends extension", () => {
       expect(getSafeFileName("My Cool Story!", "md")).toBe("my_cool_story.md");
-      expect(getSafeFileName("My Cool Story!", "docx")).toBe("my_cool_story.docx");
-      expect(getSafeFileName("My Cool Story!", "pdf")).toBe("my_cool_story.pdf");
+      expect(getSafeFileName("My Cool Story!", "docx")).toBe(
+        "my_cool_story.docx",
+      );
+      expect(getSafeFileName("My Cool Story!", "pdf")).toBe(
+        "my_cool_story.pdf",
+      );
     });
 
     it("falls back to story when title is empty", () => {
@@ -40,7 +50,9 @@ describe("story-export.utils", () => {
       const createObjectURL = jest
         .spyOn(URL, "createObjectURL")
         .mockReturnValue("blob:mock");
-      const revokeObjectURL = jest.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+      const revokeObjectURL = jest
+        .spyOn(URL, "revokeObjectURL")
+        .mockImplementation(() => {});
       const click = jest.fn();
       const remove = jest.fn();
       const anchor = {
@@ -90,7 +102,10 @@ describe("story-export.utils", () => {
         authorName: "John Doe",
         dateStr: "2026-06-06",
         chapters: [
-          { title: "Chapter 1 <Intro>", content: "Paragraph one.\nParagraph two." },
+          {
+            title: "Chapter 1 <Intro>",
+            content: "Paragraph one.\nParagraph two.",
+          },
           { title: "Chapter 2", content: "Paragraph three." },
         ],
       });
@@ -132,9 +147,7 @@ describe("story-export.utils", () => {
         title: "PDF Story",
         authorName: "John Doe",
         dateStr: "2026-06-06",
-        chapters: [
-          { title: "Chapter 1", content: "Some content here." },
-        ],
+        chapters: [{ title: "Chapter 1", content: "Some content here." }],
       });
 
       expect(jsPDF).toHaveBeenCalled();
@@ -142,4 +155,3 @@ describe("story-export.utils", () => {
     });
   });
 });
-

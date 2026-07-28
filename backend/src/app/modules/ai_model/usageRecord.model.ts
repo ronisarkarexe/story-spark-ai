@@ -18,13 +18,16 @@ const UsageRecordSchema = new Schema<IUsageRecord>(
     billingPeriodStart: { type: Date, required: true },
     count: { type: Number, default: 0, min: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Compound unique index to prevent duplicate records and enable atomic checks
 UsageRecordSchema.index(
   { userId: 1, action: 1, billingPeriodStart: 1 },
-  { unique: true }
+  { unique: true },
 );
 
-export const UsageRecord = model<IUsageRecord>("UsageRecord", UsageRecordSchema);
+export const UsageRecord = model<IUsageRecord>(
+  "UsageRecord",
+  UsageRecordSchema,
+);

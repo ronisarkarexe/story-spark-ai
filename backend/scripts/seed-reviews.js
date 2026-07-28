@@ -3,8 +3,7 @@ const { randomInt } = require("crypto");
 
 //validating mongodb url before connecting
 const MONGO =
-  process.env.DATABASE_URL ||
-  "mongodb://127.0.0.1:27017/story_spark_ai";
+  process.env.DATABASE_URL || "mongodb://127.0.0.1:27017/story_spark_ai";
 
 try {
   const parsed = new URL(MONGO);
@@ -17,7 +16,7 @@ try {
   process.exit(1);
 }
 
-const TOTAL = Number( process.argv[2] ?? process.env.SEED_COUNT ?? 10000 );
+const TOTAL = Number(process.argv[2] ?? process.env.SEED_COUNT ?? 10000);
 const BATCH = Number(process.env.SEED_BATCH ?? 1000);
 
 if (!Number.isInteger(TOTAL) || TOTAL <= 0) {
@@ -54,25 +53,25 @@ async function main() {
   while (inserted < TOTAL) {
     const batchSize = Math.min(BATCH, TOTAL - inserted);
     try {
-  const docs = Array.from({ length: batchSize }, (_, i) =>
-    reviewDoc(inserted + i + 1)
-  );
+      const docs = Array.from({ length: batchSize }, (_, i) =>
+        reviewDoc(inserted + i + 1),
+      );
 
-  const res = await coll.insertMany(docs, {
-    ordered: false,
-  });
-  
-  inserted += batchSize;
+      const res = await coll.insertMany(docs, {
+        ordered: false,
+      });
 
-  console.log(`✅ Inserted ${inserted}/${TOTAL}`);}
-  catch (error) {
-  console.error(
-    `❌ Batch insertion failed after ${inserted} inserts:`,
-    error.message
-  );
+      inserted += batchSize;
 
-  throw error;
-}
+      console.log(`✅ Inserted ${inserted}/${TOTAL}`);
+    } catch (error) {
+      console.error(
+        `❌ Batch insertion failed after ${inserted} inserts:`,
+        error.message,
+      );
+
+      throw error;
+    }
   }
 
   console.log("Seeding complete.Closed!");
@@ -90,7 +89,7 @@ main()
     } catch (disconnectError) {
       console.error(
         "Failed to close MongoDB connection:",
-        disconnectError.message
+        disconnectError.message,
       );
     }
   });

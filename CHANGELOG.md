@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Character library feature for managing story characters
 - Story genre transformation component
 - Story version history tracking
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Story collection features
 
 ### Changed
+
 - Improved CONTRIBUTING.md with comprehensive local setup guide, monorepo structure explanation, environment variable guide, branch naming conventions, Conventional Commits format, and PR checklist cross-reference (#4258)
 - Updated empty stories state component
 - Improved trending topics layout with responsive grid
@@ -41,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling and validation
 
 ### Fixed
+
 - Fixed delete user dangling references
 - Fixed story translation bug
 - Fixed search query parameter validation
@@ -56,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-05-14
 
 ### Added
+
 - Initial open-source release of StorySparkAI
 - Core story generation platform
 - User registration and login

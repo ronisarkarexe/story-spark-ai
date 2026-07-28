@@ -5,7 +5,7 @@ import { IMeta, ResponseErrorType } from "../../types";
 
 export const axiosBaseQuery =
   (
-    { baseUrl }: { baseUrl: string } = { baseUrl: "" }
+    { baseUrl }: { baseUrl: string } = { baseUrl: "" },
   ): BaseQueryFn<
     {
       url: string;
@@ -38,7 +38,7 @@ export const axiosBaseQuery =
       };
     } catch (axiosError) {
       const err = axiosError as any;
-      
+
       if (api.signal.aborted) {
         return {
           error: {
@@ -50,23 +50,29 @@ export const axiosBaseQuery =
 
       // Check if the message contains our unique key error phrase
       const backendErrorData = err.response?.data;
-      if (backendErrorData && backendErrorData.message?.includes("ERROR_MISSING_API_KEY")) {
+      if (
+        backendErrorData &&
+        backendErrorData.message?.includes("ERROR_MISSING_API_KEY")
+      ) {
         return {
           error: {
             status: err.response?.status || 500,
             code: "MISSING_API_KEY",
-            message: "AI Generation provider keys are not configured on the server. Please check your backend/.env file.",
-            data: [{ path: "api_key", message: backendErrorData.message }]
+            message:
+              "AI Generation provider keys are not configured on the server. Please check your backend/.env file.",
+            data: [{ path: "api_key", message: backendErrorData.message }],
           },
         };
       }
-      
+
       // Fallback structural layout mapping for ordinary errors
       const standardErr = axiosError as ResponseErrorType;
       return {
         error: {
           status: standardErr.statusCode,
-          data: standardErr.errorMessages || [{ path: "", message: standardErr.message }],
+          data: standardErr.errorMessages || [
+            { path: "", message: standardErr.message },
+          ],
         },
       };
     }

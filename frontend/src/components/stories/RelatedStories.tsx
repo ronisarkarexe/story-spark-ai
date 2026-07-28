@@ -7,7 +7,9 @@ export interface IRelatedStoriesComponentProps {
   currentPostId: string;
 }
 
-export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
+export const RelatedStoriesComponent: React.FC<
+  IRelatedStoriesComponentProps
+> = ({ posts, currentPostId }) => {
   const navigate = useNavigate();
   const filteredPosts = posts.filter((post) => post._id !== currentPostId);
 
@@ -22,12 +24,16 @@ export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = 
               onClick={() => navigate(`/stories/${post._id}`)}
               className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
             >
-              <p className="text-sm font-semibold text-white truncate">{post.title}</p>
+              <p className="text-sm font-semibold text-white truncate">
+                {post.title}
+              </p>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-center text-slate-500 py-4 border border-dashed border-slate-700 rounded-xl">No related stories found.</p>
+        <p className="text-center text-slate-500 py-4 border border-dashed border-slate-700 rounded-xl">
+          No related stories found.
+        </p>
       )}
     </div>
   );

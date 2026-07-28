@@ -30,8 +30,8 @@ There are three linked gaps:
 ```ts
 // backend/src/config/quota.config.ts
 export const PLAN_QUOTAS = {
-  free:  { story_generate: 5,  story_continue: 3  },
-  pro:   { story_generate: 50, story_continue: 30 },
+  free: { story_generate: 5, story_continue: 3 },
+  pro: { story_generate: 50, story_continue: 30 },
   elite: { story_generate: Infinity, story_continue: Infinity },
 };
 ```
@@ -49,13 +49,13 @@ async function enforceQuota(action: QuotaAction) {
     const record = await UsageRecord.findOneAndUpdate(
       { userId: user._id, action, billingPeriodStart: periodStart },
       { $inc: { count: 1 } },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
 
     if (record.count > limit) {
       await UsageRecord.updateOne(
         { userId: user._id, action, billingPeriodStart: periodStart },
-        { $inc: { count: -1 } }
+        { $inc: { count: -1 } },
       );
       return res.status(429).json({
         error: "QUOTA_EXCEEDED",
@@ -107,5 +107,6 @@ This issue is distinct from #1516 (payment never upgrades `subscriptionType`). T
 ---
 
 **Record**
+
 - [x] I agree to follow this project's Code of Conduct
 - [x] I want to work on this issue

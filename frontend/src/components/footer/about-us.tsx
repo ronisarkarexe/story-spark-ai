@@ -44,11 +44,13 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#050816] text-gray-900 dark:text-white overflow-hidden transition-colors duration-300">
-      
       <section className="relative px-6 py-20">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-10 left-10 w-72 h-72 bg-blue-500/20 blur-3xl rounded-full animate-pulse"></div>
-          <div className="absolute bottom-10 right-10 w-72 h-72 bg-purple-500/20 blur-3xl rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div
+            className="absolute bottom-10 right-10 w-72 h-72 bg-purple-500/20 blur-3xl rounded-full animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
         </div>
 
         <div className="relative max-w-6xl mx-auto text-center">
@@ -64,7 +66,8 @@ const AboutUs = () => {
             </span>
           </h1>
           <p className="max-w-3xl mx-auto text-lg sm:text-xl text-gray-600 dark:text-gray-300 leading-8">
-            An open-source platform designed for creative minds to generate and share multiple story variations from a single prompt.
+            An open-source platform designed for creative minds to generate and
+            share multiple story variations from a single prompt.
           </p>
         </div>
       </section>
@@ -103,22 +106,34 @@ const AboutUs = () => {
             <div className="group relative bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-blue-500/20 transition-all duration-500"></div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-                <span className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">✨</span>
+                <span className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                  ✨
+                </span>
                 What It Does
               </h3>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg z-10 relative">
-                StorySparkAi is designed to empower creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way. Users can input an idea, explore multiple story variations, save their favorites, and leverage AI analysis to enhance their creative writing journey.
+                StorySparkAi is designed to empower creative minds by generating
+                and showcasing AI-crafted stories from user prompts in a simple,
+                engaging way. Users can input an idea, explore multiple story
+                variations, save their favorites, and leverage AI analysis to
+                enhance their creative writing journey.
               </p>
             </div>
 
             <div className="group relative bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
               <div className="absolute top-0 left-0 w-32 h-32 bg-purple-500/10 blur-3xl rounded-full group-hover:bg-purple-500/20 transition-all duration-500"></div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-                <span className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">🚀</span>
+                <span className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
+                  🚀
+                </span>
                 Why We Built It
               </h3>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg z-10 relative">
-                Perfect for writers, creators, and enthusiasts exploring AI-powered storytelling, we built this platform to overcome writer's block with intelligent suggestions. StorySparkAi makes experimentation fast and fearless, acting as a collaborative partner rather than a replacement for human creativity.
+                Perfect for writers, creators, and enthusiasts exploring
+                AI-powered storytelling, we built this platform to overcome
+                writer's block with intelligent suggestions. StorySparkAi makes
+                experimentation fast and fearless, acting as a collaborative
+                partner rather than a replacement for human creativity.
               </p>
             </div>
           </div>
@@ -130,7 +145,8 @@ const AboutUs = () => {
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">Powerful Features</h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-lg">
-              Everything you need to create, explore, and enhance stories with AI.
+              Everything you need to create, explore, and enhance stories with
+              AI.
             </p>
           </div>
 
@@ -164,7 +180,11 @@ const AboutUs = () => {
               🌍 Driven by Community
             </h2>
             <p className="text-gray-700 dark:text-gray-300 text-lg leading-8 max-w-3xl mx-auto">
-              StorySparkAI is proudly <strong>100% open-source</strong>. We are constantly evolving thanks to a global community of developers, writers, and open-source programs like GSSoC. Every feature, bug fix, and UI enhancement is a testament to creative minds coming together to build something beautiful. 
+              StorySparkAI is proudly <strong>100% open-source</strong>. We are
+              constantly evolving thanks to a global community of developers,
+              writers, and open-source programs like GSSoC. Every feature, bug
+              fix, and UI enhancement is a testament to creative minds coming
+              together to build something beautiful.
             </p>
           </div>
         </div>

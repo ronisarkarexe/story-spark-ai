@@ -32,7 +32,9 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
   const currentUser = getUserInfo();
 
   // Reporting state
-  const [reportingCommentId, setReportingCommentId] = useState<string | null>(null);
+  const [reportingCommentId, setReportingCommentId] = useState<string | null>(
+    null,
+  );
   const [reportReason, setReportReason] = useState<string>("SPAM");
   const [reportDescription, setReportDescription] = useState<string>("");
 
@@ -41,7 +43,8 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
   const [toggleCommentLike] = useToggleCommentLikeMutation();
   const [toggleCommentHelpful] = useToggleCommentHelpfulMutation();
   const [deleteComment] = useDeleteCommentMutation();
-  const [reportComment, { isLoading: isReporting }] = useReportCommentMutation();
+  const [reportComment, { isLoading: isReporting }] =
+    useReportCommentMutation();
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,17 +77,17 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
     }
     if (data.comment.trim() === "") {
       toast.custom((t) => (
-  <div className="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
-    <span>Please enter a comment.</span>
+        <div className="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+          <span>Please enter a comment.</span>
 
-    <button
-      onClick={() => toast.dismiss(t.id)}
-      className="ml-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition"
-    >
-      ×
-    </button>
-  </div>
-));
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="ml-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition"
+          >
+            ×
+          </button>
+        </div>
+      ));
       return;
     }
     const createPostComment = {
@@ -138,7 +141,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
     (likes as unknown[])?.some((u) =>
       typeof u === "string"
         ? u === currentUser?.userId
-        : (u as { email?: string })?.email === currentUser?.email
+        : (u as { email?: string })?.email === currentUser?.email,
     ) ?? false;
 
   const handleLike = async (commentId: string) => {
@@ -157,7 +160,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
     (helpful as unknown[])?.some((u) =>
       typeof u === "string"
         ? u === currentUser?.userId
-        : (u as { email?: string })?.email === currentUser?.email
+        : (u as { email?: string })?.email === currentUser?.email,
     ) ?? false;
 
   const handleHelpful = async (commentId: string) => {
@@ -172,19 +175,19 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
     }
   };
   const handleDeleteComment = async (commentId: string) => {
-  const confirmed = window.confirm(
-    "Are you sure you want to delete this comment?"
-  );
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this comment?",
+    );
 
-  if (!confirmed) return;
+    if (!confirmed) return;
 
-  try {
-    await deleteComment(commentId).unwrap();
-    toast.success("Comment deleted successfully!");
-  } catch (err: unknown) {
-    toast.error(getErrorMessage(err));
-  }
-};
+    try {
+      await deleteComment(commentId).unwrap();
+      toast.success("Comment deleted successfully!");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
+    }
+  };
   return (
     <div>
       <form className="mb-8" onSubmit={handleSubmit(onSubmit)}>
@@ -213,7 +216,10 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
         {commentList?.comments.map((comment) => (
           <div key={comment._id} className="flex flex-col space-y-4">
             <div className="flex space-x-4">
-              <SSProfile name={comment?.userId?.name || "Unknown User"} size="w-10 h-10" />
+              <SSProfile
+                name={comment?.userId?.name || "Unknown User"}
+                size="w-10 h-10"
+              />
               <div className="flex-1">
                 <div className="bg-gray-50 backdrop-blur-sm border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition-colors dark:bg-slate-800/40 dark:border-slate-700/50">
                   <div className="flex items-center justify-between mb-2">
@@ -224,28 +230,37 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                       {timeAgo(comment.createdAt)}
                     </span>
                   </div>
-                  <p className="text-slate-600 leading-relaxed mt-2 dark:text-slate-300">{comment.comment}</p>
+                  <p className="text-slate-600 leading-relaxed mt-2 dark:text-slate-300">
+                    {comment.comment}
+                  </p>
                 </div>
                 <div className="flex items-center mt-3 pl-2 space-x-4 text-sm text-slate-500 font-medium dark:text-slate-500">
                   <button
                     onClick={() => handleLike(comment._id)}
                     className={`hover:text-red-400 transition-colors flex items-center gap-1 ${isCommentLiked(comment.likes) ? "text-red-400" : ""}`}
                   >
-                    <i className={`${isCommentLiked(comment.likes) ? "fas" : "far"} fa-heart mr-1`}></i>
+                    <i
+                      className={`${isCommentLiked(comment.likes) ? "fas" : "far"} fa-heart mr-1`}
+                    ></i>
                     {comment.likes?.length || 0}
                   </button>
                   <button
                     onClick={() => handleHelpful(comment._id)}
                     className={`hover:text-amber-500 transition-colors flex items-center gap-1 ${isCommentHelpful(comment.helpful) ? "text-amber-500" : ""}`}
                   >
-                    <i className={`${isCommentHelpful(comment.helpful) ? "fas" : "far"} fa-lightbulb mr-1`}></i>
+                    <i
+                      className={`${isCommentHelpful(comment.helpful) ? "fas" : "far"} fa-lightbulb mr-1`}
+                    ></i>
                     Helpful ({comment.helpful?.length || 0})
                   </button>
                   <button
-                    onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
+                    onClick={() =>
+                      setReplyingTo(
+                        replyingTo === comment._id ? null : comment._id,
+                      )
+                    }
                     className="hover:text-blue-400 transition-colors"
                   >
-                  
                     <i className="far fa-comment mr-1"></i> Reply
                   </button>
                   {currentUser?.userId === comment?.userId?._id && (
@@ -273,15 +288,26 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                 </div>
 
                 {replyingTo === comment._id && (
-                  <form className="mt-4 flex space-x-3" onSubmit={(e) => onReplySubmit(e, comment._id)}>
+                  <form
+                    className="mt-4 flex space-x-3"
+                    onSubmit={(e) => onReplySubmit(e, comment._id)}
+                  >
                     <input
                       type="text"
                       value={replyForms[comment._id] || ""}
-                      onChange={(e) => setReplyForms({ ...replyForms, [comment._id]: e.target.value })}
+                      onChange={(e) =>
+                        setReplyForms({
+                          ...replyForms,
+                          [comment._id]: e.target.value,
+                        })
+                      }
                       placeholder="Write a reply..."
                       className="flex-1 bg-gray-100/80 border border-gray-200 rounded-lg px-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-200"
                     />
-                    <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    <button
+                      type="submit"
+                      className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
                       Reply
                     </button>
                   </form>
@@ -291,7 +317,10 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                   <div className="mt-4 space-y-4 border-l-2 border-gray-200 pl-4 ml-2 dark:border-slate-700">
                     {comment.replies.map((reply) => (
                       <div key={reply._id} className="flex space-x-3">
-                        <SSProfile name={reply?.userId?.name || "Unknown User"} size="w-8 h-8" />
+                        <SSProfile
+                          name={reply?.userId?.name || "Unknown User"}
+                          size="w-8 h-8"
+                        />
                         <div className="flex-1">
                           <div className="rounded-lg p-3 border border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/20">
                             <div className="flex items-center justify-between mb-1">
@@ -302,21 +331,27 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                                 {timeAgo(reply.createdAt)}
                               </span>
                             </div>
-                            <p className="text-slate-600 text-sm dark:text-slate-300">{reply.comment}</p>
+                            <p className="text-slate-600 text-sm dark:text-slate-300">
+                              {reply.comment}
+                            </p>
                           </div>
                           <div className="flex items-center mt-1 space-x-4 text-xs text-slate-500">
                             <button
                               onClick={() => handleLike(reply._id)}
                               className={`hover:text-red-400 transition-colors ${isCommentLiked(reply.likes) ? "text-red-400" : ""}`}
                             >
-                              <i className={`${isCommentLiked(reply.likes) ? "fas" : "far"} fa-heart mr-1`}></i>
+                              <i
+                                className={`${isCommentLiked(reply.likes) ? "fas" : "far"} fa-heart mr-1`}
+                              ></i>
                               {reply.likes?.length || 0}
                             </button>
                             {currentUser?.userId !== reply?.userId?._id && (
                               <button
                                 onClick={() => {
                                   if (!isLogin) {
-                                    toast.error("Please login to report a comment.");
+                                    toast.error(
+                                      "Please login to report a comment.",
+                                    );
                                     return;
                                   }
                                   setReportingCommentId(reply._id);
@@ -355,7 +390,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                 &times;
               </button>
             </div>
-            
+
             <form onSubmit={handleReportSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
@@ -364,8 +399,14 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                 <div className="space-y-2">
                   {[
                     { value: "SPAM", label: "Spam or misleading" },
-                    { value: "HATE_SPEECH", label: "Hate speech or harassment" },
-                    { value: "INAPPROPRIATE", label: "Inappropriate or explicit content" },
+                    {
+                      value: "HATE_SPEECH",
+                      label: "Hate speech or harassment",
+                    },
+                    {
+                      value: "INAPPROPRIATE",
+                      label: "Inappropriate or explicit content",
+                    },
                     { value: "MISINFORMATION", label: "Misinformation" },
                     { value: "OTHER", label: "Other issue" },
                   ].map((option) => (

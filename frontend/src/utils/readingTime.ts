@@ -1,4 +1,7 @@
-export function getReadingTime(text: string): { minutes: number; wordCount: number } {
+export function getReadingTime(text: string): {
+  minutes: number;
+  wordCount: number;
+} {
   const trimmed = text.trim();
   if (!trimmed) {
     return { minutes: 1, wordCount: 0 };

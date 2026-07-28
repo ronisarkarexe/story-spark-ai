@@ -31,12 +31,16 @@ describe("story-draft utility", () => {
     });
 
     it("is a no-op when draft is null", () => {
-      expect(() => saveStoryDraft(null as unknown as StoryDraftData)).not.toThrow();
+      expect(() =>
+        saveStoryDraft(null as unknown as StoryDraftData),
+      ).not.toThrow();
       expect(localStorage.getItem("storyspark_story_draft_v1")).toBeNull();
     });
 
     it("is a no-op when draft is undefined", () => {
-      expect(() => saveStoryDraft(undefined as unknown as StoryDraftData)).not.toThrow();
+      expect(() =>
+        saveStoryDraft(undefined as unknown as StoryDraftData),
+      ).not.toThrow();
     });
 
     it("is a no-op when draft is empty object", () => {
@@ -50,7 +54,10 @@ describe("story-draft utility", () => {
 
   describe("loadStoryDraft", () => {
     it("returns stored draft as StoryDraftData", () => {
-      localStorage.setItem("storyspark_story_draft_v1", JSON.stringify(validDraft));
+      localStorage.setItem(
+        "storyspark_story_draft_v1",
+        JSON.stringify(validDraft),
+      );
       const loaded = loadStoryDraft();
       expect(loaded).not.toBeNull();
       expect((loaded as StoryDraftData).prompt).toBe("A story about dragons");
@@ -74,7 +81,10 @@ describe("story-draft utility", () => {
 
   describe("clearStoryDraft", () => {
     it("removes draft from localStorage", () => {
-      localStorage.setItem("storyspark_story_draft_v1", JSON.stringify(validDraft));
+      localStorage.setItem(
+        "storyspark_story_draft_v1",
+        JSON.stringify(validDraft),
+      );
       clearStoryDraft();
       expect(localStorage.getItem("storyspark_story_draft_v1")).toBeNull();
     });

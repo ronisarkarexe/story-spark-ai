@@ -11,10 +11,8 @@ export default function StoryRevisionChecklist() {
   const toggleItem = (id: number) => {
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id
-          ? { ...item, completed: !item.completed }
-          : item
-      )
+        item.id === id ? { ...item, completed: !item.completed } : item,
+      ),
     );
   };
 
@@ -24,7 +22,6 @@ export default function StoryRevisionChecklist() {
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-
       <h2 className="text-2xl font-bold text-white mb-6">
         ✅ Story Revision Checklist
       </h2>
@@ -49,13 +46,9 @@ export default function StoryRevisionChecklist() {
             />
 
             <div>
-              <h3 className="font-semibold text-white">
-                {item.title}
-              </h3>
+              <h3 className="font-semibold text-white">{item.title}</h3>
 
-              <p className="text-gray-400 text-sm">
-                {item.description}
-              </p>
+              <p className="text-gray-400 text-sm">{item.description}</p>
             </div>
           </label>
         ))}
@@ -67,7 +60,6 @@ export default function StoryRevisionChecklist() {
       >
         Rerun Checklist
       </button>
-
     </div>
   );
 }

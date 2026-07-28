@@ -21,7 +21,7 @@ const searchStories = async (
   q: string,
   filters: Pick<SearchQuery, "genre" | "sortBy" | "dateFrom" | "dateTo">,
   page: number,
-  limit: number
+  limit: number,
 ) => {
   const { genre, sortBy, dateFrom, dateTo } = filters;
 
@@ -34,16 +34,20 @@ const searchStories = async (
   if (genre) matchStage.genre = genre;
   if (dateFrom || dateTo) {
     matchStage.createdAt = {};
-    if (dateFrom) (matchStage.createdAt as Record<string, unknown>).$gte = new Date(dateFrom);
-    if (dateTo) (matchStage.createdAt as Record<string, unknown>).$lte = new Date(dateTo);
+    if (dateFrom)
+      (matchStage.createdAt as Record<string, unknown>).$gte = new Date(
+        dateFrom,
+      );
+    if (dateTo)
+      (matchStage.createdAt as Record<string, unknown>).$lte = new Date(dateTo);
   }
 
   const sortStage: any =
     sortBy === "date"
       ? { createdAt: -1 }
       : sortBy === "popularity"
-      ? { likesCount: -1, viewsCount: -1 }
-      : { score: { $meta: "textScore" } };
+        ? { likesCount: -1, viewsCount: -1 }
+        : { score: { $meta: "textScore" } };
 
   const [results, total] = await Promise.all([
     Post.find(matchStage, { score: { $meta: "textScore" } })
@@ -82,8 +86,10 @@ const searchTags = async (q: string, page: number, limit: number) => {
   const regex = new RegExp(escaped, "i");
 
   const [results, total] = await Promise.all([
-    Post.find({ tag: regex, isDeleted: false }, { tag: 1, title: 1, _id: 1 })
-      .distinct("tag"),
+    Post.find(
+      { tag: regex, isDeleted: false },
+      { tag: 1, title: 1, _id: 1 },
+    ).distinct("tag"),
     Post.distinct("tag", { tag: regex, isDeleted: false }),
   ]);
 
@@ -112,14 +118,21 @@ export const SearchService = {
     const storyFilters = { genre, sortBy, dateFrom, dateTo };
 
     const [storiesResult, usersResult, tagsResult] = await Promise.all([
-      type === "story" || type === "all" ? searchStories(q, storyFilters, page, limit) : null,
+      type === "story" || type === "all"
+        ? searchStories(q, storyFilters, page, limit)
+        : null,
       type === "user" || type === "all" ? searchUsers(q, page, limit) : null,
       type === "tag" || type === "all" ? searchTags(q, page, limit) : null,
     ]);
 
     return {
       stories: storiesResult
-        ? { data: storiesResult.results, total: storiesResult.total, page, limit }
+        ? {
+            data: storiesResult.results,
+            total: storiesResult.total,
+            page,
+            limit,
+          }
         : null,
       users: usersResult
         ? { data: usersResult.results, total: usersResult.total, page, limit }

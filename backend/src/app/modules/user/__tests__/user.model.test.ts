@@ -3,7 +3,7 @@ jest.mock(
   () => ({
     hash: jest.fn(),
   }),
-  { virtual: true }
+  { virtual: true },
 );
 
 jest.mock("../../../../config", () => ({

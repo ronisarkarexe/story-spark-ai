@@ -32,7 +32,10 @@ const VariationSelector: React.FC<VariationSelectorProps> = ({
   onCompare,
   isLoading = false,
 }) => {
-  const isReadyToCompare = selectedVersion1 && selectedVersion2 && selectedVersion1._id !== selectedVersion2._id;
+  const isReadyToCompare =
+    selectedVersion1 &&
+    selectedVersion2 &&
+    selectedVersion1._id !== selectedVersion2._id;
 
   const getVersionLabel = (version: IStoryVersion) => {
     return `v${version.versionNumber} - ${version.generationType} (${new Date(version.createdAt).toLocaleDateString()})`;
@@ -84,7 +87,7 @@ const VariationSelector: React.FC<VariationSelectorProps> = ({
                 </span>
                 <span
                   className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${getGenerationTypeColor(
-                    selectedVersion1.generationType
+                    selectedVersion1.generationType,
                   )}`}
                 >
                   {selectedVersion1.generationType}
@@ -128,7 +131,7 @@ const VariationSelector: React.FC<VariationSelectorProps> = ({
                 </span>
                 <span
                   className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${getGenerationTypeColor(
-                    selectedVersion2.generationType
+                    selectedVersion2.generationType,
                   )}`}
                 >
                   {selectedVersion2.generationType}
@@ -161,19 +164,20 @@ const VariationSelector: React.FC<VariationSelectorProps> = ({
             Analyzing...
           </>
         ) : (
-          <>
-            🔍 Compare Variations
-          </>
+          <>🔍 Compare Variations</>
         )}
       </button>
 
-      {!isReadyToCompare && selectedVersion1 && selectedVersion2 && selectedVersion1._id === selectedVersion2._id && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg">
-          <p className="text-sm text-amber-900 dark:text-amber-200">
-            ⚠️ Please select two different versions to compare.
-          </p>
-        </div>
-      )}
+      {!isReadyToCompare &&
+        selectedVersion1 &&
+        selectedVersion2 &&
+        selectedVersion1._id === selectedVersion2._id && (
+          <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg">
+            <p className="text-sm text-amber-900 dark:text-amber-200">
+              ⚠️ Please select two different versions to compare.
+            </p>
+          </div>
+        )}
     </div>
   );
 };

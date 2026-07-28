@@ -3,7 +3,11 @@ import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";
 import StoryCoverImage from "../stories/StoryCoverImage";
-import { isSessionBookmarked, addSessionBookmark, removeSessionBookmark } from "../../utils/session-bookmarks";
+import {
+  isSessionBookmarked,
+  addSessionBookmark,
+  removeSessionBookmark,
+} from "../../utils/session-bookmarks";
 
 export type StoryCardRarity = "Common" | "Rare" | "Epic" | "Legendary";
 
@@ -119,7 +123,9 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const rarity = getStoryCardRarity(story.content);
-  const [isBookmarked, setIsBookmarked] = useState(() => isSessionBookmarked(story.uuid));
+  const [isBookmarked, setIsBookmarked] = useState(() =>
+    isSessionBookmarked(story.uuid),
+  );
 
   useEffect(() => {
     const handleBookmarkChange = () => {
@@ -127,7 +133,10 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
     };
     window.addEventListener("session_bookmarks_changed", handleBookmarkChange);
     return () => {
-      window.removeEventListener("session_bookmarks_changed", handleBookmarkChange);
+      window.removeEventListener(
+        "session_bookmarks_changed",
+        handleBookmarkChange,
+      );
     };
   }, [story.uuid]);
 
@@ -169,8 +178,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
       });
       const link = document.createElement("a");
       const fileName =
-        story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") ||
-        "story-card";
+        story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story-card";
 
       link.download = `${fileName}-trading-card.png`;
       link.href = canvas.toDataURL("image/png");
@@ -195,7 +203,9 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
           url: window.location.href,
         });
       } else {
-        await navigator.clipboard.writeText(`${shareText} ${window.location.href}`);
+        await navigator.clipboard.writeText(
+          `${shareText} ${window.location.href}`,
+        );
         toast.success("Share text copied!");
       }
     } catch (error) {
@@ -242,7 +252,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.24),transparent_28%),radial-gradient(circle_at_80%_12%,rgba(255,255,255,0.18),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.06),transparent_42%)]" />
 
         <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950/50 backdrop-blur-lg">
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
             <div className="min-w-0">
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/50">
                 StorySpark Card
@@ -280,7 +290,9 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
               className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
               title={isBookmarked ? "Remove bookmark" : "Save story"}
             >
-              <i className={`${isBookmarked ? "fas text-amber-400" : "far text-white/70"} fa-bookmark`}></i>
+              <i
+                className={`${isBookmarked ? "fas text-amber-400" : "far text-white/70"} fa-bookmark`}
+              ></i>
             </button>
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
@@ -295,7 +307,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
             </div>
           </div>
 
-            <div className="flex flex-1 flex-col px-4 pb-4">
+          <div className="flex flex-1 flex-col px-4 pb-4">
             <div className="rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-md p-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
                 Key Quote
@@ -356,7 +368,9 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
             aria-label="Copy story to clipboard"
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-500 active:scale-95"
           >
-            <i className={`fa-solid ${isCopied ? "fa-check" : "fa-clipboard"}`}></i>
+            <i
+              className={`fa-solid ${isCopied ? "fa-check" : "fa-clipboard"}`}
+            ></i>
             {isCopied ? "Copied!" : "Copy Story"}
           </button>
           <button

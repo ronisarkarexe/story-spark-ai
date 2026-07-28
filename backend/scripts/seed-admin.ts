@@ -8,7 +8,9 @@ const seedAdmin = async () => {
   const password = process.env.ADMIN_PASSWORD;
 
   if (!email || !password) {
-    throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be set in environment variables.");
+    throw new Error(
+      "ADMIN_EMAIL and ADMIN_PASSWORD must be set in environment variables.",
+    );
   }
 
   // Connect to database

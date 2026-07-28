@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { Edit2, Check, X, Target, Award, TrendingUp } from "lucide-react";
-import { useGetProfileInfoQuery, useUpdateWritingGoalsMutation } from "../../redux/apis/user.api";
+import {
+  useGetProfileInfoQuery,
+  useUpdateWritingGoalsMutation,
+} from "../../redux/apis/user.api";
 
 // ─── LOCAL COMPONENT FOR PROGRESS RING ───
 interface ProgressRingProps {
@@ -19,11 +22,15 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (Math.min(percentage, 100) / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (Math.min(percentage, 100) / 100) * circumference;
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      <svg className="w-full h-full transform -rotate-90" viewBox={`0 0 ${size} ${size}`}>
+      <svg
+        className="w-full h-full transform -rotate-90"
+        viewBox={`0 0 ${size} ${size}`}
+      >
         {/* Background Circle */}
         <circle
           className="text-gray-100"
@@ -59,7 +66,8 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
 const AnalyticsDashboard: React.FC = () => {
   // Pulling profile data which holds posts logs and writing goals configuration matrix
   const { data: user, isLoading } = useGetProfileInfoQuery();
-  const [updateWritingGoals, { isLoading: isUpdating }] = useUpdateWritingGoalsMutation();
+  const [updateWritingGoals, { isLoading: isUpdating }] =
+    useUpdateWritingGoalsMutation();
 
   // Local state for editing goals modal/inline fields
   const [isEditing, setIsEditing] = useState(false);
@@ -140,8 +148,12 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Dashboard Header Element Row */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-100 pb-5">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Writing Analytics</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Track your production parameters, streaks, and milestones.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            Writing Analytics
+          </h1>
+          <p className="text-gray-500 text-sm mt-0.5">
+            Track your production parameters, streaks, and milestones.
+          </p>
         </div>
 
         {/* Dynamic Edit / Toggle Button Control Layout */}
@@ -175,20 +187,28 @@ const AnalyticsDashboard: React.FC = () => {
       {isEditing && (
         <div className="bg-indigo-50/50 border border-indigo-100/80 p-5 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1.5">Daily Target (Words)</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1.5">
+              Daily Target (Words)
+            </label>
             <input
               type="number"
               value={dailyGoalInput}
-              onChange={(e) => setDailyGoalInput(Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={(e) =>
+                setDailyGoalInput(Math.max(0, parseInt(e.target.value) || 0))
+              }
               className="w-full bg-white border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-gray-800"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1.5">Weekly Target (Words)</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1.5">
+              Weekly Target (Words)
+            </label>
             <input
               type="number"
               value={weeklyGoalInput}
-              onChange={(e) => setWeeklyGoalInput(Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={(e) =>
+                setWeeklyGoalInput(Math.max(0, parseInt(e.target.value) || 0))
+              }
               className="w-full bg-white border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-gray-800"
             />
           </div>
@@ -202,20 +222,30 @@ const AnalyticsDashboard: React.FC = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-gray-400">
               <Target size={18} className="text-indigo-500" />
-              <span className="text-xs font-bold uppercase tracking-wider">Daily Objective</span>
+              <span className="text-xs font-bold uppercase tracking-wider">
+                Daily Objective
+              </span>
             </div>
             <p className="text-3xl font-black text-gray-800 tracking-tight">
-              {wordsToday} <span className="text-lg font-medium text-gray-400">/ {dailyGoal} words</span>
+              {wordsToday}{" "}
+              <span className="text-lg font-medium text-gray-400">
+                / {dailyGoal} words
+              </span>
             </p>
             {dailyPercentage >= 100 ? (
               <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs px-2.5 py-1 rounded-full font-bold animate-pulse">
                 <Award size={14} /> Daily Goal Met!
               </span>
             ) : (
-              <p className="text-xs text-gray-400 font-medium">Keep writing to push this milestone envelope!</p>
+              <p className="text-xs text-gray-400 font-medium">
+                Keep writing to push this milestone envelope!
+              </p>
             )}
           </div>
-          <ProgressRing percentage={dailyPercentage} colorClass="text-indigo-600" />
+          <ProgressRing
+            percentage={dailyPercentage}
+            colorClass="text-indigo-600"
+          />
         </div>
 
         {/* Weekly Goal Tracking Widget */}
@@ -223,20 +253,30 @@ const AnalyticsDashboard: React.FC = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-gray-400">
               <TrendingUp size={18} className="text-emerald-500" />
-              <span className="text-xs font-bold uppercase tracking-wider">Weekly Milestone</span>
+              <span className="text-xs font-bold uppercase tracking-wider">
+                Weekly Milestone
+              </span>
             </div>
             <p className="text-3xl font-black text-gray-800 tracking-tight">
-              {wordsThisWeek} <span className="text-lg font-medium text-gray-400">/ {weeklyGoal} words</span>
+              {wordsThisWeek}{" "}
+              <span className="text-lg font-medium text-gray-400">
+                / {weeklyGoal} words
+              </span>
             </p>
             {weeklyPercentage >= 100 ? (
               <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold animate-pulse">
                 <Award size={14} /> Weekly Streak Secure!
               </span>
             ) : (
-              <p className="text-xs text-gray-400 font-medium">Accumulating targets over active publication grids.</p>
+              <p className="text-xs text-gray-400 font-medium">
+                Accumulating targets over active publication grids.
+              </p>
             )}
           </div>
-          <ProgressRing percentage={weeklyPercentage} colorClass="text-emerald-500" />
+          <ProgressRing
+            percentage={weeklyPercentage}
+            colorClass="text-emerald-500"
+          />
         </div>
       </div>
     </div>

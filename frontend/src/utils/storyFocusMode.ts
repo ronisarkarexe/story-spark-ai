@@ -28,17 +28,12 @@ export function loadFocusModeSettings(): FocusModeSettings {
   }
 }
 
-export function saveFocusModeSettings(
-  settings: FocusModeSettings
-) {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(settings)
-  );
+export function saveFocusModeSettings(settings: FocusModeSettings) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 }
 
 export function toggleFocusMode(
-  settings: FocusModeSettings
+  settings: FocusModeSettings,
 ): FocusModeSettings {
   const updated = {
     ...settings,

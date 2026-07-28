@@ -81,7 +81,7 @@ const ThemeSwitcher = () => {
     }
   }, [activeTheme]);
 
-  const handleSelect = useCallback((theme: typeof themes[number]) => {
+  const handleSelect = useCallback((theme: (typeof themes)[number]) => {
     setActiveTheme(theme);
   }, []);
 
@@ -107,9 +107,10 @@ const ThemeSwitcher = () => {
             width: "36px",
             height: "36px",
             borderRadius: "50%",
-            border: activeTheme.id === theme.id
-              ? `3px solid ${theme.accent}`
-              : "2px solid #444",
+            border:
+              activeTheme.id === theme.id
+                ? `3px solid ${theme.accent}`
+                : "2px solid #444",
             background: theme.bg,
             color: theme.text,
             cursor: "pointer",
@@ -120,12 +121,8 @@ const ThemeSwitcher = () => {
             justifyContent: "center",
             transition: "transform 0.2s",
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.transform = "scale(1.2)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.transform = "scale(1)")
-          }
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
           {theme.id}
         </button>

@@ -10,7 +10,7 @@ router.post(
   "/analyze",
   freeAiRateLimiter,
   validateRequest(EngagementValidation.analyzeChapter),
-  EngagementController.analyzeChapter
+  EngagementController.analyzeChapter,
 );
 
 export const EngagementRouter = router;

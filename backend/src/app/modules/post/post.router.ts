@@ -16,10 +16,10 @@ router.post(
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER
+    ENUM_USER_ROLE.USER,
   ),
   validateRequest(PostValidator.createPost),
-  PostController.createPost
+  PostController.createPost,
 );
 
 // All authenticated roles allowed to use AI variation features
@@ -36,14 +36,14 @@ router.post(
   auth(...AI_VARIATION_ROLES),
   validateRequest(PostValidator.remixStory),
   checkRequestLimit(),
-  PostController.remixStory
+  PostController.remixStory,
 );
 router.post(
   "/translate",
   auth(...AI_VARIATION_ROLES),
   validateRequest(PostValidator.translateStory),
   checkRequestLimit(),
-  PostController.translateStory
+  PostController.translateStory,
 );
 
 // Named GET routes must come before /:id to avoid the wildcard swallowing them
@@ -59,9 +59,9 @@ router.get(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  PostController.getPublishedPostsByAuthor
+  PostController.getPublishedPostsByAuthor,
 );
 
 // Genre list — used by post filter dropdowns
@@ -78,7 +78,7 @@ router.get("/feature-lists", PostController.getFeaturedPosts);
 router.patch(
   "/featured/:postId",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
-  PostController.doFeaturedPosts
+  PostController.doFeaturedPosts,
 );
 
 router.patch(
@@ -87,9 +87,9 @@ router.patch(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  PostController.toggleBookmark
+  PostController.toggleBookmark,
 );
 
 router.patch(
@@ -98,10 +98,10 @@ router.patch(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
   validateRequest(PostValidator.updatePost),
-  PostController.updatePost
+  PostController.updatePost,
 );
 
 router.delete(
@@ -110,9 +110,9 @@ router.delete(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
     ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
+    ENUM_USER_ROLE.SUPER_ADMIN,
   ),
-  PostController.deletePost
+  PostController.deletePost,
 );
 
 // OG meta route for social media bots — must be before /:id

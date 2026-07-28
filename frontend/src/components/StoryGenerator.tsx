@@ -1,6 +1,6 @@
 // frontend/src/components/StoryGenerator.tsx
-import { useState, useRef } from 'react';
-import api from '../services/api';
+import { useState, useRef } from "react";
+import api from "../services/api";
 
 interface StoryGeneratorProps {
   onStoryGenerated?: (stories: any[]) => void;
@@ -9,8 +9,10 @@ interface StoryGeneratorProps {
 const MIN_PROMPT_LENGTH = 10;
 const MAX_PROMPT_LENGTH = 1000;
 
-export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated }) => {
-  const [prompt, setPrompt] = useState('');
+export const StoryGenerator: React.FC<StoryGeneratorProps> = ({
+  onStoryGenerated,
+}) => {
+  const [prompt, setPrompt] = useState("");
   const [variationCount, setVariationCount] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
   const [stories, setStories] = useState<any[]>([]);
@@ -24,20 +26,23 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const handleGenerate = async () => {
-
     // trimmedPrompt and promptLength are already derived at component scope above
     if (!trimmedPrompt) {
-      setError('Please enter a story prompt.');
+      setError("Please enter a story prompt.");
       return;
     }
 
     if (promptLength < MIN_PROMPT_LENGTH) {
-      setError(`Story prompt must be at least ${MIN_PROMPT_LENGTH} characters long.`);
+      setError(
+        `Story prompt must be at least ${MIN_PROMPT_LENGTH} characters long.`,
+      );
       return;
     }
 
     if (promptLength > MAX_PROMPT_LENGTH) {
-      setError(`Story prompt must be no more than ${MAX_PROMPT_LENGTH} characters long.`);
+      setError(
+        `Story prompt must be no more than ${MAX_PROMPT_LENGTH} characters long.`,
+      );
       return;
     }
 
@@ -47,15 +52,19 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
     abortControllerRef.current = new AbortController();
     const timeoutId = setTimeout(() => {
       abortControllerRef.current?.abort();
-      }, 15000);                                             //timeout after 15 seconds
+    }, 15000); //timeout after 15 seconds
 
     try {
-      const response = await api.post('/ai/generate', {
-        prompt: trimmedPrompt,
-        variations: variationCount,
-      }, {
-        signal: abortControllerRef.current.signal,
-      });
+      const response = await api.post(
+        "/ai/generate",
+        {
+          prompt: trimmedPrompt,
+          variations: variationCount,
+        },
+        {
+          signal: abortControllerRef.current.signal,
+        },
+      );
       clearTimeout(timeoutId);
 
       if (response?.data?.variations) {
@@ -64,25 +73,30 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
           onStoryGenerated(response.data.variations);
         }
       } else {
-        throw new Error('No variations received from AI service');
+        throw new Error("No variations received from AI service");
       }
     } catch (error: any) {
-      console.error('AI Generation Error:', error);
+      console.error("AI Generation Error:", error);
 
-      let errorMessage = 'Failed to generate stories. Please try again.';
+      let errorMessage = "Failed to generate stories. Please try again.";
 
       if (error.response?.status === 429) {
-        errorMessage = 'The AI service is currently busy. Please wait a moment and try again.';
+        errorMessage =
+          "The AI service is currently busy. Please wait a moment and try again.";
       } else if (error.response?.status === 504) {
-        errorMessage = 'The AI service is taking too long. Please try again later.';
+        errorMessage =
+          "The AI service is taking too long. Please try again later.";
       } else if (error.response?.status === 500) {
-        errorMessage = 'Server error. Please try again later.';
-      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        errorMessage = 'Request timed out. Please try again.';
-      } else if (error.name === 'AbortError' || error.code === 'ERR_CANCELED'){
-        errorMessage = 'Request timed out. Please try again later.';
+        errorMessage = "Server error. Please try again later.";
+      } else if (
+        error.code === "ECONNABORTED" ||
+        error.message?.includes("timeout")
+      ) {
+        errorMessage = "Request timed out. Please try again.";
+      } else if (error.name === "AbortError" || error.code === "ERR_CANCELED") {
+        errorMessage = "Request timed out. Please try again later.";
       } else if (!error.response) {
-        errorMessage = 'Network error. Please check your connection.';
+        errorMessage = "Network error. Please check your connection.";
       }
 
       setError(errorMessage);
@@ -109,19 +123,22 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
           </button>
 
           {isLoading && (
-          <button
-            onClick = {() => abortControllerRef.current?.abort()}
-            className = "w-full px-6 py-3 mt-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-          >
-            Cancel
-          </button> 
-        )}
+            <button
+              onClick={() => abortControllerRef.current?.abort()}
+              className="w-full px-6 py-3 mt-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              Cancel
+            </button>
+          )}
         </div>
       )}
 
       {/* Prompt Input */}
       <div className="mb-4">
-        <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="prompt"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Story Prompt
         </label>
         <textarea
@@ -140,8 +157,8 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
           <span
             className={
               promptLength > 0 && promptLength < MIN_PROMPT_LENGTH
-                ? 'text-red-600'
-                : 'text-gray-500'
+                ? "text-red-600"
+                : "text-gray-500"
             }
           >
             Minimum {MIN_PROMPT_LENGTH} characters required
@@ -150,8 +167,8 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
           <span
             className={
               promptLength > MAX_PROMPT_LENGTH
-                ? 'text-red-600'
-                : 'text-gray-500'
+                ? "text-red-600"
+                : "text-gray-500"
             }
           >
             {promptLength}/{MAX_PROMPT_LENGTH}
@@ -161,7 +178,10 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
 
       {/* Variation Count */}
       <div className="mb-4">
-        <label htmlFor="variations" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="variations"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Number of Variations: {variationCount}
         </label>
         <input
@@ -201,8 +221,13 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
           <h3 className="text-lg font-semibold mb-3">Generated Stories</h3>
           <div className="space-y-3">
             {stories.map((story, index) => (
-              <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h4 className="font-medium text-indigo-600">Variation {index + 1}</h4>
+              <div
+                key={index}
+                className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+              >
+                <h4 className="font-medium text-indigo-600">
+                  Variation {index + 1}
+                </h4>
                 <p className="text-gray-700 mt-1">{story}</p>
               </div>
             ))}
