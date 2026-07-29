@@ -38,7 +38,6 @@ const VerifyEmail = async (payload: IEmailBody) => {
     });
 
     if (!config.verify_email || !config.verify_password) {
-      console.log(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
       return {
         expiresAt,
       };
