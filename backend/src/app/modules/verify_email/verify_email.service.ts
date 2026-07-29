@@ -183,6 +183,6 @@ export const VerifyEmailService = {
   VerifyOtp,
 };
 
-const clearOtpAttempts = (email: string) => {
-  console.log('Clearing OTP attempts for:', email);
+const clearOtpAttempts = (_email: string) => {
+  void _email;
 }
