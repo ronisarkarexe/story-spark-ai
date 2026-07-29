@@ -179,7 +179,7 @@ export default function CollabRoom() {
           url: currentUrl,
         });
       } catch (err) {
-        console.log("Native share canceled or failed, using fallback.", err);
+        console.info("Native share canceled or failed, using fallback.", err);
         fallbackCopyToClipboard(currentUrl);
       }
     } else {
