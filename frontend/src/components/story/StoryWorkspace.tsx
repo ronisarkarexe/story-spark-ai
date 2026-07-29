@@ -559,7 +559,7 @@ const StoryWorkspace = () => {
       .join("\n\n") || ""
   }
   onInsert={(text) => {
-    console.log("Insert continuation:", text);
+    console.info("Insert continuation:", text);
   }}
 />
 
