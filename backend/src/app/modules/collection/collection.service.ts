@@ -114,7 +114,10 @@ const getUserCollections = async (
     requestToken !== null &&
     (await User.findOne({ email: requestToken.email }).then(
       (u) => u?._id?.toString() === userId
-    ));
+    ).catch(err => {
+      console.error("[CollectionService] Failed:", err);
+      return false;
+    }));
 
   const filter: Record<string, unknown> = {
     ownerId: new Types.ObjectId(userId),
