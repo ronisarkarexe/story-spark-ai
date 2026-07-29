@@ -46,7 +46,7 @@ const SearchPage: React.FC = () => {
 
     searchApi({ q: debouncedQuery, type, genre, sortBy, page, limit: 10 })
       .then((data) => { if (!cancelled) { setResults(data); setLoading(false); } })
-      .catch(() => { if (!cancelled) { setError(true); setLoading(false); } });
+      .catch((err) => { console.error("[SearchPage] Failed:", err); if (!cancelled) { setError(true); setLoading(false); } });
 
     return () => { cancelled = true; };
   }, [debouncedQuery, type, genre, sortBy, page]);
