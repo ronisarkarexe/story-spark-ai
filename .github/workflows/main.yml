@@ -40,7 +40,7 @@ jobs:
           node-version: '20'
           cache: pnpm
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Work around npm optional dependency bug (Rollup Linux binary)
         run: pnpm --filter story-spark-ai-frontend add @rollup/rollup-linux-x64-gnu
       - name: Work around npm optional dependency bug (Lightning CSS Linux binary)

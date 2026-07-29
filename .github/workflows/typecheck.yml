@@ -58,7 +58,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true' || steps.changes.outputs.recommendation_only == 'true'
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Rebuild native bindings for current platform
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true' || steps.changes.outputs.recommendation_only == 'true'
