@@ -62,7 +62,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
       .then((data) => {
         if (!cancelled) { setResults(data); setLoading(false); }
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
+      .catch((err) => { console.error("[CommandPalette] Failed:", err); if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [debouncedQuery]);
 
