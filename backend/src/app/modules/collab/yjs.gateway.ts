@@ -47,7 +47,7 @@ export class YjsGateway {
             Y.applyUpdate(doc!, update);
           }
           socket.emit('sync', Y.encodeStateAsUpdate(doc!));
-        });
+        }).catch(err => console.error("[YJS] Collab state failed:", err));
       }
       // Broadcast updates from this socket to others
       socket.on('update', (update: Uint8Array) => {
