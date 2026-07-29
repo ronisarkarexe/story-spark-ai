@@ -183,7 +183,7 @@ export async function analyzeCharacterNetwork(content: string): Promise<ICharact
   const geminiApiKey = config.gemini_api_key?.trim();
   
   if (!geminiApiKey) {
-    console.log("[AI] Gemini key not configured, falling back to offline character network extraction.");
+    console.warn("[AI] Gemini key not configured, falling back to offline character network extraction.");
     return extractCharacterNetworkOffline(content);
   }
 
@@ -232,7 +232,7 @@ Return ONLY valid JSON format containing:
     return parsed;
   } catch (error) {
     console.error("[AI] Gemini character network analysis failed:", error);
-    console.log("[AI] Executing fallback offline character network extraction.");
+    console.warn("[AI] Executing fallback offline character network extraction.");
     return extractCharacterNetworkOffline(content);
   }
 }
