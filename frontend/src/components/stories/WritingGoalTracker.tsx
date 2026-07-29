@@ -43,7 +43,7 @@ const WritingGoalTracker: React.FC<WritingGoalTrackerProps> = ({ wordCount }) =>
   }, [wordCount, goalWords, goalReached]);
 
   const handleSetGoal = () => {
-    const parsed = parseInt(inputValue);
+    const parsed = parseInt(inputValue, 10);
     if (!isNaN(parsed) && parsed > 0) {
       setGoalWords(parsed);
       setGoalReached(false);
