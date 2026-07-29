@@ -9,6 +9,7 @@ import { aiLimit } from "../utils/aiLimiter";
 import { StoryCache } from "../models/storyCache.model";
 import { assertAIProviderConfigured } from "../config";
 import { getNextApiKey } from "./apiKeyRotationService";
+import logger from "../utils/logger.util";
 
 
 let openai: OpenAI | null = null;
@@ -170,7 +171,7 @@ export async function generateStory(
   try {
     const existingCache = await StoryCache.findOne({ promptKey: cacheKey });
     if (existingCache) {
-      console.log("[CACHE HIT] Serving story instantly from MongoDB cache");
+      logger.info("[CACHE HIT] Serving story instantly from MongoDB cache");
       return {
         story: existingCache.storyData,
         provider: existingCache.provider as "openai" | "gemini" | "anthropic",
@@ -191,7 +192,7 @@ export async function generateStory(
     try {
       let story = await generateWithAnthropic(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log("[AI] Story generated successfully via Anthropic");
+      logger.info("[AI] Story generated successfully via Anthropic");
       finalResult = { story, provider: "anthropic", fallbackUsed: false };
     } catch (anthropicError) {
       console.warn(
@@ -205,14 +206,14 @@ export async function generateStory(
         );
       }
       didFallbackToGemini = true;
-      console.log("[AI] Falling back to Gemini...");
+      logger.info("[AI] Falling back to Gemini...");
     }
   } else if (chosenProvider === "openai" || !chosenProvider) {
     // ── Try OpenAI first ──────────────────────────────────────────────────────
     try {
       let story = await generateWithOpenAI(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log("[AI] Story generated successfully via OpenAI");
+      logger.info("[AI] Story generated successfully via OpenAI");
       finalResult = { story, provider: "openai", fallbackUsed: false };
 
     } catch (openAIError) {
@@ -229,7 +230,7 @@ export async function generateStory(
       }
 
       didFallbackToGemini = true;
-      console.log("[AI] Falling back to Gemini.");
+      logger.info("[AI] Falling back to Gemini.");
     }
   } else if (chosenProvider === "gemini") {
     // Skip OpenAI/Anthropic blocks
@@ -243,7 +244,7 @@ export async function generateStory(
     try {
       let story = await generateWithGemini(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
+      logger.info(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
       finalResult = { story, provider: "gemini", fallbackUsed: didFallbackToGemini };
 
     } catch (geminiError) {
@@ -266,7 +267,7 @@ export async function generateStory(
       provider: finalResult.provider,
       storyData: finalResult.story
     });
-    console.log("[CACHE STORED] New AI story cached to MongoDB successfully");
+    logger.info("[CACHE STORED] New AI story cached to MongoDB successfully");
   } catch (saveCacheError) {
     console.warn("[CACHE ERROR] Failed to save story generation to cache:", saveCacheError);
   }
