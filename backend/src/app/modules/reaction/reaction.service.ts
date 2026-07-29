@@ -82,5 +82,4 @@ const toggleReaction = async (
 
 export const ReactionService = {
   toggleReaction,
-}
-};
+} as const;

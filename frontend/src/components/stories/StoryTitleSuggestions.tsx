@@ -28,7 +28,7 @@ const StoryTitleSuggestions: React.FC<Props> = ({
 
   // Copy title
   const handleCopy = (title: string) => {
-    navigator.clipboard.writeText(title);
+    navigator.clipboard.writeText(title).catch(() => {});
     toast.success("Title copied!");
   };
 

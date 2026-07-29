@@ -87,15 +87,15 @@ export default function CollabRoom() {
       socketInstance.emit("collab:join_room", { roomId });
 
       // Request initial room details
-      socketInstance.emit("collab:get_room", { roomId }, (response: CollabRoomResponse) => {
-        if (response && response.room) {
-          setRoom(response.room);
+      const handleJoined = (data: CollabRoomResponse) => {
+        if (data && data.room) {
+          setRoom(data.room);
           setError(null);
         } else {
-          setError(response.message || "Room not found");
+          setError(data.message || "Room not found");
         }
         setLoading(false);
-      });
+      };
 
       // Listeners
       const handleRoomUpdated = (data: CollabRoomResponse) => {
@@ -129,8 +129,10 @@ export default function CollabRoom() {
 
       const handleError = (data: { message: string }) => {
         setError(data.message || "Collaboration error occurred.");
+        setLoading(false);
       };
 
+      socketInstance.on("collab:joined", handleJoined);
       socketInstance.on("collab:room_updated", handleRoomUpdated);
       socketInstance.on("collab:story_updated", handleStoryUpdated);
       socketInstance.on("collab:user_typing", handleUserTyping);
@@ -144,6 +146,7 @@ export default function CollabRoom() {
           typingTimeoutRef.current = null;
         }
         isTypingRef.current = false;
+        socketInstance.off("collab:joined", handleJoined);
         socketInstance.off("collab:room_updated", handleRoomUpdated);
         socketInstance.off("collab:story_updated", handleStoryUpdated);
         socketInstance.off("collab:user_typing", handleUserTyping);
@@ -299,7 +302,9 @@ export default function CollabRoom() {
 
               <div className="flex gap-2 items-start">
                 <CollabEditor
-                  storyId={roomId || ''}
+
+                  storyId={roomId!}
+
                   userId={user?.userId || ''}
                   username={user?.name || 'Anonymous'}
                   userColor="#FF6B6B"

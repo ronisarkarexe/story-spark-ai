@@ -4,6 +4,7 @@ import QuillCursors from 'quill-cursors';
 import * as Y from 'yjs';
 import { QuillBinding } from 'y-quill';
 import { IndexeddbPersistence } from 'y-indexeddb';
+import { Awareness } from 'y-protocols/awareness';
 import { io, Socket } from 'socket.io-client';
 import { Awareness } from 'y-protocols/awareness';
 import { resolveSocketUrl } from '../../helpers/socket-url';

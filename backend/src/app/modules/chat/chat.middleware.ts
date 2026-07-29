@@ -4,24 +4,42 @@ import config from "../../../config";
 import { JwtHelpers } from "../../../utils/jwt.helper";
 import chatRateLimiter from "../../middleware/chat.rate-limiter";
 
-export const flexibleChatRateLimiter = async (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization;
+export const flexibleChatRateLimiter = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+
+  const authHeader = Array.isArray(req.headers.authorization)
+    ? req.headers.authorization[0]
+    : req.headers.authorization;
+
+  const bearerToken =
+    authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : "";
+
+  const cookieToken =
+    (req as any).cookies?.accessToken ||
+    (req as any).cookies?.token;
+
+  const token = bearerToken || cookieToken;
+
   if (token) {
     try {
-      // Try to verify token. If successful, bypass guest rate limiting.
       const verifiedUser = JwtHelpers.verifyToken(
         token,
         config.jwt.secret as Secret
       );
+
       if (verifiedUser) {
-        req.user = verifiedUser; // Attach verified user to request
+        req.user = verifiedUser;
         return next();
       }
-    } catch (err) {
-      // Token is invalid/expired. Fallback to guest rate limiting.
+    } catch {
+      // Invalid token -> guest limiter
     }
   }
 
-  // Guest or invalid token: apply guest rate limiting
   return chatRateLimiter(req, res, next);
 };

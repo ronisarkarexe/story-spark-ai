@@ -88,7 +88,7 @@ export const connectSocket = (): Socket | null => {
 
 export const disconnectSocket = (): void => {
   stopTokenCheck();
-  if (socketIoInstance && socketIoInstance.connected) {
+  if (socketIoInstance) {
     socketIoInstance.disconnect();
     socketIoInstance = null;
   }

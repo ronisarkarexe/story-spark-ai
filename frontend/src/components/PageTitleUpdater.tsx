@@ -7,6 +7,7 @@ const routeTitles: Record<string, string> = {
   "/": "Home",
   "/templates": "Templates",
   "/writing-assistant": "Writing Assistant",
+  "/story-consistency": "Story Consistency Guardian",
   "/story-inspiration": "Story Inspiration",
   "/login": "Sign In",
   "/signup": "Create Account",

@@ -39,6 +39,7 @@ export const assertAIProviderConfigured = (): void => {
 
 export default {
   env: process.env.NODE_ENV,
+  frontend_url: process.env.FRONTEND_URL,
   port: process.env.PORT || "5000",
   disable_logs: process.env.DISABLE_LOGS === "true" || process.env.VERCEL === "1",
   database_url: (() => {
@@ -61,6 +62,9 @@ export default {
     expires_in: requiredEnv("JWT_EXPIRES_IN"),
     refresh_expires_in: requiredEnv("JWT_REFRESH_EXPIRES_IN"),
   },
+  auth: {
+    allow_cookie_auth: process.env.ALLOW_COOKIE_AUTH === "true",
+  },
   default_admin_password: process.env.DEFAULT_ADMIN_PASSWORD,
   openai_key: process.env.OPEN_AI_KEY,
   image_generation_provider: process.env.IMAGE_GENERATION_PROVIDER,
@@ -68,10 +72,12 @@ export default {
   unsplash_key_api: process.env.UNSPLASH_KEY_API,
   unsplash_secret_key_api: process.env.UNSPLASH_KEY_API_SECRET,
   gemini_api_key: process.env.GEMINI_API_KEY,
+  gemini_image_model: process.env.GEMINI_IMAGE_MODEL || "imagen-3.0-generate-002",
   anthropic_api_key: process.env.ANTHROPIC_API_KEY,
   verify_email: process.env.VERIFY_EMAIL,
   verify_password: process.env.VERIFY_PASSWORD,
   google_client_id: process.env.GOOGLE_CLIENT_ID,
+  frontend_url: process.env.FRONTEND_URL || "http://localhost:3000",
   github: {
     token: process.env.GITHUB_TOKEN,
     repo: process.env.GITHUB_REPO || "ronisarkarexe/story-spark-ai",

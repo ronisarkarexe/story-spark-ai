@@ -428,24 +428,26 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // Get room info
-    socket.on("collab:get_room", async ({ roomId }) => {
+    socket.on("collab:get_room", async ({ roomId }, callback) => {
       try {
         const userId = socket.data.userId;
         const room = await CollabRoom.findOne({ roomId });
         if (!room) {
-          socket.emit("collab:error", { message: "Room not found" });
+          if (callback) callback({ message: "Room not found" });
+          else socket.emit("collab:error", { message: "Room not found" });
           return;
         }
         if (!room.participants.some((p) => p.userId === userId)) {
-          socket.emit("collab:error", {
-            message: "You are not a participant of this room",
-          });
+          if (callback) callback({ message: "You are not a participant of this room" });
+          else socket.emit("collab:error", { message: "You are not a participant of this room" });
           return;
         }
-        socket.emit("collab:room_info", { room });
+        if (callback) callback({ room });
+        else socket.emit("collab:room_info", { room });
       } catch (error) {
         logger.error("collab:get_room error", error);
-        socket.emit("collab:error", { message: "Failed to get room information" });
+        if (callback) callback({ message: "Failed to get room information" });
+        else socket.emit("collab:error", { message: "Failed to get room information" });
       }
     });
 

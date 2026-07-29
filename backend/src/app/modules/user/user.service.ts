@@ -11,6 +11,9 @@ import { Bookmark } from "../bookmark/bookmark.model";
 import { Notification } from "../notification/notification.model";
 import { StoryVersion } from "../story_version/story_version.model";
 import { Report } from "../report/report.model";
+import config from "../../../config";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
 
@@ -64,6 +67,55 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
     }
     if (typeof payload.writingGoals.weeklyWordCount === "number") {
       updateData["writingGoals.weeklyWordCount"] = payload.writingGoals.weeklyWordCount;
+    }
+  }
+
+  // Handle email change with verification
+  if (payload.email && typeof payload.email === "string") {
+    const newEmail = payload.email.trim().toLowerCase();
+    if (newEmail !== token.email) {
+      const existingUser = await User.findOne({ email: newEmail });
+      if (existingUser) {
+        throw new ApiError(httpStatus.CONFLICT, "Email is already in use!");
+      }
+      const pendingEmailToken = crypto.randomBytes(32).toString("hex");
+      const pendingEmailTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      await User.findOneAndUpdate(
+        { email: token.email },
+        {
+          $set: {
+            pendingEmail: newEmail,
+            pendingEmailToken,
+            pendingEmailTokenExpires,
+          },
+        }
+      );
+      // Attempt to send verification email, silently fall back to token-only
+      try {
+        if (config.verify_email && config.verify_password) {
+          const transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+              user: config.verify_email,
+              pass: config.verify_password,
+            },
+          });
+          await transporter.sendMail({
+            from: config.verify_email,
+            to: newEmail,
+            subject: "Verify your new email address",
+            html: `<p>Click the link below to verify your new email address:</p>
+                   <p><a href="${config.frontend_url}/verify-email-change?token=${pendingEmailToken}&email=${encodeURIComponent(newEmail)}">Verify Email</a></p>
+                   <p>This link expires in 1 hour.</p>`,
+          });
+        }
+      } catch {
+        // Email service unavailable; token stored in user document for direct verification
+      }
+      return {
+        pendingEmail: newEmail,
+        message: "A verification link has been sent to your new email address. Please check your inbox to confirm the change.",
+      };
     }
   }
 

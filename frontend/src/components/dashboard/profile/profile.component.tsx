@@ -12,6 +12,7 @@ import AuthContext from "../../auth.context";
 import { ProfileCompletionIndicator } from "./ProfileCompletionIndicator";
 import { instance } from "../../../helpers/axios/axiosInstance";
 
+
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();
   const [updateProfile] = useUpdateProfileMutation();

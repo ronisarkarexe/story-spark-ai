@@ -59,7 +59,7 @@ describe("story-utils", () => {
   describe("formatReadingStats", () => {
     it("should format stats correctly", () => {
       const content = "This is a five word story.";
-      expect(formatReadingStats(content)).toBe("1 min read • 6 words"); // "This", "is", "a", "five", "word", "story."
+      expect(formatReadingStats(content)).toBe("1 min read - 6 words"); // "This", "is", "a", "five", "word", "story."
     });
   });
 });
