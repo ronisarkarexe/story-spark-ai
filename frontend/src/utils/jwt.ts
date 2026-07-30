@@ -119,3 +119,5 @@ export const decodeToken = (token: string): CustomJwtPayload => {
   return decoded;
 };
 
+export const decodedToken = decodeToken;
+

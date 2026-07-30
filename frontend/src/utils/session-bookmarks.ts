@@ -8,9 +8,17 @@ export const getSessionBookmarks = (): IStories[] => {
   }
   try {
     const data = sessionStorage.getItem(SESSION_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed)) {
+      console.warn("Session bookmarks data is corrupted (not an array). Resetting.");
+      sessionStorage.removeItem(SESSION_KEY);
+      return [];
+    }
+    return parsed as IStories[];
   } catch (error) {
     console.error("Failed to read session bookmarks", error);
+    sessionStorage.removeItem(SESSION_KEY); // clear corrupted data
     return [];
   }
 };
@@ -37,6 +45,8 @@ export const removeSessionBookmark = (uuid: string): void => {
   }
   try {
     const bookmarks = getSessionBookmarks();
+    const existed = bookmarks.some((b) => b.uuid === uuid);
+    if (!existed) return; // nothing to remove — skip write and event
     const updated = bookmarks.filter((b) => b.uuid !== uuid);
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event("session_bookmarks_changed"));
