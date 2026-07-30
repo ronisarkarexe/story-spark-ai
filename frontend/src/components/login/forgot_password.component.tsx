@@ -123,7 +123,7 @@ const ForgotPasswordComponent = () => {
     try {
       const res = await forgotPassword({ email: data.email }).unwrap();
       if (res?.data) {
-        const { expiresAt } = res.data;
+        const { expiresAt } = res.data as any;
         setExpiredAt(new Date(expiresAt).getTime());
         setEmailAddress(data.email);
         toast.success("OTP sent to your email successfully!");
@@ -231,7 +231,7 @@ const ForgotPasswordComponent = () => {
     try {
       const res = await forgotPassword({ email: emailAddress }).unwrap();
       if (res?.data) {
-        const { expiresAt } = res.data;
+        const { expiresAt } = res.data as any;
         setExpiredAt(new Date(expiresAt).getTime());
         toast.success("OTP resent successfully!");
         setValue("otp", "");
