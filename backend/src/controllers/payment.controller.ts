@@ -20,16 +20,34 @@ const getRazorpay = () => {
   return razorpayInstance;
 };
 
-const PLANS: Record<string, { amountPaise: number; durationDays: number; label: string }> = {
+import { PLAN_PRICING, normalizePlan } from "../app/modules/payment/payment.constant";
+
+// Dynamic PLANS based on constant
+const PLANS: Record<string, { amountPaise: number; durationDays: number; label: string; tier: string }> = {
+  pro: {
+    amountPaise: PLAN_PRICING.pro.amount,
+    durationDays: 30,
+    label: "Pro Plan",
+    tier: "pro",
+  },
+  premium: {
+    amountPaise: PLAN_PRICING.premium.amount,
+    durationDays: 30,
+    label: "Premium Plan",
+    tier: "premium",
+  },
+  // Keep legacy for existing orders
   monthly: {
     amountPaise: 49900,
     durationDays: 30,
     label: "Monthly Premium",
+    tier: "premium",
   },
   yearly: {
     amountPaise: 499900,
     durationDays: 365,
     label: "Yearly Premium",
+    tier: "premium",
   },
 };
 
@@ -46,13 +64,11 @@ export const createOrder = async (
       return;
     }
 
-    const { plan } = req.body as { plan?: string };
+    const { plan: rawPlan } = req.body as { plan?: string };
+    const plan = normalizePlan(rawPlan) || rawPlan?.toLowerCase();
 
     if (!plan || !PLANS[plan]) {
-      res.status(400).json({
-        success: false,
-        error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
-      });
+      res.status(400).json({ success: false, error: "Invalid plan selected" });
       return;
     }
 
@@ -110,7 +126,8 @@ async function grantEntitlementAndRespond(
   res: Response,
   { respond }: { respond: boolean }
 ): Promise<void> {
-  const selectedPlan = PLANS[order.plan];
+  const planKey = normalizePlan(order.plan) || order.plan?.toLowerCase() || "pro";
+  const selectedPlan = PLANS[planKey] || PLANS.monthly;
   const subscriptionExpiry = new Date(
     Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
   );
@@ -118,7 +135,7 @@ async function grantEntitlementAndRespond(
   const updatedUser = await User.findByIdAndUpdate(
     order.userId,
     {
-      subscriptionType: "premium",
+      subscriptionType: selectedPlan.tier,
       subscriptionExpiry,
       lastPaymentId: order.razorpayPaymentId,
       lastOrderId: order.razorpayOrderId,

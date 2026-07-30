@@ -93,38 +93,25 @@ export interface CharacterIssue {
   id: string;
   character: string;
   category: string;
-  severity: "Low" | "Medium" | "High";
+  severity: string;
   description: string;
   suggestion: string;
 }
 
-export function analyzeCharacterConsistency(story: string): CharacterIssue[] {
-  if (!story || !story.trim()) return [];
+export const analyzeCharacterConsistency = (story: string): CharacterIssue[] => {
+  const conflicts = checkCharacterConsistency([{ content: story || "" }]);
+  return conflicts.map((conflict, idx) => ({
+    id: `issue-${idx}`,
+    character: conflict.character,
+    category: "Appearance",
+    severity: "Medium",
+    description: `Inconsistent ${conflict.attribute}: was '${conflict.previous}', now '${conflict.current}'`,
+    suggestion: `Ensure ${conflict.character}'s ${conflict.attribute} is consistent across chapters or explain the change.`,
+  }));
+};
 
-  const conflicts = checkCharacterConsistency([{ content: story }]);
-
-  return conflicts.map((conflict, index) => {
-    const attributeLower = conflict.attribute.toLowerCase();
-    const category =
-      attributeLower.includes("hair") ||
-      attributeLower.includes("eye") ||
-      attributeLower.includes("skin") ||
-      attributeLower.includes("appearance")
-        ? "Appearance"
-        : "Personality";
-
-    return {
-      id: `${conflict.character.toLowerCase()}-${conflict.attribute.replace(/\s+/g, "_")}-${index}`,
-      character: conflict.character,
-      category,
-      severity: "Medium",
-      description: `${conflict.character}'s ${conflict.attribute} changed from ${conflict.previous} to ${conflict.current}.`,
-      suggestion: `Ensure ${conflict.character}'s ${conflict.attribute} remains consistent throughout the story.`,
-    };
-  });
-}
-
-export function getConsistencyScore(issues: CharacterIssue[]): number {
+export const getConsistencyScore = (issues: CharacterIssue[] | unknown[]): number => {
   if (!issues || issues.length === 0) return 100;
-  return Math.max(0, 100 - issues.length * 15);
-}
+  const score = 100 - issues.length * 15;
+  return Math.max(0, score);
+};
