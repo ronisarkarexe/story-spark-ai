@@ -216,7 +216,7 @@ export const useSpeechSynthesis = (
     setIsSpeaking(false);
     setIsPaused(false);
     setCurrentWordIndex(0);
-  };
+  }, []);
 
   // Initialize speech synthesis support + voice loading.
   useEffect(() => {
