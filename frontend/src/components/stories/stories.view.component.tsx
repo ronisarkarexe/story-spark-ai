@@ -250,8 +250,8 @@ const handleGenerateCharacterProfile = async () => {
         setStories([]);
         setSelectedStory(null);
       }
-    } catch (error) {
-      const message = error?.data?.message || error?.message || "Something went wrong. Please try again.";
+    } catch (error: any) {
+      const message = (error as any)?.data?.message || (error as any)?.message || "Something went wrong. Please try again.";
       toast.error(message);
     } finally {
       setLoading(false);

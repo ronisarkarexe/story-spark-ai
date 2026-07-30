@@ -1,6 +1,6 @@
 import { AUTH_KEY } from "../constants/storage-key";
 import { AccessToken } from "../models/login";
-import { decodedToken } from "../utils/jwt";
+import { decodeToken } from "../utils/jwt";
 import {
   getFromLocalStorage,
   removeFromLocalStorage,
@@ -62,8 +62,8 @@ export const getValidDecodedToken = () => {
 
   if (authToken) {
     try {
-      const decodedData = decodedToken(authToken);
-      // decodedToken always throws on failure — it never returns null.
+      const decodedData = decodeToken(authToken);
+      // decodeToken always throws on failure — it never returns null.
       // If it throws, the catch block below handles cleanup and logging.
 
       validateTokenPayload(decodedData as Record<string, unknown>);
@@ -90,7 +90,7 @@ export const getValidDecodedToken = () => {
 
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
   try {
-    const decodedData = decodedToken(accessToken);
+    const decodedData = decodeToken(accessToken);
     validateTokenPayload(decodedData as Record<string, unknown>);
   } catch (error) {
     console.error("Refusing to store invalid access token:", error);

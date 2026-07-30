@@ -633,7 +633,7 @@ const PostDetailsComponent = () => {
   </h3>
 
   <SimilarStories
-    stories={relatedPost || []}
+    stories={(relatedPost || []).map((p: any) => ({ ...p, id: p._id || p.id || "", tags: p.tags || (p.tag ? [p.tag] : []) })) as any}
   />
 </div>
           </div>

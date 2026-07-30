@@ -1,5 +1,5 @@
 /**
- * Removes all emoji characters from a string using Unicode emoji ranges.
+ * Strips all emojis from a string using comprehensive Unicode ranges.
  * Useful for sanitizing usernames, titles, and content fields where
  * emojis are not desired or could cause display issues.
  *
