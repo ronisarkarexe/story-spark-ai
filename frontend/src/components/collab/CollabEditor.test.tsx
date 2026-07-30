@@ -1,5 +1,5 @@
 import { render, screen, act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import CollabEditor from './CollabEditor';
 import * as Y from 'yjs';
 import { io } from 'socket.io-client';
