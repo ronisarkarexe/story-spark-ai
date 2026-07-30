@@ -128,6 +128,19 @@ export const piiScrubberMiddleware = (req: Request, res: Response, next: NextFun
       req.body.message = scrubPII(req.body.message);
     }
 
+    // Also scrub chat 'messages' array for POST /chat
+    if (req.body && Array.isArray(req.body.messages)) {
+      req.body.messages = req.body.messages.map((msg: any) => {
+        if (msg && typeof msg.content === "string") {
+          return {
+            ...msg,
+            content: scrubPII(msg.content),
+          };
+        }
+        return msg;
+      });
+    }
+
     next();
   } catch (error) {
     // Fail closed if PII scrubbing crashes? Or just continue unscrubbed?

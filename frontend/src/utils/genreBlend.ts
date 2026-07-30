@@ -28,3 +28,15 @@ export const regenerateBlend = (
 ): GenreBlendResult => {
   return blendGenres(request);
 };
+
+export const DEFAULT_MAX_PROMPT_LENGTH = 2000;
+
+export const validatePromptLength = (
+  prompt: string,
+  maxLength: number = DEFAULT_MAX_PROMPT_LENGTH
+): boolean => {
+  if (!prompt || typeof prompt !== "string") {
+    return false;
+  }
+  return prompt.length <= maxLength;
+};

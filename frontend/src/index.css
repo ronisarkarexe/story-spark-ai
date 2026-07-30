@@ -95,9 +95,19 @@ body {
 /* ==========================================================================
    Login & Signup Form Overflow Fix
    Prevents inputs from exceeding their card container boundaries.
-   The @tailwindcss/forms plugin can inject min-width / width values that
-   override Tailwind utilities; these rules ensure containment.
+   The @tailwindcss/forms plugin injects styles via [type='email'],
+   [type='password'] etc. attribute selectors, which have higher specificity
+   than a bare `input` element selector and can win regardless of source
+   order. Targeting .ss-input directly, with !important, removes that
+   ambiguity. See issue #4756.
    ========================================================================== */
+.ss-input {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 input,
 select,
 textarea,
