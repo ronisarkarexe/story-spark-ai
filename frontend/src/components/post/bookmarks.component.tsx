@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
-import Fuse from "fuse.js";
+import Fuse, { type FuseResult } from "fuse.js";
 import ExploreViewListComponent from "./post.view.list.component";
 import { Post } from "../../models/post";
 import { useGetMyBookmarksQuery } from "../../redux/apis/bookmark.api";
@@ -29,7 +29,7 @@ const BookmarksComponent = () => {
     setSize(pageSize);
   };
 
-  const allPosts: Post[] = (data?.posts ?? []) as Post[];
+  const allPosts: Post[] = useMemo(() => (data?.posts ?? []) as Post[], [data?.posts]);
 
   const [activeTab, setActiveTab] = useState<"posts" | "generated">("posts");
   const [sessionStories, setSessionStories] = useState<IStories[]>(() => getSessionBookmarks());
@@ -48,7 +48,7 @@ const BookmarksComponent = () => {
 
   // Implement client-side instant search for bookmarks
   const postFuse = useMemo(() => {
-    return new Fuse(allPosts, {
+    return new Fuse<Post>(allPosts, {
       keys: ["title", "tag", "content"],
       threshold: 0.35,
       ignoreLocation: true,
@@ -58,7 +58,7 @@ const BookmarksComponent = () => {
   }, [allPosts]);
 
   const storyFuse = useMemo(() => {
-    return new Fuse(sessionStories, {
+    return new Fuse<IStories>(sessionStories, {
       keys: ["title", "tag", "content"],
       threshold: 0.35,
       ignoreLocation: true,
@@ -73,7 +73,7 @@ const BookmarksComponent = () => {
 
     if (!search) return allPosts;
 
-    return postFuse.search(search).map((result: any) => result.item);
+    return postFuse.search(search).map((result: FuseResult<Post>) => result.item);
   }, [debouncedSearch, allPosts, postFuse]);
 
 
@@ -82,7 +82,7 @@ const BookmarksComponent = () => {
 
     if (!search) return sessionStories;
 
-    return storyFuse.search(search).map((result: any) => result.item);
+    return storyFuse.search(search).map((result: FuseResult<IStories>) => result.item);
   }, [debouncedSearch, sessionStories, storyFuse]);
 
   return (

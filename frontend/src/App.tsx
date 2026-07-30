@@ -21,10 +21,7 @@ import PageTitleUpdater from "./components/PageTitleUpdater";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import ReadingStatistics from "./pages/ReadingStatistics";
 
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
-};
+
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));

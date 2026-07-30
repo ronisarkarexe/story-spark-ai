@@ -4,21 +4,13 @@ import {
   ITopicData,
   topicsData,
   CharacterProfile,
-  getWordCount,
-  SELECTED_TOPIC_CLASSES,
 } from "./stories.utils";
-import { calculateReadingTime } from "../../utils/reading-time";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { formatReadingStats } from "../../utils/story-utils";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
 import toast, { Toaster } from "react-hot-toast";
-import StoryTranslator from "../translate/StoryTranslator";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
 
@@ -111,8 +103,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const isNarrationActive = narrationState !== "idle";
 
   useEffect(() => {
+    const audioPlayer = audioPlayerRef.current;
     return () => {
-      audioPlayerRef.current?.stop();
+      audioPlayer?.stop();
     };
   }, [location.pathname]);
 
@@ -275,7 +268,8 @@ const handleGenerateCharacterProfile = async () => {
         setSelectedStory(null);
       }
     } catch (error) {
-      const message = (error as any)?.data?.message || (error as any)?.message || "Something went wrong. Please try again.";
+      const err = error as { data?: { message?: string }; message?: string };
+      const message = err?.data?.message || err?.message || "Something went wrong. Please try again.";
       toast.error(message);
     } finally {
       setLoading(false);

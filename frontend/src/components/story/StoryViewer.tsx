@@ -239,12 +239,20 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
     {progress}%
   </span>
 </div>
-        <button
-          onClick={handleExportPDF}
-          className="mt-2 w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
-        >
-          📄 Export PDF
-        </button>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={handleExportPDF}
+            className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+          >
+            📄 Export PDF
+          </button>
+          <button
+            onClick={handleShare}
+            className="flex-1 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700 transition-colors"
+          >
+            🔗 Share
+          </button>
+        </div>
       </div>
       <div className="max-w-4xl mx-auto">
         {chapters.map((chapter) => (

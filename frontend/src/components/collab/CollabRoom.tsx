@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { getToken } from "../../services/auth.service";
@@ -53,8 +53,6 @@ export default function CollabRoom() {
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
   
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isTypingRef = useRef(false);
   const user = getUserInfo();
 
   useEffect(() => {
