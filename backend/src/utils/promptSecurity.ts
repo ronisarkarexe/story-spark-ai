@@ -88,7 +88,8 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
   assertContentSafe(normalizedPrompt);
 
   // Strict delimiters to isolate user input
-  return `"""\n${normalizedPrompt}\n"""`;
+  const escapedPrompt = normalizedPrompt.replace(/"""/g, '\\"\\"\\"');
+  return `"""\n${escapedPrompt}\n"""`;
 };
 
 export const validateOutput = (aiResponse: string): string => {
@@ -142,9 +143,13 @@ export const validateOutput = (aiResponse: string): string => {
  */
 export const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) return trimmed;
-  return trimmed
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
+
+  // Extract JSON from markdown code block anywhere in the text
+  const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+
+  // If no code block, return as-is
+  return trimmed;
 };
