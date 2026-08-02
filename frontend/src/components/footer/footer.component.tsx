@@ -245,6 +245,7 @@ const socialLinks = [
                   className="fa-solid fa-envelope text-slate-500 text-[13px]"
                   aria-hidden="true"
                 />
+
                 <input
                   id="newsletter-email-footer"
                   name="email"
@@ -265,7 +266,7 @@ const socialLinks = [
               >
                 {status === "loading" ? "..." : "Subscribe"}
               </button>
-            </form>
+            </form>  
 
             <div aria-live="polite" role="status">
               {status === "success" && (

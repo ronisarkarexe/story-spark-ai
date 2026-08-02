@@ -106,8 +106,8 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
           onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full bg-white border border-slate-300 text-slate-800 placeholder-slate-400 dark:bg-slate-900/40 dark:backdrop-blur-md dark:border-white/10 dark:text-slate-100 dark:placeholder-slate-500 rounded-2xl py-3.5 sm:py-4 pl-11 sm:pl-12 pr-11 sm:pr-12 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 box-border appearance-none [&::-webkit-search-cancel-button]:hidden"
           autoComplete="off"
+          className="w-full bg-white border border-slate-200 text-slate-800 placeholder-slate-400 dark:bg-slate-900/40 dark:backdrop-blur-md dark:border-white/10 dark:text-slate-100 dark:placeholder-slate-500 rounded-2xl py-3.5 sm:py-4 pl-11 sm:pl-12 pr-11 sm:pr-12 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/40 dark:focus:ring-blue-500/20 dark:focus:border-blue-500/40 transition-all duration-200 box-border appearance-none [&::-webkit-search-cancel-button]:hidden"
         />
 
         {value && (
@@ -117,7 +117,10 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
             className="absolute inset-y-0 right-0 pr-4 sm:pr-5 flex items-center text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer"
             aria-label="Clear search"
           >
-            <i className="fas fa-times text-sm sm:text-base" aria-hidden="true"></i>
+            <i
+              className="fas fa-times text-sm sm:text-base"
+              aria-hidden="true"
+            />
           </button>
         )}
       </div>
