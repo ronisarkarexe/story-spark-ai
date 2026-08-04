@@ -24,9 +24,14 @@ const WritingGoalTracker: React.FC<WritingGoalTrackerProps> = ({ wordCount }) =>
         completedAt: new Date().toISOString(),
         sessionStart: sessionStart.toISOString(),
       };
-      const existing = JSON.parse(
-        localStorage.getItem("writingSessionStats") || "[]"
-      );
+      let existing: unknown[];
+      try {
+        existing = JSON.parse(
+          localStorage.getItem("writingSessionStats") || "[]"
+        );
+      } catch {
+        existing = [];
+      }
       localStorage.setItem(
         "writingSessionStats",
         JSON.stringify([...existing, stats])
