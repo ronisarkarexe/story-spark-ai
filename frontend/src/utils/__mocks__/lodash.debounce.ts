@@ -1,4 +1,4 @@
-import type { Vi } from "vitest";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 export default function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
