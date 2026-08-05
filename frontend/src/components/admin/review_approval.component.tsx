@@ -165,3 +165,4 @@ const handleApproveSelected = async () => {
 };
 
 export default ReviewApprovalComponent;
+.catch(err => console.error("Promise.all failed:", err));

@@ -39,7 +39,7 @@ export function analyzeStoryComplexity(
     score,
     level,
     vocabularyScore: 82,
-    sentenceScore: Math.round(avgSentenceLength * 4),
+    sentenceScore: Math.round(avgSentenceLength * 4 + Number.EPSILON),
     narrativeScore: 85,
     plotScore: 84,
     suggestions: [
