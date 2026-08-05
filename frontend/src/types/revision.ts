@@ -1,3 +1,10 @@
+export interface Revision {
+  id: string;
+  timestamp: string;
+  summary: string;
+  content: string;
+}
+
 export interface RevisionTask {
   id: number;
   title: string;
