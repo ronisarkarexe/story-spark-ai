@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { useTranslateStoryMutation, useTranslateFreeStoryMutation } from "../../redux/apis/ai.model.api";
@@ -70,9 +70,18 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
 
   // Guard against concurrent translation requests
   const isRequestInFlight = useRef(false);
+  // Track copy timeout to cancel it if the component unmounts before it fires
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [translateStory] = useTranslateStoryMutation();
   const [translateFreeStory] = useTranslateFreeStoryMutation();
+
+  // Cleanup copy timeout on unmount to prevent state update on unmounted component
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
 
   const handleTranslate = async () => {
     // ── Input validation ──────────────────────────────────────────────
@@ -145,7 +154,9 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
       await navigator.clipboard.writeText(text);
       setIsCopied(true);
       toast.success("Translation copied to clipboard!");
-      setTimeout(() => setIsCopied(false), 2500);
+      // Clear any previous timeout before setting a new one
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setIsCopied(false), 2500);
     } catch {
       toast.error("Failed to copy. Please try again.");
     }
