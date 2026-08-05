@@ -34,7 +34,7 @@ export default function CharacterConsistencyChecker({
       </div>
 
       <div className="space-y-4">
-        {issues.map((issue) => (
+        {issues.map((issue: any) => (
           <div
             key={issue.id}
             className="rounded-lg border border-zinc-700 p-4"

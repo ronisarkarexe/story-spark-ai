@@ -150,7 +150,8 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
       setIsCopied(true);
       toast.success("Story copied to clipboard!");
       setTimeout(() => setIsCopied(false), 2000);
-    } catch {
+    } catch (error) {
+      console.error("Failed to copy story text", error);
       toast.error("Could not copy story text.");
     }
   };

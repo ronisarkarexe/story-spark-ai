@@ -1,24 +1,27 @@
-/* eslint-disable */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+// @vitest-environment jsdom
+
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   getSessionBookmarks,
   addSessionBookmark,
   removeSessionBookmark,
   isSessionBookmarked,
 } from "../session-bookmarks";
+import { IStories } from "../../components/stories/stories.view.component";
 
-const mockStory = (uuid: string) => ({
+const mockStory = (uuid: string): IStories => ({
   uuid,
   title: `Story ${uuid}`,
-  author: "Test Author",
+  description: "Test Description",
   content: "Test content",
-  tags: ["test"],
+  genre: "Fantasy",
   createdAt: new Date().toISOString(),
 });
 
-describe("session-bookmarks", () => {
+describe("session-bookmarks utility", () => {
   beforeEach(() => {
     sessionStorage.clear();
+    vi.restoreAllMocks();
   });
 
   describe("getSessionBookmarks", () => {
@@ -37,19 +40,27 @@ describe("session-bookmarks", () => {
 
     it("returns empty array on JSON parse error", () => {
       sessionStorage.setItem("story_spark_session_bookmarks", "not valid json");
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       const result = getSessionBookmarks();
       expect(result).toEqual([]);
+      expect(consoleSpy).toHaveBeenCalled();
     });
   });
 
   describe("addSessionBookmark", () => {
-    it("adds a new bookmark", () => {
+    it("adds a new bookmark and dispatches event", () => {
       const story = mockStory("uuid-1");
+      const handler = vi.fn();
+      window.addEventListener("session_bookmarks_changed", handler);
+
       addSessionBookmark(story);
 
-      const stored = sessionStorage.getItem("story_spark_session_bookmarks");
-      expect(JSON.parse(stored!)).toContainEqual(expect.objectContaining({ uuid: "uuid-1" }));
+      const result = getSessionBookmarks();
+      expect(result).toHaveLength(1);
+      expect(result[0].uuid).toBe("uuid-1");
+      expect(handler).toHaveBeenCalledTimes(1);
+      window.removeEventListener("session_bookmarks_changed", handler);
     });
 
     it("does not add duplicate uuid", () => {
@@ -58,18 +69,7 @@ describe("session-bookmarks", () => {
       addSessionBookmark(story);
 
       const result = getSessionBookmarks();
-      expect(result.filter(s => s.uuid === "uuid-dupe")).toHaveLength(1);
-    });
-
-    it("dispatches session_bookmarks_changed event", () => {
-      const story = mockStory("uuid-event");
-      const handler = vi.fn();
-      window.addEventListener("session_bookmarks_changed", handler);
-
-      addSessionBookmark(story);
-
-      expect(handler).toHaveBeenCalledTimes(1);
-      window.removeEventListener("session_bookmarks_changed", handler);
+      expect(result.filter((s) => s.uuid === "uuid-dupe")).toHaveLength(1);
     });
   });
 
@@ -81,8 +81,8 @@ describe("session-bookmarks", () => {
       removeSessionBookmark("uuid-r1");
 
       const result = getSessionBookmarks();
-      expect(result.map(s => s.uuid)).not.toContain("uuid-r1");
-      expect(result.map(s => s.uuid)).toContain("uuid-r2");
+      expect(result.map((s) => s.uuid)).not.toContain("uuid-r1");
+      expect(result.map((s) => s.uuid)).toContain("uuid-r2");
     });
 
     it("handles non-existent uuid gracefully", () => {

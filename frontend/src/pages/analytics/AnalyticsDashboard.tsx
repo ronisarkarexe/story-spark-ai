@@ -179,7 +179,7 @@ const AnalyticsDashboard: React.FC = () => {
             <input
               type="number"
               value={dailyGoalInput}
-              onChange={(e) => setDailyGoalInput(Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={(e) => setDailyGoalInput(Math.max(0, parseInt(e.target.value, 10) || 0))}
               className="w-full bg-white border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-gray-800"
             />
           </div>
@@ -188,7 +188,7 @@ const AnalyticsDashboard: React.FC = () => {
             <input
               type="number"
               value={weeklyGoalInput}
-              onChange={(e) => setWeeklyGoalInput(Math.max(0, parseInt(e.target.value) || 0))}
+              onChange={(e) => setWeeklyGoalInput(Math.max(0, parseInt(e.target.value, 10) || 0))}
               className="w-full bg-white border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-gray-800"
             />
           </div>

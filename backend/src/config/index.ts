@@ -39,7 +39,7 @@ export const assertAIProviderConfigured = (): void => {
 
 export default {
   env: process.env.NODE_ENV,
-  frontend_url: process.env.FRONTEND_URL,
+  frontend_url: process.env.FRONTEND_URL || "http://localhost:4001",
   port: process.env.PORT || "5000",
   disable_logs: process.env.DISABLE_LOGS === "true" || process.env.VERCEL === "1",
   database_url: (() => {
@@ -77,7 +77,6 @@ export default {
   verify_email: process.env.VERIFY_EMAIL,
   verify_password: process.env.VERIFY_PASSWORD,
   google_client_id: process.env.GOOGLE_CLIENT_ID,
-  frontend_url: process.env.FRONTEND_URL || "http://localhost:3000",
   github: {
     token: process.env.GITHUB_TOKEN,
     repo: process.env.GITHUB_REPO || "ronisarkarexe/story-spark-ai",

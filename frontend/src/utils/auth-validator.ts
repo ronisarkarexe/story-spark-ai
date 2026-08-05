@@ -27,7 +27,7 @@ export const validateTokenPayload = (decodedData: Record<string, unknown>): void
   if (!validSubscriptions.includes(decodedData.subscriptionType)) {
     throw new Error(`Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`);
   }
-  if (typeof decodedData.exp !== "number" || isNaN(decodedData.exp) || decodedData.exp <= 0) {
+  if (typeof decodedData.exp !== "number" || Number.isNaN(decodedData.exp) || decodedData.exp <= 0) {
     throw new Error("Token is missing a valid numeric 'exp' claim.");
   }
   const CLOCK_SKEW_TOLERANCE_SECONDS = 60;
@@ -35,7 +35,7 @@ export const validateTokenPayload = (decodedData: Record<string, unknown>): void
   if (decodedData.exp < currentTime - CLOCK_SKEW_TOLERANCE_SECONDS) {
     throw new Error("Token has expired.");
   }
-  if (typeof decodedData.iat !== "number" || isNaN(decodedData.iat) || decodedData.iat <= 0) {
+  if (typeof decodedData.iat !== "number" || Number.isNaN(decodedData.iat) || decodedData.iat <= 0) {
     throw new Error("Token is missing a valid numeric 'iat' claim.");
   }
   if (decodedData.iat >= decodedData.exp) {

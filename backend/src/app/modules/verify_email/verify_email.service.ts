@@ -1,13 +1,11 @@
 import { escapeHtml } from '../../../utils/email.util';
 import nodemailer from "nodemailer";
-import { IEmailBody } from "./verify_email.interface";
-import { IVerifyOtpBody } from "./verify_email.interface";
+import { IEmailBody, IVerifyOtpBody } from "./verify_email.interface";
 import ApiError from "../../../errors/api_error";
 import config from "../../../config";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
 import crypto from "crypto";
-
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -21,21 +19,30 @@ const VerifyEmail = async (payload: IEmailBody) => {
   try {
     const { email, name } = payload;
     const safeName = escapeHtml(name);
-    // Use a cryptographically secure RNG so OTPs cannot be predicted.
+    
+    // Generates a 6 digit number between 100000 and 999999
     const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
     
-    // Delete any existing OTP for this email
-    await OTPModel.deleteOne({ email });
-    
-    // Create new OTP record in MongoDB
-    await OTPModel.create({
-      email,
-      otp,
-      expiresAt,
-      failedAttempts: 0,
-      isVerified: false,
-    });
+    // FIX #1: Use findOneAndUpdate with upsert instead of deleteOne + create
+    // This is an atomic operation that prevents race conditions and duplicate DB entries
+    // if the user rapidly clicks "Resend OTP".
+    await OTPModel.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          otp,
+          expiresAt,
+          failedAttempts: 0,
+          isVerified: false,
+        },
+        $unset: {
+          verificationToken: "",
+          verificationTokenExpires: ""
+        }
+      },
+      { upsert: true, new: true }
+    );
 
     if (!config.verify_email || !config.verify_password) {
       console.log(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
@@ -111,7 +118,6 @@ const VerifyEmail = async (payload: IEmailBody) => {
 const VerifyOtp = async (payload: IVerifyOtpBody) => {
   const { email, otp } = payload;
   
-  // FIX #3: Input validation - check if otp is a non-empty string before calling .trim()
   if (typeof otp !== "string" || !otp) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
@@ -128,6 +134,14 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
     );
   }
 
+  // FIX #2: Prevent OTP reuse - block the request if this OTP was already successfully verified
+  if (storedOtpRecord.isVerified) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "This OTP has already been verified. Please proceed to the next step."
+    );
+  }
+
   // Check if OTP has expired
   if (new Date() > storedOtpRecord.expiresAt) {
     await OTPModel.deleteOne({ email });
@@ -137,7 +151,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
     );
   }
 
-  // FIX #2: Rate limiting - max 5 failed attempts
+  // Rate limiting - max 5 failed attempts
   if (storedOtpRecord.failedAttempts >= 5) {
     await OTPModel.deleteOne({ email });
     throw new ApiError(
@@ -158,8 +172,6 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
     );
   }
 
-  // FIX #4: Create verification token instead of returning only { verified: true }
-  // This token binds the verification to a specific email and must be used in registration
   const verificationToken = crypto.randomBytes(32).toString("hex");
   const verificationTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
   
@@ -173,16 +185,18 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
 
   return { 
     verified: true,
-    verificationToken, // Client must include this in registration request
-    expiresIn: 15 * 60, // 15 minutes in seconds
+    verificationToken, 
+    expiresIn: 15 * 60, 
   };
 };
+
+// FIX #3: Converted to a standard function so it gets safely hoisted to the top 
+// of the scope during compilation, preventing potential initialization errors.
+function clearOtpAttempts(email: string) {
+  console.log('Clearing OTP attempts for:', email);
+}
 
 export const VerifyEmailService = {
   VerifyEmail,
   VerifyOtp,
 };
-
-const clearOtpAttempts = (email: string) => {
-  console.log('Clearing OTP attempts for:', email);
-}

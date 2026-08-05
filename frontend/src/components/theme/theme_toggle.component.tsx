@@ -61,46 +61,41 @@ const ThemeToggle: React.FC = () => {
       });
     });
 
+    // Complete the animation logic that was missing
     transition.ready.then(() => {
       const clipPath = [
         `circle(0px at ${x}px ${y}px)`,
         `circle(${endRadius}px at ${x}px ${y}px)`,
       ];
-
+      
       document.documentElement.animate(
         {
-          clipPath: isDarkCurrent ? clipPath : [...clipPath].reverse(),
+          clipPath: isDarkCurrent ? [...clipPath].reverse() : clipPath,
         },
         {
           duration: 500,
           easing: "ease-in-out",
           pseudoElement: isDarkCurrent
-            ? "::view-transition-new(root)"
-            : "::view-transition-old(root)",
+            ? "::view-transition-old(root)"
+            : "::view-transition-new(root)",
         }
       );
-    });
+    }).catch(err => console.error(err));
 
     transition.finished.finally(() => {
       document.documentElement.classList.remove("theme-transitioning");
     });
   };
 
+  // Return the actual button UI using the imported icons
   return (
     <button
-      type="button"
-      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-      aria-pressed={isDark}
-      title={isDark ? "Switch to light theme" : "Switch to dark theme"}
       onClick={handleToggle}
-      className="rounded-full p-2 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 transition-all duration-300 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+      className="p-2 rounded-full focus:outline-none hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors z-50 relative"
+      aria-label="Toggle theme"
     >
       <div ref={iconRef}>
-        {isDark ? (
-          <Sun className="h-4 w-4" />
-        ) : (
-          <Moon className="h-4 w-4" />
-        )}
+        {isDark ? <Moon size={24} /> : <Sun size={24} />}
       </div>
     </button>
   );

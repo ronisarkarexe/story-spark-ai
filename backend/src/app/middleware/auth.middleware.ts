@@ -6,6 +6,7 @@ import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
 import { USER_STATUS } from "../../enums/user_status";
+import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
 
 type JwtVerifiedUser = {
   _id: string;
@@ -24,26 +25,20 @@ const isJwtVerifiedUser = (
   );
 };
 
-
-
 const getHeaderValue = (header: string | string[] | undefined): string => {
   if (Array.isArray(header)) return header[0] ?? "";
   return header ?? "";
 };
 
-
 const extractBearerToken = (authHeader: string): string => {
   if (!authHeader) return "";
-
   if (!authHeader.startsWith("Bearer ")) return "";
-
   return authHeader.slice("Bearer ".length).trim();
 };
 
 const isSecureRequest = (req: Request): boolean => {
   const forwardedProto = getHeaderValue(req.headers["x-forwarded-proto"]);
   const protocol = (req.protocol || "").toLowerCase();
-
   return req.secure || protocol === "https" || forwardedProto === "https";
 };
 
@@ -55,13 +50,7 @@ const extractTokenFromRequest = (req: Request): string => {
     return bearerToken;
   }
 
-  const cookieToken =
-    req.cookies?.accessToken || req.cookies?.token;
-
-  return bearerToken || cookieToken || "";
-
-    req.cookies?.accessToken ||
-    req.cookies?.token;
+  const cookieToken = req.cookies?.accessToken || req.cookies?.token;
 
   if (!cookieToken) {
     return "";
@@ -87,102 +76,95 @@ const extractTokenFromRequest = (req: Request): string => {
 
 const auth =
   (...requiredRole: string[]) =>
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const token = extractTokenFromRequest(req);
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const token = extractTokenFromRequest(req);
 
-        if (!token) {
-          throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "You are not authorized to access"
-          );
-        }
+      if (!token) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "You are not authorized to access"
+        );
+      }
 
-        // Verify JWT token
-        const verifiedUser = JwtHelpers.verifyToken(
-          token,
-          config.jwt.secret as Secret
-        ) as JwtVerifiedUser;
+      // Verify JWT token
+      const decodedUser = JwtHelpers.verifyToken(
+        token,
+        config.jwt.secret as Secret
+      );
 
-        if (!verifiedUser?._id) {
-          throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "Invalid token"
+      if (!isJwtVerifiedUser(decodedUser)) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Invalid token"
+        );
+      }
 
-          const decodedUser = JwtHelpers.verifyToken(
-            token,
-            config.jwt.secret as Secret
-          );
 
-          if (!isJwtVerifiedUser(decodedUser)) {
-            throw new ApiError(
-              httpStatus.UNAUTHORIZED,
-              "Invalid token"
-            );
-        }
-
+      // Ensure this exact token string is not blacklisted
+      const blacklisted = await TokenBlacklist.findOne({ token }).lean();
+      if (blacklisted) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Token has been revoked. Please log in again."
+        );
+      }
       const verifiedUser = decodedUser;
 
-        const user = await User.findById(verifiedUser._id);
+      const user = await User.findById(verifiedUser._id);
 
-        if (!user) {
+      if (!user) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "User not found"
+        );
+      }
+      if (user.passwordChangedAt && verifiedUser.iat) {
+        const changedAtSeconds = Math.floor(user.passwordChangedAt.getTime() / 1000);
+
+        if (verifiedUser.iat < changedAtSeconds) {
           throw new ApiError(
             httpStatus.UNAUTHORIZED,
-            "User not found"
+            "Session expired. Please log in again."
           );
         }
-        if (user.passwordChangedAt && verifiedUser.iat) {
-          const changedAtSeconds = Math.floor(user.passwordChangedAt.getTime() / 1000);
+      }
+      // Token version validation replaces blacklist check
+      if (
+        typeof verifiedUser.tokenVersion === "number" &&
+        user.tokenVersion !== verifiedUser.tokenVersion
+      ) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Token is invalid or expired"
+        );
+      }
 
-          if (verifiedUser.iat < changedAtSeconds) {
-            throw new ApiError(
-              httpStatus.UNAUTHORIZED,
-              "Session expired. Please log in again."
-            );
-          }
-        }
-        // Token version validation replaces blacklist check
+      // Check user status
+      if (user.status !== USER_STATUS.ACTIVE) {
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          "Your account is not active"
+        );
+      }
+
+      // Role authorization
+      if (requiredRole.length) {
         if (
-          typeof verifiedUser.tokenVersion === "number" &&
-          user.tokenVersion !== verifiedUser.tokenVersion
+          !verifiedUser.role ||
+          !requiredRole.includes(verifiedUser.role)
         ) {
           throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "Token is invalid or expired"
-          );
-        }
-
-        // Check user status
-        if (user.status !== USER_STATUS.ACTIVE) {
-          throw new ApiError(
             httpStatus.FORBIDDEN,
-            "Your account is not active"
+            "Forbidden"
           );
         }
-
-        // Role authorization
-        if (requiredRole.length) {
-          if (
-            !verifiedUser.role ||
-            !requiredRole.includes(verifiedUser.role)
-          ) {
-            throw new ApiError(
-              httpStatus.FORBIDDEN,
-              "Forbidden"
-            );
-          }
-        }
-
-        req.user = user as Express.Request["user"];
-
-        next();
-      } catch (err) {
-        next(err);
       }
-      req.user = user;
-      return next();
+
+      req.user = user as Express.Request["user"];
+      next();
     } catch (err) {
-      return next(err);
+      next(err);
     }
   };
 

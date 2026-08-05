@@ -32,6 +32,13 @@ describe("scrubPII — email redaction", () => {
     expect(result.match(/\[REDACTED_EMAIL\]/g)?.length).toBe(2);
   });
 
+  it("redacts complex email addresses (e.g., with apostrophes or subdomains)", () => {
+    const result = scrubPII("Contact o'brian@sub.example.com and user+alias@domain.co.uk");
+    expect(result).not.toContain("o'brian@sub.example.com");
+    expect(result).not.toContain("user+alias@domain.co.uk");
+    expect(result.match(/\[REDACTED_EMAIL\]/g)?.length).toBe(2);
+  });
+
   it("does not alter a string with no email address", () => {
     const input = "A story about a dragon who lives on a mountain.";
     expect(scrubPII(input)).toBe(input);
@@ -49,6 +56,13 @@ describe("scrubPII — phone number redaction", () => {
     const result = scrubPII("Call +1 (555) 867 5309 tomorrow.");
     expect(result).not.toContain("(555) 867 5309");
     expect(result).toContain("[REDACTED_PHONE]");
+  });
+
+  it("redacts generic international phone numbers", () => {
+    const result = scrubPII("My German number is +49 151 23456789 and Aussie is +61 412 345 678.");
+    expect(result).not.toContain("+49 151 23456789");
+    expect(result).not.toContain("+61 412 345 678");
+    expect(result.match(/\[REDACTED_PHONE\]/g)?.length).toBe(2);
   });
 });
 

@@ -88,14 +88,21 @@ const ReviewForm: React.FC = () => {
     }
 
     try {
-      await createReview({ name, role, feedback, rating, imgSrc: "" });
+      await createReview({
+        name,
+        role,
+        feedback,
+        rating,
+        imgSrc: "",
+      }).unwrap();
       setSuccess(true);
       setName("");
       setRole("");
       setFeedback("");
       setRating(0);
       setErrors({});
-    } catch {
+    } catch (error) {
+      console.error("Failed to submit review", error);
       setErrors({ submit: "Failed to submit review. Please try again." });
       setSuccess(false);
     }

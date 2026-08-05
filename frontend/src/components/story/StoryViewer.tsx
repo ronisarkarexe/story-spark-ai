@@ -4,7 +4,7 @@ import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
-import { AudioPlayer } from "../AudioPlayer";
+import AudioPlayer from "../AudioPlayer";
 
 interface Props {
   chapters: Chapter[];
@@ -16,10 +16,17 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
   const [progress, setProgress] = useState(0);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const truncatedBannerRef = useRef<HTMLDivElement>(null);
+  const resumeBannerRef = useRef<HTMLDivElement>(null);
   const storageKey = `story-progress-${storyId}`;
 
+  // Compute dynamic top offset for the control panel so it sits below any visible banners
+  const controlPanelTop =
+    (truncated && truncatedBannerRef.current ? truncatedBannerRef.current.offsetHeight + 8 : 0) +
+    (showResumeBanner && resumeBannerRef.current ? resumeBannerRef.current.offsetHeight + 8 : 0);
+
   // Custom formatting states
-  const [fontFamily, setFontFamily] = useState<"helvetica" | "times" | "courier">("helvetica");
+  const [fontFamily, setFontFamily] = useState<"helvetica" | "times" | "courier" | "serif">("helvetica");
   const [fontSize, setFontSize] = useState<number>(11);
   const [lineHeight, setLineHeight] = useState<number>(1.5);
   const [themeStyle, setThemeStyle] = useState<"standard" | "classic" | "modern">("standard");
@@ -225,7 +232,9 @@ p {
 
         const paragraphsHtml = (chapter.content || "")
           .split(/\n+/)
-          .map((para) => `<p>${para.trim()}</p>`)
+          .map((para) => para.trim())
+          .filter((para) => para.length > 0)   // mirror PDF: skip empty paragraphs
+          .map((para) => `<p>${para}</p>`)
           .join("\n");
 
         const htmlContent = `<?xml version="1.0" encoding="utf-8"?>
@@ -289,12 +298,14 @@ ${ncxNavPoints}  </navMap>
 
       // Trigger ZIP blob download
       const blob = await zip.generateAsync({ type: "blob" });
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
+      link.href = objectUrl;
       link.download = `${safeName}.epub`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl); // Release blob from memory immediately after download
 
       toast.success("EPUB downloaded successfully!");
     } catch (err) {
@@ -309,14 +320,14 @@ ${ncxNavPoints}  </navMap>
       className="flex-1 overflow-y-auto px-8 py-10 bg-zinc-950"
     >
       {truncated && (
-        <div className="sticky top-0 z-30 bg-yellow-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
+        <div ref={truncatedBannerRef} className="sticky top-0 z-30 bg-yellow-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
           <span className="text-sm text-yellow-200">
             Your story was truncated because it exceeded the maximum length. Try a shorter prompt.
           </span>
         </div>
       )}
       {showResumeBanner && (
-        <div className="sticky top-0 z-20 bg-indigo-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
+        <div ref={resumeBannerRef} className="sticky top-0 z-20 bg-indigo-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
           <span className="text-sm text-indigo-200">
             You left off at {progress}% – continue where you stopped?
           </span>
@@ -338,7 +349,10 @@ ${ncxNavPoints}  </navMap>
       )}
 
       {/* Control Panel for Formatting Settings */}
-      <div className="sticky top-0 z-10 bg-zinc-950/90 backdrop-blur-md rounded-lg p-4 mb-8 border border-zinc-800">
+      <div
+        className="sticky z-10 bg-zinc-950/90 backdrop-blur-md rounded-lg p-4 mb-8 border border-zinc-800"
+        style={{ top: `${controlPanelTop}px` }}
+      >
         <div className="w-full h-3 bg-zinc-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-indigo-500 transition-all duration-300"
@@ -405,6 +419,16 @@ ${ncxNavPoints}  </navMap>
           </div>
         </div>
 
+        {/* Audio Narration Player */}
+        {chapters.length > 0 && (
+          <div className="mb-4">
+            <AudioPlayer
+              text={chapters.map((ch) => ch.content).join("\n\n")}
+              title={chapters[0]?.title ?? "Story"}
+            />
+          </div>
+        )}
+
         {/* Action Export Buttons */}
         <div className="flex gap-4">
           <button
@@ -423,11 +447,16 @@ ${ncxNavPoints}  </navMap>
       </div>
 
       <div className="max-w-4xl mx-auto">
+        {/* Single h1 for the story title — SEO and accessibility primary landmark */}
+        {chapters[0] && (
+          <h1 className="sr-only">{chapters[0].title}</h1>
+        )}
         {chapters.map((chapter) => (
           <div key={chapter.id} className="mb-16">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white mb-6">
+            {/* h2: chapter titles are sub-sections, not page titles */}
+            <h2 className="text-4xl font-extrabold tracking-tight text-white mb-6">
               {chapter.title}
-            </h1>
+            </h2>
             <ReadingTimeBadge text={chapter.content} />
             <p className="text-lg text-zinc-300 whitespace-pre-line leading-9">
               {chapter.content}

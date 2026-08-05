@@ -10,6 +10,7 @@ import {
   resetPasswordRateLimiter,
   refreshTokenRateLimiter,
   ipRateLimiter,
+  resendVerificationEmailRateLimiter,
   verifyEmailChangeRateLimiter,
   changePasswordRateLimiter,
 } from "../../middleware/ip.rate-limiter";
@@ -60,6 +61,14 @@ router.post(
   verifyEmailChangeRateLimiter,
   validateRequest(UserValidator.verifyEmailChange),
   AuthController.verifyEmailChange
+);
+
+// Resend email verification OTP
+router.post(
+  "/verify-email/resend",
+  resendVerificationEmailRateLimiter,
+  validateRequest(UserValidator.resendVerificationEmail),
+  AuthController.resendVerificationEmail
 );
 
 // Forgot Password API route
