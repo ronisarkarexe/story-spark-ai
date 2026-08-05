@@ -8,7 +8,7 @@ export const writerApplicationApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["user"],
     }),
     getAllWriterApplications: build.query({
       query: () => ({
@@ -23,7 +23,7 @@ export const writerApplicationApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: { status },
       }),
-      invalidatesTags: ["WriterApplication", "User"],
+      invalidatesTags: ["WriterApplication", "user"],
     }),
   }),
 });
