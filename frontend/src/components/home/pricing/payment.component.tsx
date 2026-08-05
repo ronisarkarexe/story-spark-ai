@@ -90,7 +90,7 @@ const PaymentComponent = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: Math.round(planPrice * 100), // Convert to paisa
+          amount: Math.round(planPrice * 100 + Number.EPSILON), // Convert to paisa
         }),
       });
 

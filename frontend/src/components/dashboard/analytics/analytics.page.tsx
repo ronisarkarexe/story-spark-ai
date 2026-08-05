@@ -218,3 +218,5 @@ const data = await res.json();
 };
 
 export default AnalyticsPage;
+
+.catch(err => console.error("Promise.all failed:", err));
