@@ -4,7 +4,7 @@ export const getSavedWorkspacePreferences = () => {
   if (typeof window === "undefined") {
     return {
       aiProvider: "gemini",
-      defaultGenre: "Drama",
+      defaultGenre: "🎭 Drama",
       targetLength: "Medium (~600)",
       autoSave: true,
     };
@@ -27,8 +27,11 @@ const useWorkspacePreferences = () => {
     const handleStorageChange = () => {
       setPreferences(getSavedWorkspacePreferences());
     };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleStorageChange);
+      return () => window.removeEventListener("storage", handleStorageChange);
+    }
+    return undefined;
   }, []);
 
   return preferences;
