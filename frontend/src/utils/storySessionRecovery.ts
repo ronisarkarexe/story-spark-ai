@@ -24,7 +24,11 @@ export function getRecoveredDraft(): StoryRecoveryData | null {
 
   if (!data) return null;
 
-  return JSON.parse(data);
+  try {
+    return JSON.parse(data) as StoryRecoveryData;
+  } catch {
+    return null;
+  }
 }
 
 export function discardRecoveredDraft() {

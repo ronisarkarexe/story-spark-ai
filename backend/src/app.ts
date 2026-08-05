@@ -19,12 +19,14 @@ import globalRateLimiter from "./app/middleware/global.rate-limiter";
 import { sanitizeAllMiddleware } from "./app/middleware/sanitize.middleware";
 import ApiError from "./errors/api_error";
 
-interface ApiError extends Error {
-  statusCode: number;
-  errorMessages: { path: string; message: string }[];
-}
+
 const app: Application = express();
-app.set("trust proxy", 1);
+// Only trust the proxy in production, where we're actually behind a real
+// reverse proxy. In dev there's no real proxy in front of us, so trusting
+// X-Forwarded-For would let a client spoof its own IP and bypass rate limiting.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 app.use(helmet());
 
 const limiter = rateLimit({
@@ -49,7 +51,11 @@ const corsOrigins =
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || corsOrigins.includes(origin)) {
+      if (!origin) {
+        callback(new Error("Origin header required"));
+        return;
+      }
+      if (corsOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
@@ -61,18 +67,24 @@ app.use(
   })
 );
 
-
 // Rate limiter — placed after CORS so OPTIONS preflight requests are
 // never counted against the limit before CORS has a chance to respond.
 app.use(globalRateLimiter);
 
-// ─── 1. FIXED: ENFORCED HARDENED PAYLOAD LIMITS TO PREVENT DoS ───
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
-app.use(cookieParser());
+// Payload limit set to 10mb to support large story content and character
+// network data without triggering 413 errors. Previously 2mb, which was
+// too restrictive for real story payloads — see PR discussion if this
+// needs revisiting against DoS-hardening concerns.
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(cookieParser() as unknown as RequestHandler);
 app.use(sanitizeAllMiddleware);
 
-// Legacy Route Rewrite Rewrite Rules
+
+// Global XSS sanitization for all incoming request bodies and query parameters
+app.use(sanitizeAllMiddleware);
+
+
 app.use((req, res, next) => {
   if (
     req.method === "GET" &&
@@ -80,6 +92,10 @@ app.use((req, res, next) => {
   ) {
     req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
   }
+  next();
+});
+
+
 // Payload limit set to 10mb to support large story content and
 // character network data without triggering 413 errors.
 // Previously used Express default (100kb) which was too restrictive.
@@ -91,22 +107,29 @@ app.use(cookieParser() as unknown as RequestHandler);
 app.use("/api/v1", Routers);
 
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
-app.use((req: Request, res: Response, next: NextFunction) => {
-  // Constructing a standardized operational error structure
-  const error = new Error("API Not Found") as ApiError;
-  error.statusCode = httpStatus.NOT_FOUND;
 app.use((req: Request, _res: Response, next: NextFunction) => {
   const error = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
-  error.errorMessages = [
+  (error as any).errorMessages = [
     {
       path: req.originalUrl,
       message: "The requested API endpoint route does not exist.",
     },
   ];
   next(error);
-});
+=======
 
+app.use("/api/v1", Routers);
+
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  next(
+    new ApiError(
+      httpStatus.NOT_FOUND,
+      `The requested API endpoint route does not exist: ${req.originalUrl}`
+    )
+  );
+
+});
 app.use(globalErrorHandler);
 
+
 export default app;
-export { defaultCorsOrigins };

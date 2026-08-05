@@ -39,15 +39,22 @@ const branchingStorySchema = z.object({
 });
 
 const autosaveDraftSchema = z.object({
-  draftId: z.string().min(1, "draftId is required"),
-  title: z.string().default(""),
-  content: z.string().default(""),
+  draftId: z.string().min(1, "draftId is required").max(100, "draftId is too long"),
+  title: z.string().max(200, "title is too long").default(""),
+  content: z.string().max(50000, "content is too long").default(""),
 });
 
 const autosaveDraftStore = new Map<string, { draftId: string; title: string; content: string; savedAt: string }>();
 
 router.put(
   "/save",
+  storyLimiter,
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   catchAsync(async (req, res) => {
     const parsed = autosaveDraftSchema.safeParse(req.body);
 
@@ -61,6 +68,12 @@ router.put(
 
     const { draftId, title, content } = parsed.data;
     const savedAt = new Date().toISOString();
+
+    // Bound the in-memory map to prevent memory leak / OOM
+    if (autosaveDraftStore.size > 5000) {
+      // Very basic LRU/cleanup: clear it or delete oldest (for simplicity, clear half or just clear)
+      autosaveDraftStore.clear(); 
+    }
 
     autosaveDraftStore.set(draftId, { draftId, title, content, savedAt });
 

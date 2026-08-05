@@ -38,8 +38,8 @@ export default async function middleware(request: Request): Promise<Response | u
         signal: AbortSignal.timeout(4_000),
       });
       if (res.ok) story = await res.json();
-    } catch {
-      // backend unreachable — serve generic fallback
+    } catch (error) {
+      console.error('[Middleware] Auth verification failed:', error);
     }
   }
 

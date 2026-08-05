@@ -1,6 +1,7 @@
 import express from "express";
 import { AiModelService } from "../app/modules/ai_model/ai_model.service";
 import { ReviewController } from "../app/modules/review/review.controller";
+import idempotencyMiddleware, { completeIdempotentRequest, releaseIdempotentRequest } from "../app/middleware/idempotency.middleware";
 import { AIModelValidator } from "../app/modules/ai_model/ai_model.validation";
 import { ReviewValidator } from "../app/modules/review/review.validation";
 import validateRequest from "../app/middleware/validate.request";
@@ -19,6 +20,15 @@ import { runWithQuotaCleanup } from "../app/modules/ai_model/quota.lifecycle";
 import mongoose from "mongoose";
 import { Post } from "../app/modules/post/post.model";
 import rateLimit from "express-rate-limit";
+
+
+// add to imports
+import { generateReaderRoomFeedback } from "../services/ai.service";
+
+import idempotencyMiddleware, {
+  completeIdempotentRequest,
+  releaseIdempotentRequest,
+} from "../app/middleware/idempotency.middleware";
 
 const router = express.Router();
 
@@ -255,5 +265,78 @@ router.patch(
     });
   })
 );
+
+/** AI READER ROOM: multi-persona feedback before publishing */
+router.post(
+  "/:id/reader-room",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  storyGenerationRateLimiter,
+  checkRequestLimit(),
+  catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { targetAudience, provider } = req.body as {
+      targetAudience?: string;
+      provider?: string;
+    };
+    const userId = (req as any).user?._id;
+    const guard = res.locals.quotaRefundGuard;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ success: false, message: "Invalid story id." });
+      return;
+    }
+    if (!targetAudience) {
+      res.status(400).json({ success: false, message: "targetAudience is required." });
+      return;
+    }
+    if (!guard) {
+      throw new Error("Quota guard missing — checkRequestLimit middleware is required");
+    }
+
+    const story = await Post.findOne({ _id: id, author: userId, isDeleted: { $ne: true } });
+    if (!story) {
+      res.status(404).json({
+        success: false,
+        message: "Story not found, or you don't have permission to review it.",
+      });
+      return;
+    }
+
+    // Post.content is a single string (see #5664 notes) — split into
+    // pseudo-chapters on the same markdown-style headers the export flow uses,
+    // falling back to one chapter if none are found.
+    const chapters = story.content
+      .split(/\n(?=## )/)
+      .filter((c) => c.trim().length > 0)
+      .map((c, i) => {
+        const titleMatch = c.match(/^##\s*(.+)/);
+        return {
+          title: titleMatch ? titleMatch[1].trim() : `Chapter ${i + 1}`,
+          content: c.replace(/^##\s*.+\n?/, "").trim(),
+        };
+      });
+
+    if (chapters.length === 0) {
+      chapters.push({ title: story.title, content: story.content });
+    }
+
+    await runWithQuotaCleanup(guard, async () => {
+      const result = await generateReaderRoomFeedback(chapters, targetAudience, provider);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Reader Room feedback generated.",
+        data: result,
+      });
+    });
+  })
+);
+
+
 
 export default router;
