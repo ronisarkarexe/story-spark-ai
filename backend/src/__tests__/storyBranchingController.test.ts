@@ -209,3 +209,291 @@ describe("StoryBranchingController", () => {
     }));
   });
 });
+
+// ---------------------------------------------------------------------------
+// validateBranchingRequest — unit tests for the pure validation helper
+// ---------------------------------------------------------------------------
+
+import {
+  validateBranchingRequest,
+  ALLOWED_GENRES,
+  MAX_STORY_CONTEXT_LENGTH,
+  MAX_CHOICE_LENGTH,
+} from "../controllers/storyBranchingController";
+
+describe("validateBranchingRequest", () => {
+  const validBody = {
+    storyContext: "Once upon a time in a dark forest.",
+    selectedChoice: "Follow the glowing light",
+    genre: "fantasy",
+  };
+
+  // --- genre type guard ---
+
+  it("returns 400 when genre is a number (non-string type)", () => {
+    const result = validateBranchingRequest({ ...validBody, genre: 42 });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+      expect(result.message).toMatch(/genre must be a string/i);
+    }
+  });
+
+  it("returns 400 when genre is an object (non-string type)", () => {
+    const result = validateBranchingRequest({ ...validBody, genre: { name: "fantasy" } });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+      expect(result.message).toMatch(/genre must be a string/i);
+    }
+  });
+
+  it("returns 400 for an unknown genre and lists valid options", () => {
+    const result = validateBranchingRequest({ ...validBody, genre: "western" });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+      // Message must list all allowed genres
+      for (const g of ALLOWED_GENRES) {
+        expect(result.message).toContain(g);
+      }
+    }
+  });
+
+  it("accepts known genres case-insensitively (e.g. 'Fantasy' → 'fantasy')", () => {
+    const result = validateBranchingRequest({ ...validBody, genre: "Fantasy" });
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.fields.genre).toBe("fantasy");
+    }
+  });
+
+  it("accepts all genres in ALLOWED_GENRES", () => {
+    for (const genre of ALLOWED_GENRES) {
+      const result = validateBranchingRequest({ ...validBody, genre });
+      expect(result.valid).toBe(true);
+    }
+  });
+
+  it("treats absent genre as valid (genre is optional)", () => {
+    const { genre: _omit, ...bodyWithoutGenre } = validBody;
+    const result = validateBranchingRequest(bodyWithoutGenre);
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.fields.genre).toBeUndefined();
+    }
+  });
+
+  // --- storyContext length guard ---
+
+  it("returns 400 when storyContext exceeds MAX_STORY_CONTEXT_LENGTH characters", () => {
+    const longContext = "a".repeat(MAX_STORY_CONTEXT_LENGTH + 1);
+    const result = validateBranchingRequest({ ...validBody, storyContext: longContext });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+      expect(result.message).toMatch(/storyContext must not exceed/i);
+    }
+  });
+
+  it("accepts storyContext of exactly MAX_STORY_CONTEXT_LENGTH characters", () => {
+    const exactContext = "a".repeat(MAX_STORY_CONTEXT_LENGTH);
+    const result = validateBranchingRequest({ ...validBody, storyContext: exactContext });
+    expect(result.valid).toBe(true);
+  });
+
+  it("returns 400 when storyContext is an empty string", () => {
+    const result = validateBranchingRequest({ ...validBody, storyContext: "" });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+    }
+  });
+
+  it("returns 400 when storyContext is not a string", () => {
+    const result = validateBranchingRequest({ ...validBody, storyContext: 123 });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+    }
+  });
+
+  // --- selectedChoice guards ---
+
+  it("returns 400 when selectedChoice is an empty string", () => {
+    const result = validateBranchingRequest({ ...validBody, selectedChoice: "" });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+      expect(result.message).toMatch(/selectedChoice cannot be empty/i);
+    }
+  });
+
+  it("returns 400 when selectedChoice exceeds MAX_CHOICE_LENGTH characters", () => {
+    const longChoice = "b".repeat(MAX_CHOICE_LENGTH + 1);
+    const result = validateBranchingRequest({ ...validBody, selectedChoice: longChoice });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+      expect(result.message).toMatch(/selectedChoice must not exceed/i);
+    }
+  });
+
+  it("accepts selectedChoice of exactly MAX_CHOICE_LENGTH characters", () => {
+    const exactChoice = "b".repeat(MAX_CHOICE_LENGTH);
+    const result = validateBranchingRequest({ ...validBody, selectedChoice: exactChoice });
+    expect(result.valid).toBe(true);
+  });
+
+  it("returns 400 when selectedChoice is not a string", () => {
+    const result = validateBranchingRequest({ ...validBody, selectedChoice: true });
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.status).toBe(400);
+    }
+  });
+
+  // --- sanitization ---
+
+  it("trims whitespace from storyContext and selectedChoice", () => {
+    const result = validateBranchingRequest({
+      storyContext: "  A tale of two cities.  ",
+      selectedChoice: "  Run north.  ",
+      genre: "mystery",
+    });
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.fields.storyContext).toBe("A tale of two cities.");
+      expect(result.fields.selectedChoice).toBe("Run north.");
+    }
+  });
+
+  // --- valid happy path ---
+
+  it("returns valid result with sanitized fields for a well-formed request", () => {
+    const result = validateBranchingRequest(validBody);
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.fields.storyContext).toBe(validBody.storyContext);
+      expect(result.fields.selectedChoice).toBe(validBody.selectedChoice);
+      expect(result.fields.genre).toBe("fantasy");
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Integration: controller rejects invalid requests before calling AI
+// ---------------------------------------------------------------------------
+
+describe("StoryBranchingController — validation integration", () => {
+  let mockRes: Partial<Response>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRes = {};
+  });
+
+  it("returns 400 and does NOT call generateStory when genre is a number", async () => {
+    const mockReq = {
+      body: {
+        storyContext: "A story.",
+        selectedChoice: "Go left",
+        genre: 99,
+      },
+      headers: {},
+    } as unknown as Request;
+
+    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      success: false,
+      statusCode: 400,
+    }));
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 and does NOT call generateStory for an unknown genre", async () => {
+    const mockReq = {
+      body: {
+        storyContext: "A story.",
+        selectedChoice: "Go right",
+        genre: "western",
+      },
+      headers: {},
+    } as unknown as Request;
+
+    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      success: false,
+      statusCode: 400,
+    }));
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 and does NOT call generateStory when storyContext exceeds 8000 chars", async () => {
+    const mockReq = {
+      body: {
+        storyContext: "x".repeat(8001),
+        selectedChoice: "Continue",
+        genre: "fantasy",
+      },
+      headers: {},
+    } as unknown as Request;
+
+    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      success: false,
+      statusCode: 400,
+    }));
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 and does NOT call generateStory when selectedChoice is an empty string", async () => {
+    const mockReq = {
+      body: {
+        storyContext: "A story begins.",
+        selectedChoice: "",
+        genre: "horror",
+      },
+      headers: {},
+    } as unknown as Request;
+
+    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      success: false,
+      statusCode: 400,
+    }));
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+  });
+
+  it("calls generateStory and returns 200 for a valid request", async () => {
+    const mockReq = {
+      body: {
+        storyContext: "A hero stands at the crossroads.",
+        selectedChoice: "Take the mountain path",
+        genre: "fantasy",
+      },
+      headers: {},
+    } as unknown as Request;
+
+    mockGenerateStory.mockResolvedValueOnce({
+      story: JSON.stringify({
+        storySegment: "The hero climbs the misty mountain.",
+        choices: ["Rest at a cave", "Press onward", "Turn back"],
+      }),
+      provider: "openai",
+      fallbackUsed: false,
+    });
+
+    await StoryBranchingController.createBranchingStory(mockReq, mockRes as Response);
+
+    expect(mockGenerateStory).toHaveBeenCalledTimes(1);
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      success: true,
+      statusCode: 200,
+    }));
+  });
+});

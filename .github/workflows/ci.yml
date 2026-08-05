@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Job 1 – Backend: TypeScript check + build
+  # ──────────────────────────────────────────────
+  backend:
+    name: "Backend – TypeScript + Build"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: TypeScript check (backend)
+        run: pnpm --filter story-spark-ai-backend exec tsc --noEmit --project tsconfig.json
+
+      - name: Build backend
+        env:
+          # Stub values – only type-checking / compilation is verified; no
+          # real secrets are needed at build time.
+          MONGODB_URI: "mongodb://localhost:27017/ci_test"
+          JWT_SECRET: "ci-test-secret-minimum-32-characters-long"
+          AI_API_KEY: "stub-key-not-used-in-build"
+        run: pnpm run build:backend
+
+  # ──────────────────────────────────────────────
+  # Job 2 – Frontend: TypeScript check + Vite build
+  # ──────────────────────────────────────────────
+  frontend:
+    name: "Frontend – TypeScript + Vite Build"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Add optional Linux platform bindings (Rollup)
+        run: pnpm --filter story-spark-ai-frontend add @rollup/rollup-linux-x64-gnu --save-optional
+
+      - name: Add optional Linux platform bindings (LightningCSS)
+        run: pnpm --filter story-spark-ai-frontend add lightningcss-linux-x64-gnu --save-optional
+
+      - name: TypeScript check (frontend)
+        run: pnpm --filter story-spark-ai-frontend exec tsc --noEmit --project tsconfig.json
+
+      - name: Build frontend (Vite)
+        env:
+          # Stub values – Vite only needs these defined; they are not called
+          # during a static build.
+          VITE_API_BASE_URL: "http://localhost:5000/api/v1"
+          VITE_SOCKET_URL: "http://localhost:5000"
+        run: pnpm run build:frontend

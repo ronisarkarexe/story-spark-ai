@@ -1,0 +1,132 @@
+.story-branching-reader {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.branching-reader-loading,
+.branching-reader-error,
+.branching-reader-empty {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+}
+
+.branching-reader-loading {
+  color: var(--color-text-muted, #666);
+}
+
+.branching-reader-error {
+  color: var(--color-error, #e74c3c);
+  background-color: var(--color-error-bg, #fadbd8);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.segment-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.segment-text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--color-text, #333);
+  margin-bottom: 2rem;
+  text-align: justify;
+  background: var(--color-bg-secondary, #f9f9f9);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--color-primary, #0ea5e9);
+}
+
+.choices-container {
+  margin-top: 2rem;
+}
+
+.choices-title {
+  font-size: 1.2rem;
+  color: var(--color-text, #333);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.choices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.choice-button {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-primary, #0ea5e9);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-weight: 500;
+}
+
+.choice-button:hover {
+  background-color: var(--color-primary-dark, #0284c7);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.choice-button:active {
+  transform: translateX(2px);
+}
+
+.choice-button:disabled {
+  background-color: var(--color-text-muted, #ccc);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.progress-info {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: var(--color-bg-secondary, #f9f9f9);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--color-text-muted, #666);
+}
+
+.progress-info p {
+  margin: 0.25rem 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .story-branching-reader {
+    padding: 1rem;
+  }
+
+  .segment-text {
+    font-size: 1rem;
+    padding: 1rem;
+  }
+
+  .choices-list {
+    gap: 0.5rem;
+  }
+
+  .choice-button {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.95rem;
+  }
+}

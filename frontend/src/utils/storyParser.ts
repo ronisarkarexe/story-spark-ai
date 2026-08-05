@@ -3,6 +3,7 @@ export interface IStoryNode {
   name: string;
   type: "location" | "character";
   excerpt: string;
+  occurrenceCount?: number; // NEW: Track how many times location appears
 }
 
 export interface IStoryLink {
@@ -27,69 +28,99 @@ const LOCATION_WORDS = [
 ];
 
 const SKIP_WORDS = new Set([
-  // Pronouns
   "He", "She", "They", "It", "We", "You", "His", "Her", "Their", "Its",
   "Him", "Them", "Our", "Your", "My", "Me", "Us",
-  // Articles / determiners
   "The", "This", "That", "These", "Those", "A", "An",
-  // Conjunctions / prepositions
   "And", "But", "Or", "Nor", "For", "Yet", "So", "With", "From",
   "Into", "Upon", "Over", "Under", "Through", "Between", "Among",
   "Before", "After", "During", "About", "Against", "Along",
-  // Common sentence starters
   "Once", "When", "Where", "What", "Which", "Who", "How", "Why",
   "There", "Then", "Than", "Just", "Even", "Also", "Still",
   "Now", "Soon", "Here", "Away", "Back",
-  // Common verbs / auxiliaries
   "Was", "Were", "Are", "Is", "Has", "Have", "Had", "Did", "Does",
   "Will", "Would", "Could", "Should", "May", "Might", "Must", "Can",
   "Get", "Got", "Let", "Make", "Made", "Said", "Told", "Came", "Went",
-  // Common adjectives / adverbs that appear capitalised mid-sentence
   "Every", "Some", "Many", "Much", "More", "Most", "Such", "Only",
   "Very", "Too", "All", "Both", "Each", "Few", "Own", "Same", "Other",
-  // Location words (capitalised in text sometimes)
   ...LOCATION_WORDS.map(w => w.charAt(0).toUpperCase() + w.slice(1)),
-  // Story-specific common caps
   "Dragons", "Dragon", "Night", "Day", "Morning", "Evening",
 ]);
 
+// ✅ NEW: Helper to find all occurrences of a word
+const getAllOccurrences = (content: string, word: string): number[] => {
+  const regex = new RegExp(word, 'gi');
+  const matches = [...content.matchAll(regex)];
+  return matches.map(m => m.index || 0);
+};
+
+// ✅ NEW: Score context quality
+const scoreContext = (context: string): number => {
+  let score = 0;
+  const sentences = context.match(/[.!?]/g);
+  if (sentences) score += sentences.length * 3;
+  const quotes = context.match(/["']/g);
+  if (quotes) score += quotes.length * 2;
+  const caps = context.match(/[A-Z][a-z]+/g);
+  if (caps) score += caps.length;
+  const words = context.split(/\s+/).length;
+  score += Math.min(words / 10, 5); // Longer context = better
+  return score;
+};
+
 export function parseStory(content: string): IStoryGraph {
+  if (!content) {
+    return { nodes: [], links: [] };
+  }
   const nodes: IStoryNode[] = [];
   const links: IStoryLink[] = [];
   const lowerContent = content.toLowerCase();
 
-  // --- Find locations ---
+  // --- Find locations (FIXED: uses ALL occurrences) ---
   const foundLocations: IStoryNode[] = [];
+  
   LOCATION_WORDS.forEach((word) => {
-    if (lowerContent.includes(word)) {
-      const idx = lowerContent.indexOf(word);
+    // ✅ FIX: Find ALL occurrences
+    const positions = getAllOccurrences(content, word);
+    
+    if (positions.length === 0) return;
+    
+    // Find the BEST occurrence (with most context)
+    let bestIdx = positions[0];
+    let bestScore = -1;
+    
+    for (const idx of positions) {
       const start = Math.max(0, idx - 50);
       const end = Math.min(content.length, idx + word.length + 50);
-      const excerpt = "..." + content.slice(start, end).trim() + "...";
-
-      const node: IStoryNode = {
-        id: `loc_${word}`,
-        name: word.charAt(0).toUpperCase() + word.slice(1),
-        type: "location",
-        excerpt,
-      };
-      nodes.push(node);
-      foundLocations.push(node);
+      const context = content.slice(start, end);
+      const score = scoreContext(context);
+      
+      if (score > bestScore) {
+        bestScore = score;
+        bestIdx = idx;
+      }
     }
+    
+    // Use the BEST occurrence for excerpt
+    const start = Math.max(0, bestIdx - 50);
+    const end = Math.min(content.length, bestIdx + word.length + 50);
+    const excerpt = "..." + content.slice(start, end).trim() + "...";
+
+    const node: IStoryNode = {
+      id: `loc_${word}`,
+      name: word.charAt(0).toUpperCase() + word.slice(1),
+      type: "location",
+      excerpt,
+      occurrenceCount: positions.length, // Track total occurrences
+    };
+    
+    nodes.push(node);
+    foundLocations.push(node);
   });
 
-  // --- Find characters ---
-  // A real character name:
-  //   1. Starts with a capital letter
-  //   2. Is NOT at the start of a sentence (preceded by ". " or is the very first word)
-  //      OR appears more than once anywhere
-  //   3. Is not in the skip list
-  //   4. Is at least 3 chars long
-
+  // --- Find characters (existing logic) ---
   const words = content.split(/\s+/);
   const charCount: Record<string, number> = {};
 
-  // First pass — count ALL capitalised words not in skip list
   words.forEach((word) => {
     const clean = word.replace(/[^a-zA-Z]/g, "");
     if (
@@ -101,8 +132,6 @@ export function parseStory(content: string): IStoryGraph {
     }
   });
 
-  // Only keep words that appear 2+ times (real names repeat)
-  // or appear right after a comma/mid-sentence (not sentence-start)
   const sentenceStartWords = new Set<string>();
   const sentences = content.split(/(?<=[.!?])\s+/);
   sentences.forEach((sentence) => {
@@ -112,9 +141,7 @@ export function parseStory(content: string): IStoryGraph {
 
   const characters = Object.entries(charCount)
     .filter(([name, count]) => {
-      // Keep if appears 2+ times, OR appears once but NOT only as sentence-start
       if (count >= 2) return true;
-      // Appears once — only keep if it's not just a sentence-starter
       return !sentenceStartWords.has(name) || count >= 2;
     })
     .filter(([name]) => !SKIP_WORDS.has(name))

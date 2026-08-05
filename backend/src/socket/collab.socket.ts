@@ -136,6 +136,17 @@ export const setupCollabSocket = (io: Server) => {
         socket.join(roomId);
         collabNamespace.to(roomId).emit("collab:room_updated", { room });
         socket.emit("collab:joined", { room });
+
+        // Broadcast join system notification to chat
+        const joinMsg = {
+          senderId: "system",
+          senderName: "System",
+          senderColor: "#6b7280",
+          content: `${socket.data.username ?? "A user"} joined the room`,
+          type: "system" as const,
+          timestamp: new Date(),
+        };
+        collabNamespace.to(roomId).emit("collab:chat_message", { message: joinMsg });
       } catch (error) {
         logger.error("Failed to join collab room", error);
         socket.emit("collab:error", { message: "Failed to join collaboration room." });
@@ -182,6 +193,7 @@ export const setupCollabSocket = (io: Server) => {
         };
 
         room.story.push(chunk);
+        room.storyVersion += 1;
         await room.save();
 
         collabNamespace
@@ -249,33 +261,44 @@ export const setupCollabSocket = (io: Server) => {
           return;
         }
 
-        const room = await CollabRoom.findOne({ roomId });
-        if (!room) return;
-
         const userId = socket.data.userId;
         if (!userId) {
           socket.emit("collab:error", { message: "Unauthorized" });
           return;
         }
 
-        const participant = room.participants.find((p) => p.userId === userId);
-        if (!participant) {
-          socket.emit("collab:error", {
-            message: "You are not a participant of this room",
-          });
-          return;
-        }
-
-        // Check if AI is already generating
-        if (room.isAiGenerating) {
+        // Atomic optimistic lock: only proceed if isAiGenerating is false
+        const locked = await CollabRoom.findOneAndUpdate(
+          { roomId, isAiGenerating: false },
+          { isAiGenerating: true },
+          { new: false }
+        );
+        if (!locked) {
           socket.emit("collab:error", {
             message: "AI is already generating. Please wait for it to finish.",
           });
           return;
         }
 
+        // Verify user is a participant
+        const participant = locked.participants.find((p) => p.userId === userId);
+        if (!participant) {
+          await CollabRoom.findOneAndUpdate(
+            { roomId },
+            { isAiGenerating: false }
+          );
+          socket.emit("collab:error", {
+            message: "You are not a participant of this room",
+          });
+          return;
+        }
+
         const user = await User.findById(userId);
         if (!user) {
+          await CollabRoom.findOneAndUpdate(
+            { roomId },
+            { isAiGenerating: false }
+          );
           socket.emit("collab:error", { message: "User not found!" });
           return;
         }
@@ -290,22 +313,23 @@ export const setupCollabSocket = (io: Server) => {
               ? error.message
               : "Monthly request limit exceeded!";
           socket.emit("collab:error", { message: errorMsg });
+          await CollabRoom.findOneAndUpdate(
+            { roomId },
+            { isAiGenerating: false }
+          );
           activeAiGenerations.delete(roomId);
           return;
         }
 
         const guard = createUserQuotaGuard(user.email);
+        const initialStoryLength = locked.story.length;
+        const currentVersion = locked.storyVersion;
 
         try {
           await runWithQuotaCleanup(guard, async () => {
-            // Set AI generating flag to true and remember current story length
-            room.isAiGenerating = true;
-            const initialStoryLength = room.story.length;
-            await room.save();
-
             collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
 
-            const storyContext = room.story
+            const storyContext = locked.story
               .map((chunk) => chunk.text)
               .filter(Boolean)
               .join("\n");
@@ -334,18 +358,43 @@ export const setupCollabSocket = (io: Server) => {
               timestamp: new Date(),
             };
 
-            const latestRoom = await CollabRoom.findOne({ roomId });
-            if (latestRoom) {
-              // Insert the AI chunk right after the last chunk that existed when we started the AI call
-              // This ensures the AI's continuation is in the correct context position even if users added text in between
-              latestRoom.story.splice(initialStoryLength, 0, aiChunk);
-              latestRoom.isAiGenerating = false;
-              await latestRoom.save();
+            // Optimistic concurrency: only update if storyVersion hasn't changed
+            const updated = await CollabRoom.findOneAndUpdate(
+              {
+                roomId,
+                storyVersion: currentVersion,
+                isAiGenerating: true,
+              },
+              {
+                $push: { story: { $each: [aiChunk], $position: initialStoryLength } },
+                $inc: { storyVersion: 1 },
+                isAiGenerating: false,
+              },
+              { new: true }
+            );
 
+            if (updated) {
               collabNamespace.to(roomId).emit("collab:story_updated", {
-                story: latestRoom.story,
+                story: updated.story,
                 newChunk: aiChunk,
               });
+            } else {
+              // Version conflict — someone else modified the story; try a safe append
+              const fallback = await CollabRoom.findOneAndUpdate(
+                { roomId, isAiGenerating: true },
+                {
+                  $push: { story: aiChunk },
+                  $inc: { storyVersion: 1 },
+                  isAiGenerating: false,
+                },
+                { new: true }
+              );
+              if (fallback) {
+                collabNamespace.to(roomId).emit("collab:story_updated", {
+                  story: fallback.story,
+                  newChunk: aiChunk,
+                });
+              }
             }
           });
         } catch (error) {
@@ -354,21 +403,47 @@ export const setupCollabSocket = (io: Server) => {
             message: "AI continuation failed. Please try again.",
           });
         } finally {
-          // Make sure we unset the flag even if there's an error
-          const roomToUpdate = await CollabRoom.findOne({ roomId });
-          if (roomToUpdate && roomToUpdate.isAiGenerating) {
-            roomToUpdate.isAiGenerating = false;
-            await roomToUpdate.save();
-          }
-
+          await CollabRoom.findOneAndUpdate(
+            { roomId, isAiGenerating: true },
+            { isAiGenerating: false }
+          );
           activeAiGenerations.delete(roomId);
-
           collabNamespace.to(roomId).emit("collab:user_stop_typing", {
             userId: "ai",
           });
         }
       } catch (err) {
         logger.error("Error in AI continuation process", err);
+      }
+    });
+
+    // 👇 NEW PIPELINE: PRIVACY SETTING TOGGLE LISTENER
+    socket.on("collab:update_privacy", async ({ roomId, isPublic }: { roomId: string; isPublic: boolean }) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found." });
+          return;
+        }
+
+        // Only allow the original creator of the room to alter visibility status
+        if (room.createdBy !== userId) {
+          socket.emit("collab:error", { message: "Only the room creator can modify visibility settings." });
+          return;
+        }
+
+        // Apply changes and update database record
+        room.isPublic = isPublic;
+        await room.save();
+
+        // Sync visibility updates to all active connection handlers
+        collabNamespace.to(roomId).emit("collab:room_updated", { room });
+        logger.info(`Collab Room visibility changed successfully: ID ${roomId} is now public=${isPublic}`);
+      } catch (error) {
+        logger.error("Failed to update privacy status:", error);
+        socket.emit("collab:error", { message: "Failed to update room settings." });
       }
     });
 
@@ -387,24 +462,82 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // Get room info
-    socket.on("collab:get_room", async ({ roomId }) => {
+    socket.on("collab:get_room", async ({ roomId }, callback) => {
       try {
         const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          if (callback) callback({ message: "Room not found" });
+          else socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
+        if (!room.participants.some((p) => p.userId === userId)) {
+          if (callback) callback({ message: "You are not a participant of this room" });
+          else socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
+        if (callback) callback({ room });
+        else socket.emit("collab:room_info", { room });
+      } catch (error) {
+        logger.error("collab:get_room error", error);
+        if (callback) callback({ message: "Failed to get room information" });
+        else socket.emit("collab:error", { message: "Failed to get room information" });
+      }
+    });
+
+    // ── Chat: send message ────────────────────────────────────────────────
+    socket.on("collab:chat_send", async ({ roomId, content }: { roomId: string; content: string }) => {
+      try {
+        const userId = socket.data.userId as string;
         const room = await CollabRoom.findOne({ roomId });
         if (!room) {
           socket.emit("collab:error", { message: "Room not found" });
           return;
         }
-        if (!room.participants.some((p) => p.userId === userId)) {
-          socket.emit("collab:error", {
-            message: "You are not a participant of this room",
-          });
+        const participant = room.participants.find((p) => p.userId === userId);
+        if (!participant) {
+          socket.emit("collab:error", { message: "You are not a participant of this room" });
           return;
         }
-        socket.emit("collab:room_info", { room });
+        if (!content?.trim()) return;
+
+        const chatMsg = {
+          senderId: userId,
+          senderName: participant.username,
+          senderColor: participant.color,
+          content: content.trim(),
+          type: "message" as const,
+          timestamp: new Date(),
+        };
+
+        room.chatMessages.push(chatMsg);
+        await room.save();
+
+        collabNamespace.to(roomId).emit("collab:chat_message", { message: chatMsg });
       } catch (error) {
-        logger.error("collab:get_room error", error);
-        socket.emit("collab:error", { message: "Failed to get room information" });
+        logger.error("collab:chat_send error", error);
+        socket.emit("collab:error", { message: "Failed to send message" });
+      }
+    });
+
+    // ── Chat: load history ────────────────────────────────────────────────
+    socket.on("collab:chat_history", async ({ roomId }: { roomId: string }) => {
+      try {
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
+        const userId = socket.data.userId as string;
+        const isParticipant = room.participants.some((p) => p.userId === userId);
+        if (!isParticipant) {
+          socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
+        socket.emit("collab:chat_history", { messages: room.chatMessages });
+      } catch (error) {
+        logger.error("collab:chat_history error", error);
+        socket.emit("collab:error", { message: "Failed to load chat history" });
       }
     });
 
@@ -414,12 +547,26 @@ export const setupCollabSocket = (io: Server) => {
         const userId = socket.data.userId;
         const rooms = await CollabRoom.find({ "participants.socketId": socket.id });
         for (const room of rooms) {
+          const leavingParticipant = room.participants.find((p) => p.socketId === socket.id);
           collabNamespace.to(room.roomId).emit("collab:user_stop_typing", { userId });
           room.participants = room.participants.filter(
             (p) => p.socketId !== socket.id,
           );
           await room.save();
           collabNamespace.to(room.roomId).emit("collab:room_updated", { room });
+
+          // Broadcast leave system notification to chat
+          if (leavingParticipant) {
+            const leaveMsg = {
+              senderId: "system",
+              senderName: "System",
+              senderColor: "#6b7280",
+              content: `${leavingParticipant.username} left the room`,
+              type: "system" as const,
+              timestamp: new Date(),
+            };
+            collabNamespace.to(room.roomId).emit("collab:chat_message", { message: leaveMsg });
+          }
         }
       } catch (error) {
         logger.error("Error during socket disconnect cleanup", error);

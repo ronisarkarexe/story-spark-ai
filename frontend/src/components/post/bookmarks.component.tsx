@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDebounce } from "use-debounce";
+import Fuse from "fuse.js";
 import ExploreViewListComponent from "./post.view.list.component";
 import { Post } from "../../models/post";
 import { useGetMyBookmarksQuery } from "../../redux/apis/bookmark.api";
@@ -11,6 +13,7 @@ import { IStories } from "../stories/stories.view.component";
 const BookmarksComponent = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [debouncedSearch] = useDebounce(searchTerm, 400);
   const [size, setSize] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
 
@@ -41,22 +44,46 @@ const BookmarksComponent = () => {
     };
   }, []);
 
-  const filteredSessionStories = sessionStories.filter(
-    (story: IStories) =>
-      story &&
-      ((story.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
-  );
+
 
   // Implement client-side instant search for bookmarks
-  const filteredPosts = allPosts.filter(
-    (story: Post) =>
-      story &&
-      ((story.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
-  );
+  const postFuse = useMemo(() => {
+    return new Fuse(allPosts, {
+      keys: ["title", "tag", "content"],
+      threshold: 0.35,
+      ignoreLocation: true,
+      includeScore: true,
+      minMatchCharLength: 2,
+    });
+  }, [allPosts]);
+
+  const storyFuse = useMemo(() => {
+    return new Fuse(sessionStories, {
+      keys: ["title", "tag", "content"],
+      threshold: 0.35,
+      ignoreLocation: true,
+      includeScore: true,
+      minMatchCharLength: 2,
+    });
+  }, [sessionStories]);
+
+
+  const filteredPosts = useMemo(() => {
+    const search = debouncedSearch.trim();
+
+    if (!search) return allPosts;
+
+    return postFuse.search(search).map((result) => result.item);
+  }, [debouncedSearch, allPosts, postFuse]);
+
+
+  const filteredSessionStories = useMemo(() => {
+    const search = debouncedSearch.trim();
+
+    if (!search) return sessionStories;
+
+    return storyFuse.search(search).map((result) => result.item);
+  }, [debouncedSearch, sessionStories, storyFuse]);
 
   return (
     <div className="pt-0 min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
@@ -85,6 +112,24 @@ const BookmarksComponent = () => {
                   setPage(1);
                 }}
               />
+              {searchTerm !== debouncedSearch && (
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Searching...
+                </p>
+              )}
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setPage(1);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors"
+                  aria-label="Clear search"
+                >
+                  <i className="fas fa-times-circle"></i>
+                </button>
+              )}
               <i className="fas fa-search absolute left-5 top-1/2 transform -translate-y-1/2 text-indigo-500 dark:text-indigo-400 text-lg"></i>
             </div>
           </div>
@@ -131,22 +176,20 @@ const BookmarksComponent = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab("posts")}
-                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                  activeTab === "posts"
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
+                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${activeTab === "posts"
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
               >
                 Published Stories ({allPosts.length})
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("generated")}
-                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                  activeTab === "generated"
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
+                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${activeTab === "generated"
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
               >
                 Generated Drafts ({sessionStories.length})
               </button>

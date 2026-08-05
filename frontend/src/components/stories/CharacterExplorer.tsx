@@ -23,7 +23,12 @@ const getRoleColor = (role: string) =>
   roleColors[role] ?? "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200";
 
 const parseCharacters = (value: unknown): Character[] => {
-  const parsed = typeof value === "string" ? JSON.parse(value) : value;
+  let parsed: unknown;
+  try {
+    parsed = typeof value === "string" ? JSON.parse(value) : value;
+  } catch {
+    return [];
+  }
   if (!Array.isArray(parsed)) return [];
 
   return parsed

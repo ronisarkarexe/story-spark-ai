@@ -3,6 +3,7 @@ import { useGetFeaturedListsQuery } from "../../redux/apis/post.api";
 import { Post } from "../../models/post";
 import ImageFallback from "../ImageFallback";
 import { SkeletonGrid } from "../cards/SkeletonCard";
+import ReadingTime from "../ReadingTime";
 
 const ExploreFeatureComponent = () => {
   const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);
@@ -36,10 +37,11 @@ const ExploreFeatureComponent = () => {
               <p className="text-slate-600 text-base mt-3 leading-relaxed max-w-2xl line-clamp-2 dark:text-slate-300">
                 {post.content.slice(0, 150)}...
               </p>
-              <div className="flex items-center mt-6 pt-4 border-t border-gray-200 dark:border-white/10">
+              <div className="flex items-center mt-6 pt-4 border-t border-gray-200 dark:border-white/10 flex-wrap gap-2">
                 <span className="bg-blue-600/10 border border-blue-500/20 backdrop-blur-md text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg dark:bg-blue-600/40 dark:border-blue-500/50 dark:text-blue-100">
                   {post.tag}
                 </span>
+                <ReadingTime content={post.content} className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-200 font-medium bg-slate-100/50 dark:bg-slate-800/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700/50" />
                 <div className="ml-auto flex items-center gap-6 text-slate-600 text-sm font-medium dark:text-slate-200">
                   <span className="flex items-center gap-2 hover:text-slate-900 transition-colors dark:hover:text-white"><i className="fas fa-heart text-red-400"></i> {post.likesCount}</span>
                   <span className="flex items-center gap-2 hover:text-slate-900 transition-colors dark:hover:text-white"><i className="fas fa-comment text-blue-400"></i> {post.commentsCount}</span>

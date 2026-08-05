@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -9,6 +9,49 @@ import ChapterSidebar from "./ChapterSidebar";
 import StoryViewer from "./StoryViewer";
 import ContinueStoryButton from "./ContinueStoryButton";
 import CharacterNetwork from "../CharacterNetwork";
+import StoryCoverGenerator from "../cover-generator/StoryCoverGenerator";
+import StoryChecklist from "../checklist/StoryChecklist";
+import StoryRewritePanel from "../rewrite/StoryRewritePanel";
+import StoryBranchingEditor from "../branching/StoryBranchingEditor";
+import PlotHoleDetector from "../plot-hole/PlotHoleDetector";
+import PacingAnalyzer from "../pacing/PacingAnalyzer";
+import OutlineQualityAnalyzer from "../outline-quality/OutlineQualityAnalyzer";
+import DialogueEnhancer from "../dialogue/DialogueEnhancer";
+import TimelineConsistencyChecker from "../timeline/TimelineConsistencyChecker";
+import GenreBlendGenerator from "../genre/GenreBlendGenerator";
+import RelationshipGraph from "../relationship/RelationshipGraph";
+import GenreWeightControls from "../genre/GenreWeightControls";
+import StoryStylePresets from "../style/StoryStylePresets";
+import StoryPerspectiveSwitcher from "../perspective/StoryPerspectiveSwitcher";
+import StoryTonePresets from "../tone/StoryTonePresets";
+import StoryChapterGenerator from "../chapter-generator/StoryChapterGenerator";
+import PromptLibrary from "../prompts/PromptLibrary";
+import StoryTitleRating from "../title-rating/StoryTitleRating";
+import StoryRevisionChecklist from "../revision/StoryRevisionChecklist";
+import StoryAudienceSelector from "../audience/StoryAudienceSelector";
+import StoryKeywordExtractor from "../keywords/StoryKeywordExtractor";
+import StoryFactSheet from "../fact-sheet/StoryFactSheet";
+import CharacterConsistencyChecker from "../character-consistency/CharacterConsistencyChecker";
+import StorySceneNavigator from "../scene-navigator/StorySceneNavigator";
+import StoryComplexityAnalyzer from "../complexity/StoryComplexityAnalyzer";
+import StorySessionRecovery from "../recovery/StorySessionRecovery";
+import StoryComparisonDashboard from "../comparison/StoryComparisonDashboard";
+import StoryTimelineVisualization from "../timeline/StoryTimelineVisualization";
+import StoryRelationshipGraph from "../relationship-graph/StoryRelationshipGraph";
+import StoryPlotTwistGenerator from "../plot-twist/StoryPlotTwistGenerator";
+import StoryReadingAnalytics from "../analytics-jp/StoryReadingAnalytics";
+import VocabularyAnalyzer from "../vocabulary/VocabularyAnalyzer";
+
+import StoryRevisionHistory from "../revision-history/StoryRevisionHistory";
+import { createRevision } from "../../utils/storyRevisionHistory";
+import StoryEndingAnalyzer from "../ending-analyzer/StoryEndingAnalyzer";
+import WritingChallengeGenerator from "../writing-challenges/WritingChallengeGenerator";
+import StoryNamingAssistant from "../naming-assistant/StoryNamingAssistant";
+import StoryPublishingReadiness from "../publishing-readiness/StoryPublishingReadiness";
+import StoryTagGenerator from "../story-tags/StoryTagGenerator";
+import StoryReadingInfo from "../reading-info/StoryReadingInfo";
+import StoryFocusMode from "../focus-mode/StoryFocusMode";
+import StoryContinuationSuggestions from "../story-continuation/StoryContinuationSuggestions";
 
 import {
   getSafeFileName,
@@ -22,6 +65,24 @@ const StoryWorkspace = () => {
     (state: RootState) => state.story.currentStory
   );
   const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+
+  const [selectedTheme, setSelectedTheme] = useState<
+  "Classic" | "Novel" | "Minimal" | "Dark"
+>("Classic");
+
+
+  const [revisions, setRevisions] = useState(() => {
+    const storyContent =
+      currentStory?.chapters?.map((c) => c.content).join("\n\n") || "";
+    return storyContent ? [createRevision(storyContent)] : [];
+  });
+  // Memoized once — used by all 20+ components instead of recomputing each time
+  const fullStoryContent = useMemo(
+    () =>
+      currentStory?.chapters?.map((chapter) => chapter.content).join("\n\n") ?? "",
+    [currentStory?.chapters]
+  );
+
 
   const handleCopyStory = async () => {
   if (!currentStory) {
@@ -39,7 +100,7 @@ const StoryWorkspace = () => {
     await navigator.clipboard.writeText(storyText);
     toast.success("Story copied to clipboard!");
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     toast.error("Failed to copy story.");
   }
 };
@@ -69,7 +130,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export Markdown.");
     }
   };
@@ -91,15 +152,16 @@ const StoryWorkspace = () => {
       });
 
       exportWorkspacePDF({
-        title,
-        authorName,
-        dateStr: formattedDate,
-        chapters: currentStory.chapters || [],
-      });
+  title,
+  authorName,
+  dateStr: formattedDate,
+  chapters: currentStory.chapters || [],
+  theme: selectedTheme,
+});
 
       toast.success("PDF downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export PDF.");
     } finally {
       toast.dismiss(toastId);
@@ -122,16 +184,17 @@ const StoryWorkspace = () => {
       });
 
       const blob = createWorkspaceDocxBlob({
-        title,
-        authorName,
-        dateStr: formattedDate,
-        chapters: currentStory.chapters || [],
-      });
+  title,
+  authorName,
+  dateStr: formattedDate,
+  chapters: currentStory.chapters || [],
+  theme: selectedTheme,
+});
 
       downloadBlob(blob, getSafeFileName(title, "docx"));
       toast.success("DOCX downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export DOCX.");
     }
   };
@@ -149,6 +212,7 @@ const StoryWorkspace = () => {
       <Toaster position="top-right" reverseOrder={false} />
       <ChapterSidebar
         chapters={currentStory.chapters}
+        maxChapterWords={2500}
       />
 
       <div className="flex flex-col flex-1">
@@ -161,7 +225,7 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "editor"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-250"
+                    : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 📖 Read Story
@@ -171,12 +235,26 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "network"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-255"
+                    : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 🕸️ Character Network
               </button>
             </div>
+            <select
+  value={selectedTheme}
+  onChange={(e) =>
+    setSelectedTheme(
+      e.target.value as "Classic" | "Novel" | "Minimal" | "Dark"
+    )
+  }
+  className="bg-zinc-800 text-white rounded px-3 py-2 border border-zinc-700 text-sm"
+>
+  <option value="Classic">📖 Classic</option>
+  <option value="Novel">📚 Novel</option>
+  <option value="Minimal">✨ Minimal</option>
+  <option value="Dark">🌙 Dark</option>
+</select>
             <button
               onClick={handleCopyStory}
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
@@ -205,18 +283,286 @@ const StoryWorkspace = () => {
         </div>
 
         {workspaceMode === "editor" ? (
-          <>
-            <StoryViewer
-              chapters={currentStory.chapters}
-              storyId={currentStory.id}
-            />
+  <>
+  <div className="p-4 border-b border-zinc-800">
+    <StoryChecklist
+      title={currentStory.title}
+      content={
+        currentStory.chapters
+          ?.map((chapter) => chapter.content)
+          .join("\n\n") || ""
+      }
+    />
+  </div>
 
-            <div className="p-6 border-t border-zinc-800">
-              <ContinueStoryButton />
-            </div>
-          </>
+<StoryCoverGenerator
+  title={currentStory.title}
+  genre={(currentStory as any).genre ?? "General"}
+  theme={(currentStory as any).theme ?? currentStory.title}
+  characters={
+    (currentStory as any).characters?.map((c: any) => c.name) ??
+    currentStory.chapters
+      ?.flatMap((ch: any) => ch.characters ?? [])
+      .slice(0, 3) ??
+    []
+  }
+/>
+
+<StoryRewritePanel
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryBranchingEditor />
+<PlotHoleDetector
+  story={
+    fullStoryContent
+  }
+/>
+<PacingAnalyzer
+  story={
+    fullStoryContent
+  }
+/>
+<OutlineQualityAnalyzer
+  outline={
+    fullStoryContent
+  }
+/>
+<DialogueEnhancer
+  story={
+    fullStoryContent
+  }
+/>
+<TimelineConsistencyChecker
+  story={
+    fullStoryContent
+  }
+/>
+<GenreBlendGenerator
+  prompt={
+    fullStoryContent
+  }
+/>
+<RelationshipGraph
+  story={
+    fullStoryContent
+  }
+/>
+
+<VocabularyAnalyzer
+  story={
+    fullStoryContent
+  }
+/>
+
+<GenreWeightControls />
+<StoryStylePresets />
+
+<StoryPerspectiveSwitcher
+  story={
+    fullStoryContent
+  }
+/>
+<StoryTonePresets
+  story={
+    fullStoryContent
+  }
+/>
+<StoryAudienceSelector
+  prompt={
+    fullStoryContent
+  }
+/>
+
+<StoryChapterGenerator
+  story={
+    fullStoryContent
+  }
+/>
+
+<PromptLibrary
+  onInsertPrompt={(prompt) => {
+    // TODO: dispatch action to insert prompt into the active editor
+    toast("Prompt insertion coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onInsertPrompt not wired:", prompt);
+  }}
+/>
+
+<StoryTitleRating
+  title={currentStory.title}
+  onReplace={(newTitle) => {
+    // TODO: dispatch updateStoryTitle action
+    toast("Title replacement coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onReplace title not wired:", newTitle);
+  }}
+/>
+
+<StoryRevisionChecklist />
+
+<StoryKeywordExtractor
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryFactSheet
+  story={
+    fullStoryContent
+  }
+/>
+
+<StorySceneNavigator
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryComplexityAnalyzer
+  story={
+    fullStoryContent
+  }
+/>
+
+<StorySessionRecovery
+  story={
+    fullStoryContent
+  }
+  onRestore={(draft) => {
+    // TODO: dispatch action to restore draft content to editor
+    toast("Draft restore coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onRestore draft not wired:", draft);
+  }}
+/>
+{/* StoryComparisonDashboard requires a second story source (e.g. a saved
+    draft or previous version) for storyB. Passing the same content for both
+    sides makes the comparison meaningless. Wire storyB to a real alternate
+    source before rendering this component. */}
+{/* <StoryComparisonDashboard
+  storyA={
+    fullStoryContent
+  }
+
+  storyB={previousStoryDraft ?? ""}
+/> */}
+
+
+
+<StoryTimelineVisualization
+  story={
+    fullStoryContent
+  }
+/>
+
+<CharacterConsistencyChecker
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryRelationshipGraph
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryPlotTwistGenerator
+  story={
+    fullStoryContent
+  }
+  onApply={(twist) => {
+    // TODO: dispatch action to append plot twist to story
+    toast("Plot twist apply coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onApply twist not wired:", twist);
+  }}
+/>
+
+<StoryReadingAnalytics
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryRevisionHistory
+  revisions={revisions}
+  onRestore={(content) => {
+    // TODO: dispatch action to restore story content from revision
+    console.warn("Restore revision not yet wired to Redux store:", content);
+  }}
+/>
+
+<StoryEndingAnalyzer
+  story={
+    fullStoryContent
+  }
+  onRegenerate={(prompt) => {
+    // TODO: dispatch action to regenerate story ending
+    toast("Ending regeneration coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onRegenerate ending not wired:", prompt);
+  }}
+/>
+
+<WritingChallengeGenerator />
+
+<StoryNamingAssistant
+  onInsert={(name) => {
+    // TODO: dispatch action to insert name into editor at cursor position
+    toast("Name insertion coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onInsert name not wired:", name);
+  }}
+/>
+
+
+<StoryPublishingReadiness
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryTagGenerator
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryReadingInfo
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryFocusMode
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryContinuationSuggestions
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+  onInsert={(text) => {
+    console.log("Insert continuation:", text);
+  }}
+/>
+
+  <StoryViewer
+    chapters={currentStory.chapters}
+    storyId={currentStory.id}
+    truncated={currentStory.truncated}
+  />
+
+  <div className="p-6 border-t border-zinc-800">
+    <ContinueStoryButton />
+  </div>
+</>
         ) : (
-          <CharacterNetwork storyId={currentStory.id} />
+          <CharacterNetwork storyId={currentStory.id} storyContent={currentStory.chapters?.map((chapter) => chapter.content).join("\n\n") || ""} />
         )}
       </div>
     </div>

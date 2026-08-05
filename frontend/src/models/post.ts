@@ -58,4 +58,6 @@ export interface Post {
   reactions: Reaction[];
   createdAt: string;
   updatedAt: string;
+  parentStoryId?: any;
+  rootStoryId?: any;
 }

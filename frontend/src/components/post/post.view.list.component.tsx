@@ -7,6 +7,7 @@ import { formatReadingStats } from "../../utils/story-utils";
 import ImageFallback from "../ImageFallback";
 import { SkeletonGrid } from "../cards/SkeletonCard";
 import StarRatingDisplay from "../story-rating/StarRatingDisplay";
+import ReadingTime from "../ReadingTime";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -104,9 +105,13 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                         <span className="text-sm font-semibold text-slate-900 dark:text-gray-200">
                           {story.author?.name || "Unknown"}
                         </span>
-                        <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider dark:text-slate-400">
-                          {formatDate(story.publishedAt || story.createdAt)}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider dark:text-slate-400">
+                            {formatDate(story.publishedAt || story.createdAt)}
+                          </span>
+                          <span className="text-slate-300 dark:text-slate-700 text-[10px]">•</span>
+                          <ReadingTime content={story.content} className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 font-medium" />
+                        </div>
                         {story.author?.profile?.bio ? (
                           <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
                             {story.author.profile.bio}
@@ -145,17 +150,17 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
           ))
         ) : (
           <div className="col-span-full py-16 flex flex-col items-center justify-center text-center">
-             <div className="w-24 h-24 mb-6 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
-               <i className="fas fa-book-open text-4xl text-slate-300 dark:text-slate-600"></i>
-             </div>
-             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-  {searchQuery ? `No stories found for "${searchQuery}"` : "No posts available"}
-</h3>
-<p className="text-slate-500 dark:text-slate-400 max-w-sm">
-  {searchQuery
-    ? "Try searching with different keywords."
-    : "Check back later for new stories, or try adjusting your search filters."}
-</p>
+            <div className="w-24 h-24 mb-6 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
+              <i className="fas fa-book-open text-4xl text-slate-300 dark:text-slate-600"></i>
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+              {searchQuery ? `No stories found for "${searchQuery}"` : "No posts available"}
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 max-w-sm">
+              {searchQuery
+                ? "Try searching with different keywords."
+                : "Check back later for new stories, or try adjusting your search filters."}
+            </p>
           </div>
         )}
       </div>

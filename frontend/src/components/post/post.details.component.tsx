@@ -2,6 +2,7 @@
 import { StoryMetaTags } from "./StoryMetaTags";
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import ReadingTime from "../ReadingTime";
 import {
   useDeletePostMutation,
   useGetPostByIdQuery,
@@ -23,10 +24,12 @@ import ReaderPreferencesPanel from "../reader-preferences/ReaderPreferences";
 import { useReaderPreferences } from "../reader-preferences/useReaderPreferences";
 
 import { formatDateShort } from "../../utils/time-formate";
+import { calculateReadingTime } from "../../utils/reading-time";
 import { formatReadingStats } from "../../utils/story-utils";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
+import SimilarStories from "../recommendations/SimilarStories";
 
 import {
   useToggleFollowMutation,
@@ -376,8 +379,10 @@ const PostDetailsComponent = () => {
                     )}
                   </h3>
 
-                  <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-500 flex-wrap">
                     <span>{formatDateShort(post ? post?.createdAt : "")}</span>
+                    <span>•</span>
+                    <ReadingTime content={post?.content} className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-gray-500 font-medium" />
                   </div>
                 </div>
               </div>
@@ -477,20 +482,31 @@ const PostDetailsComponent = () => {
                 <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-4"}`}>
                   {post?.title}
                 </h1>
-                
-                <div className="flex items-center gap-4 mb-6 flex-wrap">
-                  <StarRatingDisplay rating={post?.averageRating || 0} totalRatings={post?.totalRatings || 0} size="md" />
-                  {post?.language && (
-                    <div className="flex gap-2">
-                      <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
-                        🌐 {post.language}
-                      </span>
-                      <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-                        📖 {formatReadingStats(post.content)}
-                      </span>
-                    </div>
-                  )}
-                </div>
+<div className="flex items-center gap-4 mb-6 flex-wrap">
+  <StarRatingDisplay
+    rating={post?.averageRating || 0}
+    totalRatings={post?.totalRatings || 0}
+    size="md"
+  />
+
+  {post?.language && (
+    <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
+      🌐 {post.language}
+    </span>
+  )}
+
+  {post?.content && (
+    <>
+      <span className="inline-flex items-center rounded-full bg-slate-700/60 text-slate-300 border border-slate-600/50 py-1 px-3 text-xs font-semibold gap-1 select-none">
+        <span aria-hidden="true" role="img" aria-label="reading time">&#x23F1;&#xFE0F;</span> {calculateReadingTime(post.content)} min read
+      </span>
+
+      <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
+        {formatReadingStats(post.content)}
+      </span>
+    </>
+  )}
+</div>
 
                 <div className="mb-12">
                   <ImageFallback
@@ -613,6 +629,15 @@ const PostDetailsComponent = () => {
       <p>No related stories found.</p>
     </div>
   )}
+</div>
+<div className="mt-12">
+  <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
+    Similar Stories
+  </h3>
+
+  <SimilarStories
+    stories={(relatedPost || []).map((p: any) => ({ ...p, id: p._id || p.id || "", tags: p.tags || (p.tag ? [p.tag] : []) })) as any}
+  />
 </div>
           </div>
         </div>

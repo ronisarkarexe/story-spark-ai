@@ -10,6 +10,9 @@ import {
   resetPasswordRateLimiter,
   refreshTokenRateLimiter,
   ipRateLimiter,
+  resendVerificationEmailRateLimiter,
+  verifyEmailChangeRateLimiter,
+  changePasswordRateLimiter,
 } from "../../middleware/ip.rate-limiter";
 
 const router = express.Router();
@@ -24,7 +27,7 @@ router.post(
 
 // Google Login API route
 router.post("/google-login", loginRateLimiter, AuthController.googleLogin);
-router.post("/send-otp", validateRequest(UserValidator.sendOtp), AuthController.sendOtp);// Register API route
+router.post("/send-otp", forgotPasswordRateLimiter, validateRequest(UserValidator.sendOtp), AuthController.sendOtp);// Register API route
 router.post(
   "/register",
   validateRequest(UserValidator.register),
@@ -41,6 +44,7 @@ router.post("/logout", AuthController.logout);
 // Change Password API route
 router.post(
   "/change-password",
+  changePasswordRateLimiter,
   auth(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
@@ -49,6 +53,22 @@ router.post(
   ),
   validateRequest(UserValidator.changePassword),
   AuthController.changePassword
+);
+
+// Verify email change API route
+router.post(
+  "/verify-email-change",
+  verifyEmailChangeRateLimiter,
+  validateRequest(UserValidator.verifyEmailChange),
+  AuthController.verifyEmailChange
+);
+
+// Resend email verification OTP
+router.post(
+  "/verify-email/resend",
+  resendVerificationEmailRateLimiter,
+  validateRequest(UserValidator.resendVerificationEmail),
+  AuthController.resendVerificationEmail
 );
 
 // Forgot Password API route

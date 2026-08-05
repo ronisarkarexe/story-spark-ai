@@ -19,9 +19,17 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
   const [plotHoles, setPlotHoles] = useState<IPlotHole[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const MIN_STORY_LENGTH = 150;
+
   const handleAnalyze = async () => {
     if (!storyText || storyText.trim().length === 0) {
       toast.error("Please provide a story draft to analyze.");
+      return;
+    }
+    if (storyText.trim().length < MIN_STORY_LENGTH) {
+      toast.error(
+        `Story is too short for analysis. Please provide at least ${MIN_STORY_LENGTH} characters.`
+      );
       return;
     }
 
@@ -30,14 +38,21 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
     const toastId = toast.loading("AI Editor is reviewing your story...");
 
     try {
-      const baseUrl = getBaseUrl() || import.meta.env.VITE_BASE_URL || "";
+      const baseUrl = getBaseUrl() || import.meta.env.VITE_BASE_URL;
+      if (!baseUrl) {
+        throw new Error(
+          "API base URL is not configured. Set VITE_BASE_URL in your environment."
+        );
+      }
       const response = await axios.post(`${baseUrl}/ai-editor/analyze`, {
         storyText,
       });
 
-      if (response.data && response.data.success) {
-        setPlotHoles(response.data.data.plot_holes);
-        const count = response.data.data.plot_holes.length;
+      const plotHolesData = response.data?.data?.plot_holes;
+
+      if (response.data?.success && Array.isArray(plotHolesData)) {
+        setPlotHoles(plotHolesData);
+        const count = plotHolesData.length;
         if (count === 0) {
           toast.success("Brilliant! No logical consistency errors found.", { id: toastId });
         } else {
@@ -46,12 +61,20 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
       } else {
         throw new Error("Invalid response format received from backend.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Plot hole analysis error:", err);
-      const errMsg = err.response?.data?.message || err.message || "Failed to analyze story.";
+
+      const errMsg =
+        axios.isAxiosError(err)
+          ? err.response?.data?.message || err.message || "Failed to analyze story."
+          : err instanceof Error
+            ? err.message
+            : "Failed to analyze story.";
+
       setError(errMsg);
       toast.error(errMsg, { id: toastId });
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -76,11 +99,10 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
           type="button"
           onClick={handleAnalyze}
           disabled={loading || !storyText}
-          className={`rounded-lg px-5 py-2.5 font-semibold text-sm flex items-center gap-2 border transition-all active:scale-95 cursor-pointer ${
-            loading || !storyText
+          className={`rounded-lg px-5 py-2.5 font-semibold text-sm flex items-center gap-2 border transition-all active:scale-95 cursor-pointer ${loading || !storyText
               ? "bg-slate-800 text-slate-500 border-slate-700/50 cursor-not-allowed opacity-50"
               : "bg-purple-700 hover:bg-purple-600 text-white border-purple-600/50 hover:shadow-lg hover:shadow-purple-500/25"
-          }`}
+            }`}
         >
           {loading ? (
             <>

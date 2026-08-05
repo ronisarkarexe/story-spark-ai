@@ -39,8 +39,8 @@
 ## About 🚀
 
 - story-spark-ai - [Website](https://storysparkai.vercel.app/)
-- **`StorySparkAi`** is an open-source platform designed to empower creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way.
-- With **`StorySparkAi`**, users can input an idea, explore multiple story variations, save their favorites, and leverage AI analysis to enhance their creative writing journey.
+- **`StorySparkAI`** is an open-source platform designed to empower creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way.
+- With **`StorySparkAI`**, users can input an idea, explore multiple story variations, save their favorites, and leverage AI analysis to enhance their creative writing journey.
 
 <a id="features"></a>
 
@@ -64,7 +64,7 @@
    cd story-spark-ai
    ```
 
-2. **Install dependencies** (single install at the repo root — npm workspaces)
+2. **Install dependencies** (single install at the repo root — pnpm workspaces)
 
    ```bash
    pnpm install
@@ -73,7 +73,7 @@
 3. **Environment files**
 
    - Copy `backend/.env.example` → `backend/.env` and fill in all values (see [Environment variables](#environment-variables)).
-  - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g. `http://localhost:5000/api/v1` when the backend runs on port 5000). Optionally set `VITE_SOCKET_URL` for real-time notifications; the frontend uses your logged-in access token to join the notification room.
+   - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g., `http://localhost:5000/api/v1` when the backend runs on port 5000). Optionally set `VITE_SOCKET_URL` for real-time notifications; the frontend uses your logged-in access token to join the notification room.
 
    > Never commit `backend/.env` or `frontend/.env`. Only `.env.example` files belong in git.
 
@@ -146,20 +146,20 @@ Variables marked **Yes** are required for local development. Variables marked **
 | `DATABASE_URL` | Yes | MongoDB connection string. Use a local URI such as `mongodb://localhost:27017/storysparkai` or an Atlas URI. |
 | `PORT` | No | API port number. Defaults to `5000` if unset. |
 | `NODE_ENV` | No | Runtime mode, usually `development` locally or `production` in deploys. |
-| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests, e.g. `http://localhost:4001`. |
-| `SALT_ROUNDS` | Yes | Bcrypt cost factor as a number, e.g. `10`. |
-| `JWT_SECRET` | Yes | Access token signing secret, e.g. `your-jwt-secret`. Use a strong random value outside local testing. |
-| `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret, e.g. `your-refresh-secret`. Use a different strong value from `JWT_SECRET`. |
-| `JWT_EXPIRES_IN` | Yes | Access token lifetime, e.g. `60d`, `24h`, or another valid duration string. |
-| `JWT_REFRESH_EXPIRES_IN` | Yes | Refresh token lifetime, e.g. `120d`, `30d`, or another valid duration string. |
-| `DEFAULT_ADMIN_PASSWORD` | Yes | Initial admin password used during seeding, e.g. `admin123` for local development only. |
+| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests, e.g., `http://localhost:4001`. |
+| `SALT_ROUNDS` | Yes | Bcrypt cost factor as a number, e.g., `10`. |
+| `JWT_SECRET` | Yes | Access token signing secret, e.g., `your-jwt-secret`. Use a strong random value outside local testing. |
+| `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret, e.g., `your-refresh-secret`. Use a different strong value from `JWT_SECRET`. |
+| `JWT_EXPIRES_IN` | Yes | Access token lifetime, e.g., `60d`, `24h`, or another valid duration string. |
+| `JWT_REFRESH_EXPIRES_IN` | Yes | Refresh token lifetime, e.g., `120d`, `30d`, or another valid duration string. |
+| `DEFAULT_ADMIN_PASSWORD` | Yes | Initial admin password used during seeding, e.g., `admin123` for local development only. |
 | `OPEN_AI_KEY` | For OpenAI | [OpenAI API key](https://platform.openai.com/api-keys), required only when using OpenAI-backed features. |
 | `GEMINI_API_KEY` | For Gemini | [Google AI Studio key](https://aistudio.google.com/apikey), required only when using Gemini-backed features. |
 | `UNSPLASH_KEY_API` | For images | [Unsplash Access Key](https://unsplash.com/developers), required only for Unsplash image features. |
 | `UNSPLASH_KEY_API_SECRET` | For images | Unsplash secret, required only for Unsplash image features that need it. |
 | `VERIFY_EMAIL` | For email | SMTP sender address, required only for email verification or email notifications. |
 | `VERIFY_PASSWORD` | For email | SMTP password or app password, required only for email verification or email notifications. |
-| `GOOGLE_CLIENT_ID` | For login with google | Google OAuth client ID from https://console.cloud.google.com, required only for Google login. |
+| `GOOGLE_CLIENT_ID` | For login with google | Google OAuth client ID from the [Google Cloud Console](https://console.cloud.google.com), required only for Google login. |
 
 Example backend `.env`:
 
@@ -182,9 +182,9 @@ Variables prefixed with `VITE_` are exposed to the frontend by Vite. `VITE_SOCKE
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_BASE_URL` | Yes | Backend API base URL, e.g. `http://localhost:5000/api/v1` for local development. |
-| `VITE_SOCKET_URL` | No | Socket.IO server URL, e.g. `http://localhost:5000`. Optional unless you are using real-time notifications. |
-| `VITE_GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID from https://console.cloud.google.com. |
+| `VITE_BASE_URL` | Yes | Backend API base URL, e.g., `http://localhost:5000/api/v1` for local development. |
+| `VITE_SOCKET_URL` | No | Socket.IO server URL, e.g., `http://localhost:5000`. Optional unless you are using real-time notifications. |
+| `VITE_GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID from the [Google Cloud Console](https://console.cloud.google.com). |
 
 Example frontend `.env`:
 
@@ -240,7 +240,7 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 
 
-<a id="contributing"></a>
+<a id="troubleshooting"></a>
 ## Troubleshooting 🛠️
 
 Running into issues during setup? Here are the most common errors and how to fix them.
@@ -310,7 +310,9 @@ git commit -m "chore: regenerate package-lock.json"
 
 ---
 
-> > 💡 **Still stuck?** Open an issue or check existing ones — your problem may already have a solution!
+> 💡 **Still stuck?** Open an issue or check existing ones — your problem may already have a solution!
+
+<a id="contributing"></a>
 
 ## Contributing 👨‍💻
 
@@ -321,7 +323,7 @@ Contributions make the open source community such an amazing place to learn, ins
 
 ## Contributors 🤝
 
-Thanks to everyone who has helped build **Story Spark AI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
+Thanks to everyone who has helped build **StorySparkAI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
 
 <a href="https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=500&columns=12" alt="Contributors" />

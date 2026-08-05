@@ -3,7 +3,7 @@ import re
 with open('frontend/src/components/stories/stories.component.tsx', 'r', encoding='utf-8') as f:
     content = f.read()
 
-start_marker = "const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {"
+start_marker = "  const onSubmit: SubmitHandler<Inputs> = async (data) => {"
 end_marker = "const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;"
 
 start_idx = content.find(start_marker)

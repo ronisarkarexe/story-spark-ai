@@ -97,20 +97,26 @@ export const storyGenerationRateLimiter = async (
     const rateLimitKey = `${KEY_PREFIX}_${userId ?? ip}`;
 
     // ── Consume one token from the store ──────────────────────────────────
-    const { allowed, retryAfterSec } = await consumeRateLimit({
+    const { allowed, retryAfterSec, remaining, resetAt } = await consumeRateLimit({
       key: rateLimitKey,
       windowMs: WINDOW_MS,
       maxRequests,
       blockTimeMs: BLOCK_TIME_MS,
     });
 
-    // ── Set informational rate-limit headers ──────────────────────────────
+    // ── Set informational rate-limit headers on every response ────────────
+    // (previously only set on blocked requests, so callers had no way to
+    // show "X generations remaining" until they'd already been throttled)
     res.setHeader("RateLimit-Limit", String(maxRequests));
     res.setHeader("RateLimit-Policy", `${maxRequests};w=3600`);
+    res.setHeader("RateLimit-Remaining", String(remaining));
+    res.setHeader("RateLimit-Reset", String(Math.ceil(resetAt / 1000)));
+    res.setHeader("X-RateLimit-Limit", String(maxRequests));
+    res.setHeader("X-RateLimit-Remaining", String(remaining));
+    res.setHeader("X-RateLimit-Reset", String(Math.ceil(resetAt / 1000)));
 
     if (!allowed) {
       res.setHeader("Retry-After", String(retryAfterSec));
-      res.setHeader("RateLimit-Remaining", "0");
       throw new ApiError(
         httpStatus.TOO_MANY_REQUESTS,
         `Story generation limit reached for your plan (${maxRequests}/hour). ` +

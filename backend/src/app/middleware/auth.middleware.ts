@@ -5,38 +5,77 @@ import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
-import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
 import { USER_STATUS } from "../../enums/user_status";
+import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
 
 type JwtVerifiedUser = {
   _id: string;
   tokenVersion?: number;
   role?: string;
+  iat?: number;
+};
+const isJwtVerifiedUser = (
+  payload: unknown
+): payload is JwtVerifiedUser => {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    "_id" in payload &&
+    typeof (payload as { _id?: unknown })._id === "string"
+  );
 };
 
+const getHeaderValue = (header: string | string[] | undefined): string => {
+  if (Array.isArray(header)) return header[0] ?? "";
+  return header ?? "";
+};
 
 const extractBearerToken = (authHeader: string): string => {
   if (!authHeader) return "";
   if (!authHeader.startsWith("Bearer ")) return "";
-
   return authHeader.slice("Bearer ".length).trim();
 };
 
-const extractTokenFromRequest = (req: Request): string => {
-  const authHeader = Array.isArray(req.headers.authorization)
-    ? req.headers.authorization[0]
-    : req.headers.authorization;
-
-  const bearerToken = extractBearerToken(authHeader ?? "");
-
-  // Support both header-based and cookie-based tokens.
-  const cookieToken =
-    (req as any).cookies?.accessToken || (req as any).cookies?.token;
-
-  return bearerToken || cookieToken || "";
+const isSecureRequest = (req: Request): boolean => {
+  const forwardedProto = getHeaderValue(req.headers["x-forwarded-proto"]);
+  const protocol = (req.protocol || "").toLowerCase();
+  return req.secure || protocol === "https" || forwardedProto === "https";
 };
 
-const auth = (...requiredRole: string[]) =>
+const extractTokenFromRequest = (req: Request): string => {
+  const authHeader = getHeaderValue(req.headers.authorization);
+  const bearerToken = extractBearerToken(authHeader);
+
+  if (bearerToken) {
+    return bearerToken;
+  }
+
+  const cookieToken = req.cookies?.accessToken || req.cookies?.token;
+
+  if (!cookieToken) {
+    return "";
+  }
+
+  const allowCookieAuth = config.auth?.allow_cookie_auth === true;
+  if (!allowCookieAuth) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Cookie-based authentication is disabled. Use the Authorization header or enable secure cookie auth explicitly."
+    );
+  }
+
+  if (!isSecureRequest(req)) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Cookie-based authentication requires a secure and trusted request context."
+    );
+  }
+
+  return cookieToken;
+};
+
+const auth =
+  (...requiredRole: string[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = extractTokenFromRequest(req);
@@ -48,16 +87,21 @@ const auth = (...requiredRole: string[]) =>
         );
       }
 
-      const verified = JwtHelpers.verifyToken(
+      // Verify JWT token
+      const decodedUser = JwtHelpers.verifyToken(
         token,
         config.jwt.secret as Secret
-      ) as unknown as JwtVerifiedUser;
+      );
 
-      if (!verified?._id) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+      if (!isJwtVerifiedUser(decodedUser)) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Invalid token"
+        );
       }
 
-      // Ensure this exact token string is not blacklisted.
+
+      // Ensure this exact token string is not blacklisted
       const blacklisted = await TokenBlacklist.findOne({ token }).lean();
       if (blacklisted) {
         throw new ApiError(
@@ -65,17 +109,30 @@ const auth = (...requiredRole: string[]) =>
           "Token has been revoked. Please log in again."
         );
       }
+      const verifiedUser = decodedUser;
 
-      const user = await User.findById(verified._id);
+      const user = await User.findById(verifiedUser._id);
+
       if (!user) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "User not found"
+        );
       }
+      if (user.passwordChangedAt && verifiedUser.iat) {
+        const changedAtSeconds = Math.floor(user.passwordChangedAt.getTime() / 1000);
 
-      // Token invalidation check (e.g., on refresh/logout via tokenVersion).
-      // If the JWT includes tokenVersion, enforce it strictly.
+        if (verifiedUser.iat < changedAtSeconds) {
+          throw new ApiError(
+            httpStatus.UNAUTHORIZED,
+            "Session expired. Please log in again."
+          );
+        }
+      }
+      // Token version validation replaces blacklist check
       if (
-        typeof verified.tokenVersion === "number" &&
-        user.tokenVersion !== verified.tokenVersion
+        typeof verifiedUser.tokenVersion === "number" &&
+        user.tokenVersion !== verifiedUser.tokenVersion
       ) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
@@ -83,7 +140,7 @@ const auth = (...requiredRole: string[]) =>
         );
       }
 
-      // Status check
+      // Check user status
       if (user.status !== USER_STATUS.ACTIVE) {
         throw new ApiError(
           httpStatus.FORBIDDEN,
@@ -91,21 +148,24 @@ const auth = (...requiredRole: string[]) =>
         );
       }
 
-      // Role check (if roles are required)
+      // Role authorization
       if (requiredRole.length) {
-        const tokenRole = verified.role;
-        if (!tokenRole || !requiredRole.includes(tokenRole)) {
-          throw new ApiError(httpStatus.FORBIDDEN, "Forbidden");
+        if (
+          !verifiedUser.role ||
+          !requiredRole.includes(verifiedUser.role)
+        ) {
+          throw new ApiError(
+            httpStatus.FORBIDDEN,
+            "Forbidden"
+          );
         }
       }
 
-      (req as any).user = user;
-      return next();
+      req.user = user as Express.Request["user"];
+      next();
     } catch (err) {
-      return next(err);
+      next(err);
     }
   };
 
 export default auth;
-
-
