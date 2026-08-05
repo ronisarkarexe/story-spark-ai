@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useRevisionPlanner } from "../useRevisionPlanner";
 import type { RevisionTask } from "../../types/revision";
 
@@ -77,7 +77,9 @@ describe("useRevisionPlanner hook", () => {
       completed: false,
     };
     const { result } = renderHook(() => useRevisionPlanner("story"));
-    result.current.setTasks([newTask]);
+    act(() => {
+      result.current.setTasks([newTask]);
+    });
     expect(result.current.tasks).toHaveLength(1);
     expect(result.current.tasks[0].id).toBe(2);
   });

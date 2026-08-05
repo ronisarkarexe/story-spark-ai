@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useNarrativeFlow } from "../useNarrativeFlow";
 import type { NarrativeIssue } from "../../types/narrative";
 
@@ -77,7 +77,9 @@ describe("useNarrativeFlow hook", () => {
       suggestion: "Use more varied narrative transitions.",
     };
     const { result } = renderHook(() => useNarrativeFlow("story"));
-    result.current.setIssues([newIssue]);
+    act(() => {
+      result.current.setIssues([newIssue]);
+    });
     expect(result.current.issues).toHaveLength(1);
     expect(result.current.issues[0].id).toBe(2);
   });

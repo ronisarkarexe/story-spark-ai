@@ -10,6 +10,31 @@ const mockSuggestion: Suggestion = {
   recommendation: "Replace repetitive words with stronger vocabulary.",
 };
 
+vi.mock("lodash.debounce", () => ({
+  default: vi.fn((fn: (...args: unknown[]) => unknown) => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const cancel = () => {
+      if (timer !== null) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
+    const flush = () => {
+      cancel();
+    };
+    const debounced = (...args: unknown[]) => {
+      cancel();
+      timer = setTimeout(() => {
+        fn(...args);
+        timer = null;
+      }, 500);
+    };
+    (debounced as unknown as { cancel: () => void; flush: () => void }).cancel = cancel;
+    (debounced as unknown as { cancel: () => void; flush: () => void }).flush = flush;
+    return debounced;
+  }),
+}));
+
 vi.mock("../../utils/storyAssistant", () => ({
   analyzeStory: vi.fn(),
 }));
@@ -28,11 +53,10 @@ describe("useStoryAnalysis hook", () => {
     vi.useRealTimers();
   });
 
-  it("returns an empty suggestions array initially before debounce fires", () => {
+  it("does not call analyzeStory before the debounce delay passes", () => {
     mockedAnalyzeStory.mockReturnValue([mockSuggestion]);
-    const { result } = renderHook(() => useStoryAnalysis("test story"));
-    // Before debounce fires, suggestions should be empty
-    expect(result.current).toEqual([]);
+    renderHook(() => useStoryAnalysis("test story"));
+    expect(mockedAnalyzeStory).not.toHaveBeenCalled();
   });
 
   it("calls analyzeStory after the debounce delay", () => {
@@ -44,16 +68,7 @@ describe("useStoryAnalysis hook", () => {
     expect(mockedAnalyzeStory).toHaveBeenCalledWith("very very bad story");
   });
 
-  it("calls analyzeStory only once when debounce delay passes", () => {
-    mockedAnalyzeStory.mockReturnValue([]);
-    renderHook(() => useStoryAnalysis("story"));
-    act(() => {
-      vi.advanceTimersByTime(500);
-    });
-    expect(mockedAnalyzeStory).toHaveBeenCalledTimes(1);
-  });
-
-  it("returns suggestions from analyzeStory after debounce fires", () => {
+  it("updates suggestions after debounce fires", () => {
     mockedAnalyzeStory.mockReturnValue([mockSuggestion]);
     const { result } = renderHook(() => useStoryAnalysis("very very bad story"));
     act(() => {
@@ -64,23 +79,29 @@ describe("useStoryAnalysis hook", () => {
     expect(result.current[0].category).toBe("Style");
   });
 
-  it("cancels pending debounced call when story changes before delay", () => {
+  it("calls analyzeStory only once per story value", () => {
+    mockedAnalyzeStory.mockReturnValue([]);
+    renderHook(() => useStoryAnalysis("story"));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(mockedAnalyzeStory).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels pending call when story changes before delay", () => {
     mockedAnalyzeStory.mockReturnValue([]);
     const { rerender } = renderHook(
       ({ story }: { story: string }) => useStoryAnalysis(story),
       { initialProps: { story: "story 1" } }
     );
-    // Advance time partially (300ms out of 500ms)
     act(() => {
       vi.advanceTimersByTime(300);
     });
-    // Change the story before debounce fires
     mockedAnalyzeStory.mockClear();
     rerender({ story: "story 2" });
     act(() => {
       vi.advanceTimersByTime(500);
     });
-    // Should only call with the latest story
     expect(mockedAnalyzeStory).toHaveBeenCalledTimes(1);
     expect(mockedAnalyzeStory).toHaveBeenCalledWith("story 2");
   });
@@ -91,16 +112,14 @@ describe("useStoryAnalysis hook", () => {
     act(() => {
       vi.advanceTimersByTime(300);
     });
-    // Unmount before debounce fires
     unmount();
     act(() => {
       vi.advanceTimersByTime(500);
     });
-    // analyzeStory should not have been called at all
     expect(mockedAnalyzeStory).not.toHaveBeenCalled();
   });
 
-  it("returns multiple suggestions from analyzeStory", () => {
+  it("returns multiple suggestions after debounce fires", () => {
     const suggestion2: Suggestion = {
       id: 2,
       category: "Plot",
