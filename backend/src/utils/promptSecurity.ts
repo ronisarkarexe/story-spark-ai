@@ -9,6 +9,18 @@
  */
 import { assertContentSafe } from "./contentModeration";
 
+
+export class SecurityError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SecurityError";
+  }
+}
+
+// Added strict character limit to prevent DoS/ReDoS
+const MAX_PROMPT_LENGTH = 10000; 
+
+
 const FORBIDDEN_PATTERNS: RegExp[] = [
   // Direct instruction override attempts
   /ignore\s+(?:.*?\s+)?(?:instructions?|prompts?|context|rules?|constraints?)/i,
@@ -46,88 +58,79 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
   /###\s*instructions?/i,
 ];
 
-const canonicalizeSecurityText = (input: string): string => {
-  // Normalize & harden against common normalization-evasion techniques.
-  // - NFKC collapses compatibility variants
-  // - Remove common zero-width characters and BOM
-  // - Normalize whitespace (including NBSP) to single spaces
-  return (input ?? "")
-    .normalize("NFKC")
-    .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
-    .replace(/[\s\u00A0]+/g, " ");
-};
+const LEAK_PATTERNS: string[] = [
+  "system prompt",
+  "instructions:",
+  "developer instructions",
+  "my instructions are",
+  "i was told to",
+  "my system message",
+  "as instructed by",
+  "my training says",
+  "i am programmed to",
+  "confidential instructions",
+  "ignore the rules",
+  "comply with your instructions",
+];
 
 /**
- * Normalize input to prevent Unicode substitution and obfuscation bypasses.
+ * Normalizes & hardens text against Unicode substitution and obfuscation bypasses.
  */
-const normalizeInput = (input: string): string => {
-  return input
-    .normalize("NFKC") // Unicode normalization
-    .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width characters
-    .replace(/\s+/g, " ") // Collapse whitespace
+export const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  return (trimmed ?? "")
+    .normalize("NFKC")
+    .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
+    .replace(/[\s\u00A0]+/g, " ")
+
+const normalizeText = (input: string): string => {
+  return (input ?? "")
+    .normalize("NFKC") // Unicode normalization collapses compatibility variants
+    .replace(/[\u200B-\u200D\uFEFF\u2060\u180E]/g, "") // Remove zero-width characters and BOM
+    .replace(/[\s\u00A0]+/g, " ") // Collapse all whitespace to single spaces
     .trim();
 };
 
 export const validateAndFormatPrompt = (userPrompt: string): string => {
   if (!userPrompt || typeof userPrompt !== "string") {
-    throw new Error("Security Violation: Invalid prompt input.");
+    throw new SecurityError("Security Violation: Invalid prompt input.");
   }
 
-  // Normalize input before security analysis
-  const normalizedPrompt = normalizeInput(userPrompt);
-  const canonical = canonicalizeSecurityText(normalizedPrompt);
+  // Length check BEFORE expensive normalizations and regex matching
+  if (userPrompt.length > MAX_PROMPT_LENGTH) {
+    throw new Error(`Security Violation: Prompt exceeds maximum length of ${MAX_PROMPT_LENGTH} characters.`);
+  }
+
+  const canonicalPrompt = normalizeText(userPrompt);
 
   // Semantic filtering against expanded pattern set
   for (const pattern of FORBIDDEN_PATTERNS) {
-    if (pattern.test(canonical)) {
-      throw new Error("Security Violation: Malicious prompt injection detected.");
+    if (pattern.test(canonicalPrompt)) {
+      throw new SecurityError("Security Violation: Malicious prompt injection detected.");
     }
   }
 
   // Content moderation — block harmful/inappropriate input
-  assertContentSafe(normalizedPrompt);
+  assertContentSafe(canonicalPrompt);
+
+  // Strip triple quotes from the user input to prevent delimiter breakout
+  const safePrompt = canonicalPrompt.replace(/"""/g, '\\"\\"\\"');
 
   // Strict delimiters to isolate user input
-  return `"""\n${normalizedPrompt}\n"""`;
+  return `"""\n${safePrompt}\n"""`;
 };
 
 export const validateOutput = (aiResponse: string): string => {
   if (!aiResponse || typeof aiResponse !== "string") {
-    throw new Error("Security Violation: Invalid AI response.");
+    throw new SecurityError("Security Violation: Invalid AI response.");
   }
 
-  // Post-generation validation — check for leaked system instructions
-  const canonical = canonicalizeSecurityText(aiResponse).toLowerCase();
+  const canonicalResponse = normalizeText(aiResponse).toLowerCase();
 
-  if (
-    canonical.includes("system prompt:") ||
-    canonical.includes("instructions:") ||
-    canonical.includes("system prompt") ||
-    canonical.includes("developer instructions")
-  ) {
-    throw new Error("Security Violation: AI output leaked system instructions.");
-  }
-
-  const lowerResponse = aiResponse.toLowerCase();
-
-  // Expanded output validation — check for leaked system instructions
-  const leakPatterns = [
-    "system prompt:",
-    "instructions:",
-    "my instructions are",
-    "i was told to",
-    "my system message",
-    "as instructed by",
-    "my training says",
-    "i am programmed to",
-    "confidential instructions",
-    "ignore the rules",
-    "comply with your instructions",
-  ];
-
-  for (const pattern of leakPatterns) {
-    if (lowerResponse.includes(pattern)) {
-      throw new Error("Security Violation: AI output leaked system instructions.");
+  // Unified post-generation validation — check for leaked system instructions
+  for (const pattern of LEAK_PATTERNS) {
+    if (canonicalResponse.includes(pattern)) {
+      throw new SecurityError("Security Violation: AI output leaked system instructions.");
     }
   }
 
@@ -138,13 +141,13 @@ export const validateOutput = (aiResponse: string): string => {
 };
 
 /**
- * Strips markdown code block formatting (```json ... ```) from JSON string.
+ * Extracts JSON from markdown code blocks, even if surrounded by conversational filler.
  */
 export const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) return trimmed;
-  return trimmed
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
+  const match = rawText.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+  // Fallback in case the LLM didn't use backticks at all
+  return rawText.trim();
 };

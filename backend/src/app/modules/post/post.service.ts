@@ -41,12 +41,22 @@ const decodeCursor = (cursor?: string): ICursorPayload | null => {
   try {
     const decoded = Buffer.from(cursor, "base64").toString("utf-8");
     const parsed = JSON.parse(decoded);
-    if (!parsed?.id || parsed.value === undefined) {
-      return null;
-    }
+   if (!parsed?.id || parsed.value === undefined) {
+  throw new ApiError(
+    httpStatus.BAD_REQUEST,
+    "Invalid pagination cursor"
+  );
+}
     return parsed as ICursorPayload;
   } catch {
-    return null;
+  throw new ApiError(
+    httpStatus.BAD_REQUEST,
+    "Invalid pagination cursor"
+  );
+}
+
+  } catch (error) {
+    console.error('[PostService] Failed to add XP:', error);
   }
 };
 
@@ -94,9 +104,8 @@ const getCursorCondition = (
 };
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
-  const { _id } = token;
-
-  const user = await User.findById(_id).select("_id role postsCount");
+  const user = await User.findById(token._id)
+    .select("_id role postsCount");
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
@@ -135,7 +144,7 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       httpStatus.INTERNAL_SERVER_ERROR,
       "Failed to create post"
     );
-    }
+  }
 };
 
 const getPosts = async (
@@ -681,7 +690,7 @@ const forkStory = async (postId: string, token: ITokenPayload) => {
 
 const getGenres = async (): Promise<string[]> => {
   const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
-  return genres.sort();
+  return genres.sort((a, b) => a - b);
 };
 
 const bulkDeletePosts = async (ids: string[], token: ITokenPayload) => {

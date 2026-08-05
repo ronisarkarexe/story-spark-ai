@@ -27,7 +27,8 @@ const ProfileComponent = () => {
       if (result) {
         toast.success("Profile updated successfully.");
       }
-    } catch {
+    } catch (error) {
+      console.error("Failed to update profile", error);
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -52,7 +53,8 @@ const ProfileComponent = () => {
       await instance.delete(`/user/${data._id}`);
       toast.success("Account deleted successfully.");
       auth?.logout();
-    } catch {
+    } catch (error) {
+      console.error("Failed to delete account", error);
       toast.error("Unable to delete account. Please try again.");
     } finally {
       setDeleting(false);

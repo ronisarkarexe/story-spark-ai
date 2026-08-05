@@ -3,6 +3,7 @@ import { PostController } from "./post.controller";
 import { PostMetaController } from "./post.meta.controller";
 import auth from "../../middleware/auth.middleware";
 import checkRequestLimit from "../../middleware/check.request.limit";
+import csrfMiddleware from "../../middleware/csrf.middleware";
 import validateRequest from "../../middleware/validate.request";
 import { PostValidator } from "./post.validation";
 import { ENUM_USER_ROLE } from "../../../enums/user";
@@ -89,6 +90,7 @@ router.patch(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  csrfMiddleware,
   PostController.toggleBookmark
 );
 

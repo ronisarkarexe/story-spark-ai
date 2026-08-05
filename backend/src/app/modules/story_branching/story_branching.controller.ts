@@ -88,7 +88,7 @@ export const getBranchTree = catchAsync(async (req: Request, res: Response) => {
   try {
     const payload = GetBranchTreeSchema.parse({
       storyId: req.params.storyId,
-      maxDepth: req.query.maxDepth ? parseInt(req.query.maxDepth as string) : undefined,
+      maxDepth: req.query.maxDepth ? parseInt(req.query.maxDepth as string, 10) : undefined,
     });
 
     const result = await StoryBranchingService.getBranchTree(payload.storyId, payload.maxDepth);

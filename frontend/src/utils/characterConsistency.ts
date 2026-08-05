@@ -5,10 +5,9 @@ export interface CharacterConflict {
   current: string;
 }
 
-// Extended list of common hair colors
 const HAIR_COLORS = [
-  "silver", "black", "brown", "blonde", "red", "ginger",
-  "grey", "gray", "white", "auburn", "golden", "chestnut",
+  "silver", "silvery", "black", "brown", "blonde", "red", "ginger",
+  "grey", "gray", "white", "auburn", "golden", "chestnut", "purple", "blue", "pink"
 ];
 
 const hairColorPattern = HAIR_COLORS.join("|");
@@ -17,15 +16,12 @@ export const checkCharacterConsistency = (
   chapters: { content: string }[]
 ): CharacterConflict[] => {
   const conflicts: CharacterConflict[] = [];
-
   const characterMemory: Record<string, { hair?: string }> = {};
 
   chapters.forEach((chapter) => {
-    // Collect all character/hair pairs found in this chapter before processing
     const chapterHair: Array<{ character: string; hairColor: string }> = [];
 
     // --- Pattern 1: "Character ... COLOR hair" ---
-    // e.g., "Elena had silver hair" or "Arthur has red hair"
     const colorHairRegex = new RegExp(
       `([A-Z][a-z]+).*?(${hairColorPattern})\\s+hair`,
       "gi"
@@ -37,9 +33,8 @@ export const checkCharacterConsistency = (
     }
 
     // --- Pattern 2: "[Character]'s hair was COLOR" ---
-    // e.g., "Eleanor's hair was silver" or "Merlin's hair turned gold"
     const possHairRegex = new RegExp(
-      `([A-Z][a-z]+)'s hair\\s+(?:was|became|turned|changed to)\\s+(${hairColorPattern})`,
+      `([A-Z][a-z]+)'s hair\\s+(?:was|became|turned|changed to|is|were)\\s+(${hairColorPattern})`,
       "gi"
     );
     match = possHairRegex.exec(chapter.content);
@@ -48,7 +43,6 @@ export const checkCharacterConsistency = (
       match = possHairRegex.exec(chapter.content);
     }
 
-    // Deduplicate within this chapter (same character + color)
     const seen = new Set<string>();
     chapterHair.forEach(({ character, hairColor }) => {
       const key = `${character}:${hairColor}`;
@@ -75,4 +69,31 @@ export const checkCharacterConsistency = (
   });
 
   return conflicts;
+};
+
+export interface CharacterIssue {
+  id: string;
+  character: string;
+  category: string;
+  severity: string;
+  description: string;
+  suggestion: string;
+}
+
+export const analyzeCharacterConsistency = (story: string): CharacterIssue[] => {
+  const conflicts = checkCharacterConsistency([{ content: story || "" }]);
+  return conflicts.map((conflict, idx) => ({
+    id: `issue-${idx}`,
+    character: conflict.character,
+    category: "Appearance",
+    severity: "Medium",
+    description: `Inconsistent ${conflict.attribute}: was '${conflict.previous}', now '${conflict.current}'`,
+    suggestion: `Ensure ${conflict.character}'s ${conflict.attribute} is consistent across chapters or explain the change.`,
+  }));
+};
+
+export const getConsistencyScore = (issues: CharacterIssue[] | unknown[]): number => {
+  if (!issues || issues.length === 0) return 100;
+  const score = 100 - issues.length * 15;
+  return Math.max(0, score);
 };

@@ -18,6 +18,9 @@ import {
   Star,
   Volume2,
   Volume,
+  ChevronUp,
+  ChevronDown,
+
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
@@ -82,6 +85,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
+
     // ✅ FIX: Calculate actual word count from story text
     const actualTotalWords = useMemo(() => getWordCount(text), [text]);
     const speedSelectId = useId();
@@ -132,6 +136,10 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
+
+    }, [showFavoritesOnly, displayedVoices, speech]);
+
+
     }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
 
     useEffect(() => {

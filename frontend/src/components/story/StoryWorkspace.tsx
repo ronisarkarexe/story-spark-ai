@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -39,7 +39,8 @@ import StoryComparisonDashboard from "../comparison/StoryComparisonDashboard";
 import StoryTimelineVisualization from "../timeline/StoryTimelineVisualization";
 import StoryRelationshipGraph from "../relationship-graph/StoryRelationshipGraph";
 import StoryPlotTwistGenerator from "../plot-twist/StoryPlotTwistGenerator";
-import StoryReadingAnalytics from "../analytics/StoryReadingAnalytics";
+import StoryReadingAnalytics from "../analytics-jp/StoryReadingAnalytics";
+import VocabularyAnalyzer from "../vocabulary/VocabularyAnalyzer";
 
 import StoryRevisionHistory from "../revision-history/StoryRevisionHistory";
 import { createRevision } from "../../utils/storyRevisionHistory";
@@ -49,7 +50,8 @@ import StoryNamingAssistant from "../naming-assistant/StoryNamingAssistant";
 import StoryPublishingReadiness from "../publishing-readiness/StoryPublishingReadiness";
 import StoryTagGenerator from "../story-tags/StoryTagGenerator";
 import StoryReadingInfo from "../reading-info/StoryReadingInfo";
-
+import StoryFocusMode from "../focus-mode/StoryFocusMode";
+import StoryContinuationSuggestions from "../story-continuation/StoryContinuationSuggestions";
 
 import {
   getSafeFileName,
@@ -68,6 +70,20 @@ const StoryWorkspace = () => {
   "Classic" | "Novel" | "Minimal" | "Dark"
 >("Classic");
 
+
+  const [revisions, setRevisions] = useState(() => {
+    const storyContent =
+      currentStory?.chapters?.map((c) => c.content).join("\n\n") || "";
+    return storyContent ? [createRevision(storyContent)] : [];
+  });
+  // Memoized once — used by all 20+ components instead of recomputing each time
+  const fullStoryContent = useMemo(
+    () =>
+      currentStory?.chapters?.map((chapter) => chapter.content).join("\n\n") ?? "",
+    [currentStory?.chapters]
+  );
+
+
   const handleCopyStory = async () => {
   if (!currentStory) {
     toast.error("No story available to copy.");
@@ -84,7 +100,7 @@ const StoryWorkspace = () => {
     await navigator.clipboard.writeText(storyText);
     toast.success("Story copied to clipboard!");
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     toast.error("Failed to copy story.");
   }
 };
@@ -114,7 +130,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export Markdown.");
     }
   };
@@ -145,7 +161,7 @@ const StoryWorkspace = () => {
 
       toast.success("PDF downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export PDF.");
     } finally {
       toast.dismiss(toastId);
@@ -178,7 +194,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "docx"));
       toast.success("DOCX downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export DOCX.");
     }
   };
@@ -196,6 +212,7 @@ const StoryWorkspace = () => {
       <Toaster position="top-right" reverseOrder={false} />
       <ChapterSidebar
         chapters={currentStory.chapters}
+        maxChapterWords={2500}
       />
 
       <div className="flex flex-col flex-1">
@@ -208,7 +225,7 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "editor"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-250"
+                    : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 📖 Read Story
@@ -218,7 +235,7 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "network"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-255"
+                    : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 🕸️ Character Network
@@ -278,79 +295,65 @@ const StoryWorkspace = () => {
     />
   </div>
 
-  <StoryCoverGenerator
+<StoryCoverGenerator
   title={currentStory.title}
-  genre="Fantasy"
-  theme="Adventure"
-  characters={["Hero", "Villain"]}
+  genre={(currentStory as any).genre ?? "General"}
+  theme={(currentStory as any).theme ?? currentStory.title}
+  characters={
+    (currentStory as any).characters?.map((c: any) => c.name) ??
+    currentStory.chapters
+      ?.flatMap((ch: any) => ch.characters ?? [])
+      .slice(0, 3) ??
+    []
+  }
 />
 
 <StoryRewritePanel
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
-<StoryBranchingEditor
-  storyTitle={currentStory.title}
-/>
+<StoryBranchingEditor />
 <PlotHoleDetector
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <PacingAnalyzer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <OutlineQualityAnalyzer
   outline={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <DialogueEnhancer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <TimelineConsistencyChecker
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <GenreBlendGenerator
   prompt={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <RelationshipGraph
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <VocabularyAnalyzer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
@@ -359,44 +362,40 @@ const StoryWorkspace = () => {
 
 <StoryPerspectiveSwitcher
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <StoryTonePresets
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 <StoryAudienceSelector
   prompt={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryChapterGenerator
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <PromptLibrary
   onInsertPrompt={(prompt) => {
-    console.log("Selected Prompt:", prompt);
+    // TODO: dispatch action to insert prompt into the active editor
+    toast("Prompt insertion coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onInsertPrompt not wired:", prompt);
   }}
 />
 
 <StoryTitleRating
   title={currentStory.title}
   onReplace={(newTitle) => {
-    console.log("Replace title:", newTitle);
+    // TODO: dispatch updateStoryTitle action
+    toast("Title replacement coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onReplace title not wired:", newTitle);
   }}
 />
 
@@ -404,123 +403,103 @@ const StoryWorkspace = () => {
 
 <StoryKeywordExtractor
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryFactSheet
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StorySceneNavigator
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryComplexityAnalyzer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StorySessionRecovery
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
   onRestore={(draft) => {
-    console.log("Restore draft:", draft);
+    // TODO: dispatch action to restore draft content to editor
+    toast("Draft restore coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onRestore draft not wired:", draft);
   }}
 />
-<StoryComparisonDashboard
+{/* StoryComparisonDashboard requires a second story source (e.g. a saved
+    draft or previous version) for storyB. Passing the same content for both
+    sides makes the comparison meaningless. Wire storyB to a real alternate
+    source before rendering this component. */}
+{/* <StoryComparisonDashboard
   storyA={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
-  storyB={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
-  }
-/>
+
+  storyB={previousStoryDraft ?? ""}
+/> */}
+
+
 
 <StoryTimelineVisualization
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <CharacterConsistencyChecker
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryRelationshipGraph
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryPlotTwistGenerator
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
   onApply={(twist) => {
-    console.log("Selected plot twist:", twist);
+    // TODO: dispatch action to append plot twist to story
+    toast("Plot twist apply coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onApply twist not wired:", twist);
   }}
 />
 
 <StoryReadingAnalytics
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryRevisionHistory
-  revisions={[
-    createRevision(
-      currentStory.chapters
-        ?.map((chapter) => chapter.content)
-        .join("\n\n") || ""
-    ),
-  ]}
+  revisions={revisions}
   onRestore={(content) => {
-    console.log("Restore revision:", content);
+    // TODO: dispatch action to restore story content from revision
+    console.warn("Restore revision not yet wired to Redux store:", content);
   }}
 />
 
 <StoryEndingAnalyzer
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
   onRegenerate={(prompt) => {
-    console.log("Regenerate ending:", prompt);
+    // TODO: dispatch action to regenerate story ending
+    toast("Ending regeneration coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onRegenerate ending not wired:", prompt);
   }}
 />
 
@@ -528,28 +507,32 @@ const StoryWorkspace = () => {
 
 <StoryNamingAssistant
   onInsert={(name) => {
-    console.log("Insert name:", name);
+    // TODO: dispatch action to insert name into editor at cursor position
+    toast("Name insertion coming soon!", { icon: "🚧" });
+    console.warn("[TODO] onInsert name not wired:", name);
   }}
 />
 
 
 <StoryPublishingReadiness
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryTagGenerator
   story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
+    fullStoryContent
   }
 />
 
 <StoryReadingInfo
+  story={
+    fullStoryContent
+  }
+/>
+
+<StoryFocusMode
   story={
     currentStory.chapters
       ?.map((chapter) => chapter.content)
@@ -557,6 +540,16 @@ const StoryWorkspace = () => {
   }
 />
 
+<StoryContinuationSuggestions
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+  onInsert={(text) => {
+    console.log("Insert continuation:", text);
+  }}
+/>
 
   <StoryViewer
     chapters={currentStory.chapters}
@@ -569,7 +562,7 @@ const StoryWorkspace = () => {
   </div>
 </>
         ) : (
-          <CharacterNetwork storyId={currentStory.id} />
+          <CharacterNetwork storyId={currentStory.id} storyContent={currentStory.chapters?.map((chapter) => chapter.content).join("\n\n") || ""} />
         )}
       </div>
     </div>

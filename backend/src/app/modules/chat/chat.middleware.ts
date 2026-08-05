@@ -37,7 +37,7 @@ export const flexibleChatRateLimiter = async (
         return next();
       }
     } catch {
-      // Invalid token -> guest limiter
+      console.warn('[ChatMiddleware] Token verification failed, applying guest rate limit');
     }
   }
 

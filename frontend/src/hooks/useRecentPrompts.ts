@@ -10,7 +10,7 @@ export interface IRecentPrompt {
 }
 
 const STORAGE_KEY = "story_spark_recent_prompts";
-const MAX_PROMPTS = 20;
+const MAX_PROMPTS = 10;
 
 const normalizePromptEntry = (entry: IRecentPrompt): IRecentPrompt => ({
   id: entry.id || `${Date.now()}-${Math.random()}`,

@@ -46,7 +46,7 @@ const search = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  if (dateFrom && isNaN(new Date(dateFrom).getTime())) {
+  if (dateFrom && Number.isNaN(new Date(dateFrom).getTime())) {
     return sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
       success: false,
@@ -55,7 +55,7 @@ const search = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  if (dateTo && isNaN(new Date(dateTo).getTime())) {
+  if (dateTo && Number.isNaN(new Date(dateTo).getTime())) {
     return sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
       success: false,

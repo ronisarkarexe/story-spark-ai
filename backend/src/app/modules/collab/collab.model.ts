@@ -37,6 +37,7 @@ const CollabRoomSchema = new Schema<ICollabRoom>(
     collabState: { type: Buffer },
     isAiGenerating: { type: Boolean, required: true, default: false },
     isPublic: { type: Boolean, required: true, default: true },
+    storyVersion: { type: Number, required: true, default: 0 },
   },
   {
     timestamps: true,

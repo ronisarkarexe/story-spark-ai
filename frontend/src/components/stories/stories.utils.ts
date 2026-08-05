@@ -5,7 +5,8 @@ export const getShortenedText = (
   wordLimit: number = 35
 ): string => {
   if (!content) return "";
-  const words: string[] = content.split(" ");
+  // Use /\s+/ to match getWordCount behaviour — handles tabs, newlines, multiple spaces
+  const words: string[] = content.trim().split(/\s+/);
   return words.length > wordLimit
     ? words.slice(0, wordLimit).join(" ") + "..."
     : content;
@@ -57,44 +58,44 @@ export interface CharacterProfile {
 export const TOPICS: ITopicData[] = [
   {
     title: "#StoryIdeas",
-    color: "bg-indigo-100 text-indigo-800",
-    className: "bg-indigo-100 text-indigo-800",
+    color: SELECTED_TOPIC_CLASSES,
+    className: SELECTED_TOPIC_CLASSES,
     selected: true,
   },
   {
     title: "#StoryGeneration",
-    color: "bg-purple-100 text-purple-800",
-    className: "bg-purple-100 text-purple-800",
+    color: SELECTED_TOPIC_CLASSES,
+    className: SELECTED_TOPIC_CLASSES,
     selected: true,
   },
   {
     title: "#Writing",
-    color: "bg-blue-100 text-blue-800",
-    className: "bg-blue-100 text-blue-800",
+    color: UNSELECTED_TOPIC_CLASSES,
+    className: UNSELECTED_TOPIC_CLASSES,
     selected: false,
   },
   {
     title: "#Creativity",
-    color: "bg-slate-700 text-slate-300",
-    className: "bg-slate-700 text-slate-300",
+    color: UNSELECTED_TOPIC_CLASSES,
+    className: UNSELECTED_TOPIC_CLASSES,
     selected: false,
   },
   {
     title: "#DigitalMarketing",
-    color: "bg-slate-700 text-slate-300",
-    className: "bg-slate-700 text-slate-300",
+    color: UNSELECTED_TOPIC_CLASSES,
+    className: UNSELECTED_TOPIC_CLASSES,
     selected: false,
   },
   {
     title: "#Storytelling",
-    color: "bg-slate-700 text-slate-300",
-    className: "bg-slate-700 text-slate-300",
+    color: UNSELECTED_TOPIC_CLASSES,
+    className: UNSELECTED_TOPIC_CLASSES,
     selected: false,
   },
   {
     title: "#Productivity",
-    color: "bg-slate-700 text-slate-300",
-    className: "bg-slate-700 text-slate-300",
+    color: UNSELECTED_TOPIC_CLASSES,
+    className: UNSELECTED_TOPIC_CLASSES,
     selected: false,
   },
 ];
@@ -105,7 +106,18 @@ export const getWordCount = (str: string | undefined): number => {
   if (typeof str !== "string") {
     return 0;
   }
+export const getReadingTime = (
+  text: string | undefined,
+  wordsPerMinute = 200
+): number => {
+  const words = getWordCount(text);
 
+  if (words === 0) {
+    return 0;
+  }
+
+  return Math.max(1, Math.ceil(words / wordsPerMinute));
+};
   const normalizedText = str.replace(/[\r\n]+/g, " ").trim();
   if (!normalizedText) {
     return 0;
@@ -238,10 +250,11 @@ export const analyzeStoryEmotion = (content: string) => {
     ])
   );
 
+  // Only determine a dominant emotion if at least one keyword was matched
   const dominantEmotion =
-    Object.entries(scores).sort(
-      (a, b) => b[1] - a[1]
-    )[0][0];
+    total > 0
+      ? Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0]
+      : "Neutral";
 
   return {
     scores: percentages,

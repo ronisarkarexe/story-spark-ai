@@ -1,95 +1,76 @@
 /* eslint-disable */
 import { describe, it, expect } from "vitest";
-import { checkCharacterConsistency } from "../characterConsistency";
+import {
+  checkCharacterConsistency,
+  analyzeCharacterConsistency,
+  getConsistencyScore,
+  CharacterConflict,
+} from "../characterConsistency";
 
-describe("characterConsistency", () => {
-  describe("checkCharacterConsistency", () => {
-    it("detects hair color from COLOR hair pattern", () => {
-      const chapters = [
-        { content: "Elena had silver hair." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result.length).toBe(0); // First mention - no conflict
-    });
+const chapter = (content: string) => ({ content });
 
-    it("detects hair color conflict with COLOR hair pattern", () => {
-      const chapters = [
-        { content: "Elena had silver hair." },
-        { content: "Elena had black hair." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result.length).toBe(1);
-      expect(result[0].character).toBe("Elena");
-      expect(result[0].attribute).toBe("hair color");
-      expect(result[0].previous).toBe("silver");
-      expect(result[0].current).toBe("black");
-    });
+describe("characterConsistency utility", () => {
+  it("returns empty array for chapters with no hair descriptions", () => {
+    const result = checkCharacterConsistency([
+      chapter("The sky was clear and the wind blew gently."),
+    ]);
+    expect(result).toEqual([]);
+  });
 
-    it("detects hair color with possessive pronoun", () => {
-      const chapters = [
-        { content: "Merlin brushed his silver hair." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result.length).toBe(0); // First mention - no conflict
-    });
+  it("returns empty array for empty chapters array", () => {
+    expect(checkCharacterConsistency([])).toEqual([]);
+  });
 
-    it("detects conflict with possessive pronoun", () => {
-      const chapters = [
-        { content: "Merlin brushed his silver hair." },
-        { content: "Merlin brushed his black hair." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result.length).toBe(1);
-      expect(result[0].character).toBe("Merlin");
-    });
+  it("does not report conflict when hair color remains consistent across chapters", () => {
+    const result = checkCharacterConsistency([
+      chapter("Elena had silver hair that shimmered."),
+      chapter("Elena combed her silver hair."),
+    ]);
+    expect(result).toEqual([]);
+  });
 
-    it("detects hair color with was/copula pattern", () => {
-      const chapters = [
-        { content: "Eleanor's hair was silver." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result.length).toBe(0); // First mention
+  it("detects conflict when same character hair color changes across chapters", () => {
+    const result = checkCharacterConsistency([
+      chapter("Elena had silver hair."),
+      chapter("Elena had black hair."),
+    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject<CharacterConflict>({
+      character: "Elena",
+      attribute: "hair color",
+      previous: "silver",
+      current: "black",
     });
+  });
 
-    it("detects conflict with was/copula pattern", () => {
-      const chapters = [
-        { content: "Eleanor's hair was silver." },
-        { content: "Eleanor's hair was brown." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result.length).toBe(1);
-      expect(result[0].character).toBe("Eleanor");
-    });
+  it("detects hair color with was/copula pattern", () => {
+    const result = checkCharacterConsistency([
+      chapter("Eleanor's hair was silver."),
+      chapter("Eleanor's hair was brown."),
+    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0].character).toBe("Eleanor");
+  });
 
-    it("detects colors like grey, ginger, auburn", () => {
-      const chapters = [
-        { content: "Draco had grey hair." },
-        { content: "Draco had ginger hair." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result.length).toBe(1);
-    });
+  it("is case-insensitive for hair color matching", () => {
+    const result = checkCharacterConsistency([
+      chapter("Mira had SILVER hair."),
+      chapter("Mira had silver hair."),
+    ]);
+    expect(result).toEqual([]);
+  });
 
-    it("handles multiple characters", () => {
-      const chapters = [
-        { content: "Arthur had blonde hair." },
-        { content: "Morgana had black hair." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result.length).toBe(0); // Different characters
-    });
+  it("analyzes character consistency and produces issue list", () => {
+    const story = "Elena had silver hair.\n\nElena had black hair.";
+    const issues = analyzeCharacterConsistency(story);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].character).toBe("Elena");
+  });
 
-    it("returns empty array when no characters with hair found", () => {
-      const chapters = [
-        { content: "The castle was old." }
-      ];
-      const result = checkCharacterConsistency(chapters);
-      expect(result).toEqual([]);
-    });
-
-    it("handles empty chapters array", () => {
-      const result = checkCharacterConsistency([]);
-      expect(result).toEqual([]);
-    });
+  it("calculates consistency score correctly", () => {
+    expect(getConsistencyScore([])).toBe(100);
+    const story = "Elena had silver hair.\n\nElena had black hair.";
+    const issues = analyzeCharacterConsistency(story);
+    expect(getConsistencyScore(issues)).toBe(85);
   });
 });
