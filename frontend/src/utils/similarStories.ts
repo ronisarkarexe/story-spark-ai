@@ -50,14 +50,20 @@ export const calculateSimilarity = (
 export const getSimilarStories = (
   currentStory: Story,
   stories: Story[],
-  limit = 4
+  limit = 4,
+  sortDescending = true
 ) => {
-  return stories
+  const sorted = stories
     .filter((story) => story.id !== currentStory.id)
     .map((story) => ({
       ...story,
       similarity: calculateSimilarity(currentStory, story),
     }))
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, limit);
+    .sort((a, b) =>
+      sortDescending
+        ? b.similarity - a.similarity
+        : a.similarity - b.similarity
+    );
+
+  return sortDescending ? sorted.slice(0, limit) : sorted.slice(0, limit);
 };
