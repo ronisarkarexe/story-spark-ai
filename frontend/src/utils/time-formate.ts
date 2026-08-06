@@ -1,15 +1,24 @@
 export const getISTTimeFormate = (expiredAt: number) => {
+  if (!expiredAt || isNaN(expiredAt)) {
+    return 'N/A';
+  }
+  const date = new Date(expiredAt);
+  if (isNaN(date.getTime())) {
+    return 'N/A';
+  }
   const formattedTime = new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
     timeZoneName: "short",
-  }).format(new Date(expiredAt));
+  }).format(date);
   return formattedTime;
 };
 
 export function timeAgo(dateString: string): string {
+  if (!dateString) return 'just now';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'just now';
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -48,7 +57,9 @@ export function timeAgo(dateString: string): string {
 }
 
 export function formatDateShort(dateString: string): string {
+  if (!dateString) return '';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "short",
