@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback, useState } from "react";
-import api from "../services/api";
 
 const DRAFT_KEY_PREFIX = "story_draft_";
 const AUTOSAVE_INTERVAL_MS = 30000;
@@ -22,22 +21,25 @@ interface QueuedSave {
 
 export const offlineQueue: QueuedSave[] = [];
 let flushInProgress: Promise<void> | null = null;
-
-async function saveDraftToServer(item: Pick<QueuedSave, "draftId" | "title" | "content">) {
-  // PATCH /api/v1/story/:id/save
-
 let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
-let flushInProgress: Promise<void> | null = null;
-
 async function saveDraftToServer(item: Pick<QueuedSave, "draftId" | "title" | "content">) {
-
-  await api.patch(`/story/${item.draftId}/save`, {
-    title: item.title,
-    content: item.content,
+  const response = await fetch("/api/v1/stories/save", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      draftId: item.draftId,
+      title: item.title,
+      content: item.content,
+    }),
   });
-}
 
+  if (!response.ok) {
+    throw new Error("Failed to save draft");
+  }
+}
 
 export async function flushOfflineQueue(queue: QueuedSave[]) {
   for (const item of queue) {
@@ -82,8 +84,6 @@ type AutoSaveEvent =
   | { type: "flush-complete" }
   | { type: "flush-failed"; error: unknown };
 
-export const offlineQueue: Array<QueueItem> = [];
-let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 const autoSaveSubscribers = new Set<(event: AutoSaveEvent) => void>();
 let autoSaveListenersAttached = false;
 let autoSaveOnlineHandler: (() => Promise<void>) | null = null;
@@ -118,21 +118,7 @@ function ensureAutoSaveListeners() {
 
       try {
         for (const item of pendingItems) {
-          const response = await fetch("/api/v1/stories/save", {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              draftId: item.draftId,
-              title: item.title,
-              content: item.content,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to save queued draft");
-          }
+          await saveDraftToServer(item);
         }
 
         updateQueueState();
@@ -173,29 +159,6 @@ function registerAutoSaveListener(subscriber: (event: AutoSaveEvent) => void) {
       flushPromise = null;
     }
   };
-}
-
-export async function flushOfflineQueue(queue: Array<QueueItem>) {
-  const pendingItems = queue.splice(0, queue.length);
-
-  for (const item of pendingItems) {
-    const response = await fetch("/api/v1/stories/save", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        draftId: item.draftId,
-        title: item.title,
-        content: item.content,
-      }),
-    });
-
-    if (!response.ok) {
-      queue.unshift(...pendingItems);
-      throw new Error("Failed to save queued draft");
-    }
-  }
 }
 
 export function useAutoSave(draftId: string, title: string, content: string) {
