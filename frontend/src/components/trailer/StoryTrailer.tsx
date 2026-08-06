@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CinematicSlide from "./CinematicSlide";
 import { useGenerateModelMutation } from "../../redux/apis/ai.model.api";
 
@@ -19,11 +19,17 @@ export default function StoryTrailer({ title, content, tag, isLogin, onClose }: 
 
   const totalSlides = scenes.length + 1; // +1 for final title slide
 
+  // Guard against state updates after unmount during slow AI calls
+  const isMountedRef = useRef(true);
+
   // Extract scenes using Gemini via existing API
   const [generateModel] = useGenerateModelMutation();
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     const extractScenes = async () => {
+      if (!isMountedRef.current) return;
       setIsLoading(true);
       try {
         const prompt = `Extract exactly 5 of the most dramatic and cinematic moments from this story. Return ONLY a JSON array of 5 strings, each being a short dramatic caption (maximum 8 words). No other text, just the JSON array.
@@ -32,12 +38,14 @@ Story: ${content.slice(0, 1000)}
 
 Example format: ["The darkness consumed everything around him", "She ran but could not escape", "A secret buried for decades revealed", "Their eyes met across the burning room", "Nothing would ever be the same again"]`;
 
-        const result = await generateModel({
+        const result = await generateScene({
           prompt,
           wordLength: 50,
           numStories: 1,
           language: "English",
         }).unwrap();
+
+        if (!isMountedRef.current) return;
 
         if (result?.data?.[0]?.content) {
           try {
@@ -66,13 +74,22 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
         ]);
         setIsPlaying(true);
       } catch {
-        setError("Failed to generate trailer. Please try again.");
+        if (isMountedRef.current) {
+          setError("Failed to generate trailer. Please try again.");
+        }
       } finally {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
     };
 
     extractScenes();
+
+    // Cleanup: mark as unmounted so in-flight state updates are skipped
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [content]);
 
   // Auto-advance slides
