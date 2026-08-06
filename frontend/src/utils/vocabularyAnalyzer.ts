@@ -142,6 +142,9 @@ export const refreshVocabularyAnalysis = (
 export const getReadabilityLevel = (
   score: number
 ): string => {
+  if (typeof score !== "number" || isNaN(score) || score <= 0) {
+    return "Needs Improvement";
+  }
   if (score >= 90) return "Excellent";
   if (score >= 75) return "Good";
   if (score >= 60) return "Average";
