@@ -4,11 +4,14 @@ export interface WritingGoal {
 }
 
 export const getGoal = (): WritingGoal => {
-  const goal = localStorage.getItem("writing-goal");
-  if (!goal) {
+  if (typeof window === "undefined") {
     return { target: 1000, current: 0 };
   }
   try {
+    const goal = localStorage.getItem("writing-goal");
+    if (!goal) {
+      return { target: 1000, current: 0 };
+    }
     return JSON.parse(goal) as WritingGoal;
   } catch {
     return { target: 1000, current: 0 };
@@ -16,10 +19,15 @@ export const getGoal = (): WritingGoal => {
 };
 
 export const saveGoal = (goal: WritingGoal) => {
-  localStorage.setItem(
-    "writing-goal",
-    JSON.stringify(goal)
-  );
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      "writing-goal",
+      JSON.stringify(goal)
+    );
+  } catch {
+    // Ignore storage write errors
+  }
 };
 
 export const calculateProgress = (
