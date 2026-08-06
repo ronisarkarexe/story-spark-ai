@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useChatWithAiMutation } from "../../../redux/apis/chat.api";
 import { isLoggedIn } from "../../../services/auth.service";
 import toast from "react-hot-toast";
+import logger from "../../../utils/logger.util";
 
 interface IMessage {
   role: "user" | "model" | "system";
@@ -43,6 +44,7 @@ export const FloatingChatWidget: React.FC = () => {
       }
     } catch {
       // Ignore storage errors
+      logger.debug("Failed to load chat history from localStorage");
     }
   }, []);
 
@@ -53,6 +55,7 @@ export const FloatingChatWidget: React.FC = () => {
         localStorage.setItem("story_spark_chat_history", JSON.stringify(messages));
       } catch {
         // Ignore storage quota errors
+        logger.debug("Failed to save chat history to localStorage");
       }
     }
   }, [messages]);
@@ -91,6 +94,7 @@ export const FloatingChatWidget: React.FC = () => {
       }
     } catch (err: any) {
       // Capture rate limit or API errors
+      logger.error("Chat AI request failed:", err);
       let errMsg = "Oops! Something went wrong. Please try again.";
       if (err?.data) {
         if (Array.isArray(err.data) && err.data.length > 0) {
