@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import logger from "../utils/logger.util";
 
 export interface IRecentPrompt {
   id: string;
@@ -25,6 +26,7 @@ const persistPrompts = (prompts: IRecentPrompt[]): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prompts));
   } catch (e) {
+    logger.error("Failed to persist prompts to localStorage:", e);
     if (e instanceof DOMException && e.name === "QuotaExceededError") {
       // Prune oldest non-favorite entries and retry once
       const pruned = prompts
@@ -54,7 +56,8 @@ export const useRecentPrompts = () => {
           .slice(0, MAX_PROMPTS);
         setRecentPrompts(normalized);
         persistPrompts(normalized);
-      } catch {
+      } catch (e) {
+        logger.error("Failed to parse prompts from localStorage:", e);
         // If parsing fails, start fresh
         setRecentPrompts([]);
       }
