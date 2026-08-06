@@ -5,13 +5,19 @@ export interface StoryData {
 }
 
 export function formatPreview(story: StoryData) {
-  const paragraphs = story.content
+  const content = story?.content || '';
+  const paragraphs = content
     .split("\n")
-    .filter((p) => p.trim() !== "");
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const words = content.trim().split(/\s+/).filter(Boolean);
 
   return {
-    ...story,
+    title: story?.title || '',
+    author: story?.author || '',
+    content,
     paragraphs,
-    wordCount: story.content.trim().split(/\s+/).length,
+    wordCount: words.length,
   };
 }
