@@ -71,7 +71,7 @@ const getOverview = async (token: ITokenPayload | null) => {
     .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   let currentStreak = 0;
-  let longestStreak = 0;
+  let longestStreak = dates.length > 0 ? 1 : 0;
   let tempStreak = 1;
 
   const today = new Date().toDateString();
@@ -82,10 +82,11 @@ const getOverview = async (token: ITokenPayload | null) => {
     for (let i = 1; i < dates.length; i++) {
       const prev = new Date(dates[i - 1]);
       const curr = new Date(dates[i]);
-      const diff = (prev.getTime() - curr.getTime()) / 86400000;
+      const diff = Math.round(
+        (prev.getTime() - curr.getTime()) / 86400000
+      );
       if (diff === 1) {
         currentStreak++;
-        tempStreak++;
       } else {
         break;
       }
@@ -95,7 +96,9 @@ const getOverview = async (token: ITokenPayload | null) => {
   for (let i = 1; i < dates.length; i++) {
     const prev = new Date(dates[i - 1]);
     const curr = new Date(dates[i]);
-    const diff = (prev.getTime() - curr.getTime()) / 86400000;
+    const diff = Math.round(
+      (prev.getTime() - curr.getTime()) / 86400000
+    );
     if (diff === 1) {
       tempStreak++;
       longestStreak = Math.max(longestStreak, tempStreak);
