@@ -8,6 +8,17 @@ export interface ReadingStats {
 }
 
 export function calculateReadingStats(text: string): ReadingStats {
+  if (!text || typeof text !== 'string' || !text.trim()) {
+    return {
+      words: 0,
+      paragraphs: 0,
+      chapters: 0,
+      sentences: 0,
+      averageSentenceLength: 0,
+      readingTime: 0,
+    };
+  }
+
   const words = text.trim().split(/\s+/).filter(Boolean).length;
 
   const paragraphs = text
