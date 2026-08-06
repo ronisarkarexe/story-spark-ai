@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 interface IGenreCardProps {
@@ -10,14 +9,14 @@ interface IGenreCardProps {
   isLogin?: boolean;
 }
 
-const GenreCard: React.FC<IGenreCardProps> = ({
+const GenreCard = ({
   title,
   description,
   icon,
   count,
   color,
   isLogin,
-}) => {
+}: IGenreCardProps) => {
   return (
     <div className="group relative p-8 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-500/50 hover:bg-gray-100 transform transition-all duration-300 hover:-translate-y-2 overflow-hidden shadow-lg hover:shadow-blue-500/10 text-slate-900 dark:bg-slate-900/50 dark:border-white/10 dark:hover:bg-slate-900/80 dark:text-white">
       {/* Background Glow */}

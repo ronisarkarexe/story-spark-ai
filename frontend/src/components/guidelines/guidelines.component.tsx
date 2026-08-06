@@ -1,8 +1,7 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const GuidelinesComponent: React.FC = () => {
+const GuidelinesComponent = () => {
   const sections = [
     {
       title: "Respect the Community",

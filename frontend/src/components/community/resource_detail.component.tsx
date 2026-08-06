@@ -1,8 +1,7 @@
-import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { resources } from './community.data';
 
-const ResourceDetailComponent: React.FC = () => {
+const ResourceDetailComponent = () => {
   const { resourceName } = useParams<{ resourceName: string }>();
   const resource = resources.find((res) => res.slug === resourceName);
 
