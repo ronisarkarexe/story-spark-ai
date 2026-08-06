@@ -1,10 +1,8 @@
-import React from "react";
-
 /**
  * PageLoader — shown as Suspense fallback during lazy-loaded route transitions.
  * Uses CSS-only shimmer + a subtle progress bar so users never see a blank screen.
  */
-const PageLoader: React.FC = () => {
+const PageLoader = () => {
   return (
     <div
       style={{

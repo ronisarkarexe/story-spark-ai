@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
@@ -23,7 +23,7 @@ import {
   Search
 } from "lucide-react";
 
-const FloatingNavComponent: React.FC = () => {
+const FloatingNavComponent = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [isMoreOpen, setIsMoreOpen] = useState(false);

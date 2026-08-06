@@ -10,7 +10,7 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
+const RootLayout = ({ children }: RootLayoutProps) => {
   const { pathname } = useLocation();
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const hideHeader = isAuthPage;

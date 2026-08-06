@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
@@ -8,7 +8,7 @@ type StarRatingProps = {
   setRating: (n: number) => void;
 };
 
-const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
+const StarRating = ({ rating, setRating }: StarRatingProps) => {
   const [hovered, setHovered] = useState(0);
 
   const handleKey = useCallback(
@@ -59,7 +59,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   );
 };
 
-const ReviewForm: React.FC = () => {
+const ReviewForm = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [feedback, setFeedback] = useState("");

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 interface LeaderboardUser {
   rank: number;
@@ -10,7 +10,7 @@ interface LeaderboardUser {
   type: "Writers" | "Storytellers" | "Contributors";
 }
 
-const LeaderboardComponent: React.FC = () => {
+const LeaderboardComponent = () => {
   const [activeTab, setActiveTab] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<

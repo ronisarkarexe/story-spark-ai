@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface TypewriterProps {
   phrases: string[];
@@ -8,13 +8,13 @@ interface TypewriterProps {
   className?: string;
 }
 
-const Typewriter: React.FC<TypewriterProps> = ({
+const Typewriter = ({
   phrases,
   typingSpeed = 70,
   deletingSpeed = 40,
   pause = 1400,
   className = "",
-}) => {
+}: TypewriterProps) => {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);

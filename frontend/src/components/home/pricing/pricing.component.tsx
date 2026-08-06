@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 type BillingCycle = "monthly" | "yearly";
@@ -107,7 +107,7 @@ const faqs: FAQ[] = [
   },
 ];
 
-const PricingComponent: React.FC = () => {
+const PricingComponent = () => {
   const navigate = useNavigate();
 
   const [billing, setBilling] = useState<BillingCycle>("monthly");
