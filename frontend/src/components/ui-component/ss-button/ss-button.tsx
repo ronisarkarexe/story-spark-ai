@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { type ReactNode } from "react";
 
 interface SSButtonProps {
   text: string;
@@ -7,16 +7,18 @@ interface SSButtonProps {
   type?: "button" | "submit" | "reset";
   className?: string;
   disabled?: boolean;
+  children?: ReactNode;
 }
 
-const SSButton: FC<SSButtonProps> = ({
+const SSButton = ({
   text,
   isLoading = false,
   onClick,
   type = "button",
   className = "",
   disabled,
-}) => {
+  children,
+}: SSButtonProps) => {
   const isDisabled = disabled || isLoading;
 
   return (
@@ -40,7 +42,7 @@ const SSButton: FC<SSButtonProps> = ({
           <span>Loading...</span>
         </div>
       ) : (
-        text
+        children ?? text
       )}
     </button>
   );
