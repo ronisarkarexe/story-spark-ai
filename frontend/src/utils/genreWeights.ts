@@ -14,7 +14,12 @@ export const normalizeWeights = (
     return { genres: [] };
   }
 
-  const total = config.genres.reduce(
+  const clamped = config.genres.map((g) => ({
+    ...g,
+    weight: Math.max(0, g.weight),
+  }));
+
+  const total = clamped.reduce(
     (sum, g) => sum + g.weight,
     0
   );
@@ -24,7 +29,7 @@ export const normalizeWeights = (
   }
 
   return {
-    genres: config.genres.map((g) => ({
+    genres: clamped.map((g) => ({
       ...g,
       weight: Math.round((g.weight / total) * 100),
     })),
