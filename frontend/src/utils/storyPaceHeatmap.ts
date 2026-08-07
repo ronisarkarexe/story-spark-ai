@@ -39,6 +39,18 @@ export function analyzeStoryPace(
   });
 }
 
+export function getPaceDistribution(
+  sections: PaceSection[]
+): { Fast: number; Balanced: number; Slow: number } {
+  return sections.reduce(
+    (counts, section) => {
+      counts[section.pace] += 1;
+      return counts;
+    },
+    { Fast: 0, Balanced: 0, Slow: 0 }
+  );
+}
+
 export function refreshPaceAnalysis(
   story: string
 ) {
