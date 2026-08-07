@@ -64,6 +64,14 @@ export function analyzeStoryContinuity(
   };
 }
 
+export function unresolvedIssueCount(
+  analysis: ContinuityAnalysis
+): number {
+  return analysis.issues.filter(
+    (issue) => issue.severity === "High" || issue.severity === "Medium"
+  ).length;
+}
+
 export function refreshContinuityAnalysis(
   story: string
 ) {
