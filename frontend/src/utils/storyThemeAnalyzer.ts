@@ -39,6 +39,16 @@ export function analyzeStoryThemes(
   ];
 }
 
+export function dominantTheme(
+  themes: StoryTheme[]
+): StoryTheme | undefined {
+  if (themes.length === 0) return undefined;
+
+  return themes.reduce((highest, theme) =>
+    theme.confidence > highest.confidence ? theme : highest
+  );
+}
+
 export function reanalyzeStoryThemes(
   story: string
 ) {
