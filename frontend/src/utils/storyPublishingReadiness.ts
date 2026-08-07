@@ -75,6 +75,17 @@ export function analyzePublishingReadiness(
   };
 }
 
+export function estimatedReadTimeSeconds(
+  story: string,
+  wordsPerMinute = 200
+): number {
+  const words = story.trim().split(/\s+/).filter(Boolean).length;
+
+  if (words === 0 || wordsPerMinute <= 0) return 0;
+
+  return Math.ceil((words / wordsPerMinute) * 60);
+}
+
 export function rerunPublishingAnalysis(
   story: string
 ) {
