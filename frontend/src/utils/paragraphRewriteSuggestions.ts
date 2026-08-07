@@ -32,6 +32,12 @@ export function generateRewriteSuggestions(
   ];
 }
 
+export function suggestionCount(
+  suggestions: RewriteSuggestion[]
+): number {
+  return suggestions.length;
+}
+
 export function regenerateRewriteSuggestions(
   paragraph: string,
   story: string
