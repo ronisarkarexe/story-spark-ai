@@ -95,6 +95,12 @@ export function analyzeVocabulary(
   };
 }
 
+export function topOverusedWord(
+  stats: VocabularyStats
+): VocabularyStats["overusedWords"][number] | undefined {
+  return stats.overusedWords[0];
+}
+
 export function refreshVocabularyAnalysis(
   story: string
 ) {
