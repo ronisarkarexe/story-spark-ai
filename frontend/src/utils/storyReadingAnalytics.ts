@@ -13,6 +13,18 @@ export function generateStoryAnalytics(
 ): StoryAnalytics {
   const words = story.trim().split(/\s+/).filter(Boolean).length;
 
+  if (words === 0) {
+    return {
+      totalViews: 0,
+      averageReadingTime: 0,
+      completionRate: 0,
+      likes: 0,
+      bookmarks: 0,
+      shares: 0,
+      engagementTrend: [],
+    };
+  }
+
   return {
     totalViews: 1248,
     averageReadingTime: Math.max(1, Math.ceil(words / 200)),
