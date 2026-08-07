@@ -35,6 +35,27 @@ export function extractKeywords(
   };
 }
 
+export function wordFrequencyMap(
+  story: string
+): Map<string, number> {
+  const words = story
+    .replace(/[^\w\s]/g, "")
+    .split(/\s+/)
+    .filter(
+      (word) =>
+        word.length > 3 &&
+        !STOP_WORDS.has(word.toLowerCase())
+    );
+
+  const frequency = new Map<string, number>();
+
+  words.forEach((word) => {
+    frequency.set(word, (frequency.get(word) || 0) + 1);
+  });
+
+  return frequency;
+}
+
 export function removeKeyword(
   keywords: string[],
   keyword: string
