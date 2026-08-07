@@ -6,6 +6,7 @@
  * shared ref or context.
  */
 export function scrollToChapter(chapterId: number): void {
+  if (typeof document === "undefined") return;
   const node = document.getElementById(`chapter-${chapterId}`);
   if (!node) return;
   node.scrollIntoView({ behavior: "smooth", block: "start" });
