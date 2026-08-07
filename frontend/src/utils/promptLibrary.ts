@@ -57,3 +57,9 @@ export function filterByGenre(
   if (!genre) return prompts;
   return prompts.filter((item) => item.genre === genre);
 }
+
+export function genreTags(
+  prompts: StoryPrompt[]
+): string[] {
+  return [...new Set(prompts.map((item) => item.genre))];
+}
