@@ -76,3 +76,9 @@ export function analyzePlotGaps(story: string): PlotGap[] {
 
   return findings;
 }
+
+export function countHighSeverityIssues(
+  gaps: PlotGap[]
+): number {
+  return gaps.filter((gap) => gap.severity === "High").length;
+}
