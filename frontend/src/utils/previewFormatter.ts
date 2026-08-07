@@ -4,10 +4,16 @@ export interface StoryData {
   content: string;
 }
 
-export function formatPreview(story: StoryData) {
-  const paragraphs = story.content
+export function splitParagraphs(
+  content: string
+): string[] {
+  return content
     .split("\n")
     .filter((p) => p.trim() !== "");
+}
+
+export function formatPreview(story: StoryData) {
+  const paragraphs = splitParagraphs(story.content);
 
   return {
     ...story,
