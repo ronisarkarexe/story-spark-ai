@@ -170,7 +170,10 @@ export async function generateStory(
   try {
     const existingCache = await StoryCache.findOne({ promptKey: cacheKey });
     if (existingCache) {
-      console.log("[CACHE HIT] Serving story instantly from MongoDB cache");
+     console.log(existingCache.storyData
+  ? "[CACHE HIT] Serving valid cached story from MongoDB cache"
+  : "[CACHE WARN] Cache entry found but storyData is null"
+);
       return {
         story: existingCache.storyData,
         provider: existingCache.provider as "openai" | "gemini" | "anthropic",
