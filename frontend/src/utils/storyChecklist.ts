@@ -9,34 +9,34 @@ export interface ChecklistItem {
   completed: boolean;
 }
 
+const CHARACTER_REGEX = /(hero|character|name|friend|villain)/i;
+const SETTING_REGEX = /(city|forest|village|school|home|castle|mountain)/i;
+const CONFLICT_REGEX = /(problem|fight|enemy|challenge|conflict|danger)/i;
+const CLIMAX_REGEX = /(finally|battle|climax|last chance)/i;
+const CONCLUSION_REGEX = /(ended|happy ending|conclusion|finally|the end)/i;
+
 export const hasTitle = (story: StoryData) => {
   return story.title.trim().length > 0;
 };
 
 export const hasCharacters = (story: StoryData) => {
-  return /(hero|character|name|friend|villain)/i.test(story.content);
+  return CHARACTER_REGEX.test(story.content);
 };
 
 export const hasSetting = (story: StoryData) => {
-  return /(city|forest|village|school|home|castle|mountain)/i.test(
-    story.content
-  );
+  return SETTING_REGEX.test(story.content);
 };
 
 export const hasConflict = (story: StoryData) => {
-  return /(problem|fight|enemy|challenge|conflict|danger)/i.test(
-    story.content
-  );
+  return CONFLICT_REGEX.test(story.content);
 };
 
 export const hasClimax = (story: StoryData) => {
-  return /(finally|battle|climax|last chance)/i.test(story.content);
+  return CLIMAX_REGEX.test(story.content);
 };
 
 export const hasConclusion = (story: StoryData) => {
-  return /(ended|happy ending|conclusion|finally|the end)/i.test(
-    story.content
-  );
+  return CONCLUSION_REGEX.test(story.content);
 };
 
 export const generateChecklist = (
