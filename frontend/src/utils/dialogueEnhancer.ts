@@ -36,3 +36,9 @@ export const ignoreSuggestion = (
 ) => {
   return true;
 };
+
+export const countSuggestions = (
+  analysis: DialogueAnalysis
+): number => {
+  return analysis.suggestions.length;
+};
