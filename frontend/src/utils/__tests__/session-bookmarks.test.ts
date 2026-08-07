@@ -9,14 +9,14 @@ import {
 } from "../session-bookmarks";
 import { IStories } from "../../components/stories/stories.view.component";
 
-const sampleStory: IStories = {
-  uuid: "test-uuid-1",
-  title: "Test Story",
+const mockStory = (uuid: string): IStories => ({
+  uuid,
+  title: `Story ${uuid}`,
   description: "Test Description",
-  content: "Once upon a time...",
+  content: "Test content",
   genre: "Fantasy",
-  createdAt: "2026-01-01",
-};
+  createdAt: new Date().toISOString(),
+});
 
 describe("session-bookmarks utility", () => {
   beforeEach(() => {
@@ -24,50 +24,88 @@ describe("session-bookmarks utility", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns empty array when no bookmarks exist in sessionStorage", () => {
-    const bookmarks = getSessionBookmarks();
-    expect(bookmarks).toEqual([]);
+  describe("getSessionBookmarks", () => {
+    it("returns empty array when no bookmarks stored", () => {
+      const result = getSessionBookmarks();
+      expect(result).toEqual([]);
+    });
+
+    it("returns parsed bookmarks when data exists", () => {
+      const stories = [mockStory("uuid-1"), mockStory("uuid-2")];
+      sessionStorage.setItem("story_spark_session_bookmarks", JSON.stringify(stories));
+
+      const result = getSessionBookmarks();
+      expect(result).toEqual(stories);
+    });
+
+    it("returns empty array on JSON parse error", () => {
+      sessionStorage.setItem("story_spark_session_bookmarks", "not valid json");
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const result = getSessionBookmarks();
+      expect(result).toEqual([]);
+      expect(consoleSpy).toHaveBeenCalled();
+    });
   });
 
-  it("adds a story to session bookmarks and dispatches change event", () => {
-    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
-    addSessionBookmark(sampleStory);
+  describe("addSessionBookmark", () => {
+    it("adds a new bookmark and dispatches event", () => {
+      const story = mockStory("uuid-1");
+      const handler = vi.fn();
+      window.addEventListener("session_bookmarks_changed", handler);
 
-    const bookmarks = getSessionBookmarks();
-    expect(bookmarks).toHaveLength(1);
-    expect(bookmarks[0].uuid).toBe("test-uuid-1");
-    expect(dispatchSpy).toHaveBeenCalledWith(expect.any(Event));
+      addSessionBookmark(story);
+
+      const result = getSessionBookmarks();
+      expect(result).toHaveLength(1);
+      expect(result[0].uuid).toBe("uuid-1");
+      expect(handler).toHaveBeenCalledTimes(1);
+      window.removeEventListener("session_bookmarks_changed", handler);
+    });
+
+    it("does not add duplicate uuid", () => {
+      const story = mockStory("uuid-dupe");
+      addSessionBookmark(story);
+      addSessionBookmark(story);
+
+      const result = getSessionBookmarks();
+      expect(result.filter((s) => s.uuid === "uuid-dupe")).toHaveLength(1);
+    });
   });
 
-  it("does not add duplicate story to session bookmarks", () => {
-    addSessionBookmark(sampleStory);
-    addSessionBookmark(sampleStory);
+  describe("removeSessionBookmark", () => {
+    it("removes bookmark by uuid", () => {
+      const stories = [mockStory("uuid-r1"), mockStory("uuid-r2")];
+      sessionStorage.setItem("story_spark_session_bookmarks", JSON.stringify(stories));
 
-    const bookmarks = getSessionBookmarks();
-    expect(bookmarks).toHaveLength(1);
+      removeSessionBookmark("uuid-r1");
+
+      const result = getSessionBookmarks();
+      expect(result.map((s) => s.uuid)).not.toContain("uuid-r1");
+      expect(result.map((s) => s.uuid)).toContain("uuid-r2");
+    });
+
+    it("handles non-existent uuid gracefully", () => {
+      const stories = [mockStory("uuid-only")];
+      sessionStorage.setItem("story_spark_session_bookmarks", JSON.stringify(stories));
+
+      expect(() => removeSessionBookmark("uuid-nonexistent")).not.toThrow();
+
+      const result = getSessionBookmarks();
+      expect(result).toHaveLength(1);
+    });
   });
 
-  it("checks if a story is bookmarked correctly", () => {
-    expect(isSessionBookmarked("test-uuid-1")).toBe(false);
-    addSessionBookmark(sampleStory);
-    expect(isSessionBookmarked("test-uuid-1")).toBe(true);
-  });
+  describe("isSessionBookmarked", () => {
+    it("returns true for bookmarked uuid", () => {
+      const stories = [mockStory("uuid-yes")];
+      sessionStorage.setItem("story_spark_session_bookmarks", JSON.stringify(stories));
 
-  it("removes a bookmarked story by uuid", () => {
-    addSessionBookmark(sampleStory);
-    expect(isSessionBookmarked("test-uuid-1")).toBe(true);
+      expect(isSessionBookmarked("uuid-yes")).toBe(true);
+    });
 
-    removeSessionBookmark("test-uuid-1");
-    expect(isSessionBookmarked("test-uuid-1")).toBe(false);
-    expect(getSessionBookmarks()).toEqual([]);
-  });
-
-  it("handles JSON parse error gracefully", () => {
-    sessionStorage.setItem("story_spark_session_bookmarks", "invalid-json");
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    const bookmarks = getSessionBookmarks();
-    expect(bookmarks).toEqual([]);
-    expect(consoleSpy).toHaveBeenCalled();
+    it("returns false for non-bookmarked uuid", () => {
+      expect(isSessionBookmarked("uuid-no")).toBe(false);
+    });
   });
 });
