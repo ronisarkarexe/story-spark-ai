@@ -39,6 +39,21 @@ export function generateEndingAlternatives(
   ];
 }
 
+export function styleLabel(
+  style: string
+): string {
+  switch (style.toLowerCase()) {
+    case "inspirational":
+      return "Motivating";
+    case "drama":
+      return "Dramatic";
+    case "mystery":
+      return "Intriguing";
+    default:
+      return style;
+  }
+}
+
 export function regenerateEndingAlternatives(
   story: string
 ) {
