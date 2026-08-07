@@ -5,6 +5,12 @@ export interface ChapterAnalysis {
   status: "Balanced" | "Needs Review";
 }
 
+export function isBalancedChapter(
+  words: number
+): boolean {
+  return words >= 400 && words <= 1200;
+}
+
 export function analyzeChapterBalance(story: string): ChapterAnalysis[] {
   const chapters = story
     .split(/chapter\s+\d+/i)
@@ -23,7 +29,7 @@ export function analyzeChapterBalance(story: string): ChapterAnalysis[] {
       words,
       score,
       status:
-        words >= 400 && words <= 1200
+        isBalancedChapter(words)
           ? "Balanced"
           : "Needs Review",
     };
