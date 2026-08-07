@@ -33,10 +33,10 @@ export function analyzeReadingInfo(
 
   return {
     wordCount,
-    readingTime: Math.max(
-      1,
-      Math.ceil(wordCount / WORDS_PER_MINUTE)
-    ),
+    readingTime:
+      wordCount === 0
+        ? 0
+        : Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE)),
     difficulty,
   };
 }
