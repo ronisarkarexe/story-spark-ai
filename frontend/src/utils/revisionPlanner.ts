@@ -53,3 +53,20 @@ export function generateRevisionPlan(
 
   return tasks;
 }
+
+export function estimateRevisionTime(
+  tasks: RevisionTask[]
+): number {
+  const minutes = tasks.reduce((sum, task) => {
+    switch (task.priority) {
+      case "High":
+        return sum + 45;
+      case "Medium":
+        return sum + 25;
+      default:
+        return sum + 10;
+    }
+  }, 0);
+
+  return minutes;
+}
