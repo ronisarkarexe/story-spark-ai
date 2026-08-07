@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useDebounce } from "../../hooks/useDebounce";
 import { searchApi, type SearchResults, type StoryResult, type UserResult } from "../../services/searchApi";
@@ -218,9 +218,10 @@ const SearchPage: React.FC = () => {
                     Authors ({results.users.total})
                   </p>
                   {results.users.data.map((user: UserResult) => (
-                    <div
+                    <Link
                       key={user._id}
-                      className="mb-3 flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-800/60"
+                      to={`/profile/${user._id}`}
+                      className="mb-3 flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-800/60"
                     >
                       <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-violet-50 text-xl dark:bg-violet-500/10">
                         👤
@@ -231,7 +232,7 @@ const SearchPage: React.FC = () => {
                           <p className="line-clamp-1 text-sm text-slate-500 dark:text-slate-400">{user.profile.bio}</p>
                         )}
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </section>
               )}
