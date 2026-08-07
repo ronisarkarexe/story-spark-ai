@@ -47,6 +47,21 @@ export function generateStoryTitleOptions(
   ];
 }
 
+export function topRatedTitle(
+  options: StoryTitleOption[]
+): StoryTitleOption | undefined {
+  if (options.length === 0) return undefined;
+
+  return options.reduce((best, option) => {
+    const bestScore =
+      best.creativity + best.relevance + best.memorability + best.emotionalAppeal;
+    const optionScore =
+      option.creativity + option.relevance + option.memorability + option.emotionalAppeal;
+
+    return optionScore > bestScore ? option : best;
+  });
+}
+
 export function regenerateStoryTitles(
   story: string
 ) {
