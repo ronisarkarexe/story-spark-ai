@@ -28,6 +28,12 @@ export const getHighSeverityIssues = (
   );
 };
 
+export const countIssues = (
+  analysis: PlotAnalysis
+): number => {
+  return analysis.issues.length;
+};
+
 export const rerunAnalysis = (
   story: string
 ): PlotAnalysis => {
