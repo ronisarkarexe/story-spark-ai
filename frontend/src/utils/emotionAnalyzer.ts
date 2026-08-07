@@ -27,3 +27,32 @@ export function analyzeEmotionJourney(story: string): EmotionPoint[] {
     };
   });
 }
+
+export function computeAverageEmotion(
+  points: EmotionPoint[]
+): { joy: number; fear: number; sadness: number; anger: number; hope: number; suspense: number } {
+  if (points.length === 0) {
+    return { joy: 0, fear: 0, sadness: 0, anger: 0, hope: 0, suspense: 0 };
+  }
+
+  const total = points.reduce(
+    (acc, point) => ({
+      joy: acc.joy + point.joy,
+      fear: acc.fear + point.fear,
+      sadness: acc.sadness + point.sadness,
+      anger: acc.anger + point.anger,
+      hope: acc.hope + point.hope,
+      suspense: acc.suspense + point.suspense,
+    }),
+    { joy: 0, fear: 0, sadness: 0, anger: 0, hope: 0, suspense: 0 }
+  );
+
+  return {
+    joy: Math.round(total.joy / points.length),
+    fear: Math.round(total.fear / points.length),
+    sadness: Math.round(total.sadness / points.length),
+    anger: Math.round(total.anger / points.length),
+    hope: Math.round(total.hope / points.length),
+    suspense: Math.round(total.suspense / points.length),
+  };
+}
