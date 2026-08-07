@@ -32,3 +32,11 @@ export const rerunTimelineAnalysis = (
 export const getIssueCount = (
   analysis: TimelineAnalysis
 ) => analysis.issues.length;
+
+export const getHighSeverityCount = (
+  analysis: TimelineAnalysis
+): number => {
+  return analysis.issues.filter(
+    (issue) => issue.severity === "High"
+  ).length;
+};
