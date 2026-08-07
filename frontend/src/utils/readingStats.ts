@@ -7,6 +7,9 @@ export interface ReadingStats {
   readingTime: number;
 }
 
+const CHAPTER_REGEX = /chapter/gi;
+const SENTENCE_REGEX = /[.!?]+/;
+
 export function calculateReadingStats(text: string): ReadingStats {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
 
@@ -16,11 +19,11 @@ export function calculateReadingStats(text: string): ReadingStats {
 
   const chapters = Math.max(
     1,
-    (text.match(/chapter/gi) || []).length
+    (text.match(CHAPTER_REGEX) || []).length
   );
 
   const sentences = text
-    .split(/[.!?]+/)
+    .split(SENTENCE_REGEX)
     .filter((s) => s.trim()).length;
 
   const averageSentenceLength =
