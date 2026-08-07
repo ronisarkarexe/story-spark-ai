@@ -29,3 +29,24 @@ export function renameScene(
       : scene
   );
 }
+
+export function getSceneCount(
+  story: string
+): number {
+  return detectScenes(story).length;
+}
+
+export function getSceneWordDensity(
+  scenes: StoryScene[]
+): number {
+  if (scenes.length === 0) return 0;
+
+  const totalWords = scenes.reduce(
+    (sum, scene) =>
+      sum +
+      scene.content.trim().split(/\s+/).filter(Boolean).length,
+    0
+  );
+
+  return Math.round(totalWords / scenes.length);
+}
