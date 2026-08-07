@@ -11,12 +11,18 @@ const SearchPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const VALID_TYPES = ["all", "story", "user", "tag"] as const;
+  const VALID_SORTS = ["relevance", "date", "popularity"] as const;
+
+  const rawType = searchParams.get("type");
+  const rawSort = searchParams.get("sortBy");
+
   const [type, setType] = useState<"all" | "story" | "user" | "tag">(
-    (searchParams.get("type") as "all") ?? "all"
+    VALID_TYPES.includes(rawType as "all") ? (rawType as "all") : "all"
   );
   const [genre, setGenre] = useState(searchParams.get("genre") ?? "");
   const [sortBy, setSortBy] = useState<"relevance" | "date" | "popularity">(
-    (searchParams.get("sortBy") as "relevance") ?? "relevance"
+    VALID_SORTS.includes(rawSort as "relevance") ? (rawSort as "relevance") : "relevance"
   );
   const [page, setPage] = useState(Number(searchParams.get("page") ?? 1));
   const [results, setResults] = useState<SearchResults | null>(null);
