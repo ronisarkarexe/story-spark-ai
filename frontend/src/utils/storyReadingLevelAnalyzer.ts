@@ -40,6 +40,14 @@ export function analyzeReadingLevel(
   };
 }
 
+export function readabilityLabel(
+  vocabularyScore: number
+): "Simple" | "Moderate" | "Advanced" {
+  if (vocabularyScore >= 80) return "Advanced";
+  if (vocabularyScore >= 50) return "Moderate";
+  return "Simple";
+}
+
 export function reanalyzeReadingLevel(
   story: string
 ) {
