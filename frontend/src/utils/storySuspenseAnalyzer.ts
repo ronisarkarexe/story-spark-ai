@@ -59,6 +59,16 @@ export function analyzeStorySuspense(
   };
 }
 
+export function highestTensionSection(
+  analysis: SuspenseAnalysis
+): SuspenseSection | undefined {
+  if (analysis.sections.length === 0) return undefined;
+
+  return analysis.sections.reduce((highest, section) =>
+    section.tensionScore > highest.tensionScore ? section : highest
+  );
+}
+
 export function refreshSuspenseAnalysis(story: string) {
   return analyzeStorySuspense(story);
 }
