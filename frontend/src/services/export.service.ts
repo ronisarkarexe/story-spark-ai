@@ -75,7 +75,7 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
               if ("caches" in window) {
                 caches.open(CACHE_NAME).then((cache) => {
                   cache.put(url, new Response(blob));
-                }).catch(() => {});
+                }).catch(err => console.error("[ExportService] Cache open failed:", err));
               }
               resolve(blob);
             } else {
