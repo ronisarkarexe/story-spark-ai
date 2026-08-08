@@ -260,10 +260,15 @@ export const exportStoryToPDF = async (
 
   // Running headers and footers (drawn over all pages except page 1)
   const totalPages = doc.getNumberOfPages();
+  // Content pages are numbered excluding the cover (page 1).
+  // i=2 → content page 1, i=3 → content page 2, etc.
+  const contentPageCount = totalPages - 1;
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     
     if (i === 1) continue; // Skip cover page
+
+    const contentPageNumber = i - 1; // Relative page number (1-based, cover excluded)
 
     // Running Header
     doc.setFont("helvetica", "normal");
@@ -279,7 +284,7 @@ export const exportStoryToPDF = async (
     // Running Footer
     doc.line(leftMargin, 280, 190, 280);
     doc.text("Generated with StorySparkAI", leftMargin, 285);
-    doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
+    doc.text(`Page ${contentPageNumber} of ${contentPageCount}`, 190, 285, { align: "right" });
   }
 
   // Trigger file download
