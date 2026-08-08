@@ -2,6 +2,7 @@ import express from "express";
 import validateRequest from "../../middleware/validate.request";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import auth from "../../middleware/auth.middleware";
+import { apiRateLimiter } from "../../middleware/rateLimit.middleware";
 import { CommentController } from "./comment.controller";
 import { CommentValidator } from "./comment.validation";
 const router = express.Router();
@@ -61,6 +62,7 @@ router.delete(
 // Hide a comment (admin / super-admin)
 router.patch(
   "/hide/commentId=:commentId",
+  apiRateLimiter,
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   CommentController.hideComment
 );
@@ -68,6 +70,7 @@ router.patch(
 // Restore a hidden comment (admin / super-admin)
 router.patch(
   "/restore/commentId=:commentId",
+  apiRateLimiter,
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   CommentController.restoreComment
 );
