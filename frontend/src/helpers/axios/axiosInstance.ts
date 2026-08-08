@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { getSocketIo } from '../../socket/socket.oi';
 
 const instance = axios.create({
@@ -6,17 +6,32 @@ const instance = axios.create({
   // The Vite dev proxy forwards /api → http://localhost:5000, so
   // the full path /api/v1/... is required here.
   baseURL: '/api/v1',
+  withCredentials: true,
 });
 
-instance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      try {
-        const { data } = await axios.post('/api/v1/auth/refresh-token');
-        const newToken = data.data.accessToken;
+instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+let refreshPromise: Promise<string> | null = null;
+
+const refreshAccessToken = async (): Promise<string> => {
+  if (!refreshPromise) {
+    refreshPromise = axios
+      .post(
+        '/api/v1/auth/refresh-token',
+        {},
+        {
+          baseURL: undefined,
+          withCredentials: true,
+        }
+      )
+      .then(({ data }) => {
+        const newToken = data.data.accessToken as string;
         localStorage.setItem('accessToken', newToken);
 
         const socket = getSocketIo();
@@ -31,6 +46,27 @@ instance.interceptors.response.use(
           })
         );
 
+        return newToken;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
+};
+
+instance.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const newToken = await refreshAccessToken();
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return instance(originalRequest);
       } catch {
