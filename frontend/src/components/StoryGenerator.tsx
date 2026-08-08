@@ -9,7 +9,7 @@ interface StoryGeneratorProps {
 const MIN_PROMPT_LENGTH = 10;
 const MAX_PROMPT_LENGTH = 1000;
 
-export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated }) => {
+export const StoryGenerator = ({ onStoryGenerated }: StoryGeneratorProps) => {
   const [prompt, setPrompt] = useState('');
   const [variationCount, setVariationCount] = useState(3);
   const [isLoading, setIsLoading] = useState(false);

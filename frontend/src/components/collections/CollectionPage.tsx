@@ -1,12 +1,11 @@
 /* eslint-disable */
-import React from "react";
 import { useParams } from "react-router-dom";
 import { useGetCollectionByIdQuery } from "../../redux/apis/collection.api";
 import { getUserInfo } from "../../services/auth.service";
 import LoadingAnimation from "../loading/loading.component";
 import CollectionDetailCard from "./CollectionDetailCard";
 
-const CollectionPage: React.FC = () => {
+const CollectionPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data: collection, isLoading, isError } = useGetCollectionByIdQuery(id || "");
   const currentUser = getUserInfo();

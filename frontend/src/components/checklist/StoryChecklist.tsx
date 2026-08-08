@@ -1,4 +1,3 @@
-import React from "react";
 import {
   generateChecklist,
   StoryData,
@@ -6,10 +5,10 @@ import {
 
 interface StoryChecklistProps extends StoryData {}
 
-const StoryChecklist: React.FC<StoryChecklistProps> = ({
+const StoryChecklist = ({
   title,
   content,
-}) => {
+}: StoryChecklistProps) => {
   const checklist = generateChecklist({ title, content });
 
   const completedItems = checklist.filter(
