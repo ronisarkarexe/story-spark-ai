@@ -1,17 +1,22 @@
 import { Request, Response } from "express";
 import { Post } from "./post.model";
+import { escapeHtml, sanitizeUrl } from "../../../utils/sanitize.util";
 
 export class PostMetaController {
   static async serveOgShell(req: Request, res: Response) {
     try {
       const post = await Post.findById(req.params.id);
-      if (!post) {
+      if (!post || post.isDeleted || !post.isPublished) {
         return res.status(404).send("Not found");
       }
-      const title = post.title || "Story Spark AI";
-      const description = (post.content || "").slice(0, 150);
-      const image = post.imageURL || "";
-      const url = `${process.env.FRONTEND_URL}/post/${post._id}`;
+
+      const title = escapeHtml(post.title || "Story Spark AI");
+      const description = escapeHtml((post.content || "").slice(0, 150));
+      const image = escapeHtml(sanitizeUrl(post.imageURL || ""));
+      const safeFrontend = sanitizeUrl(process.env.FRONTEND_URL || "");
+      const url = escapeHtml(
+        safeFrontend ? `${safeFrontend.replace(/\/$/, "")}/post/${post._id}` : ""
+      );
 
       return res.send(`<!DOCTYPE html>
 <html>
