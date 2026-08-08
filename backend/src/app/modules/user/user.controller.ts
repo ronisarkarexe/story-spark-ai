@@ -58,7 +58,7 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
   if (
     token.role !== "admin" &&
     token.role !== "super_admin" &&
-    token._id !== id
+    String(token._id) !== String(id)
   ) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
