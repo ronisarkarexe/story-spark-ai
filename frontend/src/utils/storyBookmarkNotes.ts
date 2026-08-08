@@ -9,6 +9,10 @@ export interface BookmarkNote {
 const STORAGE_KEY = "story-bookmark-notes";
 
 export function loadBookmarkNotes(): BookmarkNote[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
   const saved = localStorage.getItem(STORAGE_KEY);
 
   if (!saved) return [];
@@ -23,6 +27,10 @@ export function loadBookmarkNotes(): BookmarkNote[] {
 export function saveBookmarkNotes(
   notes: BookmarkNote[]
 ) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
   localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify(notes)
