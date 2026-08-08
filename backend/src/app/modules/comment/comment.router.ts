@@ -58,4 +58,18 @@ router.delete(
   CommentController.deleteComment
 );
 
+// Hide a comment (admin / super-admin)
+router.patch(
+  "/hide/commentId=:commentId",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  CommentController.hideComment
+);
+
+// Restore a hidden comment (admin / super-admin)
+router.patch(
+  "/restore/commentId=:commentId",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  CommentController.restoreComment
+);
+
 export const CommentRouter = router;
