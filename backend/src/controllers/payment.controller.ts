@@ -107,7 +107,7 @@ export const createOrder = async (
  */
 async function grantEntitlementAndRespond(
   order: IOrder,
-  res: Response,
+  res: Response | null,
   { respond }: { respond: boolean }
 ): Promise<void> {
   const selectedPlan = PLANS[order.plan];
@@ -133,7 +133,7 @@ async function grantEntitlementAndRespond(
       { _id: order._id, status: "paid_pending_entitlement" },
       { status: "created", razorpayPaymentId: null }
     );
-    if (respond) {
+    if (respond && res) {
       res.status(404).json({ success: false, error: "User not found." });
     }
     return;
@@ -146,7 +146,7 @@ async function grantEntitlementAndRespond(
     { status: "paid" }
   );
 
-  if (respond) {
+  if (respond && res) {
     res.status(200).json({
       success: true,
       message: `Subscription upgraded to ${selectedPlan.label} successfully.`,
