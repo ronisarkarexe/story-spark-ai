@@ -101,7 +101,7 @@ const ChatPage: React.FC = () => {
 
   const handleRetry = () => {
     if (messages.length === 0) return;
-    const lastUserMessage = messages[messages.length - 1];
+    const lastUserMessage = messages.at(-1);
     if (lastUserMessage.role === "user") {
       const trimmedMessages = messages.slice(0, -1);
       setMessages(trimmedMessages);
