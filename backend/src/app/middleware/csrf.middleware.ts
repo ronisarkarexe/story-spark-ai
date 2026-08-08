@@ -29,16 +29,40 @@ const getProvidedToken = (req: Request): string => {
   );
 };
 
-export const generateCsrfToken = (userId: string): string => {
+const getAuthorizationHeader = (req: Request): string => {
+  const headerValue =
+    (req.header ? req.header("authorization") : undefined) ??
+    (req.get ? req.get("authorization") : undefined);
+
+  if (headerValue) {
+    return normalizeHeader(headerValue);
+  }
+
+  const headers = req.headers as Record<string, string | string[] | undefined>;
+  return normalizeHeader(headers.authorization ?? headers.Authorization);
+};
+
+/**
+ * SPA clients authenticate with Authorization: Bearer JWTs (not cookie sessions).
+ * CSRF mainly protects cookie-based auth; skip when a Bearer token is present.
+ * Cookie-session paths still require a matching x-csrf-token.
+ */
+export const generateCsrfToken = (userId: string | { toString(): string }): string => {
   const secret = process.env.JWT_SECRET || "test-secret";
   const hmac = createHmac("sha256", secret);
-  hmac.update(userId);
+  hmac.update(String(userId));
   return hmac.digest("hex");
 };
 
 const csrfMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  const authorization = getAuthorizationHeader(req);
+  if (/^Bearer\s+\S+/i.test(authorization)) {
+    next();
+    return;
+  }
+
   const providedToken = getProvidedToken(req);
-  const userId = (req.user as { _id?: string } | undefined)?._id;
+  const userId = (req.user as { _id?: string | { toString(): string } } | undefined)?._id;
 
   if (!userId) {
     res.status(httpStatus.FORBIDDEN).json({
