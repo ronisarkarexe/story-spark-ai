@@ -5,6 +5,7 @@ import catchAsync from "../../../shared/catch_async";
 import sendResponse from "../../../shared/send_response";
 import { StoryVersionService } from "./story_version.service";
 import ApiError from "../../../errors/api_error";
+import { ENUM_USER_ROLE } from "../../../enums/user";
 import { routeParam } from "../../../shared/route_param";
 import { paginationFields } from "../../../constants/pagination";
 import pick from "../../../shared/pick";
@@ -131,6 +132,11 @@ const getBranchPath = catchAsync(async (req: Request, res: Response) => {
 );
 
 const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User is not authorized");
+  }
+
   const { prompt, storyId } = req.body as {
     prompt?: string;
     storyId?: string;
@@ -143,13 +149,37 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const post = storyId ? await Post.findById(storyId) : null;
+  let storyContent: string | undefined;
+  if (storyId) {
+    const post = await Post.findById(storyId);
+    if (!post) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
+    }
+
+    const isAuthor =
+      post.author &&
+      user._id &&
+      post.author.toString() === user._id.toString();
+    const isAdmin =
+      user.role === ENUM_USER_ROLE.ADMIN ||
+      user.role === ENUM_USER_ROLE.SUPER_ADMIN;
+
+    if (!isAuthor && !isAdmin) {
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        "You are not authorized to use this story as prompt context."
+      );
+    }
+
+    storyContent = post.content || undefined;
+  }
+
   const rawProvider = req.headers?.["x-model-provider"];
   const provider = Array.isArray(rawProvider) ? rawProvider[0] : rawProvider;
-  
+
   const enhancedPrompt = await StoryVersionService.enhancePrompt(
     prompt.trim(),
-    post?.content || undefined,
+    storyContent,
     provider as string | undefined
   );
 
