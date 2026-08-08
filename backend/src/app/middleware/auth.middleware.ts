@@ -111,7 +111,10 @@ const auth =
       }
       const verifiedUser = decodedUser;
 
-      const user = await User.findById(verifiedUser._id);
+      // Use lean() for better performance and select only needed fields
+      const user = await User.findById(verifiedUser._id)
+        .select('status tokenVersion passwordChangedAt role')
+        .lean();
 
       if (!user) {
         throw new ApiError(
