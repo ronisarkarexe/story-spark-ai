@@ -56,6 +56,13 @@ export async function generateIllustrationForChapter(payload: {
  * Generate illustrations for multiple chapters in sequence
  * Useful for batch chapter creation or importing stories
  */
+export interface IBatchIllustrationResult {
+  illustrations: Map<string, string>;
+  failedChapterIds: string[];
+  failedCount: number;
+  successCount: number;
+}
+
 export async function generateIllustrationsForChapters(
   chapters: Array<{
     chapterId: string;
@@ -68,39 +75,63 @@ export async function generateIllustrationsForChapters(
     quality?: "standard" | "hd";
     signal?: AbortSignal;
   }
-): Promise<Map<string, string>> {
-  const results = new Map<string, string>();
+): Promise<IBatchIllustrationResult> {
+  const illustrations = new Map<string, string>();
+  const failedChapterIds: string[] = [];
 
-  try {
-    const payloads: IChapterIllustrationPayload[] = chapters.map((chapter) => ({
-      ...chapter,
-      style: options?.style || "illustration",
-      quality: options?.quality || "standard",
-    }));
+  const payloads: IChapterIllustrationPayload[] = chapters.map((chapter) => ({
+    ...chapter,
+    style: options?.style || "illustration",
+    quality: options?.quality || "standard",
+  }));
 
-    const generatedResults =
-      await ChapterIllustrationService.generateBatchIllustrations(
-        payloads,
-        options?.signal
-      );
+  // Use Promise.allSettled so one chapter failure doesn't cancel all others
+  const settledResults = await Promise.allSettled(
+    payloads.map((payload) =>
+      ChapterIllustrationService.generateChapterIllustration(payload)
+    )
+  );
 
-    // Map results by chapter ID for easy access
-    for (const result of generatedResults) {
+  for (let i = 0; i < settledResults.length; i++) {
+    const settled = settledResults[i];
+    const chapterId = chapters[i].chapterId;
+
+    if (settled.status === "fulfilled") {
+      const result = settled.value;
       if (result.imageStatus !== "failed" && result.imageUrl) {
-        results.set(result.chapterId, result.imageUrl);
+        illustrations.set(chapterId, result.imageUrl);
+      } else {
+        console.warn(
+          `[Chapter Illustration Integration] Chapter ${chapterId} returned failed status`
+        );
+        failedChapterIds.push(chapterId);
       }
+    } else {
+      console.error(
+        `[Chapter Illustration Integration] Chapter ${chapterId} failed:`,
+        settled.reason
+      );
+      failedChapterIds.push(chapterId);
     }
-
-    return results;
-  } catch (error) {
-    console.error(
-      "[Chapter Illustration Integration] Batch generation error:",
-      error
-    );
-    return results; // Return partial results if available
   }
-}
 
+  const successCount = illustrations.size;
+  const failedCount = failedChapterIds.length;
+
+  if (failedCount > 0) {
+    console.warn(
+      `[Chapter Illustration Integration] Partial failure: ${successCount} succeeded, ${failedCount} failed`,
+      { failedChapterIds }
+    );
+  }
+
+  return {
+    illustrations,
+    failedChapterIds,
+    failedCount,
+    successCount,
+  };
+}
 /**
  * Check if an illustration exists in cache for a chapter
  * Useful for avoiding redundant generations
