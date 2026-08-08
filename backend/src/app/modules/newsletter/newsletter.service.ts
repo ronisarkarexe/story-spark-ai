@@ -19,7 +19,7 @@ export const subscribeNewsletter = async (
 
   if (existing) {
     if (existing.status === "active") {
-      return { message: "Already subscribed", subscriber: existing };
+      return { message: "Already subscribed" };
     }
     if (existing.status === "unsubscribed") {
       existing.status = "pending";
@@ -37,7 +37,7 @@ export const subscribeNewsletter = async (
         buildUnsubscribeUrl(baseUrl, existing.unsubscribeToken)
       );
 
-      return { message: "Re-subscribed. Please verify your email.", subscriber: existing };
+      return { message: "Re-subscribed. Please verify your email." };
     }
   }
 
@@ -62,7 +62,7 @@ export const subscribeNewsletter = async (
     buildUnsubscribeUrl(baseUrl, unsubscribeToken)
   );
 
-  return { message: "Subscribed! Please verify your email.", subscriber };
+  return { message: "Subscribed! Please verify your email." };
 };
 
 export const verifyNewsletter = async (token: string) => {
@@ -80,7 +80,7 @@ export const verifyNewsletter = async (token: string) => {
   subscriber.verificationTokenExpires = undefined;
   await subscriber.save();
 
-  return { message: "Email verified successfully.", subscriber };
+  return { message: "Email verified successfully." };
 };
 
 export const unsubscribeByToken = async (token: string) => {
