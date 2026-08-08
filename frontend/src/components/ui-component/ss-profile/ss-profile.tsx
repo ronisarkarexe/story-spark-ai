@@ -1,4 +1,3 @@
-import React from "react";
 import ImageFallback from "../../ImageFallback";
 
 type SSProfileProps = {
@@ -7,11 +6,11 @@ type SSProfileProps = {
   size?: string;
 };
 
-const SSProfile: React.FC<SSProfileProps> = ({
+const SSProfile = ({
   name,
   imageUrl,
   size = "h-16 w-16",
-}) => {
+}: SSProfileProps) => {
   const getInitials = (name: string): string => {
     if (!name) return "";
     return name

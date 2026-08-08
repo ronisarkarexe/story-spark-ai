@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface AchievementProgressProps {
   progress: number;
@@ -6,11 +6,11 @@ interface AchievementProgressProps {
   label?: string;
 }
 
-const AchievementProgress: React.FC<AchievementProgressProps> = ({
+const AchievementProgress = ({
   progress,
   target,
   label,
-}) => {
+}: AchievementProgressProps) => {
   const percentage = Math.min(100, Math.max(0, (progress / target) * 100));
   const [animatedWidth, setAnimatedWidth] = useState(0);
 
