@@ -92,6 +92,10 @@ const issueRefreshToken = async (user: any): Promise<string> => {
 
 const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
   const email = normalizeEmail(payload.email);
+  // Reject empty/whitespace passwords before any DB work
+  if (typeof payload.password !== "string" || !payload.password.trim()) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Password is not valid!");
+  }
   const password = normalizeString(payload.password, "Password");
   const { rememberMe } = payload;
   const isExistUser = await User.findOne({ email });
@@ -101,7 +105,7 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
 
   validateUserStatus(isExistUser.status);
 
-  // Check if user has password (Google users might not)
+  // Missing password means Google-only account (do not treat hashed "" as valid)
   if (!isExistUser.password) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Please use Google login for this account!");
   }
@@ -329,6 +333,8 @@ const googleLogin = async (payload: { token: string }) => {
       const newUser: Partial<IUser> = {
         email: email as string,
         name: (googleName || email || "Google User").slice(0, 100),
+        // Google OAuth users have no local password
+        password: undefined,
         status: "Active",
         subscriptionType: "free",
         profile: {
