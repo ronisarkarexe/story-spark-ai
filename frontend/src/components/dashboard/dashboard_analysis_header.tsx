@@ -1,7 +1,6 @@
-import React from "react";
 import { DashboardAnalysis } from "../../models/analysis";
 
-const DashboardAnalysisHeader: React.FC<{ data: DashboardAnalysis }> = ({ data }) => {
+const DashboardAnalysisHeader = ({ data }: { data: DashboardAnalysis }) => {
   const totalSubs =
     (data.subscriptionTypes?.free ?? 0) +
     (data.subscriptionTypes?.pro ?? 0) +

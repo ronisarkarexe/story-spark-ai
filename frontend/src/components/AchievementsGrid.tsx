@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import confetti from "canvas-confetti";
 import { Achievement } from "../types";
 import AchievementBadge from "./AchievementBadge";
@@ -10,10 +10,10 @@ interface AchievementsGridProps {
 
 type CategoryFilter = "all" | "streak" | "story" | "word_count" | "productivity";
 
-const AchievementsGrid: React.FC<AchievementsGridProps> = ({
+const AchievementsGrid = ({
   achievements = [],
   isLoading,
-}) => {
+}: AchievementsGridProps) => {
   const [activeTab, setActiveTab] = useState<CategoryFilter>("all");
 
   useEffect(() => {

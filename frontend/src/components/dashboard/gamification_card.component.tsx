@@ -1,5 +1,3 @@
-import React from "react";
-
 interface GamificationData {
   xp: number;
   level: number;
@@ -7,7 +5,7 @@ interface GamificationData {
   badges: string[];
 }
 
-const GamificationCard: React.FC<{ data?: GamificationData }> = ({ data }) => {
+const GamificationCard = ({ data }: { data?: GamificationData }) => {
   if (!data) return null;
 
   const { xp, level, streak, badges } = data;

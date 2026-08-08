@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useGetPostListsQuery,useDeletePostMutation  } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
 import ImageFallback from "../../ImageFallback";
 
-const PostListsComponent: React.FC = () => {
+const PostListsComponent = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);
   const [page, setPage] = useState<number>(1);

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDebounced } from "../../../hooks/global";
 import { Post } from "../../../models/post";
@@ -31,7 +31,7 @@ const getExcerpt = (post: Post) => {
   return text.length > 160 ? `${text.slice(0, 160)}...` : text;
 };
 
-const PublishedStoriesComponent: React.FC = () => {
+const PublishedStoriesComponent = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);

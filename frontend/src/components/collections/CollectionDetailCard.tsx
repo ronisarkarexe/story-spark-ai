@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Collection } from "../../models/collection";
@@ -13,7 +12,7 @@ interface Props {
   onDelete?: () => void;
 }
 
-const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }) => {
+const CollectionDetailCard = ({ collection, isOwner, onDelete }: Props) => {
   const navigate = useNavigate();
   const [deleteCollection, { isLoading: isDeleting }] = useDeleteCollectionMutation();
   const [removeStory] = useRemoveStoryFromCollectionMutation();

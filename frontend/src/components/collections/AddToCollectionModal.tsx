@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import {
   useGetUserCollectionsQuery,
@@ -13,7 +13,7 @@ interface Props {
   onClose: () => void;
 }
 
-const AddToCollectionModal: React.FC<Props> = ({ storyId, userId, onClose }) => {
+const AddToCollectionModal = ({ storyId, userId, onClose }: Props) => {
   const { data: collections, isLoading } = useGetUserCollectionsQuery(userId);
   const [addStory, { isLoading: isAdding }] = useAddStoryToCollectionMutation();
   const [createCollection, { isLoading: isCreating }] = useCreateCollectionMutation();

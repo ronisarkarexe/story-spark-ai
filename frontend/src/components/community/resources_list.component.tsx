@@ -1,8 +1,7 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { resources } from './community.data';
 
-const ResourcesListComponent: React.FC = () => {
+const ResourcesListComponent = () => {
   return (
     <div className="min-h-screen bg-white text-slate-900 pt-32 pb-20 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
       <div className="max-w-7xl mx-auto px-6">

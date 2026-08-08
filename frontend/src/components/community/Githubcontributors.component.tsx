@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import githubHero from "../../assets/github-hero.png";
 import ImageFallback from "../ImageFallback";
 interface GitHubContributor {
@@ -8,7 +8,7 @@ interface GitHubContributor {
   contributions: number;
 }
 
-const GithubcontributorsComponent: React.FC = () => {
+const GithubcontributorsComponent = () => {
 
   const [githubcontributors, setGitHubContributors] = useState<GitHubContributor[]>([]);
   const [showAll, setShowAll] = useState(false);

@@ -7,6 +7,7 @@ import {
 } from "../redux/apis/notification.api";
 import { getSocketIo } from "../socket/socket.oi";
 import type { NotificationItem, INotification } from "../models/notification";
+import logger from "../utils/logger.util";
 
 /**
  * Notification bell: REST + Socket.IO real-time updates.
@@ -68,7 +69,7 @@ export const useNotifications = () => {
       await markNotificationRead(notificationId).unwrap();
     } catch (error) {
       const msg = "Failed to mark notification as read. Please try again.";
-      console.error(msg, error);
+      logger.error(msg, error);
       setMutationError(msg);
     }
   };
@@ -84,7 +85,7 @@ export const useNotifications = () => {
       );
     } catch (error) {
       const msg = "Failed to mark all notifications as read. Please try again.";
-      console.error(msg, error);
+      logger.error(msg, error);
       setMutationError(msg);
     }
   };
@@ -140,7 +141,7 @@ export const useNotifications = () => {
         socket.off("notification:all-read", handleAllRead);
       };
     } catch (error) {
-      console.warn("[Story Spark] Failed to set up Socket.IO notifications:", error);
+      logger.warn("[Story Spark] Failed to set up Socket.IO notifications:", error);
     }
   }, [isAuthed, refreshNotifications, refetch]);
 

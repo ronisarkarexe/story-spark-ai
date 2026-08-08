@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   generateOutline,
   regenerateOutline,
@@ -10,9 +10,7 @@ interface StoryOutlineGeneratorProps {
   prompt: string;
 }
 
-const StoryOutlineGenerator: React.FC<StoryOutlineGeneratorProps> = ({
-  prompt,
-}) => {
+const StoryOutlineGenerator = ({ prompt }: StoryOutlineGeneratorProps) => {
   const [outline, setOutline] = useState<StoryOutline>(
     generateOutline({ prompt } as StoryPrompt)
   );

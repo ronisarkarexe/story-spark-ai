@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   generateCoverOptions,
   StoryInfo,
@@ -7,12 +7,12 @@ import {
 
 interface StoryCoverGeneratorProps extends StoryInfo {}
 
-const StoryCoverGenerator: React.FC<StoryCoverGeneratorProps> = ({
+const StoryCoverGenerator = ({
   title,
   genre,
   theme,
   characters,
-}) => {
+}: StoryCoverGeneratorProps) => {
   const [covers, setCovers] = useState<CoverImage[]>(
     generateCoverOptions({
       title,

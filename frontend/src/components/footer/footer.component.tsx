@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logoNew.png";
 
@@ -7,7 +7,7 @@ const DEFAULT_GITHUB_ISSUES_URL =
 
 type StatusState = "idle" | "loading" | "success" | "error";
 
-const FooterComponent: React.FC = () => {
+const FooterComponent = () => {
   const [email, setEmail] = useState<string>("");
   const [status, setStatus] = useState<StatusState>("idle");
   const [message, setMessage] = useState<string>("");

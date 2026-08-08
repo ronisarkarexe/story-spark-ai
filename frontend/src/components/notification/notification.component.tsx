@@ -1,4 +1,3 @@
-import React from "react";
 import { NotificationItem } from "../../models/notification";
 import { getNotificationIcon } from "./notification.utils";
 import { timeAgo } from "../../utils/time-formate";
@@ -13,7 +12,7 @@ interface INotificationComponentProps {
   isMarkingAllRead?: boolean;
 }
 
-const NotificationComponent: React.FC<INotificationComponentProps> = ({
+const NotificationComponent = ({
   notifications,
   showNotification,
   setShowNotification,
