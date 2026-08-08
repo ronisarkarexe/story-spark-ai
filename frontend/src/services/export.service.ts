@@ -40,12 +40,16 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
     if (!response.ok) {
       throw new Error(`Direct fetch failed with status ${response.status}`);
     }
+
+    // Clone BEFORE reading the body — response body is a one-time readable stream.
+    // Calling .blob() exhausts it; .clone() after that throws "body already used".
+    const responseToCache = response.clone();
     const blob = await response.blob();
 
     if ("caches" in window) {
       try {
         const cache = await caches.open(CACHE_NAME);
-        await cache.put(url, response.clone());
+        await cache.put(url, responseToCache);
       } catch (cacheError) {
         console.warn("[ExportService] Failed to cache image:", cacheError);
       }
