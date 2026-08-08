@@ -5,6 +5,7 @@ import ApiError from "../../../errors/api_error";
 import config from "../../../config";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
+import { clearOtpAttempts } from "./otp.rate-limiter.middleware";
 import crypto from "crypto";
 
 const transporter = nodemailer.createTransport({
@@ -189,12 +190,6 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
     expiresIn: 15 * 60, 
   };
 };
-
-// FIX #3: Converted to a standard function so it gets safely hoisted to the top 
-// of the scope during compilation, preventing potential initialization errors.
-function clearOtpAttempts(email: string) {
-  console.log('Clearing OTP attempts for:', email);
-}
 
 export const VerifyEmailService = {
   VerifyEmail,
