@@ -188,5 +188,27 @@ export default function CollabRoom() {
   };
 
   const fallbackCopyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-    .catch(err => console.error(err))
+    navigator.clipboard.writeText(text)
+      .then(() => toast.success("Room link copied!"))
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to copy link.");
+      });
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-50 dark:bg-slate-900">
+      <div className="flex-1 flex flex-col p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold dark:text-white">Collab Room: {roomId}</h1>
+          <button onClick={handleShareRoom} className="px-4 py-2 bg-indigo-600 text-white rounded">Share</button>
+        </div>
+        {error && <div className="text-red-500 mb-4">{error}</div>}
+        <div className="flex-1 overflow-auto bg-white dark:bg-slate-800 p-4 rounded shadow">
+          {loading ? <p className="dark:text-white">Connecting to room...</p> : <p className="dark:text-white">Start typing to collaborate...</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
+

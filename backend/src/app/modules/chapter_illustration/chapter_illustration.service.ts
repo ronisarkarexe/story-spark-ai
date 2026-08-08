@@ -1,6 +1,6 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
-import config from "../../config";
+import config from "../../../config";
 import { ImageCacheModel } from "./chapter_illustration.model";
 import {
   IChapterIllustrationPayload,

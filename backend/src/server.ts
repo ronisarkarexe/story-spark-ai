@@ -155,10 +155,7 @@ async function main() {
     // the Order write and the User write in verifyPayment. See issue #4876.
     startOrderReconciliationJob();
 
-    const socketCorsOrigins =
-      config.cors_origins && config.cors_origins.length > 0
-        ? config.cors_origins
-        : defaultCorsOrigins;
+
 
 
     // Single Socket.IO instance: full CORS methods + credentials, rate
@@ -171,14 +168,6 @@ async function main() {
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       },
     });
-
-    // Apply rate limiting to all Socket.IO connections
-
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true,
-      },
-    });
-
 
     io.use(socketRateLimiter);
 
@@ -218,13 +207,6 @@ async function main() {
     });
 
     logger.info("Socket.IO server initialized with rate limiting");
-
-    setNotificationSocket(io);
-    setupCollabSocket(io);
-    new YjsGateway(io);
-
-    logger.info("🔌 Socket.IO server initialized with rate limiting");
-
 
     httpServer.listen(config.port, () => {
       logger.info(`Story-Spark-AI app listening on port ${config.port}`);
