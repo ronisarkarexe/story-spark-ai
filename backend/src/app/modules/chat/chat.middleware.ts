@@ -4,12 +4,15 @@ import config from "../../../config";
 import { JwtHelpers } from "../../../utils/jwt.helper";
 import chatRateLimiter from "../../middleware/chat.rate-limiter";
 
+/**
+ * Optionally attach a verified JWT user, but always enforce chatRateLimiter.
+ * Authenticated callers must not bypass rate limiting.
+ */
 export const flexibleChatRateLimiter = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-
   const authHeader = Array.isArray(req.headers.authorization)
     ? req.headers.authorization[0]
     : req.headers.authorization;
@@ -33,8 +36,7 @@ export const flexibleChatRateLimiter = async (
       );
 
       if (verifiedUser) {
-        req.user = verifiedUser;
-        return next();
+        req.user = verifiedUser as Express.Request["user"];
       }
     } catch {
       console.warn('[ChatMiddleware] Token verification failed, applying guest rate limit');
