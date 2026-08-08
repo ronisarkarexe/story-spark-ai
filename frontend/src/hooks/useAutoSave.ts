@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import api from "../services/api";
+import logger from "../utils/logger.util";
 
 const DRAFT_KEY_PREFIX = "story_draft_";
 const AUTOSAVE_INTERVAL_MS = 30000;
@@ -242,7 +243,7 @@ export function useAutoSave(draftId: string, title: string, content: string) {
         (error) => {
           setPendingCount(offlineQueue.length);
           setSaveStatus("error");
-          console.error("Failed to flush offline queue:", error);
+          logger.error("Failed to flush offline queue:", error);
         }
       );
     };
