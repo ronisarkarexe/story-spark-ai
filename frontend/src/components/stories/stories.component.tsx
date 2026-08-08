@@ -41,7 +41,7 @@ const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 const dropdownRef = useRef<HTMLDivElement>(null);
 const inputRef = useRef<HTMLTextAreaElement>(null);
 const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-  parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
+  parseInt(localStorage.getItem("guestRequestCount", 10) || "0", 10),
 );
 const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
 
