@@ -15,6 +15,11 @@ const SEVERITY_COLOR = {
   low: "bg-blue-500/10 border-blue-500/30 text-blue-400",
 };
 
+const DEFAULT_SEVERITY_CLASSES = "border-white/10 bg-white/5 text-white";
+
+export const getSeverityClasses = (severity?: string) =>
+  SEVERITY_COLOR[severity ?? ""] ?? DEFAULT_SEVERITY_CLASSES;
+
 const TYPE_LABEL: Record<string, string> = {
   character_contradiction: "👤 Character",
   timeline_inconsistency: "⏱️ Timeline",
@@ -50,12 +55,12 @@ const ScoreRing = ({ score }: { score: number }) => {
 };
 
 const IssueCard = ({ issue }: { issue: IConsistencyIssue }) => (
-  <div className={`border rounded-xl p-4 space-y-2 ${SEVERITY_COLOR[issue.severity]}`}>
+  <div className={`border rounded-xl p-4 space-y-2 ${getSeverityClasses(issue.severity)}`}>
     <div className="flex items-center justify-between">
       <span className="text-xs font-bold uppercase tracking-wider">
         {TYPE_LABEL[issue.type] ?? issue.type}
       </span>
-      <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${SEVERITY_COLOR[issue.severity]}`}>
+      <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${getSeverityClasses(issue.severity)}`}>
         {issue.severity}
       </span>
     </div>
@@ -325,4 +330,4 @@ export default function StoryConsistencyGuardian() {
       </div>
     </div>
   );
-}
+}
