@@ -7,6 +7,7 @@ export interface POVIssue {
 
 const FIRST_PERSON = [
   " i ",
+  " I ",
   " me ",
   " my ",
   " mine ",
