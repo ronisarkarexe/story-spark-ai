@@ -1,6 +1,7 @@
 import { Post } from "../post/post.model";
 import { Request, Response } from "express";
 import httpStatus from "http-status";
+import { Types } from "mongoose";
 import catchAsync from "../../../shared/catch_async";
 import sendResponse from "../../../shared/send_response";
 import { StoryVersionService } from "./story_version.service";
@@ -151,7 +152,11 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
 
   let storyContent: string | undefined;
   if (storyId) {
-    const post = await Post.findById(storyId);
+    if (typeof storyId !== "string" || !Types.ObjectId.isValid(storyId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid storyId.");
+    }
+
+    const post = await Post.findById(new Types.ObjectId(storyId));
     if (!post) {
       throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
     }
