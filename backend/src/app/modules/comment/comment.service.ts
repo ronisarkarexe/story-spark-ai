@@ -161,6 +161,7 @@ const toggleCommentHelpful = async (commentId: string, token: ITokenPayload) => 
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
+  verifyPostAccess(post, user);
 
   const isCurrentlyHelpful = await Comment.exists({
     _id: comment._id,
