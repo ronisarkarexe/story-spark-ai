@@ -476,7 +476,11 @@ export const useSpeechSynthesis = (
     return {
       currentWordIndex: boundedCurrentWordIndex,
       totalWords,
-      percentage: Math.min(1, (boundedCurrentWordIndex + 1) / totalWords),
+      // percentage is 0-100 (per-centum), not 0-1 (ratio).
+      // Consumers using this for progress bars expect width: `${percentage}%`.
+      percentage: Math.round(
+        Math.min(100, ((boundedCurrentWordIndex + 1) / totalWords) * 100)
+      ),
     };
   }, [currentWordIndex]);
 
