@@ -78,10 +78,8 @@ app.use(globalRateLimiter);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser() as unknown as RequestHandler);
-app.use(sanitizeAllMiddleware);
 
-
-// Global XSS sanitization for all incoming request bodies and query parameters
+// Global XSS sanitization for all incoming request bodies and query parameters.
 app.use(sanitizeAllMiddleware);
 
 
@@ -94,14 +92,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-
-// Payload limit set to 10mb to support large story content and
-// character network data without triggering 413 errors.
-// Previously used Express default (100kb) which was too restrictive.
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(cookieParser() as unknown as RequestHandler);
 
 
 app.use("/api/v1", Routers);
