@@ -11,6 +11,10 @@ export interface IExportStory {
   language?: string;
 }
 
+export interface IExportOptions {
+  fontSize?: 'small' | 'medium' | 'large';
+}
+
 /**
  * Asynchronous asset pipeline to fetch images from cloud storage
  * with a canvas CORS fallback.
@@ -107,7 +111,8 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
  */
 export const exportStoryToPDF = async (
   story: IExportStory,
-  base64Image: string | null
+  base64Image: string | null,
+  options?: IExportOptions
 ): Promise<void> => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   
@@ -228,7 +233,9 @@ export const exportStoryToPDF = async (
 
   // Story Text rendering
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
+  const fontSizeMap = { small: 9, medium: 11, large: 13 };
+  const contentFontSize = options?.fontSize ? fontSizeMap[options.fontSize] : 11;
+  doc.setFontSize(contentFontSize);
   doc.setTextColor(51, 65, 85); // slate-700
   
   const paragraphs = story.content.split(/\n+/);
@@ -285,7 +292,8 @@ export const exportStoryToPDF = async (
  */
 export const exportStoryToEPUB = async (
   story: IExportStory,
-  imageBlob: Blob | null
+  imageBlob: Blob | null,
+  options?: IExportOptions
 ): Promise<void> => {
   const zip = new JSZip();
   const uuid = story.uuid || Math.random().toString(36).substring(2, 15);
@@ -316,6 +324,7 @@ export const exportStoryToEPUB = async (
   margin: 20px;
   color: #111111;
   background-color: #ffffff;
+  font-size: ${options?.fontSize === 'small' ? '0.9em' : options?.fontSize === 'large' ? '1.2em' : '1em'};
 }
 h1, h2 {
   text-align: center;

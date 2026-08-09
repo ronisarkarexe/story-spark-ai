@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { IRecentPrompt } from "../../hooks/useRecentPrompts";
 
 interface RecentPromptsPanelProps {
   recentPrompts: IRecentPrompt[];
   onSelectPrompt: (prompt: string) => void;
+  /** Optional: track prompt usage/recency when user clicks "Use" */
+  onPromptUse?: (id: string) => void;
   onRemovePrompt: (id: string) => void;
   onClearAll: () => void;
   isOpen: boolean;
@@ -21,6 +23,7 @@ interface RecentPromptsPanelProps {
 const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
   recentPrompts,
   onSelectPrompt,
+  onPromptUse,
   onRemovePrompt,
   onClearAll,
   isOpen,
@@ -29,25 +32,23 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const filteredPrompts = recentPrompts.filter((item) =>
-  item.prompt.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+  const filteredPrompts = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return recentPrompts;
+    return recentPrompts.filter((item) => item.prompt.toLowerCase().includes(q));
+  }, [recentPrompts, searchTerm]);
 
   const exportPrompts = () => {
-  const blob = new Blob(
-    [JSON.stringify(recentPrompts, null, 2)],
-    { type: "application/json" }
-  );
+    const blob = new Blob([JSON.stringify(recentPrompts, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "recent-prompts.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "recent-prompts.json";
-  a.click();
-
-  URL.revokeObjectURL(url);
-};
   return (
     <div className="relative">
       <button
@@ -55,6 +56,7 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
         onClick={onToggle}
         className="absolute -top-12 right-0 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:bg-white/5 dark:border-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] select-none cursor-pointer"
         title={text.recentPrompts}
+        aria-label={text.recentPrompts}
       >
         <svg
           className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
@@ -73,21 +75,15 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
       </button>
 
       {isOpen && (
+        <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm" onClick={onToggle} />
+      )}
+
+      {isOpen && (
         <div className="fixed right-0 top-0 h-screen w-80 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/10 shadow-2xl z-40 overflow-hidden flex flex-col animate-in slide-in-from-right duration-200 text-left box-border">
           <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-white/5 select-none w-full box-border">
             <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white tracking-tight flex items-center gap-2 m-0 uppercase">
-              <svg
-                className="w-4 h-4 text-blue-600 dark:text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
+              <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>{text.recentPrompts}</span>
             </h3>
@@ -99,12 +95,7 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
               title={text.close}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -118,8 +109,7 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
               className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:border-indigo-500 text-sm"
             />
           </div>
-          
-          {/* Content */}
+
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {filteredPrompts.length > 0 ? (
               filteredPrompts.map((item) => (
@@ -127,17 +117,17 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
                   <button
                     type="button"
                     onClick={() => {
+                      onPromptUse?.(item.id);
                       onSelectPrompt(item.prompt);
                       onToggle();
                     }}
                     className="w-full text-left p-0 bg-transparent text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium leading-relaxed break-words border-none outline-none cursor-pointer"
                   >
                     {item.prompt}
-                    
                   </button>
-                  <p className="text-xs text-gray-400 mt-2">
-                      {new Date(item.timestamp).toLocaleString()}
-                  </p>
+
+                  <p className="text-xs text-gray-400 mt-2">{new Date(item.timestamp).toLocaleString()}</p>
+
                   <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button
                       type="button"
@@ -148,11 +138,12 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
                       className="flex-1 h-8 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-blue-500/10"
                       title={text.usePrompt}
                     >
-                      <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 101.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM15.657 14.243a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM11 17a1 1 0 102 0v-1a1 1 0 10-2 0v1zM5.757 15.657a1 1 0 00-1.414-1.414l-.707.707a1 1 0 101.414 1.414l.707-.707zM2 10a1 1 0 011 1h1a1 1 0 110-2H3a1 1 0 00-1 1zM5.757 4.343a1 1 0 00-1.414 1.414l.707.707a1 1 0 101.414-1.414l-.707-.707z" />
                       </svg>
                       <span>{text.usePrompt}</span>
                     </button>
+
                     <button
                       type="button"
                       onClick={() => setShowDeleteConfirm(item.id)}
@@ -171,7 +162,7 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
 
                   {showDeleteConfirm === item.id && (
                     <div className="mt-2.5 p-3 rounded-lg bg-red-500/5 border border-red-500/10 text-xs text-red-600 dark:text-red-400 font-semibold w-full box-border">
-                      <p className="m-0 mb-2.5 uppercase tracking-wider text-[10px]">Delete this prompt index?</p>
+                      <p className="m-0 mb-2.5 uppercase tracking-wider text-[10px]">Delete this prompt?</p>
                       <div className="flex gap-2 w-full box-border">
                         <button
                           type="button"
@@ -198,9 +189,7 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
             ) : (
               <div className="h-full flex items-center justify-center">
                 <p className="text-center text-gray-500 text-sm">
-                  {searchTerm
-                    ? "No prompts match your search."
-                    : text.noRecentPrompts}
+                  {searchTerm ? "No prompts match your search." : text.noRecentPrompts}
                 </p>
               </div>
             )}
@@ -230,15 +219,9 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
           )}
         </div>
       )}
-
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm"
-          onClick={onToggle}
-        />
-      )}
     </div>
   );
 };
 
 export default React.memo(RecentPromptsPanel);
+

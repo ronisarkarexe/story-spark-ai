@@ -13,12 +13,9 @@ export const scrubPII = (text: string): string => {
 
   let scrubbed = text;
 
-
-
-
   // 1. Emails
 
-  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const emailRegex = /[a-zA-Z0-9._%+\-']+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
   scrubbed = scrubbed.replace(emailRegex, "[REDACTED_EMAIL]");
 
   // 2. Phone numbers
@@ -28,6 +25,10 @@ export const scrubPII = (text: string): string => {
   // UK/International Mobile formats
   const phoneIntRegex = /(?<![\w/])(?:\+44\s?|0)7\d{3}[-.\s]?\d{6}\b/g;
   scrubbed = scrubbed.replace(phoneIntRegex, "[REDACTED_PHONE]");
+
+  // Generic international formats (+49, +61, etc.)
+  const phoneGenericIntRegex = /(?<![\w/])\+\d{1,4}\s?(?:\(\d{1,4}\)|\d{1,4})[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}\b/g;
+  scrubbed = scrubbed.replace(phoneGenericIntRegex, "[REDACTED_PHONE]");
 
   const phoneRegex =
     /(?<![\w/])(?:\+\d{1,3}[-.\s]?|1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
@@ -42,24 +43,45 @@ export const scrubPII = (text: string): string => {
   const phoneLocalRegex = /(?<![\w/])\d{3}[-.\s]\d{4}\b/g;
   scrubbed = scrubbed.replace(phoneLocalRegex, "[REDACTED_PHONE]");
 
-  // 3. SSN (US)
+  // 3. Structured identifiers that are commonly labeled in request bodies
+  const accountNumberRegex =
+    /\b(?:bank\s+account(?:\s+number)?|account(?:\s+number)?|acct(?:\.?|\s+number)?|checking\s+account)\b[\s:#-]*[A-Za-z0-9-]{2,20}\b/gi;
+  scrubbed = scrubbed.replace(accountNumberRegex, "[REDACTED_ACCOUNT_NUMBER]");
+
+  const passportRegex =
+    /\b(?:passport(?:\s*(?:no|number|nr|num))?)\b[\s:#-]*[A-Za-z0-9]{2,12}\b/gi;
+  scrubbed = scrubbed.replace(passportRegex, "[REDACTED_PASSPORT]");
+
+  const driverLicenseRegex =
+    /\b(?:driver(?:'s|s)?\s+license|drivers?\s+license|license(?:\s*(?:no|number|nr|num))?|dl)\b[\s:#-]*[A-Za-z0-9]{2,12}\b/gi;
+  scrubbed = scrubbed.replace(driverLicenseRegex, "[REDACTED_DRIVER_LICENSE]");
+
+  const taxIdRegex =
+    /\b(?:tax\s*(?:id|identifier|number)|tin)\b[\s:#-]*[A-Za-z0-9-]{2,12}\b/gi;
+  scrubbed = scrubbed.replace(taxIdRegex, "[REDACTED_TAX_ID]");
+
+  const governmentIdRegex =
+    /\b(?:government\s+id|national\s+id|citizen\s+id|personal\s+id|id\s+number)\b[\s:#-]*[A-Za-z0-9-]{2,20}\b/gi;
+  scrubbed = scrubbed.replace(governmentIdRegex, "[REDACTED_GOVERNMENT_ID]");
+
+  // 4. SSN (US)
   // Matches 123-45-6789 or 123 45 6789
   const ssnRegex = /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g;
   scrubbed = scrubbed.replace(ssnRegex, "[REDACTED_SSN]");
 
-  // 4. Credit card-like sequences
+  // 5. Credit card-like sequences
   // Matches 13-19 digits with optional spaces/dashes.
   // This is heuristic (not Luhn-valid), but generally effective for scrubbing.
   const cardRegex = /\b(?:\d[ -]*?){13,19}\b/g;
   scrubbed = scrubbed.replace(cardRegex, "[REDACTED_CARD]");
 
-  // 5a. US address variations with directional prefixes/suffixes (still conservative)
+  // 6a. US address variations with directional prefixes/suffixes (still conservative)
   // Examples: "123 N Main St", "456 S. 2nd Ave", "789 W Elm Road"
   const addressAltRegex =
     /\b\d{1,5}\s+(?:N|S|E|W|NE|NW|SE|SW)\.?\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)(?:\s+(?:Apt|Apartment|Suite|Ste|Unit|Room)\s+[A-Za-z0-9#-]+)?(?:\s*,\s*[A-Za-z\s]+)?(?:\s*,\s*[A-Z]{2})?(?:\s+\d{5})?\b/gi;
   scrubbed = scrubbed.replace(addressAltRegex, "[REDACTED_ADDRESS]");
 
-  // 5b. Conservative address pattern
+  // 6b. Conservative address pattern
   // Matches: street number + street name + common suffix (St, Ave, Blvd, Rd, Dr, Ln, Ct, Pl, Pkwy)
   // Example: "123 Main St". Avoids over-broad matching.
   const addressRegex =
@@ -68,6 +90,13 @@ export const scrubPII = (text: string): string => {
 
 
   // 6. NLP for Person Names using compromise
+  const containsAnyRedactionToken =
+    /\[REDACTED_(?:EMAIL|PHONE|NAME|SSN|CARD|ADDRESS)\]/i.test(scrubbed);
+  if (!containsAnyRedactionToken) {
+    const doc = compromise(scrubbed);
+    const people = doc.people().out("array");
+
+  // 7. NLP for Person Names using compromise
   const doc = compromise(scrubbed);
   const people = doc.people().out("array");
 
@@ -105,6 +134,19 @@ export const piiScrubberMiddleware = (req: Request, res: Response, next: NextFun
     // Also scrub chat 'message'
     if (req.body && req.body.message && typeof req.body.message === "string") {
       req.body.message = scrubPII(req.body.message);
+    }
+
+    // Also scrub chat 'messages' array for POST /chat
+    if (req.body && Array.isArray(req.body.messages)) {
+      req.body.messages = req.body.messages.map((msg: any) => {
+        if (msg && typeof msg.content === "string") {
+          return {
+            ...msg,
+            content: scrubPII(msg.content),
+          };
+        }
+        return msg;
+      });
     }
 
     next();

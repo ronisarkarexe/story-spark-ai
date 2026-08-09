@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from "react";
+import api from "../services/api";
 
 const DRAFT_KEY_PREFIX = "story_draft_";
 const AUTOSAVE_INTERVAL_MS = 30000;
@@ -12,37 +13,189 @@ interface DraftData {
   savedAt: string;
 }
 
-export const offlineQueue: Array<{ content: string; timestamp: number }> = [];
+interface QueuedSave {
+  draftId: string;
+  title: string;
+  content: string;
+  timestamp: number;
+}
+
+export const offlineQueue: QueuedSave[] = [];
+let flushInProgress: Promise<void> | null = null;
+
+async function saveDraftToServer(item: Pick<QueuedSave, "draftId" | "title" | "content">) {
+  // PATCH /api/v1/story/:id/save
+
 let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
-export async function flushOfflineQueue(queue: Array<{ content: string; timestamp: number }>) {
+let flushInProgress: Promise<void> | null = null;
+
+async function saveDraftToServer(item: Pick<QueuedSave, "draftId" | "title" | "content">) {
+
+  await api.patch(`/story/${item.draftId}/save`, {
+    title: item.title,
+    content: item.content,
+  });
+}
+
+
+export async function flushOfflineQueue(queue: QueuedSave[]) {
   for (const item of queue) {
-    await fetch("/api/stories/save", {
+    await saveDraftToServer(item);
+  }
+}
+
+async function flushOfflineQueueOnce(
+  onStart: () => void,
+  onSuccess: () => void,
+  onError: (error: unknown) => void
+): Promise<void> {
+  if (flushInProgress) return flushInProgress;
+  if (offlineQueue.length === 0) return;
+
+  onStart();
+  flushInProgress = (async () => {
+    const itemsToFlush = offlineQueue.splice(0, offlineQueue.length);
+    try {
+      for (const item of itemsToFlush) {
+        await saveDraftToServer(item);
+      }
+      onSuccess();
+    } catch (error) {
+      offlineQueue.unshift(...itemsToFlush);
+      onError(error);
+    }
+  })();
+
+  try {
+    await flushInProgress;
+  } finally {
+    flushInProgress = null;
+  }
+}
+
+type AutoSaveEvent =
+  | { type: "online" }
+  | { type: "offline" }
+  | { type: "queue-updated"; pendingCount: number }
+  | { type: "flush-start" }
+  | { type: "flush-complete" }
+  | { type: "flush-failed"; error: unknown };
+
+export const offlineQueue: Array<QueueItem> = [];
+let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+const autoSaveSubscribers = new Set<(event: AutoSaveEvent) => void>();
+let autoSaveListenersAttached = false;
+let autoSaveOnlineHandler: (() => Promise<void>) | null = null;
+let autoSaveOfflineHandler: (() => void) | null = null;
+let flushPromise: Promise<void> | null = null;
+
+function notifyAutoSaveSubscribers(event: AutoSaveEvent) {
+  autoSaveSubscribers.forEach((subscriber) => subscriber(event));
+}
+
+function updateQueueState() {
+  notifyAutoSaveSubscribers({ type: "queue-updated", pendingCount: offlineQueue.length });
+}
+
+function ensureAutoSaveListeners() {
+  if (autoSaveListenersAttached) {
+    return;
+  }
+
+  autoSaveOnlineHandler = async () => {
+    globalIsOnline = true;
+    notifyAutoSaveSubscribers({ type: "online" });
+
+    if (offlineQueue.length === 0 || flushPromise) {
+      return;
+    }
+
+    notifyAutoSaveSubscribers({ type: "flush-start" });
+
+    flushPromise = (async () => {
+      const pendingItems = offlineQueue.splice(0, offlineQueue.length);
+
+      try {
+        for (const item of pendingItems) {
+          const response = await fetch("/api/v1/stories/save", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              draftId: item.draftId,
+              title: item.title,
+              content: item.content,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to save queued draft");
+          }
+        }
+
+        updateQueueState();
+        notifyAutoSaveSubscribers({ type: "flush-complete" });
+      } catch (error) {
+        offlineQueue.unshift(...pendingItems);
+        updateQueueState();
+        notifyAutoSaveSubscribers({ type: "flush-failed", error });
+      } finally {
+        flushPromise = null;
+      }
+    })();
+  };
+
+  autoSaveOfflineHandler = () => {
+    globalIsOnline = false;
+    notifyAutoSaveSubscribers({ type: "offline" });
+  };
+
+  window.addEventListener("online", autoSaveOnlineHandler);
+  window.addEventListener("offline", autoSaveOfflineHandler);
+  autoSaveListenersAttached = true;
+}
+
+function registerAutoSaveListener(subscriber: (event: AutoSaveEvent) => void) {
+  autoSaveSubscribers.add(subscriber);
+  ensureAutoSaveListeners();
+
+  return () => {
+    autoSaveSubscribers.delete(subscriber);
+
+    if (autoSaveSubscribers.size === 0 && autoSaveOnlineHandler && autoSaveOfflineHandler) {
+      window.removeEventListener("online", autoSaveOnlineHandler);
+      window.removeEventListener("offline", autoSaveOfflineHandler);
+      autoSaveOnlineHandler = null;
+      autoSaveOfflineHandler = null;
+      autoSaveListenersAttached = false;
+      flushPromise = null;
+    }
+  };
+}
+
+export async function flushOfflineQueue(queue: Array<QueueItem>) {
+  const pendingItems = queue.splice(0, queue.length);
+
+  for (const item of pendingItems) {
+    const response = await fetch("/api/v1/stories/save", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ content: item.content }),
+      body: JSON.stringify({
+        draftId: item.draftId,
+        title: item.title,
+        content: item.content,
+      }),
     });
-  }
-}
 
-if (typeof window !== "undefined") {
-  window.addEventListener("offline", () => {
-    globalIsOnline = false;
-  });
-
-  window.addEventListener("online", async () => {
-    globalIsOnline = true;
-    if (offlineQueue.length > 0) {
-      try {
-        await flushOfflineQueue(offlineQueue);
-        offlineQueue.length = 0;
-      } catch (error) {
-        console.error("Failed to flush offline queue:", error);
-      }
+    if (!response.ok) {
+      queue.unshift(...pendingItems);
+      throw new Error("Failed to save queued draft");
     }
-  });
+  }
 }
 
 export function useAutoSave(draftId: string, title: string, content: string) {
@@ -61,25 +214,14 @@ export function useAutoSave(draftId: string, title: string, content: string) {
 
       const currentOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
       if (!currentOnline) {
-        offlineQueue.push({ content, timestamp: Date.now() });
+        offlineQueue.push({ draftId, title, content, timestamp: Date.now() });
         setPendingCount(offlineQueue.length);
         setLastSaved(new Date());
         setSaveStatus("saved");
         return;
       }
 
-      const response = await fetch("/api/stories/save", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save to server");
-      }
-
+      await saveDraftToServer({ draftId, title, content });
       setLastSaved(new Date());
       setSaveStatus("saved");
     } catch {
@@ -88,27 +230,25 @@ export function useAutoSave(draftId: string, title: string, content: string) {
   }, [draftId, title, content]);
 
   useEffect(() => {
-    const handleOnline = async () => {
+    const handleOnline = () => {
       setIsOnline(true);
-      globalIsOnline = true;
-      if (offlineQueue.length > 0) {
-        try {
-          setSaveStatus("saving");
-          await flushOfflineQueue(offlineQueue);
-          offlineQueue.length = 0;
-          setPendingCount(0);
+      flushOfflineQueueOnce(
+        () => setSaveStatus("saving"),
+        () => {
+          setPendingCount(offlineQueue.length);
           setLastSaved(new Date());
           setSaveStatus("saved");
-        } catch (error) {
+        },
+        (error) => {
+          setPendingCount(offlineQueue.length);
           setSaveStatus("error");
           console.error("Failed to flush offline queue:", error);
         }
-      }
+      );
     };
 
     const handleOffline = () => {
       setIsOnline(false);
-      globalIsOnline = false;
     };
 
     window.addEventListener("online", handleOnline);
@@ -126,10 +266,13 @@ export function useAutoSave(draftId: string, title: string, content: string) {
     return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [title, content, save]);
 
+  const saveRef = useRef(save);
+  saveRef.current = save;
+
   useEffect(() => {
-    intervalTimer.current = setInterval(save, AUTOSAVE_INTERVAL_MS);
+    intervalTimer.current = setInterval(() => saveRef.current(), AUTOSAVE_INTERVAL_MS);
     return () => { if (intervalTimer.current) clearInterval(intervalTimer.current); };
-  }, [save]);
+  }, []);
 
   return { saveStatus, lastSaved, isOnline, pendingCount, save };
 }

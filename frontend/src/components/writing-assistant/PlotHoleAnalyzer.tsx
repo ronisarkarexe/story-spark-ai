@@ -19,9 +19,17 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
   const [plotHoles, setPlotHoles] = useState<IPlotHole[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const MIN_STORY_LENGTH = 150;
+
   const handleAnalyze = async () => {
     if (!storyText || storyText.trim().length === 0) {
       toast.error("Please provide a story draft to analyze.");
+      return;
+    }
+    if (storyText.trim().length < MIN_STORY_LENGTH) {
+      toast.error(
+        `Story is too short for analysis. Please provide at least ${MIN_STORY_LENGTH} characters.`
+      );
       return;
     }
 
@@ -30,14 +38,21 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
     const toastId = toast.loading("AI Editor is reviewing your story...");
 
     try {
-      const baseUrl = getBaseUrl() || import.meta.env.VITE_BASE_URL || "";
+      const baseUrl = getBaseUrl() || import.meta.env.VITE_BASE_URL;
+      if (!baseUrl) {
+        throw new Error(
+          "API base URL is not configured. Set VITE_BASE_URL in your environment."
+        );
+      }
       const response = await axios.post(`${baseUrl}/ai-editor/analyze`, {
         storyText,
       });
 
-      if (response.data && response.data.success) {
-        setPlotHoles(response.data.data.plot_holes);
-        const count = response.data.data.plot_holes.length;
+      const plotHolesData = response.data?.data?.plot_holes;
+
+      if (response.data?.success && Array.isArray(plotHolesData)) {
+        setPlotHoles(plotHolesData);
+        const count = plotHolesData.length;
         if (count === 0) {
           toast.success("Brilliant! No logical consistency errors found.", { id: toastId });
         } else {

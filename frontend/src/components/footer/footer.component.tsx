@@ -47,7 +47,8 @@ const FooterComponent: React.FC = () => {
         setStatus("error");
         setMessage(data.message || "Something went wrong.");
       }
-    } catch {
+    } catch (error) {
+      console.error("Newsletter subscription failed", error);
       setStatus("error");
       setMessage("Network error. Please try again.");
     }
@@ -65,7 +66,7 @@ const FooterComponent: React.FC = () => {
   const resourceLinks = [
     { label: "Blog", to: "/blog" },
     { label: "Help Center", to: "/help-center" },
-    { label: "Community", to: "/dashboard/community" },
+    { label: "Community", to: "/community" },
     { label: "Contributors", to: "/contributors" },
     { label: "Support / Feedback", to: "/contact-us" },
     { label: "GitHub Issues", to: githubIssuesUrl },
@@ -80,9 +81,7 @@ const FooterComponent: React.FC = () => {
 
 const socialLinks = [
   { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
-  { icon: "fa-instagram", url: "https://www.instagram.com", label: "Follow us on Instagram" },
-  { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
-  { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X" },
+  { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
   { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
   { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
 ];
@@ -240,9 +239,9 @@ const socialLinks = [
             <form
               onSubmit={handleSubscribe}
               noValidate
-              className="mt-1 flex flex-col gap-2"
+              className="mt-2 flex flex-col gap-3"
             >
-              <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
+              <div className="flex h-11 items-center gap-2 rounded-lg border border-white/10 bg-[#0B1228]/70 px-3 transition-colors duration-200 focus-within:border-blue-400/40">
                 <i
                   className="fa-solid fa-envelope text-slate-500 text-[13px]"
                   aria-hidden="true"
@@ -261,12 +260,34 @@ const socialLinks = [
               </div>
 
               <button
-                type="submit"
-                disabled={status === "loading"}
-                className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60 cursor-pointer"
-              >
-                {status === "loading" ? "..." : "Subscribe"}
-              </button>
+  type="submit"
+  disabled={status === "loading"}
+  className="
+    w-full
+    sm:w-auto
+    h-10
+    px-5
+    rounded-lg
+    bg-gradient-to-r
+    from-blue-500
+    to-indigo-500
+    text-[13px]
+    font-medium
+    text-white
+    transition-all
+    duration-200
+    hover:from-blue-400
+    hover:to-indigo-400
+    hover:shadow-md
+    focus:outline-none
+    focus:ring-2
+    focus:ring-blue-500/30
+    disabled:opacity-60
+    disabled:cursor-not-allowed
+  "
+>
+  {status === "loading" ? "Subscribing..." : "Subscribe"}
+</button>
             </form>
 
             <div aria-live="polite" role="status">

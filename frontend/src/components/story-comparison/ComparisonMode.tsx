@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import VariationSelector from "./VariationSelector";
 import DiffViewer from "./DiffViewer";
 
@@ -28,25 +29,25 @@ const ComparisonMode: React.FC<ComparisonModeProps> = ({
 }) => {
   const [selectedVersion1, setSelectedVersion1] = useState<IStoryVersion | null>(null);
   const [selectedVersion2, setSelectedVersion2] = useState<IStoryVersion | null>(null);
-  const [isComparing, setIsComparing] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
 
   const handleCompare = () => {
-    if (!selectedVersion1 || !selectedVersion2 || selectedVersion1._id === selectedVersion2._id) {
+    if (!selectedVersion1 || !selectedVersion2) {
+      toast.error("Please select two versions to compare.");
       return;
     }
-
-    setIsComparing(true);
-    setTimeout(() => {
-      setIsComparing(false);
-      setShowComparison(true);
-    }, 300);
+    if (selectedVersion1._id === selectedVersion2._id) {
+      toast.error("Please select two different versions — you selected the same version twice.");
+      return;
+    }
+    // No async operation — transition directly, no fake timeout needed
+    setShowComparison(true);
   };
 
   const handleBackToSelection = () => {
+    // Keep both selections so the user only needs to change the one they want —
+    // clearing both on every back forces redundant reselection for common workflows
     setShowComparison(false);
-    setSelectedVersion1(null);
-    setSelectedVersion2(null);
   };
 
   if (isLoadingVersions) {
@@ -97,7 +98,7 @@ const ComparisonMode: React.FC<ComparisonModeProps> = ({
           onSelectVersion1={setSelectedVersion1}
           onSelectVersion2={setSelectedVersion2}
           onCompare={handleCompare}
-          isLoading={isComparing}
+          isLoading={false}
         />
       ) : selectedVersion1 && selectedVersion2 ? (
         <DiffViewer

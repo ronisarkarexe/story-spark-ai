@@ -4,6 +4,47 @@
  * to reduce the risk of HTML injection and ensure consistent string formatting.
  */
 
+// Dangerous URL protocols that can be used for XSS attacks
+const DANGEROUS_URL_PROTOCOLS = [
+  'javascript:',
+  'data:',
+  'vbscript:',
+  'mocha:',
+  'livescript:',
+  'about:',
+  'file:',
+  'view-source:',
+  'jar:',
+  'apt:',
+];
+
+/**
+ * Checks whether a URL uses an allowed (safe) protocol.
+ * URLs with dangerous protocols like javascript:, data:, vbscript:, etc.
+ * can be used for XSS attacks and should be rejected.
+ */
+export const isAllowedUrlProtocol = (url: string): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  const lower = url.trim().toLowerCase();
+  for (const protocol of DANGEROUS_URL_PROTOCOLS) {
+    if (lower.startsWith(protocol)) return false;
+  }
+  return true;
+};
+
+/**
+ * Sanitizes a URL by validating its protocol. Returns the URL unchanged
+ * if the protocol is safe, otherwise returns the provided fallback value.
+ * This prevents XSS via javascript:, data:, and other dangerous protocols.
+ */
+export const sanitizeUrl = (
+  url: string,
+  fallback = '',
+): string => {
+  if (!url || typeof url !== 'string') return fallback;
+  return isAllowedUrlProtocol(url) ? url.trim() : fallback;
+};
+
 /**
  * Removes all HTML tags from a string using a regex that handles both
  * complete tags (<tag>) and incomplete openers (<script without >).
@@ -42,4 +83,34 @@ export const truncate = (
 export const normalizeWhitespace = (input: string): string => {
   if (!input) return '';
   return input.replace(/\s+/g, ' ').trim();
+};
+
+/**
+ * Verifies if a URL protocol is safe (http, https, or mailto/tel if needed).
+ * Rejects javascript:, data:, vbscript:, file:, about:, jar:, mocha:, livescript:, apt:, etc.
+ */
+export const isAllowedUrlProtocol = (url: string): boolean => {
+  if (!url) return false;
+  
+  const trimmed = url.trim().toLowerCase();
+  
+  try {
+    const parsed = new URL(trimmed);
+    const allowed = ['http:', 'https:', 'mailto:', 'tel:'];
+    return allowed.includes(parsed.protocol);
+  } catch (e) {
+    const dangerousPattern = /^(javascript|data|vbscript|file|about|jar|mocha|livescript|apt):/i;
+    if (dangerousPattern.test(trimmed)) {
+      return false;
+    }
+    return !trimmed.includes(':') || trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.startsWith('../');
+  }
+};
+
+/**
+ * Returns a sanitized URL if protocol is allowed, or the fallback string if dangerous.
+ */
+export const sanitizeUrl = (url: string, fallback = ''): string => {
+  if (!url) return fallback;
+  return isAllowedUrlProtocol(url) ? url.trim() : fallback;
 };

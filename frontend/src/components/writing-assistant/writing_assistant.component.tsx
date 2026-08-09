@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -64,12 +65,26 @@ const demoLines = [
   "He remembered the fire, but not how it started.",
 ];
 
+// Keyframe injected once at module level — not inside render
+const blinkStyleSheet = typeof document !== "undefined" && (() => {
+  const existing = document.getElementById("blink-keyframe");
+  if (!existing) {
+    const s = document.createElement("style");
+    s.id = "blink-keyframe";
+    s.textContent = "@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }";
+    document.head.appendChild(s);
+  }
+})();
+
 export default function AIWritingAssistant() {
   const [typedText, setTypedText] = useState("");
   const [lineIdx, setLineIdx] = useState(0);
   const [charIdx, setCharIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [visible, setVisible] = useState(false);
+  const navigate = useNavigate();
+  const [ctaHovered, setCtaHovered] = useState(false);
+  const [ctaPressed, setCtaPressed] = useState(false);
 
   useEffect(() => {
     setVisible(true);
@@ -203,12 +218,11 @@ export default function AIWritingAssistant() {
               animation: "blink 1s step-end infinite",
             }}
           />
-          <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
         </div>
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
           <button
-            onClick={() => window.location.href = "/stories"}
+            onClick={() => navigate("/stories")}
             style={{
               background: "linear-gradient(135deg, #7C5DFA 0%, #4F8EF7 100%)",
               border: "none",
@@ -224,8 +238,7 @@ export default function AIWritingAssistant() {
             Start Writing →
           </button>
           <button
-            onClick={() => window.location.href = "/story-inspiration"}
-
+            onClick={() => navigate("/story-inspiration")}
             style={{
               background: "transparent",
               border: "1px solid rgba(255,255,255,0.14)",
@@ -333,7 +346,11 @@ export default function AIWritingAssistant() {
           Join thousands of writers already using StorySpark to push past limits and find their story.
         </p>
         <button
-          onClick={() => window.location.href = "/stories"}
+          onClick={() => navigate("/stories")}
+          onMouseEnter={() => setCtaHovered(true)}
+          onMouseLeave={() => { setCtaHovered(false); setCtaPressed(false); }}
+          onMouseDown={() => setCtaPressed(true)}
+          onMouseUp={() => setCtaPressed(false)}
           style={{
             background: "linear-gradient(135deg, #7C5DFA 0%, #4F8EF7 100%)",
             border: "none",
@@ -345,25 +362,14 @@ export default function AIWritingAssistant() {
             fontFamily: "'Georgia', serif",
             letterSpacing: "0.02em",
             transition: "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)",
-            boxShadow: "0 4px 14px rgba(124, 93, 250, 0.2)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-3px)";
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(124, 93, 250, 0.4)";
-            (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.1)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(124, 93, 250, 0.2)";
-            (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1)";
-          }}
-          onMouseDown={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(1px)";
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 8px rgba(124, 93, 250, 0.3)";
-          }}
-          onMouseUp={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-3px)";
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(124, 93, 250, 0.4)";
+            // Derived from React state — never overwritten by reconciliation
+            transform: ctaPressed ? "translateY(1px)" : ctaHovered ? "translateY(-3px)" : "translateY(0)",
+            boxShadow: ctaPressed
+              ? "0 2px 8px rgba(124, 93, 250, 0.3)"
+              : ctaHovered
+              ? "0 8px 24px rgba(124, 93, 250, 0.4)"
+              : "0 4px 14px rgba(124, 93, 250, 0.2)",
+            filter: ctaHovered ? "brightness(1.1)" : "brightness(1)",
           }}
         >
           Try the Assistant — It's Free →
@@ -373,8 +379,21 @@ export default function AIWritingAssistant() {
       <footer style={{ padding: "2rem 2.5rem", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", fontSize: "0.78rem", color: "#5A577A" }}>
         <span>© 2026 StorySpark<span style={{ color: "#7C5DFA" }}>AI</span> · Open-source under MIT</span>
         <div style={{ display: "flex", gap: "1.8rem" }}>
-          {["GitHub", "Contributing", "Code of Conduct", "Docs"].map((l) => (
-            <a key={l} href="#" style={{ color: "#5A577A", textDecoration: "none" }}>{l}</a>
+          {[
+            { label: "GitHub", href: "https://github.com/ronisarkarexe/story-spark-ai" },
+            { label: "Contributing", href: "https://github.com/ronisarkarexe/story-spark-ai/blob/main/CONTRIBUTING.md" },
+            { label: "Code of Conduct", href: "https://github.com/ronisarkarexe/story-spark-ai/blob/main/CODE_OF_CONDUCT.md" },
+            { label: "Docs", href: "https://github.com/ronisarkarexe/story-spark-ai/wiki" },
+          ].map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#5A577A", textDecoration: "none" }}
+            >
+              {l.label}
+            </a>
           ))}
         </div>
       </footer>

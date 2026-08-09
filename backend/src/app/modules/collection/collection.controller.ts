@@ -5,6 +5,7 @@ import { getToken } from "../../middleware/token";
 import sendResponse from "../../../shared/send_response";
 import httpStatus from "http-status";
 import { CollectionService } from "./collection.service";
+import { ITokenPayload } from "../../../interfaces/token";
 
 // --- Interfaces for Request Bodies (Type Safety) ---
 interface CreateCollectionBody {
@@ -24,12 +25,12 @@ interface AddStoryBody {
   storyId: string;
 }
 
-// --- Helper Utility (Can be moved to your token middleware file) ---
-const getOptionalToken = async (req: Request): Promise<string | null> => {
+
+const getOptionalToken = async (req: Request): Promise<ITokenPayload  | null> => {
   try {
-    return await getToken(req);
-  } catch {
-    return null; // Unauthenticated visitor
+    return getToken(req);
+  } catch (error) {
+    console.error('[CollectionController] Failed:', error);
   }
 };
 

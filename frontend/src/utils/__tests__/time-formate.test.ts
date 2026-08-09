@@ -1,3 +1,8 @@
+/**
+ * time-formate.test.ts
+ * Unit tests for the time-formate utility functions.
+ */
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   getISTTimeFormate,
   timeAgo,
@@ -5,111 +10,132 @@ import {
 } from "../time-formate";
 
 describe("getISTTimeFormate", () => {
-  it("returns a non-empty formatted string for a valid timestamp", () => {
-    const result = getISTTimeFormate(Date.now() + 60_000);
+  it("returns a string for a valid timestamp", () => {
+    const result = getISTTimeFormate(Date.now());
     expect(typeof result).toBe("string");
-    expect(result.length).toBeGreaterThan(0);
   });
 
-  it("includes a timezone indicator in the output", () => {
+  it("includes timezone information in the formatted string", () => {
     const result = getISTTimeFormate(Date.now());
-    // Intl.DateTimeFormat with timeZoneName:"short" should produce something like "IST"
+    // The Intl.DateTimeFormat with timeZoneName should include a timezone abbreviation
     expect(result).toMatch(/[A-Z]{2,5}/);
+  });
+
+  it("returns a non-empty string", () => {
+    const result = getISTTimeFormate(Date.now());
+    expect(result.length).toBeGreaterThan(0);
   });
 });
 
 describe("timeAgo", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date("2026-06-20T12:00:00.000Z"));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-06-15T12:00:00.000Z"));
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
-  it("returns 'just now' for future timestamps", () => {
-    const future = new Date("2026-06-20T13:00:00.000Z").toISOString();
-    expect(timeAgo(future)).toBe("just now");
+  it('returns "just now" for future timestamps', () => {
+    const future = new Date("2024-06-15T12:00:01.000Z").toISOString();
+    const result = timeAgo(future);
+    expect(result).toBe("just now");
   });
 
-  it("returns '1 second ago' for exactly 1 second in the past", () => {
-    const oneSecondAgo = new Date(Date.now() - 1_000).toISOString();
-    expect(timeAgo(oneSecondAgo)).toBe("1 second ago");
+  it("returns correct singular form for 1 second", () => {
+    const oneSecAgo = new Date("2024-06-15T11:59:59.000Z").toISOString();
+    const result = timeAgo(oneSecAgo);
+    expect(result).toBe("1 second ago");
   });
 
-  it("returns 'X seconds ago' for multiple seconds in the past", () => {
-    const tenSecondsAgo = new Date(Date.now() - 10_000).toISOString();
-    expect(timeAgo(tenSecondsAgo)).toBe("10 seconds ago");
+  it("returns correct plural form for multiple seconds", () => {
+    const fiveSecAgo = new Date("2024-06-15T11:59:55.000Z").toISOString();
+    const result = timeAgo(fiveSecAgo);
+    expect(result).toBe("5 seconds ago");
   });
 
-  it("returns '1 minute ago' for exactly 1 minute in the past", () => {
-    const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString();
-    expect(timeAgo(oneMinuteAgo)).toBe("1 minute ago");
+  it("returns correct singular form for 1 minute", () => {
+    const oneMinAgo = new Date("2024-06-15T11:59:00.000Z").toISOString();
+    const result = timeAgo(oneMinAgo);
+    expect(result).toBe("1 minute ago");
   });
 
-  it("returns 'X minutes ago' for multiple minutes in the past", () => {
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60_000).toISOString();
-    expect(timeAgo(fiveMinutesAgo)).toBe("5 minutes ago");
+  it("returns correct plural form for multiple minutes", () => {
+    const threeMinAgo = new Date("2024-06-15T11:57:00.000Z").toISOString();
+    const result = timeAgo(threeMinAgo);
+    expect(result).toBe("3 minutes ago");
   });
 
-  it("returns '1 hour ago' for exactly 1 hour in the past", () => {
-    const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
-    expect(timeAgo(oneHourAgo)).toBe("1 hour ago");
+  it("returns correct singular form for 1 hour", () => {
+    const oneHourAgo = new Date("2024-06-15T11:00:00.000Z").toISOString();
+    const result = timeAgo(oneHourAgo);
+    expect(result).toBe("1 hour ago");
   });
 
-  it("returns 'X hours ago' for multiple hours in the past", () => {
-    const threeHoursAgo = new Date(Date.now() - 3 * 3_600_000).toISOString();
-    expect(timeAgo(threeHoursAgo)).toBe("3 hours ago");
+  it("returns correct plural form for multiple hours", () => {
+    const fourHourAgo = new Date("2024-06-15T08:00:00.000Z").toISOString();
+    const result = timeAgo(fourHourAgo);
+    expect(result).toBe("4 hours ago");
   });
 
-  it("returns '1 day ago' for exactly 1 day in the past", () => {
-    const oneDayAgo = new Date(Date.now() - 86_400_000).toISOString();
-    expect(timeAgo(oneDayAgo)).toBe("1 day ago");
+  it("returns correct singular form for 1 day", () => {
+    const oneDayAgo = new Date("2024-06-14T12:00:00.000Z").toISOString();
+    const result = timeAgo(oneDayAgo);
+    expect(result).toBe("1 day ago");
   });
 
-  it("returns 'X days ago' for multiple days in the past", () => {
-    const tenDaysAgo = new Date(Date.now() - 10 * 86_400_000).toISOString();
-    expect(timeAgo(tenDaysAgo)).toBe("10 days ago");
+  it("returns correct plural form for multiple days", () => {
+    const sevenDayAgo = new Date("2024-06-08T12:00:00.000Z").toISOString();
+    const result = timeAgo(sevenDayAgo);
+    expect(result).toBe("7 days ago");
   });
 
-  it("returns '1 month ago' for approximately 1 month in the past", () => {
-    const oneMonthAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
-    expect(timeAgo(oneMonthAgo)).toBe("1 month ago");
+  it("returns correct singular form for 1 month", () => {
+    const oneMonthAgo = new Date("2024-05-15T12:00:00.000Z").toISOString();
+    const result = timeAgo(oneMonthAgo);
+    expect(result).toBe("1 month ago");
   });
 
-  it("returns 'X months ago' for multiple months in the past", () => {
-    const sixMonthsAgo = new Date(Date.now() - 6 * 30 * 86_400_000).toISOString();
-    expect(timeAgo(sixMonthsAgo)).toBe("6 months ago");
+  it("returns correct plural form for multiple months", () => {
+    const threeMonthsAgo = new Date("2024-03-15T12:00:00.000Z").toISOString();
+    const result = timeAgo(threeMonthsAgo);
+    expect(result).toBe("3 months ago");
   });
 
-  it("returns '1 year ago' for approximately 1 year in the past", () => {
-    const oneYearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
-    expect(timeAgo(oneYearAgo)).toBe("1 year ago");
+  it("returns correct singular form for 1 year", () => {
+    const oneYearAgo = new Date("2023-06-15T12:00:00.000Z").toISOString();
+    const result = timeAgo(oneYearAgo);
+    expect(result).toBe("1 year ago");
   });
 
-  it("returns 'X years ago' for multiple years in the past", () => {
-    const threeYearsAgo = new Date(Date.now() - 3 * 365 * 86_400_000).toISOString();
-    expect(timeAgo(threeYearsAgo)).toBe("3 years ago");
+  it("returns correct plural form for multiple years", () => {
+    const twoYearsAgo = new Date("2022-06-15T12:00:00.000Z").toISOString();
+    const result = timeAgo(twoYearsAgo);
+    expect(result).toBe("2 years ago");
   });
 });
 
 describe("formatDateShort", () => {
-  it("formats a date string into short date format", () => {
-    const result = formatDateShort("2026-06-20T00:00:00.000Z");
+  it("returns a non-empty string", () => {
+    const result = formatDateShort("2024-01-15T12:00:00.000Z");
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("returns a string type", () => {
+    const result = formatDateShort("2024-06-15T12:00:00.000Z");
     expect(typeof result).toBe("string");
-    expect(result).toMatch(/2026/);
   });
 
-  it("produces consistent output for the same date", () => {
-    const date = "2026-01-15T00:00:00.000Z";
-    const result1 = formatDateShort(date);
-    const result2 = formatDateShort(date);
-    expect(result1).toBe(result2);
+  it("returns a formatted date string for a known date", () => {
+    const result = formatDateShort("2024-01-01T00:00:00.000Z");
+    // Should contain "Jan" and "2024"
+    expect(result).toContain("Jan");
+    expect(result).toContain("2024");
   });
 
-  it("handles a date string with time component", () => {
-    const result = formatDateShort("2026-06-20T15:30:00.000Z");
+  it("handles a date with no time component", () => {
+    const result = formatDateShort("2024-12-25");
     expect(typeof result).toBe("string");
     expect(result.length).toBeGreaterThan(0);
   });

@@ -30,6 +30,7 @@ export async function getCachedImageUrl(url: string): Promise<string> {
   }
 
   const promise = (async () => {
+    await Promise.resolve(); // Force execution to be asynchronous to prevent synchronous throw race condition
     try {
       const cache = await caches.open(CACHE_NAME);
       const cachedResponse = await cache.match(url);

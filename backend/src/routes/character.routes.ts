@@ -2,6 +2,7 @@ import validateRequest from '../app/middleware/validate.request';
 import { CharacterValidator } from '../app/modules/user/__tests__/character.validation';
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import { generatePortrait } from '../controllers/character_portrait.controller';
 import {
   createCharacter,
   getCharacters,
@@ -30,8 +31,23 @@ characterRouter.post(
   createCharacter
 );
 characterRouter.get('/', characterRateLimiter, auth(ENUM_USER_ROLE.USER), getCharacters);
+
+// Generate or regenerate an AI portrait for a saved character
+characterRouter.post(
+  '/:id/generate-portrait',
+  characterRateLimiter,
+  auth(ENUM_USER_ROLE.USER),
+  generatePortrait
+);
+
 characterRouter.get('/:id', characterRateLimiter, auth(ENUM_USER_ROLE.USER), getCharacterById);
-characterRouter.put('/:id', characterRateLimiter, auth(ENUM_USER_ROLE.USER), updateCharacter);
+characterRouter.put(
+  '/:id',
+  characterRateLimiter,
+  auth(ENUM_USER_ROLE.USER),
+  validateRequest(CharacterValidator.updateCharacter),
+  updateCharacter
+);
 characterRouter.delete('/:id', characterRateLimiter, auth(ENUM_USER_ROLE.USER), deleteCharacter);
 
 export default characterRouter;

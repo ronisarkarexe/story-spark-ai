@@ -1,24 +1,36 @@
-export interface NarrativeIssue {
-  type: string;
-}
+import { NarrativeIssue } from "../types/narrative";
 
-export const narrativeFlowAnalyzer = (story: string): NarrativeIssue[] => {
+export function analyzeNarrativeFlow(
+  story: string
+): NarrativeIssue[] {
+
   const issues: NarrativeIssue[] = [];
-  
-  if (!story) {
-    return issues;
-  }
 
-  // Detect Abrupt Transition
   if (story.includes("Suddenly")) {
-    issues.push({ type: "Abrupt Transition" });
+    issues.push({
+      id: 1,
+      type: "Abrupt Transition",
+      severity: "High",
+      scene: "Scene Transition",
+      explanation:
+        "The transition appears too sudden.",
+      suggestion:
+        "Add connecting details explaining the change."
+    });
   }
 
-  // Detect Repetition (>5 occurrences of 'Then')
-  const thenCount = (story.match(/Then/g) || []).length;
-  if (thenCount > 5) {
-    issues.push({ type: "Repetition" });
+  if ((story.match(/Then/g) || []).length > 5) {
+    issues.push({
+      id: 2,
+      type: "Repetition",
+      severity: "Medium",
+      scene: "Multiple Scenes",
+      explanation:
+        "Repeated transition wording affects flow.",
+      suggestion:
+        "Use more varied narrative transitions."
+    });
   }
 
   return issues;
-};
+}

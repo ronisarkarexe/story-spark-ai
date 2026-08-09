@@ -5,7 +5,7 @@ import httpStatus from "http-status";
 import { StoryRatingService } from "./story_rating.service";
 
 const createOrUpdateRating = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?._id;
   const { storyId, rating, review } = req.body;
 
   const result = await StoryRatingService.rateStory(
@@ -25,8 +25,8 @@ const createOrUpdateRating = catchAsync(async (req: Request, res: Response) => {
 
 const getStoryRatings = catchAsync(async (req: Request, res: Response) => {
   const { storyId } = req.params;
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const limit = parseInt(req.query.limit as string, 10) || 10;
 
   const result = await StoryRatingService.getStoryRatings(storyId, page, limit);
 
@@ -53,7 +53,7 @@ const getAverageRating = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deleteRating = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?._id;
   const { ratingId } = req.params;
 
   const result = await StoryRatingService.deleteRating(userId, ratingId);
@@ -67,7 +67,7 @@ const deleteRating = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getTopRatedStories = catchAsync(async (req: Request, res: Response) => {
-  const limit = parseInt(req.query.limit as string) || 10;
+  const limit = parseInt(req.query.limit as string, 10) || 10;
 
   const result = await StoryRatingService.getTopRatedStories(limit);
 

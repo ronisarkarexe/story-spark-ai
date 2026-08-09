@@ -10,19 +10,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- BiLSTM scorer model for evaluating story coherence, creativity, and relevance
-- LSTM Autoencoder for writer's block detection
-- Flask API blueprint exposing POST /score endpoint
-- Daily digest push notification via Expo SDK
-- Google OAuth login support
-- OTP-based email verification
-- Story generation via Gemini AI
-- User authentication with JWT
-- MongoDB integration for story and user storage
+- Character library feature for managing story characters
+- Story genre transformation component
+- Story version history tracking
+- Audio narration feature for stories
+- Story translation functionality
+- Cookie consent redesign
+- Improved onboarding guide documentation
+- Payment signature length validation
+- Search query parameter validation
+- Story translation bug fixes
+- Parallel middleware fetches for performance improvement
+- User data loss prevention fixes
+- Reservation flow fixes
+- Writer feedback review form
+- Story branching graph visualization
+- Story world map feature
+- Story remix functionality
+- Story visualizer component
+- Story trailer generation
+- Continue story modal
+- Story collection features
+- Real Flesch-Kincaid-based readability, diversity, and repeated-word analysis in the Vocabulary Analyzer (previously hardcoded)
+
+### Changed
+- Improved CONTRIBUTING.md with comprehensive local setup guide, monorepo structure explanation, environment variable guide, branch naming conventions, Conventional Commits format, and PR checklist cross-reference (#4258)
+- Updated empty stories state component
+- Improved trending topics layout with responsive grid
+- Enhanced dark mode support across components
+- Updated frontend package dependencies
+- Improved error handling and validation
 
 ### Fixed
+- Fixed delete user dangling references
+- Fixed story translation bug
+- Fixed search query parameter validation
+- Fixed payment signature length check
 - Replaced `require()` with ES module import for `expo-server-sdk`
 - Cached ML model and tokenizer at module level to avoid repeated disk I/O
+- Fixed reservation flow issues
+- Fixed data loss issues
+- Fixed story coherence scoring
 
 ---
 

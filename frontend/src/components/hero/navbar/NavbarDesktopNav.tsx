@@ -25,16 +25,16 @@ const NavLinkItem = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, delay: index * 0.04 }}
       whileHover={{ y: -1 }}
+      whileTap={{ scale: 0.97 }}
     >
       <NavLink
         to={to}
         end={end}
         onClick={onNavigate}
-        className={`group relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
-          active
-            ? "text-white shadow-sm"
-            : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
-        }`}
+        className={`group relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 focus-visible:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${active
+          ? "text-white shadow-sm"
+          : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+          }`}
       >
         {active && (
           <motion.span

@@ -42,12 +42,16 @@ Chapter:
 ${chapterText.slice(0, 6000)}
 ---`;
 
-  const result = await generateStory(prompt);
+  try {
+    const result = await generateStory(prompt);
 
-  return safeParseAIResponse(
-    result.story,
-    EngagementAnalysisResponseSchema,
-    buildEngagementFallback(),
-    { label: "engagement analysis" }
-  );
+    return safeParseAIResponse(
+      result.story,
+      EngagementAnalysisResponseSchema,
+      buildEngagementFallback(),
+      { label: "engagement analysis" }
+    );
+  } catch (error) {
+    return buildEngagementFallback();
+  }
 }

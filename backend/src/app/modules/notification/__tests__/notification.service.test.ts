@@ -76,3 +76,47 @@ describe("NotificationService.resolveUserId", () => {
     expect(mockFindOne).toHaveBeenCalledWith({ email: "ada@example.com" });
   });
 });
+
+describe("NotificationService.markNotificationAsRead", () => {
+  beforeEach(() => {
+    mockFindOneAndUpdate.mockReset();
+    mockFindOne.mockReset();
+    mockEmitNotificationStateToUser.mockReset();
+  });
+
+  it("throws a 400 Bad Request error if the notification ID is invalid", async () => {
+    const token = { _id: "user-123" } as any;
+    await expect(
+      NotificationService.markNotificationAsRead("invalid-id", token)
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      message: "Invalid notification ID",
+    });
+  });
+
+  it("successfully marks a notification as read with a valid ObjectId", async () => {
+    const validObjectId = "60c72b2f9b1d8e256c8b4567";
+    const token = { _id: "user-123" } as any;
+
+    mockFindOneAndUpdate.mockResolvedValueOnce({
+      _id: validObjectId,
+      userId: "user-123",
+      isRead: true,
+    });
+
+    const result = await NotificationService.markNotificationAsRead(validObjectId, token);
+    expect(result).toBeDefined();
+    expect(result.isRead).toBe(true);
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { _id: validObjectId, userId: "user-123" },
+      { isRead: true },
+      { new: true }
+    );
+    expect(mockEmitNotificationStateToUser).toHaveBeenCalledWith(
+      "user-123",
+      "notification:updated",
+      expect.any(Object)
+    );
+  });
+});
+

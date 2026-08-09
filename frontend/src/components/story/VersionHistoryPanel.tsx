@@ -18,9 +18,13 @@ const VersionHistoryPanel = () => {
     (state: RootState) => state.story.currentStory
   );
 
+  const currentVersionId = useSelector(
+    (state: RootState) => state.story.currentVersionId
+  );
+
   if (!versions.length) {
     return (
-      <div className="w-72 bg-zinc-900 h-screen border-r border-zinc-800 p-5">
+      <div className="w-72 bg-zinc-900 h-full border-r border-zinc-800 p-5">
         <h2 className="text-2xl font-bold text-white mb-6">
           Version History
         </h2>
@@ -37,9 +41,10 @@ const VersionHistoryPanel = () => {
   }
 
   const reversedVersions = [...versions].reverse();
+  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
 
   return (
-    <div className="w-72 bg-zinc-900 h-screen border-r border-zinc-800 p-5 overflow-y-auto">
+    <div className="w-72 bg-zinc-900 h-full border-r border-zinc-800 p-5 overflow-y-auto">
       <h2 className="text-2xl font-bold text-white mb-2">
         Version History
       </h2>
@@ -51,9 +56,8 @@ const VersionHistoryPanel = () => {
 
       <div className="space-y-3">
         {reversedVersions.map((version, index) => {
-          const isCurrent =
-            currentStory?.chapters.length ===
-            version.chapterCount;
+          // Compare by ID — chapter count is not unique across versions
+          const isCurrent = currentVersionId === version.id;
 
           return (
             <div
@@ -90,27 +94,46 @@ const VersionHistoryPanel = () => {
               )}
 
               <div className="flex flex-col gap-2 mt-3">
-                <button
-                  onClick={() =>
-                    dispatch(
-                      restoreVersion(version.id)
-                    )
-                  }
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg transition"
-                >
-                  Restore Version
-                </button>
+                {/* Hide restore on the current version — would discard unsaved edits */}
+                {!isCurrent && (
+                  <button
+                    onClick={() =>
+                      dispatch(
+                        restoreVersion(version.id)
+                      )
+                    }
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg transition"
+                  >
+                    Restore Version
+                  </button>
+                )}
 
-                <button
-                  onClick={() =>
-                    dispatch(
-                      deleteVersion(version.id)
-                    )
-                  }
-                  className="w-full bg-red-600 hover:bg-red-700 text-white text-sm py-2 rounded-lg transition"
-                >
-                  Delete Version
-                </button>
+                {pendingDeleteId === version.id ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        dispatch(deleteVersion(version.id));
+                        setPendingDeleteId(null);
+                      }}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs py-2 rounded-lg transition"
+                    >
+                      Confirm Delete
+                    </button>
+                    <button
+                      onClick={() => setPendingDeleteId(null)}
+                      className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white text-xs py-2 rounded-lg transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setPendingDeleteId(version.id)}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white text-sm py-2 rounded-lg transition"
+                  >
+                    Delete Version
+                  </button>
+                )}
               </div>
             </div>
           );

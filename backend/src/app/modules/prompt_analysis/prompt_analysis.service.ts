@@ -10,12 +10,61 @@ const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export class PromptAnalysisService {
   /**
+   * Prompt Injection & Content Safety Guardrail Filter
+   * Detects and blocks malicious prompt injection attempts, system prompt escape sequences,
+   * and illegal control tokens.
+   */
+  public static validateAndSanitizePrompt(prompt: string): {
+    sanitizedPrompt: string;
+    isSafe: boolean;
+  } {
+    if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Prompt cannot be empty");
+    }
+
+    // 1. Strip dangerous C0 control characters (except tab 0x09 and newline 0x0A)
+    const sanitizedPrompt = prompt.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, "").trim();
+
+    // 2. Prompt injection & system instruction override pattern matching
+    const promptInjectionPatterns = [
+      /ignore\s+(all\s+)?(previous|prior)\s+(instructions|rules|prompts)/i,
+      /forget\s+(all\s+)?(previous|prior|system)\s+(instructions|rules|prompts)/i,
+      /disregard\s+(all\s+)?(previous|prior|system)\s+(instructions|rules|prompts)/i,
+      /you\s+are\s+now\s+in\s+(developer|dan|jailbreak)\s+mode/i,
+      /show\s+(me\s+)?(your\s+)?(system|secret|api)\s+(prompt|key|instructions)/i,
+      /reveal\s+(your\s+)?(system|secret|api)\s+(prompt|key|instructions)/i,
+      /<\|im_start\|>/i,
+      /<\|im_end\|>/i,
+      /\[INST\]/i,
+      /<<SYS>>/i,
+      /^system:\s*/i,
+    ];
+
+    for (const pattern of promptInjectionPatterns) {
+      if (pattern.test(sanitizedPrompt)) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "Prompt rejected: Potential prompt injection or system prompt override detected."
+        );
+      }
+    }
+
+    return {
+      sanitizedPrompt,
+      isSafe: true,
+    };
+  }
+
+  /**
    * Analyze user prompt and generate creativity score + enhancement suggestions
    */
   static async analyzePrompt(
     req: IPromptAnalysisRequest
   ): Promise<IPromptAnalysisResponse> {
-    const { prompt, language = "English", genre, tone } = req;
+    const { prompt: rawPrompt, language = "English", genre, tone } = req;
+
+    // 0. Run prompt injection & safety guardrail check
+    const { sanitizedPrompt: prompt } = this.validateAndSanitizePrompt(rawPrompt);
 
     try {
       // 1. Calculate base metrics
@@ -67,6 +116,9 @@ export class PromptAnalysisService {
         recommendations: enhancementData.recommendations,
       };
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
         `Prompt analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`

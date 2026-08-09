@@ -624,7 +624,7 @@ export default function Contact() {
 
           {/* RIGHT COLUMN — FORM */}
           <div
-            className={`contact-col-right w-full lg:sticky lg:top-24 transition-all duration-700 delay-150 ${
+            className={`contact-col-right w-full lg:mx-auto lg:max-w-2xl lg:sticky lg:top-24 transition-all duration-700 delay-150 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
           >

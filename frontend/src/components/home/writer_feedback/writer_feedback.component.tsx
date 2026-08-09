@@ -19,19 +19,32 @@ const sampleReviews: Review[] = [
 ];
 
 const ReviewCard = ({ writer }: { writer: Review }) => (
-  <div className="creator-card group w-[280px] sm:w-[300px] shrink-0 p-5 sm:p-6 hover:-translate-y-1.5 flex flex-col justify-between h-full">
-    <div className="absolute inset-0 bg-white/0 group-hover:bg-indigo-50/10 dark:group-hover:bg-indigo-500/5 transition-colors duration-300"></div>
+<div className="creator-card group w-[280px] sm:w-[300px] shrink-0 p-5 sm:p-6
+hover:-translate-y-2
+hover:scale-[1.03]
+hover:shadow-2xl
+hover:shadow-indigo-500/20
+transition-all duration-300
+flex flex-col justify-between h-full">    <div className="absolute inset-0 bg-white/0 group-hover:bg-indigo-50/10 dark:group-hover:bg-indigo-500/5 transition-colors duration-300"></div>
     <div className="absolute -inset-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 -z-10"></div>
     
-    <Quote className="text-indigo-400/20 w-8 h-8 absolute top-4 right-4 -z-10 group-hover:text-indigo-400/30 transition-colors" />
-
-    <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed line-clamp-4 mb-5 relative z-10">
-      "{writer.feedback}"
-    </p>
+<Quote
+  className="text-indigo-400/20 w-8 h-8 absolute top-4 right-4 -z-10
+  transition-all duration-300
+  group-hover:scale-125
+  group-hover:rotate-12
+  group-hover:text-indigo-400/40"
+/>
+  <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed line-clamp-4 mb-5 relative z-10
+group-hover:text-slate-900
+dark:group-hover:text-white
+transition-colors duration-300">
     <div className="flex items-center gap-3 mt-auto relative z-10">
-      <img 
-        className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-indigo-50 dark:ring-indigo-500/20" 
-        src={writer.imgSrc || `https://i.pravatar.cc/150?u=${writer.name}`} 
+      <img className="h-10 w-10 shrink-0 rounded-full object-cover
+            ring-2 ring-indigo-50 dark:ring-indigo-500/20
+            transition-all duration-300
+            group-hover:scale-110
+           group-hover:ring-indigo-400"        src={writer.imgSrc || `https://i.pravatar.cc/150?u=${writer.name}`} 
         alt={writer.name} 
       />
       <div>

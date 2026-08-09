@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Send, MessageSquare, Trash2, Bot, User, Sparkles, RefreshCw, AlertCircle, HelpCircle, BookOpen, Compass, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { chatWithSparky, ISparkyMessage } from "../../services/ai.service";
@@ -44,7 +44,15 @@ const ChatPage: React.FC = () => {
 
   // Persist chat history
   useEffect(() => {
-    localStorage.setItem("sparky_chat_history", JSON.stringify(messages));
+    try {
+      localStorage.setItem("sparky_chat_history", JSON.stringify(messages));
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "QuotaExceededError") {
+        toast.error("Chat history could not be saved because storage is full.");
+      } else {
+        console.warn("Failed to persist chat history:", e);
+      }
+    }
     scrollToBottom();
   }, [messages]);
 
@@ -52,13 +60,14 @@ const ChatPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSend = async (textToSend: string) => {
+  const handleSend = async (textToSend: string, existingMessages?: ISparkyMessage[]) => {
     const trimmed = textToSend.trim();
     if (!trimmed || isLoading) return;
 
     setErrorState(null);
     const userMessage: ISparkyMessage = { role: "user", content: trimmed };
-    const updatedMessages = [...messages, userMessage];
+    const baseMessages = existingMessages ?? messages;
+    const updatedMessages = [...baseMessages, userMessage];
     setMessages(updatedMessages);
     setMessage("");
     setIsLoading(true);
@@ -74,7 +83,6 @@ const ChatPage: React.FC = () => {
       toast.error(errMsg);
     } finally {
       setIsLoading(false);
-      // Refocus input
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   };
@@ -95,9 +103,9 @@ const ChatPage: React.FC = () => {
     if (messages.length === 0) return;
     const lastUserMessage = messages[messages.length - 1];
     if (lastUserMessage.role === "user") {
-      // Remove last user message temporarily to prevent duplicates
-      setMessages((prev) => prev.slice(0, -1));
-      handleSend(lastUserMessage.content);
+      const trimmedMessages = messages.slice(0, -1);
+      setMessages(trimmedMessages);
+      handleSend(lastUserMessage.content, trimmedMessages);
     }
   };
 
@@ -109,7 +117,11 @@ const ChatPage: React.FC = () => {
   const confirmClear = () => {
     setMessages([]);
     setIsConfirmingClear(false);
-    localStorage.removeItem("sparky_chat_history");
+    try {
+      localStorage.removeItem("sparky_chat_history");
+    } catch (e) {
+      console.warn("Failed to clear chat history from storage:", e);
+    }
     toast.success("Conversation cleared");
   };
 

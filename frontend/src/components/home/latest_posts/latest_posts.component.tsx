@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
-import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
 
 const LatestPostsComponent = () => {
-  const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
+  const { data } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
@@ -38,7 +37,7 @@ const LatestPostsComponent = () => {
     <section className="w-full min-w-0 max-w-full">
       <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Latest Posts</h2>
 
-      <div className="max-w-full space-y-3">
+      <div className="max-w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {visiblePosts.length > 0 ? (
           visiblePosts.map((post: Post) => {
             const isExpanded = expandedPostId === post._id;

@@ -18,6 +18,7 @@ export interface ICollabRoom {
   collabState?: Buffer;
   isAiGenerating: boolean;
   isPublic: boolean;
+  storyVersion: number;
 }
 
 export interface IParticipant {

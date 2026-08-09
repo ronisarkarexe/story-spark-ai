@@ -398,7 +398,8 @@ const ContributorsComponent = () => {
         const response = await fetch(
           "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors"
         );
-        const data = await response.json();
+        if (!response.ok) throw new Error("Request failed");
+const data = await response.json();
         if (Array.isArray(data)) {
           const filtered = data.filter(
             (c: Contributor) => c.contributions >= 3

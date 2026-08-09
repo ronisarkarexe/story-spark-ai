@@ -69,13 +69,39 @@ describe("escapeRegex", () => {
   it("escapes all metacharacters in a combined string", () => {
     const result = escapeRegex("[a-z]{1,3}(foo|bar)+?bar$");
     expect(result).toBe(
-      "\\[a\\-z\\]\\{1\\,3\\}\\(foo\\|bar\\)\\+?bar\\$"
+      "\\[a\\-z\\]\\{1\\,3\\}\\(foo\\|bar\\)\\+\\?bar\\$"
     );
   });
 
   it("output can be safely used as pattern in RegExp constructor", () => {
     const userInput = "users[id]: (test|example)*";
     const escaped = escapeRegex(userInput);
+    expect(() => new RegExp(escaped)).not.toThrow();
+  });
+
+  it("preserves whitespace and alphanumeric characters unchanged", () => {
+    expect(escapeRegex("plain text 123")).toBe("plain text 123");
+    expect(escapeRegex("hello world 2024")).toBe("hello world 2024");
+    expect(escapeRegex("  leading and trailing  ")).toBe("  leading and trailing  ");
+  });
+
+  it("is idempotent — already-escaped strings remain unchanged on second call", () => {
+    const first = escapeRegex("user.name[0]");
+    const second = escapeRegex(first);
+    expect(second).toBe(first);
+  });
+
+  it("handles MongoDB query-like field paths containing dots", () => {
+    const input = "user.email";
+    const escaped = escapeRegex(input);
+    expect(escaped).toBe("user\\.email");
+    expect(() => new RegExp(escaped)).not.toThrow();
+  });
+
+  it("handles MongoDB query-like strings with combined special characters", () => {
+    const input = "users.[0].name#tag";
+    const escaped = escapeRegex(input);
+    expect(escaped).toBe("users\\.\\[0\\]\\.name\\#tag");
     expect(() => new RegExp(escaped)).not.toThrow();
   });
 

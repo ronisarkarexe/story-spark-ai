@@ -161,9 +161,9 @@ body {
     overflow: hidden;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"] {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -231,11 +231,14 @@ input[type="password"] {
 }
 
 /* ── Design System: Form Input Custom Fields ── */
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-    width: 100%;
-    max-width: 100%;
+.auth-form-card input,
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"],
+.auth-form-card .ds-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
     height: var(--ds-input-height);
     font-size: 15px;
     line-height: calc(var(--ds-input-height) - 2px);
@@ -245,7 +248,7 @@ input[type="password"] {
     color: #e1e2ea;
     border: 1px solid rgba(255, 255, 255, 0.08);
     display: block;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
 }
 
@@ -323,7 +326,7 @@ input::placeholder {
 
 input:focus {
     border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16), 0 0 16px rgba(124, 58, 237, 0.08);
+    box-shadow: inset 0 0 0 2px #7c3aed, 0 0 16px rgba(124, 58, 237, 0.15);
     outline: none;
     transform: translateY(-1px);
 }
@@ -394,13 +397,33 @@ input:focus {
 
 
 /* ── Mobile Layout Media Queries ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .auth-form-card {
+        max-width: 480px;
+    }
+}
+
 @media (max-width: 767px) {
-    .auth-field,
-    input[type="text"],
-    input[type="email"],
-    input[type="password"] {
+    .auth-field {
         padding-left: 40px !important;
         padding-right: 40px !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .auth-form-card {
+        max-width: 100%;
+        border-radius: 16px;
+    }
+    .auth-container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .auth-container {
+        max-width: 1200px;
     }
 }
 
@@ -482,6 +505,12 @@ input:focus {
 .ds-alert[data-variant="success"] {
     border-color: rgba(110, 231, 183, 0.26);
     background: rgba(16, 185, 129, 0.12);
+}
+
+/* ── Focus-visible for keyboard users ── */
+*:focus-visible {
+    outline: 2px solid #7c3aed;
+    outline-offset: 2px;
 }
 
 /* ── Input State Styling (used by JS via aria-invalid/disabled) ── */
@@ -569,12 +598,15 @@ button:disabled {
 /* Guarantee every input inside the auth card is fully contained */
 .auth-form-card .ds-input-group,
 .auth-form-card .input-icon-wrapper,
+.auth-form-card input,
 .auth-form-card input[type="text"],
 .auth-form-card input[type="email"],
-.auth-form-card input[type="password"] {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+.auth-form-card input[type="password"],
+.auth-form-card .ds-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
 }
 
 /* Ensure submit and Google buttons fill the card width */

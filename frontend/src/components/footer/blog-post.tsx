@@ -40,7 +40,8 @@ const BlogPost = () => {
 
         {/* META */}
         <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-          5 min read • StorySpark AI Editorial Team
+          5 min read - StorySpark AI Editorial Team
+
         </div>
 
         {/* CONTENT CARD */}

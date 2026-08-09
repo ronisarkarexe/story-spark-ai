@@ -84,7 +84,10 @@ body {
 
 /* ---------- Inputs ---------- */
 .ds-input {
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: var(--input-height);
   padding: 0 var(--sp-4);
   padding-left: 44px;
@@ -199,7 +202,7 @@ body {
 .ds-link:hover { color: var(--spark-purple); border-bottom-color: var(--spark-purple); }
 
 /* ---------- Input Groups ---------- */
-.ds-input-group { position: relative; }
+.ds-input-group { position: relative; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
 .ds-input-group .ds-input-icon {
   position: absolute; left: var(--sp-4); top: 50%; transform: translateY(-50%);
   font-size: 20px; color: var(--spark-outline);

@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { IStories } from "./stories.view.component";
 
 export interface IRelatedStoriesComponentProps {
@@ -8,8 +8,13 @@ export interface IRelatedStoriesComponentProps {
 }
 
 export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
-  const navigate = useNavigate();
   const filteredPosts = posts.filter((post) => post._id !== currentPostId);
+  const navigate = useNavigate();
+  const MAX_RELATED = 4;
+  const filteredPosts = posts
+    .filter((post) => post._id !== currentPostId)
+    .slice(0, MAX_RELATED);
+
 
   return (
     <div className="mt-8">
@@ -17,13 +22,15 @@ export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = 
       {filteredPosts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredPosts.map((post) => (
-            <div
+            <Link
               key={post._id}
-              onClick={() => navigate(`/stories/${post._id}`)}
-              className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
+              to={`/stories/${post._id}`}
+              className="block p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 hover:bg-slate-700/60 transition-colors"
             >
-              <p className="text-sm font-semibold text-white truncate">{post.title}</p>
-            </div>
+              <p className="text-sm font-semibold text-white truncate">
+                {post.title || "Untitled Story"}
+              </p>
+            </Link>
           ))}
         </div>
       ) : (

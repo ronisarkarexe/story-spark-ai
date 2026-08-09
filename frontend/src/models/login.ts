@@ -5,6 +5,8 @@ export interface Login {
 
 export interface AccessToken {
   accessToken: string;
+  data?: any;
+  expiresAt?: string | number;
 }
 
 export interface LoginUser {

@@ -1,0 +1,58 @@
+body, a, button, input, textarea, select {
+    cursor: none !important;
+  }
+  
+  .magic-cursor-layer {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    overflow: hidden;
+  }
+  
+  .magic-cursor-glow {
+    position: absolute;
+    width: 45px;
+    height: 45px;
+    background: transparent;
+    border: 2px solid rgba(249, 115, 22, 0.9);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  
+  .magic-cursor-dot {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: #f97316;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  
+  .magic-cursor-sparkle {
+    position: absolute;
+    width: 15px; /* Slightly larger */
+    height: 8px;
+    background-color: #fdba74;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #f97316, 0 0 18px #fdba74; /* Richer glow */
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: fadeOut 1200ms ease-out forwards;
+  }
+  
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, calc(-50% - 40px)) scale(0.2);
+    }
+  }

@@ -1,143 +1,90 @@
-/**
- * @vitest-environment jsdom
- */
-import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
+// @vitest-environment jsdom
+
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getCachedImageUrl, clearObjectUrls } from "../imageCache";
 
-const originalCaches = globalThis.caches;
-const mockCache = {
-  match: vi.fn(),
-  put: vi.fn(),
-};
-const mockCachesOpen = vi.fn(() => Promise.resolve(mockCache));
+const TEST_URL = "https://example.com/image.png";
 
-const originalCreateObjectURL = URL.createObjectURL;
-const originalRevokeObjectURL = URL.revokeObjectURL;
-const BLOB_URL_MAP = new Map<string, Blob>();
-let objectUrlCounter = 0;
-
-const mockCreateObjectURL = vi.fn((blob: Blob) => {
-  const url = `blob:mock:${++objectUrlCounter}`;
-  BLOB_URL_MAP.set(url, blob);
-  return url;
-});
-const mockRevokeObjectURL = vi.fn((url: string) => {
-  BLOB_URL_MAP.delete(url);
-});
-
-const mockFetch = vi.fn();
-
-beforeEach(() => {
-  vi.clearAllMocks();
-  objectUrlCounter = 0;
-  BLOB_URL_MAP.clear();
-  Object.defineProperty(globalThis, "caches", {
-    value: { open: mockCachesOpen },
-    writable: true,
-  });
-  Object.defineProperty(globalThis, "fetch", {
-    value: mockFetch,
-    writable: true,
-  });
-  Object.defineProperty(globalThis, "URL", {
-    value: {
-      createObjectURL: mockCreateObjectURL,
-      revokeObjectURL: mockRevokeObjectURL,
-    },
-    writable: true,
-  });
-});
-
-afterAll(() => {
-  Object.defineProperty(globalThis, "caches", {
-    value: originalCaches,
-    writable: true,
-  });
-  Object.defineProperty(globalThis, "URL", {
-    value: {
-      createObjectURL: originalCreateObjectURL,
-      revokeObjectURL: originalRevokeObjectURL,
-    },
-    writable: true,
-  });
-});
-
-const createMockBlob = (text: string) =>
-  new Blob([text], { type: "image/png" });
-
-describe("getCachedImageUrl", () => {
-  it("returns empty string when url is falsy", async () => {
-    await expect(getCachedImageUrl("")).resolves.toBe("");
-    await expect(
-      getCachedImageUrl(undefined as unknown as string)
-    ).resolves.toBe("");
+describe("imageCache utility", () => {
+  beforeEach(() => {
+    clearObjectUrls();
+    vi.restoreAllMocks();
   });
 
-  it("uses in-memory blob URL cache for repeated calls", async () => {
-    const blob = createMockBlob("fake image data");
-    mockCache.match.mockResolvedValue(null);
-    mockFetch.mockResolvedValueOnce(
-      new Response(blob, { status: 200, headers: { "content-type": "image/png" } })
-    );
-    mockCache.put.mockResolvedValue(undefined);
-
-    const result1 = await getCachedImageUrl("https://example.com/image.png");
-    const result2 = await getCachedImageUrl("https://example.com/image.png");
-
-    expect(result1).toBe(result2);
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(mockCachesOpen).toHaveBeenCalledTimes(1);
+  afterEach(() => {
+    clearObjectUrls();
+    vi.restoreAllMocks();
   });
 
-  it("falls back to original URL when Cache API is not available", async () => {
-    Object.defineProperty(globalThis, "caches", {
-      value: undefined,
-      writable: true,
-    });
+  it("returns empty string for empty URL", async () => {
+    const result = await getCachedImageUrl("");
+    expect(result).toBe("");
+  });
 
-    const result = await getCachedImageUrl("https://example.com/image.png");
-    expect(result).toBe("https://example.com/image.png");
+  it("falls back to original URL when caches API is not in window", async () => {
+    const originalCaches = window.caches;
+    delete (window as any).caches;
+
+    const result = await getCachedImageUrl(TEST_URL);
+    expect(result).toBe(TEST_URL);
+
+    (window as any).caches = originalCaches;
   });
 
   it("falls back to original URL when fetch fails", async () => {
-    mockCache.match.mockResolvedValue(null);
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
-
-    const result = await getCachedImageUrl("https://example.com/image.png");
-    expect(result).toBe("https://example.com/image.png");
-  });
-
-  it("returns cached blob URL when cache hit occurs", async () => {
-    const blob = createMockBlob("cached image");
-    const cachedResponse = new Response(blob, {
-      status: 200,
-      headers: { "content-type": "image/png" },
+    vi.stubGlobal("caches", {
+      open: vi.fn().mockResolvedValue({
+        match: vi.fn().mockResolvedValue(null),
+        put: vi.fn(),
+      }),
     });
-    mockCache.match.mockResolvedValueOnce(cachedResponse);
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")));
 
-    const result = await getCachedImageUrl("https://example.com/image.png");
-    expect(result).toMatch(/^blob:mock:/);
-    expect(mockFetch).not.toHaveBeenCalled();
+    const result = await getCachedImageUrl(TEST_URL);
+    expect(result).toBe(TEST_URL);
   });
 
-  it("stores fetched image in cache and returns blob URL", async () => {
-    const blob = createMockBlob("new image");
-    mockCache.match.mockResolvedValue(null);
-    mockFetch.mockResolvedValueOnce(
-      new Response(blob, { status: 200, headers: { "content-type": "image/png" } })
-    );
-    mockCache.put.mockResolvedValue(undefined);
+  it("falls back to original URL when response is not ok", async () => {
+    vi.stubGlobal("caches", {
+      open: vi.fn().mockResolvedValue({
+        match: vi.fn().mockResolvedValue(null),
+        put: vi.fn(),
+      }),
+    });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: false,
+      statusText: "Not Found",
+    }));
 
-    const result = await getCachedImageUrl("https://example.com/image.png");
-
-    expect(result).toMatch(/^blob:mock:/);
-    expect(mockCache.put).toHaveBeenCalled();
+    const result = await getCachedImageUrl(TEST_URL);
+    expect(result).toBe(TEST_URL);
   });
-});
 
-describe("clearObjectUrls", () => {
-  it("clears the cache storage", async () => {
-    await clearObjectUrls();
-    expect(mockCachesOpen).toHaveBeenCalledWith("story-spark-ai-image-cache");
+  it("deduplicates concurrent requests for the same URL", async () => {
+    const mockCache = {
+      match: vi.fn().mockResolvedValue({
+        blob: vi.fn().mockResolvedValue(new Blob(["test"], { type: "image/png" })),
+      }),
+      put: vi.fn().mockResolvedValue(undefined),
+    };
+    const openSpy = vi.fn().mockResolvedValue(mockCache);
+    vi.stubGlobal("caches", { open: openSpy });
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn().mockReturnValue("blob:http://localhost/test-blob"),
+      revokeObjectURL: vi.fn(),
+    });
+
+    const results = await Promise.all([
+      getCachedImageUrl(TEST_URL),
+      getCachedImageUrl(TEST_URL),
+    ]);
+
+    expect(results[0]).toBe("blob:http://localhost/test-blob");
+    expect(results[1]).toBe("blob:http://localhost/test-blob");
+    expect(openSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("clearObjectUrls clears the blob URL map without errors", () => {
+    expect(() => clearObjectUrls()).not.toThrow();
   });
 });

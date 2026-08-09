@@ -53,7 +53,8 @@ const PublicProfileComponent = () => {
       } else {
         toast.success(`Unfollowed ${user?.name || "writer"}.`);
       }
-    } catch {
+    } catch (error) {
+      console.error("Failed to toggle follow", error);
       toast.error("Something went wrong. Please try again.");
     }
   };

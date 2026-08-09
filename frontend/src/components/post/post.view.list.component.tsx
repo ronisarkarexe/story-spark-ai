@@ -7,6 +7,7 @@ import { formatReadingStats } from "../../utils/story-utils";
 import ImageFallback from "../ImageFallback";
 import { SkeletonGrid } from "../cards/SkeletonCard";
 import StarRatingDisplay from "../story-rating/StarRatingDisplay";
+import ReadingTime from "../ReadingTime";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -104,9 +105,13 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                         <span className="text-sm font-semibold text-slate-900 dark:text-gray-200">
                           {story.author?.name || "Unknown"}
                         </span>
-                        <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider dark:text-slate-400">
-                          {formatDate(story.publishedAt || story.createdAt)}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider dark:text-slate-400">
+                            {formatDate(story.publishedAt || story.createdAt)}
+                          </span>
+                          <span className="text-slate-300 dark:text-slate-700 text-[10px]">•</span>
+                          <ReadingTime content={story.content} className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 font-medium" />
+                        </div>
                         {story.author?.profile?.bio ? (
                           <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
                             {story.author.profile.bio}

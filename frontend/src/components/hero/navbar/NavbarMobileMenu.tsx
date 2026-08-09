@@ -46,16 +46,16 @@ const MobileNavLink = ({
       initial="hidden"
       animate="visible"
       variants={mobileItemVariants}
+      whileTap={{ scale: 0.97 }}
     >
       <NavLink
         to={item.to}
         end={item.end}
         onClick={onNavigate}
-        className={`flex min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
-          active
-            ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
-            : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-        }`}
+        className={`flex min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${active
+          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
+          }`}
       >
         <span>{item.label}</span>
         {active && <span className="h-2 w-2 rounded-full bg-white/90" aria-hidden="true" />}
@@ -81,7 +81,7 @@ const NavbarMobileMenu = ({
       animate="visible"
       exit="exit"
       variants={mobileMenuVariants}
-      className="overflow-hidden border-b border-slate-200/70 bg-white/85 shadow-xl shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90 lg:hidden"
+      className="overflow-hidden max-h-[calc(100vh-5rem)] overflow-y-auto border-b border-slate-200/70 bg-white/85 shadow-xl shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90 lg:hidden"
     >
       <div className="mx-auto max-w-7xl px-4 pb-4 pt-2 sm:px-6">
         <div className="rounded-2xl border border-slate-200/70 bg-white/55 p-2 shadow-sm shadow-slate-900/5 dark:border-white/10 dark:bg-white/[0.04]">

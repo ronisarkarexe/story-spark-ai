@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
@@ -58,6 +58,29 @@ const ReportBug = () => {
     formState: { errors }
   } = useForm<ReportBugFormData>();
   const { ref: screenshotRef, ...screenshotRegister } = register("screenshot");
+  useEffect(() => {
+  const errorReport = sessionStorage.getItem("error-report");
+
+  if (!errorReport) return;
+
+  try {
+    const error = JSON.parse(errorReport);
+
+    reset({
+      title: "Application Error",
+      category: "Other",
+      severity: "High",
+      description: error.message || "",
+      steps: `URL: ${error.url || window.location.href}`,
+      expected: "Application should work without crashing.",
+      actual: error.stack || error.message || "",
+    });
+
+    sessionStorage.removeItem("error-report");
+  } catch (err) {
+    console.error("Failed to load error report", err);
+  }
+}, [reset]);
 
   const onSubmit = async (data: ReportBugFormData) => {
     try {

@@ -26,7 +26,7 @@ const passwordSchema = z
 
 const login = z.object({
   body: z.object({
-    email: z.string({ required_error: "Email is required" }),
+    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
     password: z.string({ required_error: "Password is required" }),
   }),
 });
@@ -34,6 +34,14 @@ const login = z.object({
 const forgotPassword = z.object({
   body: z.object({
     email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+  }),
+});
+
+const resendVerificationEmail = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: "Email is required" })
+      .email("Invalid email address"),
   }),
 });
 
@@ -49,6 +57,7 @@ const resetPassword = z.object({
 const updateUser = z.object({
   body: z
     .object({
+      email: z.string().email("Invalid email address").optional(),
       name: z.string().trim().min(5, "Name must be at least 5 characters long").max(100).optional(),
       profile: z
         .object({
@@ -56,6 +65,12 @@ const updateUser = z.object({
           bio: z.string().max(1000, "Bio cannot exceed 1000 characters").optional(),
           social: z
             .object({
+              facebook: z.string().optional(),
+              twitter: z.string().optional(),
+              linkedin: z.string().optional(),
+              instagram: z.string().optional(),
+              github: z.string().optional(),
+              discord: z.string().optional(),
               facebook: z.string().max(200).optional(),
               twitter: z.string().max(200).optional(),
               linkedin: z.string().max(200).optional(),
@@ -95,6 +110,13 @@ const sendOtp = z.object({
   }),
 });
 
+const verifyEmailChange = z.object({
+  body: z.object({
+    token: z.string({ required_error: "Verification token is required" }),
+    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+  }),
+});
+
 export const UserValidator = {
   register,
   login,
@@ -102,5 +124,7 @@ export const UserValidator = {
   resetPassword,
   updateUser,
   changePassword,
-  sendOtp
+  sendOtp,
+  resendVerificationEmail,
+  verifyEmailChange,
 };

@@ -9,9 +9,10 @@ import pick from "../../../shared/pick";
 import { postFilterFields } from "./post.constant";
 import { paginationFields } from "../../../constants/pagination";
 import { IPost } from "./post.interface";
+import { sanitizeStoryPayload } from "../../../utils/sanitize.util";
 
 const createPost = catchAsync(async (req: Request, res: Response) => {
-  const postData = req.body;
+  const postData = sanitizeStoryPayload(req.body);
   const token = await getToken(req);
   const result = await PostService.createPost(postData, token);
   sendResponse(res, {
@@ -110,7 +111,7 @@ const getPostsByTag = catchAsync(async (req: Request, res: Response) => {
   const tag = routeParam(req.params.tag);
   const excludeId = req.query.excludeId as string | undefined;
   const limit = req.query.limit ? Math.min(Number(req.query.limit), 50) : 10;
-  const result = await PostService.getPostsByTag(tag, excludeId);
+  const result = await PostService.getPostsByTag(tag, excludeId, limit);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -133,7 +134,7 @@ const toggleBookmark = catchAsync(async (req: Request, res: Response) => {
 
 const updatePost = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
-  const postData = req.body;
+  const postData = sanitizeStoryPayload(req.body);
   const token = await getToken(req);
   const result = await PostService.updatePost(id, postData, token);
   sendResponse(res, {

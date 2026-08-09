@@ -28,11 +28,21 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
   const handleEnhance = async () => {
     if (!prompt.trim() || isEnhancing) return;
 
-    setOriginalPrompt(prompt);
+    // Only save the original prompt on the first enhancement —
+    // subsequent enhancements should still revert to the true original
+    if (originalPrompt === null) {
+      setOriginalPrompt(prompt);
+    }
 
     try {
       const result = await enhancePrompt({ prompt: prompt.trim(), provider: selectedModel }).unwrap();
-      onPromptChange(result.data.enhancedPrompt);
+
+      const enhancedPrompt = result?.data?.enhancedPrompt;
+      if (!enhancedPrompt || typeof enhancedPrompt !== "string") {
+        throw new Error("Invalid response: missing enhancedPrompt field");
+      }
+
+      onPromptChange(enhancedPrompt);
       setIsEnhanced(true);
       toast.success("Prompt enhanced!");
     } catch (error) {
@@ -58,7 +68,10 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
         aria-label="Select AI writing model"
         value={selectedModel}
         onChange={(e) => setSelectedModel(e.target.value)}
-        disabled={isEnhancing}
+        disabled={isEnhancing || isEnhanced}
+        className={`rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-800 dark:text-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all duration-300
+          ${isEnhancing || isEnhanced ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+        disabled={isEnhanced || isEnhancing}
         className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-800 dark:text-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer transition-all duration-300"
       >
         <option value="gemini" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Google Gemini (Default)</option>
@@ -70,12 +83,15 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
       <button
         type="button"
         onClick={handleEnhance}
-        disabled={isEnhancing || !prompt.trim()}
+        disabled={isEnhancing || !prompt.trim() || isEnhanced}
         className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all duration-300
           ${
-            isEnhancing || !prompt.trim()
+            isEnhancing || !prompt.trim() || isEnhanced
               ? "cursor-not-allowed border-white/10 bg-white/5 text-slate-500"
               : "border-cyan-300/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20"
+          ${isEnhancing || !prompt.trim()
+            ? "cursor-not-allowed border-white/10 bg-white/5 text-slate-500"
+            : "border-cyan-300/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20"
           }`}
       >
         <AnimatePresence mode="wait">
