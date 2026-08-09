@@ -34,6 +34,7 @@ import { UsageRouter } from "../app/modules/ai_model/usage.router";
 import { CollectionRouter } from "../app/modules/collection/collection.router";
 import { ChapterIllustrationRouter } from "../app/modules/chapter_illustration/chapter_illustration.router";
 import { StoryBranchingRouter } from "../app/modules/story_branching/story_branching.router";
+import { TagRouter } from "../app/modules/tag/tag.router";
 
 const router = express.Router();
 
@@ -181,6 +182,10 @@ const modules = [
   {
     path: "/story-branches",
     router: StoryBranchingRouter,
+  },
+  {
+    path: "/tags",
+    router: TagRouter,
   },
 ];
 

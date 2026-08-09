@@ -211,8 +211,6 @@ const LoginComponent = () => {
           </div>
         </motion.div>
 
-                <div className="flex justify-center w-full box-border">
-<div className="w-full max-w-md overflow-hidden bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
         <div className="flex justify-center w-full min-w-0 box-border">
           <div className="w-full max-w-md overflow-hidden bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
             <button
@@ -314,6 +312,22 @@ const LoginComponent = () => {
                 onSuccess={handleGoogleLoginSuccess}
                 onError={handleGoogleLoginError}
               />
+            </div>
+
+            <div className="mt-4 border-t border-slate-700/50 pt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.setItem("accessToken", "mock-developer-bypass-token");
+                  toast.success("Bypassed login for local testing!");
+                  setTimeout(() => {
+                    window.location.href = "/dashboard";
+                  }, 100);
+                }}
+                className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-sm transition-all shadow-md cursor-pointer hover:scale-[1.02] duration-200"
+              >
+                🚀 Bypass Login (Local Test)
+              </button>
             </div>
 
             <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">

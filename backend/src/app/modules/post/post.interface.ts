@@ -16,6 +16,7 @@ export interface IPostPayload {
   emotions?: string[];
   genre?: string;
   isPublished?: boolean;
+  tags?: string[];
 }
 
 export interface IPost extends IPostPayload {
@@ -64,4 +65,5 @@ export interface IPostSearchFields {
   trendingTopic?: string;
   sortFilter?: "mostPopular";
   genres?: string | string[];
+  tags?: string | string[];
 }

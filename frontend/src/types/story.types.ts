@@ -11,6 +11,7 @@ export interface Story {
   chapters: Chapter[];
   userId?: string;
   truncated?: boolean;
+  tags?: string[];
 }
 
 export interface StoryVersion {

@@ -155,29 +155,17 @@ async function main() {
     // the Order write and the User write in verifyPayment. See issue #4876.
     startOrderReconciliationJob();
 
-    const socketCorsOrigins =
-      config.cors_origins && config.cors_origins.length > 0
-        ? config.cors_origins
-        : defaultCorsOrigins;
-
-
     // Single Socket.IO instance: full CORS methods + credentials, rate
     // limiting, JWT auth handshake, and per-user room joining.
     const io = new Server(httpServer, {
       cors: {
         origin: socketCorsOrigins,
-
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       },
     });
 
     // Apply rate limiting to all Socket.IO connections
-
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true,
-      },
-    });
 
 
     io.use(socketRateLimiter);

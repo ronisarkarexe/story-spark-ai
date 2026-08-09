@@ -71,8 +71,6 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
         disabled={isEnhancing || isEnhanced}
         className={`rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-800 dark:text-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all duration-300
           ${isEnhancing || isEnhanced ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-        disabled={isEnhanced || isEnhancing}
-        className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-800 dark:text-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer transition-all duration-300"
       >
         <option value="gemini" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Google Gemini (Default)</option>
         <option value="openai" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">OpenAI GPT-4</option>
@@ -89,9 +87,6 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
             isEnhancing || !prompt.trim() || isEnhanced
               ? "cursor-not-allowed border-white/10 bg-white/5 text-slate-500"
               : "border-cyan-300/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20"
-          ${isEnhancing || !prompt.trim()
-            ? "cursor-not-allowed border-white/10 bg-white/5 text-slate-500"
-            : "border-cyan-300/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20"
           }`}
       >
         <AnimatePresence mode="wait">

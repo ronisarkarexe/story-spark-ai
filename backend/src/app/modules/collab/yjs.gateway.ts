@@ -127,7 +127,7 @@ export class YjsGateway {
       const fn = debounce(() => {
         const update = Y.encodeStateAsUpdate(doc);
         const base64 = Buffer.from(update).toString('base64');
-        CollabService.updateCollabState(storyId, base64);
+        CollabService.updateCollabState(storyId, base64).catch(err => console.error(err));
         this.debouncedSaves.delete(storyId);
       }, this.saveDelay);
       this.debouncedSaves.set(storyId, fn);
@@ -144,5 +144,3 @@ export class YjsGateway {
     return color;
   }
 }
-
-        .catch(err => console.error(err))

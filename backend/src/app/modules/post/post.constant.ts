@@ -1,10 +1,11 @@
-export const postSearchFields = ["title", "tag", "topic.title"];
+export const postSearchFields = ["title", "tag", "topic.title", "tags"];
 export const postFilterFields = [
   "searchTerm",
   "title",
   "tag",
   "topic.title",
   "genres",
+  "tags",
   "author",
   "isPublished",
 ];

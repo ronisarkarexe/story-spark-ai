@@ -10,6 +10,7 @@ export const PostSchema: Schema<IPost, PostModel> = new Schema<IPost, PostModel>
     language: { type: String, default: "English", maxlength: 50 },
     emotions: [{ type: String, maxlength: 50 }],
     genre: { type: String, maxlength: 50 },
+    tags: { type: [String], default: [] },
     topic: [
       {
         title: { type: String, required: true, maxlength: 50 },
@@ -44,6 +45,7 @@ export const PostSchema: Schema<IPost, PostModel> = new Schema<IPost, PostModel>
 );
 
 PostSchema.index({ author: 1, publishedAt: -1 });
+PostSchema.index({ tags: 1 });
 PostSchema.index({ author: 1, createdAt: -1 });
 PostSchema.index({ author: 1, emotions: 1 });
 PostSchema.index({

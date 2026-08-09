@@ -8,8 +8,6 @@ export interface IRelatedStoriesComponentProps {
 }
 
 export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
-  const filteredPosts = posts.filter((post) => post._id !== currentPostId);
-  const navigate = useNavigate();
   const MAX_RELATED = 4;
   const filteredPosts = posts
     .filter((post) => post._id !== currentPostId)

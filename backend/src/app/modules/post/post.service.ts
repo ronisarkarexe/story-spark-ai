@@ -49,14 +49,10 @@ const decodeCursor = (cursor?: string): ICursorPayload | null => {
 }
     return parsed as ICursorPayload;
   } catch {
-  throw new ApiError(
-    httpStatus.BAD_REQUEST,
-    "Invalid pagination cursor"
-  );
-}
-
-  } catch (error) {
-    console.error('[PostService] Failed to add XP:', error);
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid pagination cursor"
+    );
   }
 };
 
@@ -119,6 +115,7 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       language: payload.language,
       emotions: payload.emotions,
       genre: payload.genre,
+      tags: payload.tags || [],
       isPublished: true,
       publishedAt: new Date(),
       author: user._id,
@@ -154,7 +151,7 @@ const getPosts = async (
   const { page, limit, cursor, sortBy, orderBy } = paginationHelper(
     pagination,
   );
-  const { searchTerm, trendingTopic, sortFilter, genres, ...filterData } =
+  const { searchTerm, trendingTopic, sortFilter, genres, tags, ...filterData } =
     filters;
   const andCondition: Record<string, unknown>[] = [
     { isDeleted: { $ne: true } },
@@ -198,6 +195,18 @@ const getPosts = async (
           $regex: new RegExp(`^${escapeRegex(genre)}$`, "i"),
         },
       })),
+    });
+  }
+
+  const tagList = Array.isArray(tags)
+    ? tags
+    : typeof tags === "string"
+      ? tags.split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+
+  if (tagList.length > 0) {
+    andCondition.push({
+      tags: { $all: tagList },
     });
   }
 
@@ -511,6 +520,7 @@ const updatePost = async (
   if (payload.content !== undefined) post.content = payload.content;
   if (payload.tag !== undefined) post.tag = payload.tag;
   if (payload.topic !== undefined) post.topic = payload.topic;
+  if (payload.tags !== undefined) post.tags = payload.tags;
 
   post.updatedBy = user._id;
   await post.save();
@@ -690,7 +700,7 @@ const forkStory = async (postId: string, token: ITokenPayload) => {
 
 const getGenres = async (): Promise<string[]> => {
   const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
-  return genres.sort((a, b) => a - b);
+  return genres.sort((a, b) => a.localeCompare(b));
 };
 
 const bulkDeletePosts = async (ids: string[], token: ITokenPayload) => {

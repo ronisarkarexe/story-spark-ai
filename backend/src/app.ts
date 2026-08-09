@@ -116,18 +116,6 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
     },
   ];
   next(error);
-=======
-
-app.use("/api/v1", Routers);
-
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  next(
-    new ApiError(
-      httpStatus.NOT_FOUND,
-      `The requested API endpoint route does not exist: ${req.originalUrl}`
-    )
-  );
-
 });
 app.use(globalErrorHandler);
 

@@ -1,8 +1,8 @@
-jest.mock("../utils/storyboard_image_generation", () => ({
+jest.mock("../utils/storyboard_image", () => ({
   generateStoryboardImage: jest.fn(),
 }));
 
-import { generateStoryboardImage } from "../utils/storyboard_image_generation";
+import { generateStoryboardImage } from "../utils/storyboard_image";
 import {
   buildCharacterPortraitPrompt,
   generateCharacterPortrait,

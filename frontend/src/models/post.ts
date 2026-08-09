@@ -40,6 +40,7 @@ export interface Post {
   language?: string;
   emotions?: string[];
   genre?: string;
+  tags?: string[];
   author: Author;
   likesCount: number;
   commentsCount: number;

@@ -76,12 +76,14 @@ const LEAK_PATTERNS: string[] = [
 /**
  * Normalizes & hardens text against Unicode substitution and obfuscation bypasses.
  */
-export const sanitizeJsonText = (rawText: string): string => {
+export const sanitizePromptText = (rawText: string): string => {
   const trimmed = rawText.trim();
   return (trimmed ?? "")
     .normalize("NFKC")
     .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
     .replace(/[\s\u00A0]+/g, " ")
+    .trim();
+};
 
 const normalizeText = (input: string): string => {
   return (input ?? "")

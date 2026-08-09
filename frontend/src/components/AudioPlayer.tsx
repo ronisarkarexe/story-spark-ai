@@ -136,10 +136,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
-
-    }, [showFavoritesOnly, displayedVoices, speech]);
-
-
     }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
 
     useEffect(() => {

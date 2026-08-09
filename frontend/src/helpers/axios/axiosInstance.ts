@@ -8,6 +8,14 @@ const instance = axios.create({
   baseURL: '/api/v1',
 });
 
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 instance.interceptors.response.use(
   (response) => response,
   async (error) => {

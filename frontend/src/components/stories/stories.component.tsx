@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
@@ -13,18 +13,54 @@ import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
+
+const soundtrackMap: Record<string, string> = {
+  "🧙 Fantasy": "/audio/fantasy.mp3",
+  "😱 Horror": "/audio/horror.mp3",
+  "💕 Romance": "/audio/romance.mp3",
+  "🎭 Drama": "/audio/drama.mp3", 
+  "😂 Comedy": "/audio/comedy.mp3", 
+  "🚀 Sci-Fi": "/audio/sci-fi.mp3", 
+  "🔍 Mystery": "/audio/mystery.mp3", 
+  "🌟 Adventure": "/audio/adventure.mp3"
+};
+
 type Inputs = {
   prompt: string;
 };
 
 const MAX_PROMPT_LENGTH = 2000;
 const lengths = ["short", "medium", "long"] as const;
+const WARN_THRESHOLD = 0.8;
+const DANGER_THRESHOLD = 0.9;
+type ToneLabel = "Dramatic" | "Humorous" | "Suspenseful" | "Lighthearted" | "Inspirational" | "Melancholic";
 
 const StoriesComponent = () => {
   const location = useLocation();
-const navigate = useNavigate();
-const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
-  const [stories, setStories] = useState<IStories[]>([]);
+  const navigate = useNavigate();
+  const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
+
+  const draft = useMemo(() => {
+    try {
+      const saved = localStorage.getItem("story_spark_draft");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const [stories, setStories] = useState<IStories[]>(
+    draft?.stories?.length
+      ? draft.stories
+      : [{
+          uuid: "test-1",
+          title: "The Wizard's Journey",
+          content: "Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",
+          tag: "Fantasy",
+          imageURL: "https://via.placeholder.com/400x300"
+        }]
+  );
+
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -34,174 +70,94 @@ const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-const [selectedGenre, setSelectedGenre] = useState<string>("");
-const [selectedLength, setSelectedLength] = useState<string>("medium");
-const [textareaValue, setTextareaValue] = useState<string>("");
-const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-const dropdownRef = useRef<HTMLDivElement>(null);
-const inputRef = useRef<HTMLTextAreaElement>(null);
-const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-  parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
-);
-const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
 
-useEffect(() => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}, []);
+  const [selectedGenre, setSelectedGenre] = useState<string>(
+    draft?.genre || ""
+  );
+  const [selectedLength, setSelectedLength] = useState<string>(
+    draft?.length || "medium"
+  );
+  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(
+    draft?.tone || "Dramatic"
+  );
+  const [selectedAudience, setSelectedAudience] = useState<string>(
+    draft?.audience || "General Audience"
+  );
+  const [textareaValue, setTextareaValue] = useState<string>(() => {
+    return location.state?.prompt || draft?.prompt || "";
+  });
+  const [showTemplateScreen, setShowTemplateScreen] = useState<boolean>(() => {
+    return !location.state?.prompt && !draft?.prompt;
+  });
 
-useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setIsDropdownOpen(false);
-    }
-  };
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    draft?.language || "English"
+  );
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setIsDropdownOpen(false);
+  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
+    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
+  );
+  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
 
-  const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
-    stories,
-    isLogin,
-    setStories,
-    isLoading,
-    onPublishSuccess,
-  }) => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const { register, handleSubmit, reset, setValue, formState: { isSubmitting } } = useForm<Inputs>();
-    const [stories, setStories] = useState<IStories[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const { data } = useGetProfileInfoQuery(undefined);
-    const userRole = getUserInfo();
-    const subscriptionType = (userRole?.subscriptionType as string) || "free";
-    const login = isLoggedIn();
-    const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
-    const { data: usageData, refetch: refetchUsage } = useGetUsageQuery(undefined, { skip: !login });
-    const [generateModel] = useGenerateModelMutation();
-    const [generateFreeModel] = useGenerateFreeModelMutation();
-    const [selectedPrompt, setSelectedPrompt] = useState<string>("");
-    const [showHelpModal, setShowHelpModal] = useState(false);
-    const [selectedGenre, setSelectedGenre] = useState<string>("");
-    const [selectedLength, setSelectedLength] = useState<string>("medium");
-    const [textareaValue, setTextareaValue] = useState<string>("");
-    const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-    const { data: rosterData } = useGetCharactersQuery(undefined, { skip: !login });
-    const rosterCharacters = rosterData?.data || [];
-    const [saveCharacter, { isLoading: isSavingCharacter }] = useSaveCharacterMutation();
-    const [selectedRosterCharacterId, setSelectedRosterCharacterId] =
-      useState<string>("");
-    const selectedRosterCharacter = rosterCharacters.find(
-      (character) => character._id === selectedRosterCharacterId
-    );
-
-    const handleSaveToRoster = async (char: ICharacter) => {
-      try {
-        await saveCharacter({
-          name: char.name,
-          role: char.role,
-          personality: char.personality
-        }).unwrap();
-        toast.success("Character saved to roster!");
-      } catch (error) {
-        toast.error("Failed to save character.");
-      }
-    };
-
-    const handleLoadFromRoster = (
-      charId: string,
-      rosterCharId: string
-    ) => {
-      const rosterChar = rosterCharacters.find(
-        (character) => character._id === rosterCharId
-      );
-
-      if (!rosterChar) return;
-
-      setSelectedRosterCharacterId(rosterCharId);
-
-      if (typeof setCharacters === "function") {
-        setCharacters((prev: ICharacter[]) =>
-          prev.map((character) =>
-            character.id === charId
-              ? {
-                ...character,
-                name: rosterChar.name,
-                role: rosterChar.role || "",
-                personality: rosterChar.personality,
-              }
-              : character
-          )
-        );
-      }
-    };
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLTextAreaElement>(null);
-    const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-      parseInt(localStorage.getItem("guestRequestCount", 10) || "0", 10),
-    );
-    const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-
-    useEffect(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, []);
-
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (
-          dropdownRef.current &&
-          !dropdownRef.current.contains(event.target as Node)
-        ) {
-          setIsDropdownOpen(false);
-        }
+  // Autosave Draft
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const draftData = {
+        prompt: textareaValue,
+        genre: selectedGenre,
+        length: selectedLength,
+        tone: selectedTone,
+        audience: selectedAudience,
+        language: selectedLanguage,
+        stories: stories,
       };
+      localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [textareaValue, selectedGenre, selectedLength, selectedTone, selectedAudience, selectedLanguage, stories]);
 
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Escape") {
-          setIsDropdownOpen(false);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
-          const [selectedGenre, setSelectedGenre] = useState<string>(
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageDropdownOpen(false);
+      }
+    };
 
-            draft?.genre
-              ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "≡ƒºÖ Fantasy")
-              : "≡ƒºÖ Fantasy",
-          );
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+        setIsLanguageDropdownOpen(false);
+      }
+    };
 
-          const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-          const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
-          const [selectedAudience, setSelectedAudience] = useState<string>("General Audience");
-          const [textareaValue, setTextareaValue] = useState<string>(() => {
-            return location.state?.prompt || draft?.prompt || "";
-          });
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
 
-          const [showTemplateScreen, setShowTemplateScreen] = useState<boolean>(() => {
-            return !location.state?.prompt && !draft?.prompt;
-          });
-
-          const handleSelectTemplate = (template: any) => {
-            const fullPremise = `${template.premise}\n\nSuggested Plot Points:\n- ${template.plotPoints.join('\n- ')}`;
-            setTextareaValue(fullPremise);
-            setSelectedGenre(template.genre);
-            setSelectedLength(template.length);
-            setCharacters(template.characters);
-            setShowTemplateScreen(false);
-          };
-
-          const handleStartBlank = () => {
-            setShowTemplateScreen(false);
-          };
-
-
-          const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-          const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
-          const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
-
-
-
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   const playSoundtrack = useCallback((genre: string) => {
     const soundtrack = soundtrackMap[genre];
@@ -214,220 +170,19 @@ useEffect(() => {
         /* ignore autoplay restrictions */
       });
     }
-  }, []); // audioRef is a stable ref — no deps needed
+  }, []);
 
-          const dropdownRef = useRef<HTMLDivElement>(null);
-          const languageDropdownRef = useRef<HTMLDivElement>(null);
-          const inputRef = useRef<HTMLTextAreaElement>(null);
-          const audioRef = useRef<HTMLAudioElement | null>(null);
-
-
-          const playSoundtrack = (genre: string) => {
-
-            const soundtrack = soundtrackMap[genre];
-
-            if (!soundtrack) return;
-
-            if (audioRef.current) {
-              audioRef.current.pause();
-              audioRef.current.currentTime = 0;
-              audioRef.current.src = soundtrack;
-              audioRef.current.play().catch(() => {
-                /* ignore autoplay restrictions */
-              });
-            }
-          }, []);
-
-    const [isCopied, setIsCopied] = useState<boolean>(false);
-    const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-    const [, setShowRemix] = useState<boolean>(false);
-    const [createPost] = useCreatePostMutation();
-    const [deletePost] = useDeletePostMutation();
-    const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
-    const lastSavedContentRef = useRef<string>("");
-    const isSavingRef = useRef<boolean>(false);
-    const hasSavedSessionRef = useRef<boolean>(false);
-    const savedPostIdRef = useRef<string | null>(null);
-    // Alternate ending state & hooks
-    const [endingsCache, setEndingsCache] = useState<{
-      [uuid: string]: { style: string; ending: string; fullStory: string }[];
-    }>({});
-    const [originalStoryContent, setOriginalStoryContent] = useState<{
-      [uuid: string]: string;
-    }>({});
-    const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
-    const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
-    const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
-    const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
-
-    const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
-    const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
-
-    useEffect(() => {
-      if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
-        setOriginalStoryContent((prev) => ({
-          ...prev,
-          [selectedStory.uuid]: selectedStory.content,
-        }));
-      }
-    }, [selectedStory, originalStoryContent]);
-
-    useEffect(() => {
-      if (narrationState === "playing") {
-        const activeWordElement = document.querySelector('[data-active-word="true"]');
-        if (activeWordElement) {
-          activeWordElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "nearest"
-          });
-        }
-      }
-    }, [narrationWordIndex, narrationState]);
-
-    const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
-    const isGenerationInProgressRef = useRef(false);
-
-    const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-      parseInt(localStorage.getItem("guestRequestCount", 10) || "0", 10)
-    );
-    const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-    const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
-    const [isHighLatency, setIsHighLatency] = useState<boolean>(false);
-    const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
-
-    const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
-    const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
-
-    useEffect(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, []);
-
-    const handleGenerateAlternateEndings = async () => {
-      if (!selectedStory) return;
-      setIsGeneratingEndings(true);
-      const toastId = toast.loading("Generating alternate endings...");
-      try {
-        const payload = {
-          title: selectedStory.title,
-          content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-          tag: selectedStory.tag,
-
-          language: selectedStory.language || "English",
-
-        };
-
-        const generationRequest = isLogin
-          ? generateAlternateEndings(payload)
-          : generateFreeAlternateEndings(payload);
-
-        const res = await generationRequest.unwrap();
-        if (res && res.data) {
-          setEndingsCache((prev) => ({
-            ...prev,
-            [selectedStory.uuid]: res.data,
-          }));
-          toast.success("Alternate endings generated successfully!");
-        } else {
-          toast.error("Failed to generate alternate endings.");
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to generate alternate endings. Please try again.");
-      } finally {
-        toast.dismiss(toastId);
-        setIsGeneratingEndings(false);
-      }
-    };
-
-    const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
-      if (!selectedStory) return;
-      const updatedStory = {
-        ...selectedStory,
-        content: endingData.fullStory,
-      };
-      setSelectedStory(updatedStory);
-      setStories(
-        stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-      );
-      toast.success(`${endingData.style} applied to story!`);
-    };
-
-    const handleResetEnding = () => {
-      if (!selectedStory) return;
-      const originalContent = originalStoryContent[selectedStory.uuid];
-      if (!originalContent) return;
-      const updatedStory = {
-        ...selectedStory,
-        content: originalContent,
-      };
-      setSelectedStory(updatedStory);
-      setStories(
-        stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-      );
-      toast.success("Reverted to original story ending!");
-    };
-
-    const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-    const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
-
-    // Draft restore + autosave
-    useEffect(() => {
-      if (!textareaValue.trim()) {
-        return;
-      }
-
-      const timer = setTimeout(() => {
-        const draftData: StoryDraftData = {
-          prompt: textareaValue,
-          genre: selectedGenre,
-          length: selectedLength,
-          language: selectedLanguage,
-          tone: selectedTone,
-          savedAt: new Date().toISOString(),
-        };
-
-        try {
-          saveStoryDraft(draftData);
-          setDraftStatus(`Draft saved ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
-        } catch (err) {
-          if (err instanceof DOMException && err.name === "QuotaExceededError") {
-
-            toast.error("Couldn't autosave draft ├óΓé¼ΓÇ¥ storage limit reached.");
-          }
-
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone]);
-
-
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
-    }
+  const handleSelectTemplate = (template: any) => {
+    const fullPremise = `${template.premise}\n\nSuggested Plot Points:\n- ${template.plotPoints.join(`\n- `)}`;
+    setTextareaValue(fullPremise);
+    setSelectedGenre(template.genre);
+    setSelectedLength(template.length);
+    setShowTemplateScreen(false);
   };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  document.addEventListener("keydown", handleKeyDown);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-    document.removeEventListener("keydown", handleKeyDown);
+  const handleStartBlank = () => {
+    setShowTemplateScreen(false);
   };
-}, []);
-
-useEffect(() => {
-  if (location.state && location.state.prompt) {
-    setTextareaValue(location.state.prompt);
-    navigate(location.pathname, { replace: true, state: {} });
-  }
-}, [location, navigate]);
-
-useEffect(() => {
-  setValue("prompt", textareaValue);
-}, [textareaValue, setValue]);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (!login && guestRequestCount >= 3) {

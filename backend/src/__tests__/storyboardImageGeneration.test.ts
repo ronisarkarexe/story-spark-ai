@@ -1,4 +1,4 @@
-import { generateStoryboardImage } from "../utils/storyboard_image_generation";
+import { generateStoryboardImage } from "../utils/storyboard_image";
 import config from "../config";
 
 jest.mock("../config", () => ({

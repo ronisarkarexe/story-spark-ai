@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
+import logger from "../../utils/logger.util";
 
 import { RootState } from "../../redux/store";
 import { getUserInfo } from "../../services/auth.service";
@@ -66,19 +67,6 @@ const StoryWorkspace = () => {
   );
 
   const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
-  const handleCopyStoryId = async () => {
-  if (!currentStory) {
-    toast.error("No Story ID available.");
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(currentStory.id);
-    toast.success("Story ID copied successfully!");
-  } catch (error) {
-    toast.error("Failed to copy Story ID.");
-  }
-};
 
   const handleCopyStoryId = async () => {
     if (!currentStory) {
@@ -254,59 +242,6 @@ const StoryWorkspace = () => {
             </button>
 
 
-  <button
-    onClick={handleCopyStoryId}
-    className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
-  >
-    📋 Copy Story ID
-  </button>
-
-  <div className="flex bg-zinc-950 rounded-lg p-0.5 border border-zinc-800 mr-2">
-    <button
-      onClick={() => setWorkspaceMode("editor")}
-      className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-        workspaceMode === "editor"
-          ? "bg-indigo-600 text-white shadow"
-          : "text-slate-400 hover:text-slate-250"
-      }`}
-    >
-      📖 Read Story
-    </button>
-
-    <button
-      onClick={() => setWorkspaceMode("network")}
-      className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-        workspaceMode === "network"
-          ? "bg-indigo-600 text-white shadow"
-          : "text-slate-400 hover:text-slate-255"
-      }`}
-    >
-      🕸️ Character Network
-    </button>
-  </div>
-
-  <button
-    onClick={handleExportMarkdown}
-    className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
-  >
-    ⬇️ Markdown
-  </button>
-
-  <button
-    onClick={handleExportDOCX}
-    className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
-  >
-    ⬇️ Word (DOCX)
-  </button>
-
-  <button
-    onClick={handleExportPDF}
-    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
-  >
-    ⬇️ PDF
-  </button>
-
-</div>
 
             <div className="flex bg-zinc-950 rounded-lg p-0.5 border border-zinc-800 mr-2">
               <button
@@ -611,9 +546,10 @@ const StoryWorkspace = () => {
 />
 
 <StoryTagGenerator
-  story={
-    fullStoryContent
-  }
+  storyId={currentStory.id}
+  title={currentStory.title}
+  content={fullStoryContent}
+  initialTags={currentStory.tags || []}
 />
 
 <StoryReadingInfo

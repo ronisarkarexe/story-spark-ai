@@ -21,6 +21,7 @@ export const axiosBaseQuery =
   > =>
   async ({ url, method, data, params, contentType }, api) => {
     try {
+      const token = localStorage.getItem("accessToken");
       const result = await AxiosInstance({
         url: baseUrl + url,
         method,
@@ -29,6 +30,7 @@ export const axiosBaseQuery =
         signal: api.signal,
         headers: {
           "Content-Type": contentType || "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
       return {
