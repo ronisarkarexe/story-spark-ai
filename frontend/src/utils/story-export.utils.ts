@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 
-export type StoryExportExtension = "md" | "docx" | "pdf";
+export type StoryExportExtension = "md" | "docx" | "pdf" | "html";
 
 export const getSafeFileName = (
   title: string,
@@ -71,8 +71,11 @@ export const createDocxBlob = ({
 </body>
 </html>`;
 
+  // This blob contains HTML, not a real DOCX (Office Open XML ZIP).
+  // Using text/html so the file opens correctly instead of corrupting Word.
+  // To generate a real .docx, use the 'docx' npm package.
   return new Blob([html], {
-    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8",
+    type: "text/html;charset=utf-8",
   });
 };
 
@@ -120,8 +123,9 @@ export const createWorkspaceDocxBlob = ({
 </body>
 </html>`;
 
+  // Same as createDocxBlob — content is HTML, not Office Open XML.
   return new Blob([html], {
-    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8",
+    type: "text/html;charset=utf-8",
   });
 };
 
