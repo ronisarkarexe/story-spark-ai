@@ -93,4 +93,25 @@ describe("VerifyEmailService.VerifyOtp", () => {
       VerifyEmailService.VerifyOtp({ email: "user@example.com", otp: "123456" })
     ).rejects.toMatchObject({ status: httpStatus.TOO_MANY_REQUESTS });
   });
+
+  // Regression tests for issue #2746 — the OTP email renders each digit in its
+  // own box with 10px gaps, so users frequently type/paste the code with
+  // internal whitespace. Previously otp.trim() only stripped ends, so a valid
+  // but space-separated OTP was rejected as "Invalid OTP".
+  it("should accept a correct OTP with internal spaces (issue #2746)", async () => {
+    const response = await VerifyEmailService.VerifyOtp({ email: "user@example.com", otp: "123 456" });
+    expect(response).toMatchObject({ verified: true });
+    expect(mockOtpRecord.save).toHaveBeenCalled();
+  });
+
+  it("should accept a correct OTP with leading/trailing/internal whitespace (issue #2746)", async () => {
+    const response = await VerifyEmailService.VerifyOtp({ email: "user@example.com", otp: "  123 456  " });
+    expect(response).toMatchObject({ verified: true });
+  });
+
+  it("should still reject a genuinely wrong OTP even after whitespace normalization", async () => {
+    await expect(
+      VerifyEmailService.VerifyOtp({ email: "user@example.com", otp: "999 999" })
+    ).rejects.toThrow(ApiError);
+  });
 });
