@@ -388,9 +388,15 @@ export const useSpeechSynthesis = (
         );
       };
 
-      utterance.onerror = () => {
+      utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
         setIsSpeaking(false);
         setIsPaused(false);
+        // "canceled" fires when cancel() is called intentionally (stop button).
+        // "interrupted" fires when speak() replaces an ongoing utterance.
+        // Neither is a real error — suppress them to avoid false error messages.
+        if (event.error === "canceled" || event.error === "interrupted") {
+          return;
+        }
         setError("Unable to play narration. Please try again.");
       };
 
