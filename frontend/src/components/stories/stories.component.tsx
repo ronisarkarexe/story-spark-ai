@@ -30,6 +30,8 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
+const WARN_THRESHOLD = 0.8;
+const DANGER_THRESHOLD = 0.95;
 const lengths = ["short", "medium", "long"] as const;
 const WARN_THRESHOLD = 0.8;
 const DANGER_THRESHOLD = 0.9;
@@ -100,6 +102,7 @@ const StoriesComponent = () => {
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
 
   const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
     parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
@@ -178,6 +181,7 @@ const StoriesComponent = () => {
     setSelectedGenre(template.genre);
     setSelectedLength(template.length);
     setShowTemplateScreen(false);
+
   };
 
   const handleStartBlank = () => {

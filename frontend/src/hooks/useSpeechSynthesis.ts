@@ -397,6 +397,8 @@ export const useSpeechSynthesis = (
       synthRef.current.cancel();
       synthRef.current.speak(utterance);
       setCurrentWordIndex(0);
+
+
     },
     [
       isSupported,

@@ -106,6 +106,7 @@ app.use(cookieParser() as unknown as RequestHandler);
 
 app.use("/api/v1", Routers);
 
+
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
 app.use((req: Request, _res: Response, next: NextFunction) => {
   const error = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
@@ -116,6 +117,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
     },
   ];
   next(error);
+
 });
 app.use(globalErrorHandler);
 

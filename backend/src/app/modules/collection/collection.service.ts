@@ -109,6 +109,7 @@ const getUserCollections = async (
   userId: string,
   requestToken: ITokenPayload | null
 ) => {
+
   let isOwner = false;
   if (requestToken) {
     const requestUser = await User.findOne({ email: requestToken.email });
@@ -122,9 +123,11 @@ const getUserCollections = async (
     isDeleted: { $ne: true }
   };
 
+
   if (!isOwner) {
     query.visibility = "public";
   }
+
 
   const collections = await Collection.find(query).populate({
     path: "storyIds",
@@ -133,8 +136,10 @@ const getUserCollections = async (
     select: "title imageURL tag author likesCount commentsCount createdAt",
   });
 
+
   return collections;
 };
+
 
 const addStoryToCollection = async (
   collectionId: string,
@@ -229,12 +234,15 @@ const deleteCollection = async (
   return { message: "Collection deleted." };
 };
 
+
 export const CollectionService = {
   createCollection,
   updateCollection,
   getCollectionById,
   getUserCollections,
+
   addStoryToCollection,
   removeStoryFromCollection,
   deleteCollection,
+
 };

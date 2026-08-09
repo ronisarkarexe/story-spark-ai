@@ -73,6 +73,7 @@ const LEAK_PATTERNS: string[] = [
   "comply with your instructions",
 ];
 
+
 /**
  * Normalizes & hardens text against Unicode substitution and obfuscation bypasses.
  */
@@ -84,6 +85,7 @@ export const sanitizePromptText = (rawText: string): string => {
     .replace(/[\s\u00A0]+/g, " ")
     .trim();
 };
+
 
 const normalizeText = (input: string): string => {
   return (input ?? "")

@@ -89,7 +89,7 @@ export const scrubPII = (text: string): string => {
   scrubbed = scrubbed.replace(addressRegex, "[REDACTED_ADDRESS]");
 
 
-  // 6. NLP for Person Names using compromise
+  // 7. NLP for Person Names using compromise
   const containsAnyRedactionToken =
     /\[REDACTED_(?:EMAIL|PHONE|NAME|SSN|CARD|ADDRESS)\]/i.test(scrubbed);
   if (!containsAnyRedactionToken) {

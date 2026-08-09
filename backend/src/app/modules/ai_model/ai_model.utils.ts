@@ -10,6 +10,7 @@ import config from "../../../config";
 import { aiLimit } from "../../../utils/aiLimiter";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
+import { sanitizeJsonText } from "../../../utils/promptSecurity";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import type {
@@ -139,17 +140,7 @@ const throwIfAborted = (signal?: AbortSignal): void => {
   }
 };
 
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) {
-    return trimmed;
-  }
 
-  return trimmed
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-};
 
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
   if (!characters || characters.length === 0) return "";

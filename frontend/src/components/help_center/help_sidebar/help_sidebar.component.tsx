@@ -7,7 +7,9 @@ const HELP_SECTIONS = [
   { id: "troubleshoot-section", label: "Troubleshooting", icon: "fa-screwdriver-wrench", color: "from-orange-500 to-red-500" },
   { id: "setup-guide-section", label: "Setup Guide", icon: "fa-rocket", color: "from-emerald-500 to-teal-500" },
   { id: "support-links-section", label: "Support", icon: "fa-headset", color: "from-pink-500 to-rose-500" },
+
 ]; // ✅ FIXED: Added closing bracket and semicolon
+
 
 const HelpSidebar = () => {
   const [activeSection, setActiveSection] = useState<string>(
@@ -126,6 +128,7 @@ const HelpSidebar = () => {
                 })}
               </div>
 
+
               <motion.div
                 whileHover={{ y: -2 }}
                 className="relative overflow-hidden mt-8 rounded-3xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-6"
@@ -147,6 +150,7 @@ const HelpSidebar = () => {
                   >
                     Support Links
                   </button>
+
                 </div>
               </motion.div>
             </div>

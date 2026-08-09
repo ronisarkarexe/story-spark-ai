@@ -39,6 +39,7 @@ flex flex-col justify-between h-full">    <div className="absolute inset-0 bg-wh
 group-hover:text-slate-900
 dark:group-hover:text-white
 transition-colors duration-300">
+
     "{writer.feedback}"
   </p>
   <div className="flex items-center gap-3 mt-auto relative z-10">
@@ -52,6 +53,7 @@ transition-colors duration-300">
     <div>
       <h4 className="font-semibold text-sm text-slate-900 dark:text-slate-100 leading-tight">{writer.name}</h4>
       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{writer.role}</p>
+
     </div>
   </div>
 </div>

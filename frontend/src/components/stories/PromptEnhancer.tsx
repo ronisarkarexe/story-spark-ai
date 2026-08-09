@@ -69,8 +69,10 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
         value={selectedModel}
         onChange={(e) => setSelectedModel(e.target.value)}
         disabled={isEnhancing || isEnhanced}
+
         className={`rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-800 dark:text-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all duration-300
           ${isEnhancing || isEnhanced ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+
       >
         <option value="gemini" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Google Gemini (Default)</option>
         <option value="openai" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">OpenAI GPT-4</option>

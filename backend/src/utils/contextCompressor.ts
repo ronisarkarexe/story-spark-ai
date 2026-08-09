@@ -1,5 +1,6 @@
 import { get_encoding } from "tiktoken";
 
+
 export interface ICompressedContext {
   characters: string[];
   keyEvents: string[];
@@ -64,6 +65,14 @@ Events: ${keyEvents.slice(0, 5).join(" | ")}
 Settings: ${Array.from(setting).join(" | ")}
     `.trim()
   };
+
+}
+
+export interface LorePayload {
+  characters: CharacterEntry[];
+  setting: string[];
+  core_events: string[];
+
 }
 
 export interface CharacterEntry {
@@ -201,5 +210,8 @@ export function compressContext(
     window,
     totalTokens: usedTokens,
     droppedNodeCount: nodes.length - window.length,
+
+
+
   };
 }

@@ -1,7 +1,6 @@
 import React, { lazy, Suspense, useEffect } from "react";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-
 import { USER_ROLE } from "./constants/role";
 
 // --- Core Layout & Non-Lazy Components ---

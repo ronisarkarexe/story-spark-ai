@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import api from "../services/api";
+import logger from "../utils/logger.util";
 
 const DRAFT_KEY_PREFIX = "story_draft_";
 const AUTOSAVE_INTERVAL_MS = 30000;
@@ -21,9 +22,9 @@ interface QueuedSave {
 }
 
 export const offlineQueue: QueuedSave[] = [];
-let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
-let flushInProgress: Promise<void> | null = null;
+
+let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
 async function saveDraftToServer(item: Pick<QueuedSave, "draftId" | "title" | "content">) {
   await api.patch(`/story/${item.draftId}/save`, {
@@ -60,6 +61,8 @@ async function flushOfflineQueueOnce(
     flushInProgress = null;
   }
 }
+
+
 
 export function useAutoSave(draftId: string, title: string, content: string) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
@@ -106,7 +109,7 @@ export function useAutoSave(draftId: string, title: string, content: string) {
         (error) => {
           setPendingCount(offlineQueue.length);
           setSaveStatus("error");
-          console.error("Failed to flush offline queue:", error);
+          logger.error("Failed to flush offline queue:", error);
         }
       );
     };

@@ -18,9 +18,6 @@ import {
   Star,
   Volume2,
   Volume,
-  ChevronUp,
-  ChevronDown,
-
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
@@ -136,7 +133,9 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
+
     }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
+
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
