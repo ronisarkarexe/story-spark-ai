@@ -1,4 +1,4 @@
-import { generateStoryboardImage } from "./storyboard_image_generation";
+import { generateStoryboardImage } from "./storyboard_image";
 
 export interface CharacterPortraitInput {
   name: string;

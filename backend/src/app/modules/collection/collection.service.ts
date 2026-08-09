@@ -130,9 +130,62 @@ const getUserCollections = async (
   return collections;
 };
 
+const addStoryToCollection = async (collectionId: string, storyId: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found");
+  
+  const collection = await Collection.findOne({ _id: collectionId, isDeleted: { $ne: true } });
+  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found");
+  
+  if (collection.ownerId.toString() !== user._id.toString()) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Not authorized to modify this collection");
+  }
+
+  if (!collection.storyIds.includes(new Types.ObjectId(storyId))) {
+    collection.storyIds.push(new Types.ObjectId(storyId));
+    await collection.save();
+  }
+  return collection;
+};
+
+const removeStoryFromCollection = async (collectionId: string, storyId: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found");
+  
+  const collection = await Collection.findOne({ _id: collectionId, isDeleted: { $ne: true } });
+  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found");
+  
+  if (collection.ownerId.toString() !== user._id.toString()) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Not authorized to modify this collection");
+  }
+
+  collection.storyIds = collection.storyIds.filter(id => id.toString() !== storyId);
+  await collection.save();
+  return collection;
+};
+
+const deleteCollection = async (collectionId: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found");
+  
+  const collection = await Collection.findOne({ _id: collectionId, isDeleted: { $ne: true } });
+  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found");
+  
+  if (collection.ownerId.toString() !== user._id.toString()) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Not authorized to modify this collection");
+  }
+
+  collection.isDeleted = true;
+  await collection.save();
+  return { message: "Collection deleted successfully" };
+};
+
 export const CollectionService = {
   createCollection,
   updateCollection,
   getCollectionById,
   getUserCollections,
+  addStoryToCollection,
+  removeStoryFromCollection,
+  deleteCollection,
 };

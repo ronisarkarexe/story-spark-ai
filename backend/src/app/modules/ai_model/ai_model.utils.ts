@@ -4,7 +4,7 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { fetchImageURL } from "../../../utils/image_generation";
-import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
+import { generateStoryboardImage } from "../../../utils/storyboard_image";
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { aiLimit } from "../../../utils/aiLimiter";
@@ -26,7 +26,7 @@ import {
   TranslationResponseSchema,
   StoryboardResponseSchema,
 } from "../ai";
-import { sanitizeJsonText } from "../../../utils/promptSecurity";
+
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
