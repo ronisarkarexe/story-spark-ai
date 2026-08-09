@@ -21,6 +21,7 @@ export const handleKeyboardNavigation = (event, handlers) => {
 };
 
 export const announceToScreenReader = (message, priority = 'polite') => {
+  if (typeof document === 'undefined') return;
   const announcement = document.createElement('div');
   announcement.setAttribute('role', 'status');
   announcement.setAttribute('aria-live', priority);
