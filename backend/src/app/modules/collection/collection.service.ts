@@ -110,7 +110,29 @@ const getUserCollections = async (
   userId: string,
   requestToken: ITokenPayload | null
 ) => {
-  const isOwner =
-    requestToken !== null &&
-    (await User.findOne({ email: requestToken.email }).then(
-    .catch(err => console.error(err))
+  const user = requestToken ? await User.findOne({ email: requestToken.email }) : null;
+  const isOwner = user ? user._id.toString() === userId : false;
+
+  const query: any = { ownerId: userId, isDeleted: { $ne: true } };
+  if (!isOwner) {
+    query.visibility = "public";
+  }
+
+  const collections = await Collection.find(query)
+    .populate({
+      path: "storyIds",
+      match: { isDeleted: { $ne: true }, isPublished: true },
+      populate: { path: "author", select: "name _id" },
+      select: "title imageURL tag author likesCount commentsCount createdAt",
+    })
+    .sort({ createdAt: -1 });
+    
+  return collections;
+};
+
+export const CollectionService = {
+  createCollection,
+  updateCollection,
+  getCollectionById,
+  getUserCollections,
+};

@@ -90,13 +90,6 @@ export const scrubPII = (text: string): string => {
 
 
   // 6. NLP for Person Names using compromise
-  const containsAnyRedactionToken =
-    /\[REDACTED_(?:EMAIL|PHONE|NAME|SSN|CARD|ADDRESS)\]/i.test(scrubbed);
-  if (!containsAnyRedactionToken) {
-    const doc = compromise(scrubbed);
-    const people = doc.people().out("array");
-
-  // 7. NLP for Person Names using compromise
   const doc = compromise(scrubbed);
   const people = doc.people().out("array");
 

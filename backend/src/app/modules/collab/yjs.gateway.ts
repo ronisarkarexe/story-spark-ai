@@ -144,5 +144,3 @@ export class YjsGateway {
     return color;
   }
 }
-
-        .catch(err => console.error(err))

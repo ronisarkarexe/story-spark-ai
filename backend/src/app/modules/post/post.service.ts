@@ -53,11 +53,6 @@ const decodeCursor = (cursor?: string): ICursorPayload | null => {
     httpStatus.BAD_REQUEST,
     "Invalid pagination cursor"
   );
-}
-
-  } catch (error) {
-    console.error('[PostService] Failed to add XP:', error);
-  }
 };
 
 const getCursorCondition = (
