@@ -53,6 +53,7 @@ const decodeCursor = (cursor?: string): ICursorPayload | null => {
     httpStatus.BAD_REQUEST,
     "Invalid pagination cursor"
   );
+  };
 };
 
 const getCursorCondition = (
