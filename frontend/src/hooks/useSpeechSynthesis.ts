@@ -432,19 +432,15 @@ export const useSpeechSynthesis = (
     setRateState(clampRate(nextRate));
   }, []);
 
+  // Note: Web Speech API reads pitch/volume/rate from the utterance at
+  // speak() time — mutating the utterance after speech starts has no effect.
+  // New values apply on the next play() call, consistent with setRate.
   const setPitch = useCallback((nextPitch: number) => {
     setPitchState(nextPitch);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.pitch = nextPitch;
-    }
   }, []);
 
   const setVolume = useCallback((nextVolume: number) => {
     setVolumeState(nextVolume);
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = nextVolume;
-    }
   }, []);
 
   const setSelectedVoice = useCallback(
