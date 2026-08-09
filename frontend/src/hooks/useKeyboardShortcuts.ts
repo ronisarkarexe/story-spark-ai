@@ -44,7 +44,9 @@ const useKeyboardShortcuts = ({
         active !== null &&
         ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName);
 
-      if (e.shiftKey && e.code === "Slash") {
+      // e.key === "?" is layout-independent — works on all keyboard layouts.
+      // e.code === "Slash" only works on US QWERTY (physical key position).
+      if (e.key === "?") {
         e.preventDefault();
         handlersRef.current.onOpenHelp();
         return;
