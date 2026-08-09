@@ -82,11 +82,17 @@ export default function AnalyticsDashboard() {
         ]);
 
         if (!controller.signal.aborted) {
-          setOverview(ov);
-          setHeatmap(hm);
-          setGenres(gn);
-          setWordCloud(wc);
-          setHours(hr);
+          // Defensive normalization: the API may return a 2xx response whose
+          // `data` field is missing/null (partial payload, shape drift, empty
+          // account). Without this guard, setHeatmap(undefined) overwrites the
+          // [] initial state, and the later .reduce()/spread calls in render
+          // throw "Cannot read properties of undefined (reading 'reduce')",
+          // crashing the whole /analytics route (issue #1048).
+          setOverview(ov ?? null);
+          setHeatmap(Array.isArray(hm) ? hm : []);
+          setGenres(Array.isArray(gn) ? gn : []);
+          setWordCloud(Array.isArray(wc) ? wc : []);
+          setHours(Array.isArray(hr) ? hr : []);
         }
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
@@ -113,7 +119,14 @@ export default function AnalyticsDashboard() {
     </div>
   );
 
-  const maxHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0] || { hour: 0, count: 0 });
+  // Defence in depth: even if state somehow becomes undefined, these guards
+  // keep the reduces/spreads from throwing (issue #1048).
+  const hoursArr = hours ?? [];
+  const heatmapArr = heatmap ?? [];
+  const genresArr = genres ?? [];
+  const wordCloudArr = wordCloud ?? [];
+
+  const maxHour = hoursArr.reduce((max, h) => h.count > max.count ? h : max, hoursArr[0] || { hour: 0, count: 0 });
   const consistencyScore = Math.min(
     100,
     (overview?.currentStreak || 0) * 10
@@ -127,15 +140,15 @@ export default function AnalyticsDashboard() {
   ].filter(d => d.value > 0) : [];
 
   // Sort heatmap by date for line chart timeline
-  const timelineData = [...heatmap].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  const filteredWords = wordCloud.filter((word) =>
+  const timelineData = [...heatmapArr].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const filteredWords = wordCloudArr.filter((word) =>
     word.text.toLowerCase().includes(searchWord.toLowerCase())
   );
-  const sortedGenres = [...genres].sort(
+  const sortedGenres = [...genresArr].sort(
     (a, b) => b.count - a.count
   );
 
-  const totalGenreStories = genres.reduce(
+  const totalGenreStories = genresArr.reduce(
     (sum, g) => sum + g.count,
     0
   );
@@ -246,7 +259,7 @@ export default function AnalyticsDashboard() {
             <p className="text-sm text-white/50 mb-3">
               Total Stories Categorized: {totalGenreStories}
             </p>
-            {genres.length === 0 ? (
+            {genresArr.length === 0 ? (
               <p className="text-white/30 text-center py-8">No genre data yet</p>
             ) : (
               <ResponsiveContainer width="100%" height={250}>
@@ -275,7 +288,7 @@ export default function AnalyticsDashboard() {
                 Best Writing Time: {HOUR_LABELS[maxHour.hour]}
               </div>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={hours.map(h => ({ ...h, label: HOUR_LABELS[h.hour] }))}>
+              <BarChart data={hoursArr.map(h => ({ ...h, label: HOUR_LABELS[h.hour] }))}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
                 <XAxis dataKey="label" tick={{ fill: "#ffffff40", fontSize: 10 }} interval={3} />
                 <YAxis tick={{ fill: "#ffffff40", fontSize: 10 }} />
@@ -329,7 +342,7 @@ export default function AnalyticsDashboard() {
         {/* Writing Activity Heatmap */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 text-indigo-300">📅 Writing Activity</h2>
-          {heatmap.length === 0 ? (
+          {heatmapArr.length === 0 ? (
             <p className="text-white/30 text-center py-8">No activity data yet — start writing!</p>
           ) : (
             <div className="overflow-x-auto">
@@ -338,7 +351,7 @@ export default function AnalyticsDashboard() {
                   const date = new Date();
                   date.setDate(date.getDate() - (364 - i));
                   const dateStr = date.toISOString().split("T")[0];
-                  const day = heatmap.find(h => h.date === dateStr);
+                  const day = heatmapArr.find(h => h.date === dateStr);
                   const count = day?.count || 0;
                   const opacity = count === 0 ? 0.05 : count === 1 ? 0.3 : count === 2 ? 0.6 : 1;
                   return (
@@ -380,7 +393,7 @@ export default function AnalyticsDashboard() {
             placeholder="Search themes..."
             className="w-full mb-4 p-2 rounded-lg bg-white/10 border border-white/20"
           />
-          {wordCloud.length === 0 ? (
+          {wordCloudArr.length === 0 ? (
             <p className="text-white/30 text-center py-8">No stories yet — generate some!</p>
           ) : (
             <div className="flex flex-wrap gap-2 justify-center py-4">
