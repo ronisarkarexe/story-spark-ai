@@ -21,11 +21,12 @@ interface Props {
 }
 
 const SubscriptionChart: FC<Props> = ({ data }) => {
+  const s = data ?? ({} as SubscriptionTypes);
   const chartData: ChartData<"doughnut", number[], string> = {
     labels: ["free", "pro", "premium"],
     datasets: [
       {
-        data: [data.free, data.pro, data.premium],
+        data: [s.free ?? 0, s.pro ?? 0, s.premium ?? 0],
         backgroundColor: ["#8bc34a", "#03a9f4", "#ff5722"],
         borderColor: ["#fff"],
         borderWidth: 1,

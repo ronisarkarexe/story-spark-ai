@@ -19,16 +19,17 @@ interface Props {
 }
 
 const UsersPieChart: FC<Props> = ({ data, title = "User Distribution" }) => {
+  const u = data ?? ({} as UsersData);
   const chartData = {
     labels: ["Active", "Inactive", "Blocked", "Writers", "Apply for Writer"],
     datasets: [
       {
         data: [
-          data.active,
-          data.inactive,
-          data.blocked,
-          data.writers,
-          data.applyForWriter,
+          u.active ?? 0,
+          u.inactive ?? 0,
+          u.blocked ?? 0,
+          u.writers ?? 0,
+          u.applyForWriter ?? 0,
         ],
         backgroundColor: [
           "#4caf50",

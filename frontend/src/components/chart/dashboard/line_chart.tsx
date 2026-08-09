@@ -27,8 +27,9 @@ interface Props {
 }
 
 const PostsPerMonthChart: FC<Props> = ({ perMonth }) => {
-  const labels = Object.keys(perMonth);
-  const values = Object.values(perMonth);
+  const pm = perMonth ?? {};
+  const labels = Object.keys(pm);
+  const values = Object.values(pm);
 
   const chartData: ChartData<"line", number[], string> = {
     labels,
