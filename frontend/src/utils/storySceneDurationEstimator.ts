@@ -24,16 +24,16 @@ export function estimateSceneDurations(
     .split(/\n{2,}/)
     .filter((scene) => scene.trim())
     .map((scene, index) => {
-      const wordCount = scene.trim().split(/\s+/).length;
+      const wordCount = scene.trim().split(/\s+/).filter(Boolean).length;
 
       return {
         id: index + 1,
         title: `Scene ${index + 1}`,
         wordCount,
-        readingTime: Math.max(
-          1,
-          Math.ceil(wordCount / WORDS_PER_MINUTE)
-        ),
+        readingTime:
+          wordCount === 0
+            ? 0
+            : Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE)),
       };
     });
 
