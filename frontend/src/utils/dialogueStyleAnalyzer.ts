@@ -1,12 +1,24 @@
 import { CharacterDialogueAnalysis } from "../types/dialogue";
 
+// Deterministic hash so the same character name always yields the same score
+// (replacing the previous Math.random()-based non-deterministic scoring).
+function stableScore(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  // Map the hash onto a 65-99 range (the previous code used 65 + random*35).
+  return Math.abs(hash) % 35 + 65;
+}
+
 export function analyzeDialogue(story: string): CharacterDialogueAnalysis[] {
 
   const characters = ["Alice", "John", "King"];
 
   return characters.map((name, index) => {
 
-    let score = Math.floor(Math.random() * 35) + 65;
+    const score = stableScore(name + story.length);
 
     return {
 
