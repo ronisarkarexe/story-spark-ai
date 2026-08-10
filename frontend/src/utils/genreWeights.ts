@@ -14,17 +14,21 @@ export const normalizeWeights = (
     return { genres: [] };
   }
 
-  const total = config.genres.reduce(
-    (sum, g) => sum + g.weight,
-    0
-  );
+  // Clamp negative weights to 0 so a malformed/accidental negative entry
+  // cannot invert the normalization or produce negative percentages.
+  const clamped = config.genres.map((g) => ({
+    ...g,
+    weight: g.weight < 0 ? 0 : g.weight,
+  }));
+
+  const total = clamped.reduce((sum, g) => sum + g.weight, 0);
 
   if (total === 0) {
     return { genres: [] };
   }
 
   return {
-    genres: config.genres.map((g) => ({
+    genres: clamped.map((g) => ({
       ...g,
       weight: Math.round((g.weight / total) * 100),
     })),
