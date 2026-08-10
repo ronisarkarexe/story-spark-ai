@@ -3,7 +3,7 @@ export const validateTokenPayload = (decodedData: Record<string, unknown>): void
     throw new Error("Token payload is not a valid object.");
   }
   const userId = decodedData.userId ?? decodedData._id ?? decodedData.sub;
-  if (userId === undefined || userId === null || typeof userId !== "string" || userId.trim() === "") {
+  if (userId === undefined || userId === null || typeof userId !== "string" || userId.trim().length === 0) {
     throw new Error("Token is missing a valid user identifier ('userId', '_id', or 'sub').");
   }
   if (typeof decodedData.email !== "string" || decodedData.email.trim() === "") {
