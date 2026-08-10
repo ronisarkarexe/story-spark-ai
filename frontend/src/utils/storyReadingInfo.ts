@@ -21,6 +21,16 @@ export function analyzeReadingInfo(
 
   const wordCount = words.length;
 
+  // For empty/whitespace-only text there are no words to read, so report a
+  // reading time of 0 instead of 1 (caused by the Math.max(1, ...) floor).
+  if (wordCount === 0) {
+    return {
+      wordCount: 0,
+      readingTime: 0,
+      difficulty: "Beginner",
+    };
+  }
+
   let difficulty: DifficultyLevel = "Beginner";
 
   if (wordCount > 1000) {
