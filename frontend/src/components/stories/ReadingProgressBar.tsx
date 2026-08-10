@@ -40,7 +40,9 @@ const ReadingProgressBar: React.FC<ReadingProgressBarProps> = ({
         </button>
       )}
 
-      {progress === 100 && (
+      {/* Use >= 100 instead of === 100 — floating-point division rarely
+          produces exactly 100.0, causing the completion message to never show */}
+      {progress >= 100 && (
         <p className="mt-3 text-green-400 font-medium">
           ✅ Story completed!
         </p>
