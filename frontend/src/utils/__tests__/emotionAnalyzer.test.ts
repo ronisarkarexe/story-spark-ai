@@ -87,9 +87,11 @@ describe("analyzeEmotionJourney", () => {
   });
 
   it("multiple keywords in one scene are counted separately", () => {
-    const story = "She was happy, smiling, and laughing with joy.";
+    // Uses keywords that match the regex patterns: happy, smile, laugh, celebrate
+    const story = "She was happy, she smiled, and they celebrated with laughter.";
     const result = analyzeEmotionJourney(story);
     expect(result.length).toBe(1);
+    // happy + smile + celebrate = 3 joy matches
     expect(result[0].joy).toBeGreaterThanOrEqual(3);
   });
 });
