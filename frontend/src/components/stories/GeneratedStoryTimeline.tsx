@@ -27,7 +27,11 @@ const cleanText = (text: string) => text.replace(/\s+/g, " ").trim();
 const truncate = (text: string, maxLength: number) => {
   const normalized = cleanText(text);
   if (normalized.length <= maxLength) return normalized;
-  return `${normalized.slice(0, maxLength).trimEnd()}...`;
+  // Trim to maxLength then remove any trailing partial word so the
+  // ellipsis always follows a complete word — not a mid-word cut.
+  const sliced = normalized.slice(0, maxLength);
+  const wordBoundary = sliced.replace(/\s+\S*$/, "").trimEnd();
+  return `${wordBoundary || sliced.trimEnd()}...`;
 };
 
 const splitStoryIntoEvents = (content: string): TimelineEvent[] => {
