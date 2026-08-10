@@ -90,8 +90,11 @@ const PromptHistoryDashboard = () => {
   );
 
   const regeneratePrompt = (prompt: IRecentPrompt) => {
-    recordPromptUse(prompt.id);
-    navigate("/stories", { state: { prompt: prompt.prompt } });
+    // Pass promptId via navigation state so the stories page can call
+    // recordPromptUse() only when a story is actually generated —
+    // not here on click, which inflates the count for every navigation
+    // regardless of whether the user actually generates a story.
+    navigate("/stories", { state: { prompt: prompt.prompt, promptId: prompt.id } });
   };
 
   const clearFilters = () => {
