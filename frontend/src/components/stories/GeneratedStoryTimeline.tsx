@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { NarrationPlaybackState } from "../AudioPlayer";
 
@@ -91,6 +91,12 @@ const GeneratedStoryTimeline = ({
 }: GeneratedStoryTimelineProps) => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const events = useMemo(() => splitStoryIntoEvents(content), [content]);
+
+  // Reset selected event whenever the story content changes — old event IDs
+  // are position-based and become stale when new content produces new events.
+  useEffect(() => {
+    setSelectedEventId(null);
+  }, [content]);
 
   const narratedEvent = events.find(
     (event) =>
