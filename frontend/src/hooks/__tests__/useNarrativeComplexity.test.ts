@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import useNarrativeComplexity from "../useNarrativeComplexity";
+import { getRecommendation } from "../../utils/narrativeComplexity";
 
 describe("useNarrativeComplexity", () => {
   it("returns an array of complexity metrics", () => {
@@ -50,20 +51,16 @@ describe("useNarrativeComplexity", () => {
   });
 
   it("recommendation matches threshold for high average (>=80)", () => {
-    const highScore = 82;
-    const { getRecommendation } = require("../../utils/narrativeComplexity");
-    const rec = getRecommendation(highScore);
+    const rec = getRecommendation(82);
     expect(rec).toBe("Story complexity is excellent. Maintain consistency.");
   });
 
   it("recommendation matches threshold for mid average (>=60, <80)", () => {
-    const { getRecommendation } = require("../../utils/narrativeComplexity");
     const rec = getRecommendation(65);
     expect(rec).toBe("Balanced complexity. Add depth only where needed.");
   });
 
   it("recommendation matches threshold for low average (<60)", () => {
-    const { getRecommendation } = require("../../utils/narrativeComplexity");
     const rec = getRecommendation(50);
     expect(rec).toBe("Consider enriching plot and character development.");
   });
