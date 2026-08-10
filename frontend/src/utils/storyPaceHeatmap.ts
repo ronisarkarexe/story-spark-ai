@@ -13,28 +13,42 @@ export function analyzeStoryPace(
 
   const sections = story
     .split(/\n{2,}/)
-    .filter(Boolean);
+    .filter((s) => s.trim());
 
-  return sections.map((_, index) => {
-    const paceTypes = ["Fast", "Balanced", "Slow"] as const;
-    const pace = paceTypes[index % 3];
+  return sections.map((section, index) => {
+    const words = section.trim().split(/\s+/).filter(Boolean);
+    const sentences = section
+      .split(/[.!?]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const wordCount = Math.max(words.length, 1);
+    const sentenceCount = Math.max(sentences.length, 1);
+
+    // Average words per sentence is a real proxy for pacing: more words per
+    // sentence → faster/denser narration; fewer → slower, more descriptive.
+    const wordsPerSentence = wordCount / sentenceCount;
+    // Map ~6-30 words/sentence onto a 30-95 score band.
+    const score = Math.max(
+      30,
+      Math.min(95, Math.round(30 + (wordsPerSentence - 6) * 2.8))
+    );
+
+    const pace: PaceSection["pace"] =
+      score >= 75 ? "Fast" : score >= 50 ? "Balanced" : "Slow";
+
+    const suggestion =
+      pace === "Fast"
+        ? "Consider adding more descriptive details to slow the pacing slightly."
+        : pace === "Balanced"
+        ? "This section has a healthy pacing balance."
+        : "Consider shortening descriptions or adding dialogue/action.";
 
     return {
       id: index + 1,
       title: `Section ${index + 1}`,
       pace,
-      score:
-        pace === "Fast"
-          ? 90
-          : pace === "Balanced"
-          ? 65
-          : 35,
-      suggestion:
-        pace === "Fast"
-          ? "Consider adding more descriptive details to slow the pacing slightly."
-          : pace === "Balanced"
-          ? "This section has a healthy pacing balance."
-          : "Consider shortening descriptions or adding dialogue/action.",
+      score,
+      suggestion,
     };
   });
 }
