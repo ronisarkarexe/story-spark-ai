@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CinematicSlide from "./CinematicSlide";
 import { useGenerateModelMutation } from "../../redux/apis/ai.model.api";
 
@@ -17,12 +17,15 @@ export default function StoryTrailer({ title, content, tag, isLogin, onClose }: 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const isMountedRef = useRef(true);
+
   const totalSlides = scenes.length + 1; // +1 for final title slide
 
   // Extract scenes using Gemini via existing API
   const [generateModel] = useGenerateModelMutation();
 
   useEffect(() => {
+    isMountedRef.current = true;
     const extractScenes = async () => {
       setIsLoading(true);
       try {
@@ -38,6 +41,8 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
           numStories: 1,
           language: "English",
         }).unwrap();
+
+        if (!isMountedRef.current) return;
 
         if (result?.data?.[0]?.content) {
           try {
@@ -66,13 +71,21 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
         ]);
         setIsPlaying(true);
       } catch {
-        setError("Failed to generate trailer. Please try again.");
+        if (isMountedRef.current) {
+          setError("Failed to generate trailer. Please try again.");
+        }
       } finally {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
     };
 
     extractScenes();
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [content]);
 
   // Auto-advance slides
