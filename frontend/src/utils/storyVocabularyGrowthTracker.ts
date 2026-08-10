@@ -74,9 +74,10 @@ export function analyzeVocabulary(
   return {
     totalWords: words.length,
     uniqueWords: frequency.size,
-    diversityScore: Math.round(
-      (frequency.size / words.length) * 100
-    ),
+    diversityScore:
+      words.length > 0
+        ? Math.round((frequency.size / words.length) * 100)
+        : 0,
     overusedWords,
     growthHistory: [
       {
