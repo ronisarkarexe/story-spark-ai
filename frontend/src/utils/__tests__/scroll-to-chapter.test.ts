@@ -40,4 +40,16 @@ describe("scrollToChapter", () => {
     scrollToChapter(100);
     expect(mockGetElementById).toHaveBeenCalledWith("chapter-100");
   });
+
+  it("does not throw when document is undefined (SSR guard)", () => {
+    const original = globalThis.document;
+    // @ts-expect-error - intentionally removing document to simulate SSR
+    delete globalThis.document;
+    try {
+      expect(() => scrollToChapter(42)).not.toThrow();
+      expect(mockScrollIntoView).not.toHaveBeenCalled();
+    } finally {
+      globalThis.document = original;
+    }
+  });
 });
