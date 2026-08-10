@@ -29,8 +29,10 @@ const ReadingProgressBar: React.FC<ReadingProgressBarProps> = ({
         />
       </div>
 
-      {/* Continue Reading Button */}
-      {progress > 0 && progress < 100 && (
+      {/* Continue Reading Button — only render when onContinue is provided.
+          Without this guard, the button is visible but completely non-functional
+          when the prop is omitted, since onClick={undefined} is a silent no-op. */}
+      {progress > 0 && progress < 100 && onContinue && (
         <button
           type="button"
           onClick={onContinue}
