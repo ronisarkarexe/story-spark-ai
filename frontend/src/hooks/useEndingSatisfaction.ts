@@ -1,7 +1,13 @@
 import { useMemo } from "react";
 import { getEndingMetrics } from "../utils/endingSatisfaction";
 
-export default function useEndingSatisfaction() {
+interface UseEndingSatisfactionOptions {
+  onComplete?: () => void;
+}
+
+export default function useEndingSatisfaction(options: UseEndingSatisfactionOptions = {}) {
+  const { onComplete } = options;
+
   const metrics = useMemo(() => getEndingMetrics(), []);
 
   const overallScore = Math.round(
@@ -10,7 +16,9 @@ export default function useEndingSatisfaction() {
   );
 
   const rerunAnalysis = () => {
-    alert("Ending analysis completed.");
+    if (onComplete) {
+      onComplete();
+    }
   };
 
   return {
