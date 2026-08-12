@@ -25,7 +25,10 @@ export const downloadBlob = (blob: Blob, fileName: string): void => {
   link.click();
   link.remove();
 
-  URL.revokeObjectURL(url);
+  // Defer revocation so the browser has time to complete the download
+  // before the URL is invalidated. Synchronous revocation can cause
+  // silent failures in Firefox and Safari.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 };
 
 const escapeHtml = (value: string): string =>
