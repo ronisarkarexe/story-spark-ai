@@ -6,7 +6,7 @@ export function analyzeNarrativeFlow(
 
   const issues: NarrativeIssue[] = [];
 
-  if (story.includes("Suddenly")) {
+  if (/suddenly/i.test(story)) {
     issues.push({
       id: 1,
       type: "Abrupt Transition",
