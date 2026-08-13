@@ -1,6 +1,18 @@
+import React from "react";
+
+export interface SuggestionItem {
+  id: number;
+  category: string;
+  message: string;
+  recommendation: string;
+}
+
 export default function SuggestionCard({
   suggestion,
   onDismiss,
+}: {
+  suggestion: SuggestionItem;
+  onDismiss: (id: number) => void;
 }) {
   return (
     <div className="border rounded-lg p-4 mb-3">
@@ -15,15 +27,13 @@ export default function SuggestionCard({
       </div>
 
       <div className="flex gap-2 mt-4">
-        <button
-          className="px-3 py-1 bg-green-500 text-white rounded"
-        >
+        <button className="px-3 py-1 bg-green-500 text-white rounded">
           Apply
         </button>
 
         <button
           onClick={() => onDismiss(suggestion.id)}
-          className="px-3 py-1 bg-gray-200 rounded"
+          className="px-3 py-1 bg-gray-200 rounded text-slate-800"
         >
           Dismiss
         </button>

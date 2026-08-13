@@ -4,6 +4,7 @@ import { Story, StoryVersion } from "../../types/story.types";
 interface StoryState {
   currentStory: Story | null;
   versions: StoryVersion[];
+  currentVersionId?: string | null;
 }
 
 const loadStoryFromStorage = (): Story | null => {

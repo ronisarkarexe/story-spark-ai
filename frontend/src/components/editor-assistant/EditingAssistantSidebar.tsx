@@ -1,27 +1,25 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import SuggestionCard from "./SuggestionCard";
 import { useStoryAnalysis } from "../../hooks/useStoryAnalysis";
 
-export default function EditingAssistantSidebar({
-  story,
-}) {
+export default function EditingAssistantSidebar({ story }: { story: string }) {
   const analysis = useStoryAnalysis(story);
 
   const [hidden, setHidden] = useState<number[]>([]);
 
   const suggestions = analysis.filter(
-    (item) => !hidden.includes(item.id)
+    (item: any) => !hidden.includes(item.id)
   );
 
   const dismiss = (id: number) => {
     setHidden([...hidden, id]);
   };
 
-  const grouped = suggestions.reduce((acc, item) => {
-    acc[item.category] ??= [];
+  const grouped = suggestions.reduce<Record<string, any[]>>((acc, item: any) => {
+    acc[item.category] = acc[item.category] || [];
     acc[item.category].push(item);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {});
 
   return (
     <aside className="w-full lg:w-96 border rounded-xl p-5">
@@ -35,7 +33,7 @@ export default function EditingAssistantSidebar({
             {category}
           </summary>
 
-          {items.map((item) => (
+          {(items as any[]).map((item) => (
             <SuggestionCard
               key={item.id}
               suggestion={item}

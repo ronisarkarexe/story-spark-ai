@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
 import { analyzeScenes } from "../utils/sceneImportanceAnalyzer";
 
-export function useSceneImportance(story:string){
+export function useSceneImportance(story: string) {
+  const [scores, setScores] = useState<any[]>([]);
 
-    const [scores,setScores]=useState([]);
+  useEffect(() => {
+    setScores(analyzeScenes(story));
+  }, [story]);
 
-    useEffect(()=>{
-
-        setScores(analyzeScenes(story));
-
-    },[story]);
-
-    return scores;
-
+  return scores;
 }

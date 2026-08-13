@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useCallback, useState } from "react";
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import { diffChars, diffWords, Change } from "diff";
 
 import DiffHighlight from "./DiffHighlight";

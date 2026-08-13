@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { generateRevisionPlan } from "../utils/revisionPlanner";
+import { RevisionTask } from "../types/revision";
 
 export function useRevisionPlanner(story: string) {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<RevisionTask[]>([]);
 
   useEffect(() => {
     setTasks(generateRevisionPlan(story));

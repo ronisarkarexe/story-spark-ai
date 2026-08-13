@@ -1,8 +1,16 @@
 import { useState } from "react";
 
-export default function useComments() {
+export interface CommentItem {
+  id: string;
+  author: string;
+  text: string;
+  selectedText: string;
+  resolved: boolean;
+  replies: string[];
+}
 
-  const [comments, setComments] = useState([
+export default function useComments() {
+  const [comments, setComments] = useState<CommentItem[]>([
     {
       id: "1",
       author: "Reviewer",
@@ -17,8 +25,7 @@ export default function useComments() {
     text: string,
     selectedText: string
   ) => {
-
-    const newComment = {
+    const newComment: CommentItem = {
       id: Date.now().toString(),
       author: "You",
       text,
@@ -37,7 +44,6 @@ export default function useComments() {
     id: string,
     reply: string
   ) => {
-
     setComments((prev) =>
       prev.map((comment) =>
         comment.id === id
@@ -51,13 +57,11 @@ export default function useComments() {
           : comment
       )
     );
-
   };
 
   const resolveComment = (
     id: string
   ) => {
-
     setComments((prev) =>
       prev.map((comment) =>
         comment.id === id
@@ -68,18 +72,12 @@ export default function useComments() {
           : comment
       )
     );
-
   };
 
   return {
-
     comments,
-
     addComment,
-
     addReply,
-
     resolveComment,
-
   };
 }

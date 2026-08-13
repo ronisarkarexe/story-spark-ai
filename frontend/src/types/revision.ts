@@ -1,10 +1,15 @@
+export interface Revision {
+  id: string | number;
+  summary: string;
+  timestamp: string;
+  content: string;
+}
+
 export interface RevisionTask {
   id: number;
   title: string;
   description: string;
-
   priority: "High" | "Medium" | "Low";
-
   category:
     | "Introduction"
     | "Dialogue"
@@ -12,6 +17,5 @@ export interface RevisionTask {
     | "Plot"
     | "Ending"
     | "Grammar";
-
   completed: boolean;
 }
