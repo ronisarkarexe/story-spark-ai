@@ -68,28 +68,14 @@ const SSInput = <T extends FieldValues>({
           autoFocus={autoFocus}
           aria-invalid={error ? "true" : "false"}
           {...register(name, validation)}
-          className={`w-full box-border max-w-full h-11 block rounded-xl border bg-transparent text-sm transition-all duration-200 ${
+          className={`ss-input block h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap box-border rounded-xl border text-sm transition-all duration-200 ${
             icon ? "pl-10" : "px-4"
-          } ${type === "password" ? "pr-10" : "pr-4"} ${
+          } ${isPasswordType ? "pr-10" : "pr-4"} ${
             error
-              ? "border-rose-500 focus:ring-rose-500/20 focus:border-rose-500 text-rose-900 dark:text-rose-400 placeholder-rose-300 focus:outline-none"
-              : "border-slate-200 dark:border-slate-700 text-gray-900 dark:text-gray-200 focus:border-blue-500 focus:ring-blue-500/20 placeholder-slate-400 dark:placeholder-slate-500"
-          }`}
-          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
-
-        className={`ss-input w-full box-border max-w-full min-w-0 h-11 block rounded-xl border text-sm transition-all duration-200 ${
-          icon ? "pl-10" : "px-4"
-        } ${isPasswordType ? "pr-10" : "pr-4"} ${
-          error
-            ? "border-rose-500 bg-rose-500/5 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-slate-900 dark:text-slate-100 placeholder-rose-300 focus:outline-none"
-            : "border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 placeholder-slate-400 dark:placeholder-slate-500"
-        }`}
-        style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
-          className={`block h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap box-border rounded-xl border text-sm transition-all duration-200 ${icon ? "pl-10" : "px-4"
-            } ${isPasswordType ? "pr-10" : "pr-4"} ${error
               ? "border-rose-500 bg-rose-500/5 text-slate-900 placeholder-rose-300 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20 dark:text-slate-100"
               : "border-slate-300 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder-slate-500"
-            }`}
+          }`}
+          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
         />
 
         {/* Right Password Eye Toggle */}
