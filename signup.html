@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
+
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 
@@ -10,25 +12,35 @@
         name="description"
         content="Create an account for Story Spark AI."
     />
+
     <!-- FONTS -->
+
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet"
     />
+
     <!-- ICONS -->
+
     <link
         href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css"
         rel="stylesheet"
     />
+
     <!-- GOOGLE AUTH -->
+
     <script
         src="https://accounts.google.com/gsi/client"
         async
         defer
     ></script>
+
     <!-- STYLES -->
+
     <link href="auth.css" rel="stylesheet"/>
+
 </head>
+
 <body>
 
     <!-- PARTICLE CANVAS BACKGROUND -->
@@ -38,18 +50,21 @@
 
     <div class="auth-wrapper">
 
-    <div class="ds-input-group has-action">
 
-        <i class="fi fi-rr-lock ds-input-icon"></i>
+        <!-- MAIN CONTAINER -->
+
+        <main class="auth-container">
+
+            <!-- LEFT PANEL -->
 
             <!-- LEFT PANEL (HIDDEN IN CSS) -->
             <section class="left-pane"></section>
 
-CONFIRM PASSWORD
+            <!-- RIGHT PANEL -->
 
-</label>
+            <section class="right-pane">
 
-<div class="ds-input-group has-action">
+                <div class="auth-form-card">
 
                     <!-- CARD BRANDING -->
                     <div class="auth-card-brand">
@@ -120,7 +135,7 @@ CONFIRM PASSWORD
                                 <label class="ds-label" for="name-field">Full Name</label>
                                 <div class="ds-input-group">
                                     <i class="fi fi-rr-user ds-input-icon"></i>
-                                    <input type="text" id="name-field" placeholder="Alex Spark" autocomplete="name" required />
+                                    <input type="text" id="name-field" placeholder="Alex Spark" class="ds-input" autocomplete="name" required />
                                 </div>
                                 <p class="ds-help" id="name-help">This will be shown on your profile.</p>
                                 <p class="ds-error" id="name-error" role="alert" aria-live="polite"></p>
@@ -131,7 +146,7 @@ CONFIRM PASSWORD
                                 <label class="ds-label" for="email-field">Email Address</label>
                                 <div class="ds-input-group">
                                     <i class="fi fi-rr-envelope ds-input-icon"></i>
-                                    <input type="email" id="email-field" placeholder="name@storyspark.ai" autocomplete="email" required aria-describedby="email-error" />
+                                    <input type="email" id="email-field" placeholder="name@storyspark.ai" class="ds-input" autocomplete="email" required aria-describedby="email-error" />
                                 </div>
                                 <p class="ds-error" id="email-error" role="alert" aria-live="polite"></p>
                             </div>
@@ -139,10 +154,10 @@ CONFIRM PASSWORD
                             <!-- PASSWORD -->
                             <div>
                                 <label class="ds-label" for="password-field">Password</label>
-                                <div class="ds-input-group">
+                                <div class="ds-input-group has-action">
                                     <i class="fi fi-rr-lock ds-input-icon"></i>
-                                    <input id="password-field" placeholder="••••••••" type="password" autocomplete="new-password" required />
-                                    <button onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); display:flex; align-items:center; justify-content:center; padding:0; margin:0; background:none; border:none; color:rgba(255,255,255,.5); cursor:pointer;">
+                                    <input id="password-field" placeholder="••••••••" class="ds-input" type="password" autocomplete="new-password" required />
+                                    <button onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility" class="ds-input-action">
                                         <i class="fi fi-rr-eye-crossed" id="eye-icon"></i>
                                     </button>
                                 </div>
@@ -168,7 +183,7 @@ CONFIRM PASSWORD
                                 <label class="ds-label" for="confirm-password-field">Confirm Password</label>
                                 <div class="ds-input-group">
                                     <i class="fi fi-rr-lock ds-input-icon"></i>
-                                    <input id="confirm-password-field" placeholder="Re-enter your password" type="password" autocomplete="new-password" required aria-describedby="confirm-password-error" />
+                                    <input id="confirm-password-field" placeholder="Re-enter your password" class="ds-input" type="password" autocomplete="new-password" required aria-describedby="confirm-password-error" />
                                 </div>
                                 <p class="ds-error" id="confirm-password-error" role="alert" aria-live="polite"></p>
                                 <p id="confirm-caps-lock-warning" class="hidden text-yellow-400 text-sm mt-2">Caps Lock is ON</p>
@@ -203,7 +218,7 @@ CONFIRM PASSWORD
 
             </section>
 
-</p>
+        </main>
 
     </div>
 

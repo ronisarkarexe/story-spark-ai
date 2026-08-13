@@ -40,14 +40,14 @@ const okJson = (data: unknown, status = 200) =>
     ok: status >= 200 && status < 300,
     status,
     json: async () => ({ data }),
-  } as Response);
+  } as unknown as Response);
 
 const statusResponse = (status: number) =>
   Promise.resolve({
     ok: false,
     status,
     json: async () => ({ message: "error" }),
-  } as Response);
+  } as unknown as Response);
 
 const malformedJsonResponse = () =>
   Promise.resolve({
@@ -56,7 +56,7 @@ const malformedJsonResponse = () =>
     json: async () => {
       throw new SyntaxError("Unexpected token");
     },
-  } as Response);
+  } as unknown as Response);
 
 const endpointFromUrl = (input: RequestInfo | URL) => {
   const url = String(input);

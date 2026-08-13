@@ -149,18 +149,10 @@ async function main() {
       config.cors_origins && config.cors_origins.length > 0
         ? config.cors_origins
         : defaultCorsOrigins;
-
-    const socketCorsOrigins = config.cors_origins && config.cors_origins.length > 0
-      ? config.cors_origins
-      : defaultCorsOrigins;
-
     // Recovers orders left in "paid_pending_entitlement" by a crash between
     // the Order write and the User write in verifyPayment. See issue #4876.
     startOrderReconciliationJob();
 
-    // Recovers orders left in "paid_pending_entitlement" by a crash between
-    // the Order write and the User write in verifyPayment. See issue #4876.
-    startOrderReconciliationJob();
 
     // Single Socket.IO instance: full CORS methods + credentials, rate
     // limiting, JWT auth handshake, and per-user room joining.

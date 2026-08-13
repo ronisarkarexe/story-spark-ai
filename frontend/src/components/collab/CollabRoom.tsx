@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import { resolveSocketUrl } from '../../helpers/socket-url';
+import toast from "react-hot-toast";
 import CollabEditor from './CollabEditor';
 import { io, type Socket } from "socket.io-client";
 import CollabChatPanel from './CollabChatPanel';
@@ -156,7 +157,7 @@ export default function CollabRoom() {
         socketInstance.disconnect();
       };
    } catch (err) {
-  logger.error("Collab initialization error:", err);
+  console.error("Collab initialization error:", err);
   setError("Failed to initialize collaboration space.");
   setLoading(false);
   }
@@ -179,7 +180,7 @@ export default function CollabRoom() {
           url: currentUrl,
         });
      } catch (err) {
-  logger.debug("Native share canceled or failed, using fallback.", err);
+  console.debug("Native share canceled or failed, using fallback.", err);
   fallbackCopyToClipboard(currentUrl);
 }
     } else {

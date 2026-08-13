@@ -33,7 +33,6 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
     return diffFn(version1.content, version2.content);
   }, [version1.content, version2.content, diffMode]);
 
-
   const stats = useMemo(() => {
     let added = 0;
     let removed = 0;

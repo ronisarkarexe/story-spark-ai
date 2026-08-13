@@ -1,5 +1,5 @@
 // frontend/src/components/StoryGenerator.tsx
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import api from '../services/api';
 
 interface StoryGeneratorProps {
@@ -8,13 +8,21 @@ interface StoryGeneratorProps {
 
 const MIN_PROMPT_LENGTH = 10;
 const MAX_PROMPT_LENGTH = 1000;
+const STORAGE_KEY_VARIATION_COUNT = 'story_generator_variation_count';
 
 export const StoryGenerator = ({ onStoryGenerated }: StoryGeneratorProps) => {
   const [prompt, setPrompt] = useState('');
-  const [variationCount, setVariationCount] = useState(3);
+  const [variationCount, setVariationCount] = useState<number>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_VARIATION_COUNT);
+    return saved ? Number(saved) : 3;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [stories, setStories] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_VARIATION_COUNT,variationCount.toString());
+  },[variationCount]);
 
   // Derived values used both in JSX and inside handleGenerate
   const trimmedPrompt = prompt.trim();
