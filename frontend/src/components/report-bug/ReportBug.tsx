@@ -3,19 +3,21 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
 
-import { 
-  Bug, 
-  Send, 
-  AlertCircle, 
-  CheckCircle2, 
-  Info, 
-  Mail, 
-  Layers, 
-  Activity, 
+import {
+  Bug,
+  Send,
+  AlertCircle,
+  CheckCircle2,
+  Info,
+  Mail,
+  Layers,
+  Activity,
   MessageSquare,
   ClipboardList,
   Target,
   FileWarning,
+  Paperclip,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -47,17 +49,48 @@ const SEVERITIES = [
   "Critical"
 ];
 
+const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024; // 5MB, matches backend multer limit
+
 const ReportBug = () => {
   const [submitBugReport, { isLoading: isSubmitting }] = useSubmitBugReportMutation();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [screenshotName, setScreenshotName] = useState<string | null>(null);
+  const [screenshotError, setScreenshotError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors }
   } = useForm<ReportBugFormData>();
   const { ref: screenshotRef, ...screenshotRegister } = register("screenshot");
+
+  const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setScreenshotName(null);
+      setScreenshotError(null);
+      return;
+    }
+    if (file.size > MAX_SCREENSHOT_SIZE) {
+      setScreenshotError("Screenshot must be under 5MB");
+      setScreenshotName(null);
+      e.target.value = "";
+      setValue("screenshot", undefined);
+      return;
+    }
+    setScreenshotError(null);
+    setScreenshotName(file.name);
+  };
+
+  const clearScreenshot = () => {
+    setValue("screenshot", undefined);
+    setScreenshotName(null);
+    setScreenshotError(null);
+    const input = document.getElementById("screenshot") as HTMLInputElement | null;
+    if (input) input.value = "";
+  };
   useEffect(() => {
   const errorReport = sessionStorage.getItem("error-report");
 
@@ -95,6 +128,8 @@ const ReportBug = () => {
       setIsSuccess(true);
       toast.success("Bug report submitted successfully!");
       reset();
+      setScreenshotName(null);
+      setScreenshotError(null);
       
       // Scroll to top of form or success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -412,6 +447,55 @@ const ReportBug = () => {
                     )}
                     <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 ml-1">
                       Provide your email if you'd like us to reach out for more details or updates on the fix.
+                    </p>
+                  </div>
+
+                  {/* Section 4: Screenshot Upload */}
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <label htmlFor="screenshot" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">
+                      Screenshot (Optional)
+                    </label>
+                    <input
+                      id="screenshot"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      ref={screenshotRef}
+                      {...screenshotRegister}
+                      onChange={(e) => {
+                        screenshotRegister.onChange(e);
+                        handleScreenshotChange(e);
+                      }}
+                    />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label
+                        htmlFor="screenshot"
+                        className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-blue-500 text-slate-700 dark:text-slate-300 font-medium cursor-pointer transition-all duration-300"
+                      >
+                        <Paperclip className="w-4 h-4" />
+                        <span>Choose Image</span>
+                      </label>
+                      {screenshotName && (
+                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-sm font-medium">
+                          {screenshotName}
+                          <button
+                            type="button"
+                            onClick={clearScreenshot}
+                            aria-label="Remove screenshot"
+                            className="hover:text-red-500 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                    {screenshotError && (
+                      <p className="mt-2 text-sm text-red-500 flex items-center gap-1 ml-1" role="alert">
+                        <AlertCircle className="w-4 h-4" /> {screenshotError}
+                      </p>
+                    )}
+                    <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 ml-1">
+                      Attach a screenshot to help us understand the issue (max 5MB).
                     </p>
                   </div>
 
