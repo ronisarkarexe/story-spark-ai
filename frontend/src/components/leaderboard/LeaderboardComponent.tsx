@@ -56,7 +56,7 @@ const LeaderboardComponent: React.FC = () => {
 
     return data;
   }, [contributors, activeTab, searchTerm, sortBy]);
-  const topThree = contributors.slice(0, 3);
+  const topThree = filteredContributors.slice(0, 3);
   return (
     <div className="w-full min-h-screen bg-[#070b12] text-slate-100 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 pb-16 relative overflow-hidden box-border">
       {/* Background Radial Premium Ambient Glow Effects */}
