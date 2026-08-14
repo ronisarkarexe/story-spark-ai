@@ -1,7 +1,7 @@
 import useDialogueDistribution from "../../hooks/useDialogueDistribution";
 
-export default function DialogueDashboard() {
-  const data = useDialogueDistribution();
+export default function DialogueDashboard({ story }: { story: string }) {
+  const data = useDialogueDistribution(story);
 
   return (
     <div className="max-w-3xl mx-auto rounded-lg border bg-white shadow p-6">
