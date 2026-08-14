@@ -43,8 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling and validation
 
 ### Fixed
-- Fixed story cover download silently failing in Firefox/Safari by appending the anchor to the DOM before triggering the click
 - Fixed delete user dangling references
+- Fixed story cover download silently failing in Firefox/Safari by appending the anchor to the DOM before triggering the click
 - Fixed story translation bug
 - Fixed search query parameter validation
 - Fixed payment signature length check
