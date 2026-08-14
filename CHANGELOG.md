@@ -43,9 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling and validation
 
 ### Fixed
-- Fixed TXT story download silently failing in Firefox/Safari by appending the anchor to the DOM and deferring object URL revocation
 - Fixed delete user dangling references
 - Fixed story translation bug
+- Fixed TXT story download silently failing in Firefox/Safari by appending the anchor to the DOM and deferring object URL revocation
 - Fixed search query parameter validation
 - Fixed payment signature length check
 - Replaced `require()` with ES module import for `expo-server-sdk`
