@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling and validation
 
 ### Fixed
+- Fixed documented "Ctrl + Enter" shortcut not generating a story (handler never checked for it)
 - Fixed delete user dangling references
 - Fixed story translation bug
 - Fixed search query parameter validation
