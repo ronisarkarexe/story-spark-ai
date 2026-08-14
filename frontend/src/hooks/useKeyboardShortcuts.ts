@@ -67,6 +67,12 @@ const useKeyboardShortcuts = ({
         return;
       }
 
+      if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        handlersRef.current.onGenerate();
+        return;
+      }
+
       if (e.ctrlKey && e.key.toLowerCase() === "s") {
         e.preventDefault();
         if (handlersRef.current.hasStory) {
