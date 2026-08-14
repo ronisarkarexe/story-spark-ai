@@ -4,7 +4,8 @@ export interface CharacterDialogue {
   percentage: number;
 }
 
-export function getDialogueDistribution(): CharacterDialogue[] {
+export function getDialogueDistribution(story: string): CharacterDialogue[] {
+  // TODO: Implement actual dialogue distribution computation from story
   const characters = [
     { name: "Alice", lines: 42 },
     { name: "John", lines: 28 },
