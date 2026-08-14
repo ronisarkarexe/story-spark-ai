@@ -16,7 +16,11 @@ export const downloadTXT = (story: any) => {
 
   link.download = `${story.title.replace(/[\\/:*?"<>|\s]+/g, "_")}.txt`;
 
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 
-  URL.revokeObjectURL(url);
+  // Defer revocation so Firefox/Safari have time to start reading the blob
+  // before the object URL is invalidated.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 };
