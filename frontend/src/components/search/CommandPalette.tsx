@@ -74,11 +74,37 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
     setQuery("");
   };
 
+  const allStories = results?.stories?.data ?? [];
+  const allUsers = results?.users?.data ?? [];
+  const navigableStories = allStories.slice(0, 4);
+
+  const handleSelectStory = (storyId: string) => {
+    saveRecent(query);
+    onClose();
+    navigate(`/post/${storyId}`);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") { onClose(); return; }
-    if (e.key === "Enter") { handleSubmit(query); return; }
-    if (e.key === "ArrowDown") setActiveIdx((i) => i + 1);
-    if (e.key === "ArrowUp") setActiveIdx((i) => Math.max(0, i - 1));
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIdx((i) => (navigableStories.length ? Math.min(i + 1, navigableStories.length - 1) : 0));
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIdx((i) => Math.max(0, i - 1));
+      return;
+    }
+    if (e.key === "Enter") {
+      const activeStory = navigableStories[activeIdx];
+      if (activeStory) {
+        handleSelectStory(activeStory._id);
+        return;
+      }
+      handleSubmit(query);
+      return;
+    }
   };
 
   const handleDeleteRecent = (term: string) => {
@@ -87,9 +113,6 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
   };
 
   if (!open) return null;
-
-  const allStories = results?.stories?.data ?? [];
-  const allUsers = results?.users?.data ?? [];
 
   return (
     <div
@@ -133,12 +156,15 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
               {allStories.length > 0 && (
                 <section className="p-2">
                   <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Stories</p>
-                  {allStories.slice(0, 4).map((story) => (
+                  {navigableStories.map((story, index) => (
                     <Link
                       key={story._id}
                       to={`/post/${story._id}`}
+                      onMouseEnter={() => setActiveIdx(index)}
                       onClick={() => { saveRecent(query); onClose(); }}
-                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-white/5"
+                      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-white/5 ${
+                        index === activeIdx ? "bg-slate-100 dark:bg-white/10" : ""
+                      }`}
                     >
                       <span className="text-base">📖</span>
                       <span className="truncate font-medium">{story.title}</span>
