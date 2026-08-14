@@ -43,7 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling and validation
 
 ### Fixed
-- Fixed command palette arrow-key navigation not highlighting or selecting a result on Enter
 - Fixed delete user dangling references
 - Fixed story translation bug
 - Fixed search query parameter validation
@@ -51,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced `require()` with ES module import for `expo-server-sdk`
 - Cached ML model and tokenizer at module level to avoid repeated disk I/O
 - Fixed reservation flow issues
+- Fixed command palette arrow-key navigation not highlighting or selecting a result on Enter
 - Fixed data loss issues
 - Fixed story coherence scoring
 
