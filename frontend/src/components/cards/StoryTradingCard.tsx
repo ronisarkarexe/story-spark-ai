@@ -175,7 +175,9 @@ const StoryTradingCard = ({
 
       link.download = `${fileName}-trading-card.png`;
       link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       toast.dismiss(toastId);
       toast.success("Trading card downloaded!");
     } catch (error) {
