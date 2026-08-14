@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed story translation bug
 - Fixed search query parameter validation
 - Fixed payment signature length check
+- Fixed leaderboard top-3 podium ignoring the active tab/search/sort filters
 - Replaced `require()` with ES module import for `expo-server-sdk`
 - Cached ML model and tokenizer at module level to avoid repeated disk I/O
 - Fixed reservation flow issues
