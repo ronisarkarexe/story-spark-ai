@@ -25,7 +25,10 @@ export const downloadBlob = (blob: Blob, fileName: string): void => {
   link.click();
   link.remove();
 
+  setTimeout(() => {
   URL.revokeObjectURL(url);
+}, 0);
+
 };
 
 const escapeHtml = (value: string): string =>
