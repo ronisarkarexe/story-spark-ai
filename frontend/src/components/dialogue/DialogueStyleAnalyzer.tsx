@@ -1,11 +1,15 @@
 import CharacterDialogueCard from "./CharacterDialogueCard";
 import { useDialogueAnalysis } from "../../hooks/useDialogueAnalysis";
 
+interface DialogueStyleAnalyzerProps {
+  story: string;
+}
+
 export default function DialogueStyleAnalyzer({
 
 story
 
-}){
+}: DialogueStyleAnalyzerProps){
 
 const analysis=useDialogueAnalysis(story);
 
