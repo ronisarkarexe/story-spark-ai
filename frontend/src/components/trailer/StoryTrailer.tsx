@@ -265,12 +265,18 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
           zIndex: 50,
         }}>
           {Array.from({ length: totalSlides }).map((_, i) => (
-            <div
+            <button
               key={i}
+              type="button"
+              aria-label={`Go to scene ${i + 1} of ${totalSlides}`}
+              aria-current={i === currentScene ? "true" : undefined}
               onClick={() => { setCurrentScene(i); setIsPlaying(false); }}
               style={{
                 width: i === currentScene ? "24px" : "8px",
                 height: "8px",
+                padding: 0,
+                margin: 0,
+                border: "none",
                 borderRadius: "4px",
                 background: i === currentScene ? "#fff" : "rgba(255,255,255,0.3)",
                 transition: "all 0.3s ease",
