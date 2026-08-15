@@ -111,18 +111,40 @@ async function grantEntitlementAndRespond(
   { respond }: { respond: boolean }
 ): Promise<void> {
   const selectedPlan = PLANS[order.plan];
-  const subscriptionExpiry = new Date(
-    Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
-  );
+  const durationMs = selectedPlan.durationDays * 24 * 60 * 60 * 1000;
+  const now = new Date();
 
+  // Stack remaining premium time: expiry = max(now, currentExpiry) + duration.
+  // Use an aggregation update so concurrent renewals cannot clobber each other
+  // by reading a stale expiry and writing Date.now() + duration.
   const updatedUser = await User.findByIdAndUpdate(
     order.userId,
-    {
-      subscriptionType: "premium",
-      subscriptionExpiry,
-      lastPaymentId: order.razorpayPaymentId,
-      lastOrderId: order.razorpayOrderId,
-    },
+    [
+      {
+        $set: {
+          subscriptionType: "premium",
+          lastPaymentId: order.razorpayPaymentId,
+          lastOrderId: order.razorpayOrderId,
+          subscriptionExpiry: {
+            $add: [
+              {
+                $cond: [
+                  {
+                    $and: [
+                      { $ne: [{ $ifNull: ["$subscriptionExpiry", null] }, null] },
+                      { $gt: ["$subscriptionExpiry", now] },
+                    ],
+                  },
+                  "$subscriptionExpiry",
+                  now,
+                ],
+              },
+              durationMs,
+            ],
+          },
+        },
+      },
+    ],
     { new: true, select: "email subscriptionType subscriptionExpiry" }
   );
 

@@ -64,8 +64,21 @@ const StoryWorkspace = () => {
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
-  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
 
+  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+  const handleCopyStoryId = async () => {
+    if (!currentStory) {
+      toast.error("No Story ID available.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(currentStory.id);
+      toast.success("Story ID copied successfully!");
+    } catch (error) {
+      toast.error("Failed to copy Story ID.");
+    }
+  };
   const [selectedTheme, setSelectedTheme] = useState<
   "Classic" | "Novel" | "Minimal" | "Dark"
 >("Classic");
@@ -100,10 +113,10 @@ const StoryWorkspace = () => {
     await navigator.clipboard.writeText(storyText);
     toast.success("Story copied to clipboard!");
   } catch (error) {
-    logger.error(error);
-    toast.error("Failed to copy story.");
-  }
-};
+      console.error(error);
+      toast.error("Failed to copy story.");
+    }
+  };
 
   const handleExportMarkdown = () => {
     if (!currentStory) {
@@ -130,7 +143,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
     } catch (error) {
-      logger.error(error);
+      console.error(error);
       toast.error("Failed to export Markdown.");
     }
   };
@@ -161,7 +174,7 @@ const StoryWorkspace = () => {
 
       toast.success("PDF downloaded!");
     } catch (error) {
-      logger.error(error);
+      console.error(error);
       toast.error("Failed to export PDF.");
     } finally {
       toast.dismiss(toastId);
@@ -194,7 +207,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "docx"));
       toast.success("DOCX downloaded!");
     } catch (error) {
-      logger.error(error);
+      console.error(error);
       toast.error("Failed to export DOCX.");
     }
   };
@@ -219,13 +232,20 @@ const StoryWorkspace = () => {
         <div className="flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-900">
           <h2 className="text-white text-lg font-bold">{currentStory.title}</h2>
           <div className="flex items-center gap-3">
+            <button
+              onClick={handleCopyStoryId}
+              className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
+            >
+              📋 Copy Story ID
+            </button>
+
             <div className="flex bg-zinc-950 rounded-lg p-0.5 border border-zinc-800 mr-2">
               <button
                 onClick={() => setWorkspaceMode("editor")}
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "editor"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-300"
+                    : "text-slate-400 hover:text-slate-250"
                 }`}
               >
                 📖 Read Story
@@ -235,31 +255,33 @@ const StoryWorkspace = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                   workspaceMode === "network"
                     ? "bg-indigo-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-300"
+                    : "text-slate-400 hover:text-slate-255"
                 }`}
               >
                 🕸️ Character Network
               </button>
             </div>
+            
             <select
-  value={selectedTheme}
-  onChange={(e) =>
-    setSelectedTheme(
-      e.target.value as "Classic" | "Novel" | "Minimal" | "Dark"
-    )
-  }
-  className="bg-zinc-800 text-white rounded px-3 py-2 border border-zinc-700 text-sm"
->
-  <option value="Classic">📖 Classic</option>
-  <option value="Novel">📚 Novel</option>
-  <option value="Minimal">✨ Minimal</option>
-  <option value="Dark">🌙 Dark</option>
-</select>
+              value={selectedTheme}
+              onChange={(e) =>
+                setSelectedTheme(
+                  e.target.value as "Classic" | "Novel" | "Minimal" | "Dark"
+                )
+              }
+              className="bg-zinc-800 text-white rounded px-3 py-2 border border-zinc-700 text-sm"
+            >
+              <option value="Classic">📖 Classic</option>
+              <option value="Novel">📚 Novel</option>
+              <option value="Minimal">✨ Minimal</option>
+              <option value="Dark">🌙 Dark</option>
+            </select>
+
             <button
               onClick={handleCopyStory}
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
-              >
-                📋 Copy Story
+            >
+              📋 Copy Story
             </button>
             <button
               onClick={handleExportMarkdown}
@@ -281,6 +303,7 @@ const StoryWorkspace = () => {
             </button>
           </div>
         </div>
+
 
         {workspaceMode === "editor" ? (
   <>
