@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { getUserInfo } from "../services/auth.service";
@@ -12,10 +12,10 @@ interface BookmarkButtonProps {
   className?: string;
 }
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({
+const BookmarkButton = ({
   storyId,
   className = "",
-}) => {
+}: BookmarkButtonProps) => {
   const navigate = useNavigate();
   const currentUser = getUserInfo();
   const [toggleBookmark] = useToggleBookmarkMutation();

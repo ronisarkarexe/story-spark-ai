@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid,
@@ -24,6 +25,12 @@ interface IGenre { genre: string; count: number; }
 interface IWordCloud { text: string; value: number; }
 interface IHour { hour: number; count: number; }
 
+type AnalyticsLoadError = {
+  message: string;
+  status?: number;
+  isAuthExpired: boolean;
+};
+
 const HOUR_LABELS = ["12am","1am","2am","3am","4am","5am","6am","7am","8am","9am","10am","11am",
   "12pm","1pm","2pm","3pm","4pm","5pm","6pm","7pm","8pm","9pm","10pm","11pm"];
 
@@ -34,6 +41,8 @@ const AnalyticsPage = () => {
   const [wordCloud, setWordCloud] = useState<IWordCloud[]>([]);
   const [hours, setHours] = useState<IHour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<AnalyticsLoadError | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const token = getToken() || "";
 
@@ -48,47 +57,106 @@ const AnalyticsPage = () => {
         signal,
       }
     );
-  
-    if (!res.ok) throw new Error("Request failed");
-const data = await res.json();
-    return data.data;
+
+    if (!res.ok) {
+      const err = new Error(
+        `Request failed with status ${res.status}`
+      ) as Error & { status?: number };
+      err.status = res.status;
+      throw err;
+    }
+
+    let payload: { data?: unknown };
+    try {
+      payload = await res.json();
+    } catch {
+      throw new Error("Invalid JSON response");
+    }
+
+    return payload.data;
   };
+
+  const load = useCallback(
+    async (signal: AbortSignal) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [ov, hm, gn, wc, hr] = await Promise.all([
+          fetchData("overview", signal),
+          fetchData("heatmap", signal),
+          fetchData("genres", signal),
+          fetchData("wordcloud", signal),
+          fetchData("productive-hours", signal),
+        ]);
+        setOverview((ov as IOverview) || null);
+        setHeatmap((hm as IHeatmapDay[]) || []);
+        setGenres((gn as IGenre[]) || []);
+        setWordCloud((wc as IWordCloud[]) || []);
+        setHours((hr as IHour[]) || []);
+      } catch (e) {
+        if ((e as Error).name === "AbortError") {
+          return;
+        }
+
+        console.error(e);
+        const status = (e as Error & { status?: number }).status;
+        const isAuthExpired = status === 401;
+        setError({
+          status,
+          isAuthExpired,
+          message: isAuthExpired
+            ? "Your session has expired. Sign in again to view analytics."
+            : "Failed to load analytics. Please try again.",
+        });
+      } finally {
+        if (!signal.aborted) {
+          setLoading(false);
+        }
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [token, reloadKey]
+  );
 
   useEffect(() => {
     const controller = new AbortController();
-
-    const load = async () => {
-      try {
-        const [ov, hm, gn, wc, hr] = await Promise.all([
-          fetchData("overview", controller.signal),
-          fetchData("heatmap", controller.signal),
-          fetchData("genres", controller.signal),
-          fetchData("wordcloud", controller.signal),
-          fetchData("productive-hours", controller.signal),
-        ]);
-        setOverview(ov || null);
-        setHeatmap(hm || []);
-        setGenres(gn || []);
-        setWordCloud(wc || []);
-        setHours(hr || []);
-      } catch (e) {
-        if ((e as Error).name !== "AbortError") {
-          console.error(e);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-
+    load(controller.signal);
     return () => controller.abort();
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load]);
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">
       <div className="text-indigo-400 text-xl animate-pulse">Loading your analytics...</div>
     </div>
   );
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+        <p className="text-red-500 dark:text-red-400 text-lg font-medium">
+          {error.message}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => setReloadKey((key) => key + 1)}
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors cursor-pointer"
+          >
+            Retry
+          </button>
+          {error.isAuthExpired && (
+            <Link
+              to="/login"
+              className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-white/20 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
+              Sign in
+            </Link>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const maxHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0] || { count: 0, hour: 0 });
 

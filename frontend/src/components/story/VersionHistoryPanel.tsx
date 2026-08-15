@@ -22,6 +22,8 @@ const VersionHistoryPanel = () => {
     (state: RootState) => state.story.currentVersionId
   );
 
+  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
+
   if (!versions.length) {
     return (
       <div className="w-72 bg-zinc-900 h-full border-r border-zinc-800 p-5">
@@ -41,7 +43,6 @@ const VersionHistoryPanel = () => {
   }
 
   const reversedVersions = [...versions].reverse();
-  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
 
   return (
     <div className="w-72 bg-zinc-900 h-full border-r border-zinc-800 p-5 overflow-y-auto">

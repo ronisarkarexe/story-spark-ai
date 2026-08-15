@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const BackButton: React.FC = () => {
+const BackButton = () => {
   const navigate = useNavigate();
 
   return (
