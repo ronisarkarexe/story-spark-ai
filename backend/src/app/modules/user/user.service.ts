@@ -224,13 +224,14 @@ const approveWriterApplication = async (email: string) => {
 };
 
 const getAllWriterApplicationUsers = async (): Promise<IUser[]> => {
-  const result = await User.find({ isApplyForWriter: true });
+  const result = await User.find({ isApplyForWriter: true }).select("-password");
   return result;
 };
 
 const getProfileInfo = async (token: ITokenPayload) => {
   const { email } = token;
   const user = await User.findOne({ email: email })
+    .select("-password")
     .populate("followers", "name profile")
     .populate("following", "name profile");
   if (!user) {
