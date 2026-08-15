@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import api from "../services/api";
+import logger from "../utils/logger.util";
 
 const DRAFT_KEY_PREFIX = "story_draft_";
 const AUTOSAVE_INTERVAL_MS = 30000;
@@ -23,12 +24,7 @@ interface QueuedSave {
 export const offlineQueue: QueuedSave[] = [];
 let flushInProgress: Promise<void> | null = null;
 
-async function saveDraftToServer(item: Pick<QueuedSave, "draftId" | "title" | "content">) {
-  // PATCH /api/v1/story/:id/save
-
 let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
-
-let flushInProgress: Promise<void> | null = null;
 
 async function saveDraftToServer(item: Pick<QueuedSave, "draftId" | "title" | "content">) {
 
@@ -82,8 +78,7 @@ type AutoSaveEvent =
   | { type: "flush-complete" }
   | { type: "flush-failed"; error: unknown };
 
-export const offlineQueue: Array<QueueItem> = [];
-let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+
 const autoSaveSubscribers = new Set<(event: AutoSaveEvent) => void>();
 let autoSaveListenersAttached = false;
 let autoSaveOnlineHandler: (() => Promise<void>) | null = null;
@@ -175,28 +170,7 @@ function registerAutoSaveListener(subscriber: (event: AutoSaveEvent) => void) {
   };
 }
 
-export async function flushOfflineQueue(queue: Array<QueueItem>) {
-  const pendingItems = queue.splice(0, queue.length);
 
-  for (const item of pendingItems) {
-    const response = await fetch("/api/v1/stories/save", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        draftId: item.draftId,
-        title: item.title,
-        content: item.content,
-      }),
-    });
-
-    if (!response.ok) {
-      queue.unshift(...pendingItems);
-      throw new Error("Failed to save queued draft");
-    }
-  }
-}
 
 export function useAutoSave(draftId: string, title: string, content: string) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
@@ -242,7 +216,7 @@ export function useAutoSave(draftId: string, title: string, content: string) {
         (error) => {
           setPendingCount(offlineQueue.length);
           setSaveStatus("error");
-          console.error("Failed to flush offline queue:", error);
+          logger.error("Failed to flush offline queue:", error);
         }
       );
     };
