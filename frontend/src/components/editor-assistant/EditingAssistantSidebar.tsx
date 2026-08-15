@@ -1,10 +1,15 @@
 import { useState } from "react";
 import SuggestionCard from "./SuggestionCard";
 import { useStoryAnalysis } from "../../hooks/useStoryAnalysis";
+import type { Suggestion } from "../../utils/storyAssistant";
+
+interface EditingAssistantSidebarProps {
+  story: string;
+}
 
 export default function EditingAssistantSidebar({
   story,
-}) {
+}: EditingAssistantSidebarProps) {
   const analysis = useStoryAnalysis(story);
 
   const [hidden, setHidden] = useState<number[]>([]);
@@ -21,7 +26,7 @@ export default function EditingAssistantSidebar({
     acc[item.category] ??= [];
     acc[item.category].push(item);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, Suggestion[]>);
 
   return (
     <aside className="w-full lg:w-96 border rounded-xl p-5">
