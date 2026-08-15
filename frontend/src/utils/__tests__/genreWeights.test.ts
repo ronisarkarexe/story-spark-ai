@@ -77,6 +77,32 @@ describe("normalizeWeights", () => {
     expect(result.genres[0]).toHaveProperty("genre");
     expect(result.genres[0]).toHaveProperty("weight");
   });
+
+  it("clamps negative weights to 0 so they cannot invert normalization", () => {
+    const config = {
+      genres: [
+        { genre: "fantasy", weight: -50 },
+        { genre: "sci-fi", weight: 50 },
+      ],
+    };
+    const result = normalizeWeights(config);
+    // The negative weight is clamped to 0, so only sci-fi remains and gets 100%.
+    const total = result.genres.reduce((sum, g) => sum + g.weight, 0);
+    expect(total).toBe(100);
+    expect(result.genres.find((g) => g.genre === "sci-fi")?.weight).toBe(100);
+    expect(result.genres.find((g) => g.genre === "fantasy")?.weight).toBe(0);
+  });
+
+  it("returns empty config when all weights are negative (clamped to 0)", () => {
+    const config = {
+      genres: [
+        { genre: "fantasy", weight: -10 },
+        { genre: "sci-fi", weight: -20 },
+      ],
+    };
+    const result = normalizeWeights(config);
+    expect(result.genres).toEqual([]);
+  });
 });
 
 describe("validateWeights", () => {
