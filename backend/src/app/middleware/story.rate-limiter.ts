@@ -26,6 +26,7 @@ import { Request, Response, NextFunction } from "express";
 import httpStatus from "http-status";
 import ApiError from "../../errors/api_error";
 import { consumeRateLimit } from "./rate_limit.store";
+import { resolveEffectivePlan } from "../../utils/subscription.util";
 
 // ── Tier configuration ───────────────────────────────────────────────────────
 
@@ -74,12 +75,18 @@ export const storyGenerationRateLimiter = async (
     // ── Resolve user identity ──────────────────────────────────────────────
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const user = (req as any).user as
-      | { id?: string; _id?: string; role?: string; subscriptionType?: string }
+      | {
+          id?: string;
+          _id?: string;
+          role?: string;
+          subscriptionType?: string;
+          subscriptionExpiry?: Date | string | null;
+        }
       | undefined;
 
     const userId: string | undefined = user?.id ?? user?._id?.toString();
     const role: string = user?.role ?? "anonymous";
-    const tier: string = user?.subscriptionType ?? "free";
+    const tier: string = resolveEffectivePlan(user);
 
     // ── Bypass for privileged roles ────────────────────────────────────────
     if (BYPASS_ROLES.has(role)) {

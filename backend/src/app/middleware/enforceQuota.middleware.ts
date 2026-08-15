@@ -3,6 +3,12 @@ import httpStatus from "http-status";
 import { PLAN_QUOTAS } from "../../config/quota.config";
 import { UsageRecord } from "../modules/ai_model/usageRecord.model";
 import { QuotaRefundGuard } from "../modules/ai_model/quota.lifecycle";
+import { User } from "../modules/user/user.model";
+import {
+  isPaidSubscriptionExpired,
+  resolveEffectivePlan,
+} from "../../utils/subscription.util";
+import { SUBSCRIPTION_TYPE } from "../../enums/subscription_type";
 
 export const enforceQuota = (action: "story_generate" | "story_continue") => {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -15,7 +21,14 @@ export const enforceQuota = (action: "story_generate" | "story_continue") => {
         });
       }
 
-      const plan = user.subscriptionType || "free";
+      const plan = resolveEffectivePlan(user);
+      if (isPaidSubscriptionExpired(user)) {
+        user.subscriptionType = SUBSCRIPTION_TYPE.FREE;
+        void User.updateOne(
+          { _id: user._id },
+          { $set: { subscriptionType: SUBSCRIPTION_TYPE.FREE } }
+        ).catch(() => undefined);
+      }
       const limitsForPlan = PLAN_QUOTAS[plan as keyof typeof PLAN_QUOTAS] || PLAN_QUOTAS.free;
       const limit = limitsForPlan[action];
 

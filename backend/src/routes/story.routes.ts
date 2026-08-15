@@ -50,6 +50,15 @@ const generateLimiter = rateLimit({
   },
 });
 
+// Guard database-backed quota and idempotency lookups before they run. The
+// tier-aware limiter below remains the tighter generation-specific policy.
+const quotaLookupLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 /** STORY CONTINUATION - single */
 router.post(
   "/continue",
@@ -61,6 +70,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  quotaLookupLimiter,
   storyGenerationRateLimiter,
   enforceQuota("story_continue"),
   piiScrubberMiddleware,
@@ -104,6 +114,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  quotaLookupLimiter,
   storyGenerationRateLimiter,
   enforceQuota("story_continue"),
   piiScrubberMiddleware,
@@ -157,6 +168,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  quotaLookupLimiter,
   // NEW — must run before checkRequestLimit() so a duplicate/retried request
   // never reserves quota or reaches generateStory() a second time.
   idempotencyMiddleware(),
