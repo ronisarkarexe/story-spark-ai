@@ -413,18 +413,18 @@ const getPostsByTag = async (tag: string, excludeId?: string, limit: number = 2)
     return [];
   }
 
-  const query: any = { tag, isDeleted: { $ne: true } };
+  const query: any = { tag, isDeleted: { $ne: true }, isPublished: true };
   if (excludeId) {
     query._id = { $ne: excludeId };
   }
   const result = await Post.find(query)
     .limit(limit)
-    .populate("author", "name email createdAt")
+    .populate("author", "name profile.avatar")
     .populate({
       path: "reactions",
-      populate: { path: "userId", select: "email" },
+      populate: { path: "userId", select: "name profile.avatar" },
     })
-    .populate("bookmarks", "email");
+    .populate("bookmarks", "name profile.avatar");
   return result;
 };
 
