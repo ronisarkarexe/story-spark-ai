@@ -112,5 +112,27 @@ const getUserCollections = async (
 ) => {
   const isOwner =
     requestToken !== null &&
-    (await User.findOne({ email: requestToken.email }).then(
-    .catch(err => console.error(err))
+    (await User.findOne({ email: requestToken.email }))?._id.toString() === userId;
+  
+  const query: any = { ownerId: userId, isDeleted: { $ne: true } };
+  if (!isOwner) {
+    query.visibility = "public";
+  }
+
+  const collections = await Collection.find(query)
+    .sort({ createdAt: -1 })
+    .populate({
+      path: "storyIds",
+      match: { isDeleted: { $ne: true }, isPublished: true },
+      select: "title imageURL tag",
+    });
+
+  return collections;
+};
+
+export const CollectionService = {
+  createCollection,
+  updateCollection,
+  getCollectionById,
+  getUserCollections,
+};

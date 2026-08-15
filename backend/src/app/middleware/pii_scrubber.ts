@@ -89,27 +89,24 @@ export const scrubPII = (text: string): string => {
   scrubbed = scrubbed.replace(addressRegex, "[REDACTED_ADDRESS]");
 
 
-  // 6. NLP for Person Names using compromise
+  // 7. NLP for Person Names using compromise
   const containsAnyRedactionToken =
     /\[REDACTED_(?:EMAIL|PHONE|NAME|SSN|CARD|ADDRESS)\]/i.test(scrubbed);
   if (!containsAnyRedactionToken) {
     const doc = compromise(scrubbed);
     const people = doc.people().out("array");
 
-  // 7. NLP for Person Names using compromise
-  const doc = compromise(scrubbed);
-  const people = doc.people().out("array");
+    // Sort by length descending to replace longer names first (prevent partial replacement issues)
+    people.sort((a: string, b: string) => b.length - a.length);
 
-  // Sort by length descending to replace longer names first (prevent partial replacement issues)
-  people.sort((a: string, b: string) => b.length - a.length);
-
-  for (const person of people) {
-    if (person.length > 2) {
-      // Replace name with punctuation-safe boundaries.
-      // This handles cases like "John," "John." "(John)".
-      const escaped = escapeRegex(person);
-      const nameRegex = new RegExp(`(^|[^\\w])(${escaped})(?=$|[^\\w])`, "gi");
-      scrubbed = scrubbed.replace(nameRegex, "$1[REDACTED_NAME]");
+    for (const person of people) {
+      if (person.length > 2) {
+        // Replace name with punctuation-safe boundaries.
+        // This handles cases like "John," "John." "(John)".
+        const escaped = escapeRegex(person);
+        const nameRegex = new RegExp(`(^|[^\\w])(${escaped})(?=$|[^\\w])`, "gi");
+        scrubbed = scrubbed.replace(nameRegex, "$1[REDACTED_NAME]");
+      }
     }
   }
 

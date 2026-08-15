@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added subtle fade-in animation on page navigation with reduced-motion accessibility support (#4148)
 - Character library feature for managing story characters
 - Story genre transformation component
 - Story version history tracking

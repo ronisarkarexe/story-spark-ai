@@ -25,6 +25,8 @@ export interface IRelationship {
 export interface ICharacterNetworkResponse {
   characters: ICharacter[];
   relationships: IRelationship[];
+  fallback?: boolean;
+  fallbackMessage?: string;
 }
 
 const COMMON_STOP_WORDS = new Set([
@@ -45,10 +47,14 @@ const COMMON_STOP_WORDS = new Set([
 
 // Offline fallback extractor using regex and heuristics
 export function extractCharacterNetworkOffline(content: string): ICharacterNetworkResponse {
-  if (!content || !content.trim()) {
-    return { characters: [], relationships: [] };
+ if (!content || !content.trim()) {
+    return {
+      characters: [],
+      relationships: [],
+      fallback: true,
+      fallbackMessage: "No story content provided to analyze.",
+    };
   }
-
   // 1. Sentence-based split
   const sentences = content.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
   
@@ -93,7 +99,7 @@ export function extractCharacterNetworkOffline(content: string): ICharacterNetwo
     name => rawNamesCount[name] >= minAppearances
   );
 
-  if (filteredNames.length === 0) {
+ if (filteredNames.length === 0) {
     return {
       characters: [
         { id: "hero", name: "Hero", appearanceCount: 5, importanceScore: 80 },
@@ -108,7 +114,9 @@ export function extractCharacterNetworkOffline(content: string): ICharacterNetwo
           strength: 70,
           interactionCount: 3
         }
-      ]
+      ],
+      fallback: true,
+      fallbackMessage: "No characters detected. Try using proper capitalization for character names.",
     };
   }
 
