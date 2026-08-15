@@ -145,4 +145,3 @@ export class YjsGateway {
   }
 }
 
-        .catch(err => console.error(err))

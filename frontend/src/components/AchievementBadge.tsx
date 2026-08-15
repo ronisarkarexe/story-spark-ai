@@ -1,4 +1,3 @@
-import React from "react";
 import { Achievement } from "../types";
 import AchievementProgress from "./AchievementProgress";
 
@@ -6,7 +5,7 @@ interface AchievementBadgeProps {
   achievement: Achievement;
 }
 
-const AchievementBadge: React.FC<AchievementBadgeProps> = ({ achievement }) => {
+const AchievementBadge = ({ achievement }: AchievementBadgeProps) => {
   const { title, description, icon, unlockedAt, progress, target } = achievement;
   const isUnlocked = !!unlockedAt;
 

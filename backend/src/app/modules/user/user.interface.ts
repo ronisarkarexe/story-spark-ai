@@ -45,8 +45,7 @@ export interface IUser {
       github?: string;
       discord?: string;
 
-      github: string;
-      discord: string;
+
     };
   };
   requestsThisMonth: number;
