@@ -2,9 +2,23 @@ import type { NextFunction, Request, Response } from "express";
 import csrfMiddleware, { generateCsrfToken } from "../csrf.middleware";
 
 describe("csrf middleware", () => {
-  const buildMocks = (headerValue?: string, userId = "user-123") => {
+  const buildMocks = (
+    headerValue?: string,
+    userId: string | { toString(): string } = "user-123",
+    authorization?: string
+  ) => {
+    const headers: Record<string, string> = {};
+    if (headerValue !== undefined) {
+      headers["x-csrf-token"] = headerValue;
+    }
+    if (authorization !== undefined) {
+      headers.authorization = authorization;
+    }
+
     const req = {
-      headers: headerValue === undefined ? {} : { "x-csrf-token": headerValue },
+      headers,
+      header: (name: string) => headers[name.toLowerCase()] ?? headers[name],
+      get: (name: string) => headers[name.toLowerCase()] ?? headers[name],
       user: { _id: userId },
     } as unknown as Request;
 
@@ -20,6 +34,32 @@ describe("csrf middleware", () => {
 
   it("allows requests with a valid token", () => {
     const { req, res, next } = buildMocks(generateCsrfToken("user-123"));
+
+    csrfMiddleware(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it("allows Bearer-authenticated requests without a CSRF token", () => {
+    const { req, res, next } = buildMocks(undefined, "user-123", "Bearer access-token");
+
+    csrfMiddleware(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it("stringifies ObjectId-like user ids for HMAC", () => {
+    const objectId = { toString: () => "507f1f77bcf86cd799439011" };
+    expect(generateCsrfToken(objectId)).toBe(
+      generateCsrfToken("507f1f77bcf86cd799439011")
+    );
+
+    const { req, res, next } = buildMocks(
+      generateCsrfToken(objectId),
+      objectId
+    );
 
     csrfMiddleware(req, res, next);
 
