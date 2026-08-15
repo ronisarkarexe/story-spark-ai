@@ -73,9 +73,7 @@ const LEAK_PATTERNS: string[] = [
   "comply with your instructions",
 ];
 
-/**
- * Normalizes & hardens text against Unicode substitution and obfuscation bypasses.
- */
+
 const normalizeText = (input: string): string => {
   return (input ?? "")
     .normalize("NFKC") // Unicode normalization collapses compatibility variants

@@ -1,10 +1,12 @@
-import Razorpay from "razorpay";
+// backend/src/config/razorpay.ts
+
+import Razorpay from 'razorpay';
 
 let razorpayInstance: InstanceType<typeof Razorpay> | null = null;
 
 export const getRazorpay = (): InstanceType<typeof Razorpay> => {
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-    throw new Error("Razorpay credentials not configured");
+    throw new Error('Razorpay credentials not configured');
   }
 
   if (!razorpayInstance) {

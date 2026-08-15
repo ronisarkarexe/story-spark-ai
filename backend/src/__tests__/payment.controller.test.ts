@@ -220,23 +220,17 @@ describe("payment.controller", () => {
 
       await verifyPayment(req, res, next);
 
-      expect(Order.findOneAndUpdate).toHaveBeenNthCalledWith(
-        1,
+      expect(Order.findOneAndUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           razorpayOrderId: razorpayOrderId,
           userId,
           status: "created",
         }),
         expect.objectContaining({
-          status: "paid_pending_entitlement",
+          status: "paid",
           razorpayPaymentId,
         }),
         { new: true }
-      );
-      expect(Order.findOneAndUpdate).toHaveBeenNthCalledWith(
-        2,
-        expect.objectContaining({ status: "paid_pending_entitlement" }),
-        { status: "paid" }
       );
       expect(User.findByIdAndUpdate).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);

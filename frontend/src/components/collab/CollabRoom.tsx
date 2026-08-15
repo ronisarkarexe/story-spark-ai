@@ -51,7 +51,7 @@ export default function CollabRoom() {
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
-  
+
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
 

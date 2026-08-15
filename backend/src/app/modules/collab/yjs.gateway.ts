@@ -144,3 +144,4 @@ export class YjsGateway {
     return color;
   }
 }
+

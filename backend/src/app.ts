@@ -1,3 +1,4 @@
+
 import express, {
   Application,
   NextFunction,
@@ -9,23 +10,23 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import httpStatus from "http-status";
-
 import cookieParser from "cookie-parser";
+
 import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
+import leaderboardRoute from "./routes/leaderboard.route";
 import globalRateLimiter from "./app/middleware/global.rate-limiter";
 import { sanitizeAllMiddleware } from "./app/middleware/sanitize.middleware";
 import ApiError from "./errors/api_error";
 
-
 const app: Application = express();
-// Only trust the proxy in production, where we're actually behind a real
-// reverse proxy. In dev there's no real proxy in front of us, so trusting
-// X-Forwarded-For would let a client spoof its own IP and bypass rate limiting.
+
+// Trust the proxy only when the application is running in production.
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
+
 app.use(helmet());
 
 const limiter = rateLimit({
@@ -33,9 +34,10 @@ const limiter = rateLimit({
   max: 100,
   message: "Too many requests, please try again later.",
 });
+
 app.use(limiter as unknown as RequestHandler);
 
-export const defaultCorsOrigins = [
+export const defaultCorsOrigins: string[] = [
   "http://localhost:4001",
   "http://localhost:4002",
   "https://storysparkai-five.vercel.app",
@@ -43,65 +45,125 @@ export const defaultCorsOrigins = [
 ];
 
 const corsOrigins =
-  config.cors_origins && config.cors_origins.length > 0
+  config.cors_origins?.length
     ? config.cors_origins
     : defaultCorsOrigins;
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) {
-        callback(new Error("Origin header required"));
-        return;
+      const isMissingOrigin = !origin;
+
+      // Requests without an Origin header are allowed.
+      if (isMissingOrigin) {
+        return callback(null, true);
       }
-      if (corsOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
+
+      const isAllowedOrigin = corsOrigins.includes(origin);
+
+      if (isAllowedOrigin) {
+        return callback(null, true);
       }
+
+      return callback(
+        new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy")
+      );
     },
+
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Cookie"],
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Cookie",
+    ],
   })
 );
 
-// Rate limiter — placed after CORS so OPTIONS preflight requests are
-// never counted against the limit before CORS has a chance to respond.
+// Apply the global rate limiter after CORS handling.
 app.use(globalRateLimiter);
 
-// Payload limit set to 10mb to support large story content and character
-// network data without triggering 413 errors. Previously 2mb, which was
-// too restrictive for real story payloads — see PR discussion if this
-// needs revisiting against DoS-hardening concerns.
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(
+  express.json({
+    limit: "10mb",
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  })
+);
+
 app.use(cookieParser() as unknown as RequestHandler);
+
 app.use(sanitizeAllMiddleware);
 
+// Global sanitization for request bodies and query parameters.
+app.use(sanitizeAllMiddleware);
 
 app.use((req, res, next) => {
-  if (
+  const isCharacterNetworkRequest =
     req.method === "GET" &&
-    /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path)
-  ) {
-    req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
+    /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path);
+
+  if (isCharacterNetworkRequest) {
+    req.url = req.url.replace(
+      /^\/api\/story\//,
+      "/api/v1/story/"
+    );
   }
+
   next();
 });
 
+// Allow larger payloads for story and character-network data.
+app.use(
+  express.json({
+    limit: "10mb",
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  })
+);
+
+app.use(cookieParser() as unknown as RequestHandler);
 
 app.use("/api/v1", Routers);
 
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  next(
-    new ApiError(
-      httpStatus.NOT_FOUND,
-      `The requested API endpoint route does not exist: ${req.originalUrl}`
-    )
-  );
-});
-app.use(globalErrorHandler);
+app.use(
+  (
+    req: Request,
+    _res: Response,
+    next: NextFunction
+  ) => {
+    const errorMessage =
+      `The requested API endpoint route does not exist: ${req.originalUrl}`;
 
+    next(
+      new ApiError(
+        httpStatus.NOT_FOUND,
+        errorMessage
+      )
+    );
+  }
+);
+
+app.use(globalErrorHandler);
 
 export default app;

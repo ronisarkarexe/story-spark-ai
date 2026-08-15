@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, MessageSquare, Trash2, Bot, User, Sparkles, RefreshCw, AlertCircle, HelpCircle, BookOpen, Compass, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { chatWithSparky, ISparkyMessage } from "../../services/ai.service";
@@ -27,7 +27,7 @@ const STARTER_PROMPTS = [
   },
 ];
 
-const ChatPage: React.FC = () => {
+const ChatPage = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ISparkyMessage[]>(() => {
     const saved = localStorage.getItem("sparky_chat_history");

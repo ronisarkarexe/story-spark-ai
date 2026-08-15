@@ -19,3 +19,4 @@ export const slugify = (input: string): string => {
     .replace(/-+/g, "-")        // Collapse multiple hyphens
     .replace(/^-+|-+$/g, "");   // Trim leading/trailing hyphens
 };
+

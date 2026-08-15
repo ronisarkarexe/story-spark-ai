@@ -112,143 +112,22 @@ const getUserCollections = async (
 ) => {
   const isOwner =
     requestToken !== null &&
-    (await User.findOne({ email: requestToken.email }).then(
-      (u) => u?._id?.toString() === userId
-    ));
-
-  const filter: Record<string, unknown> = {
-    ownerId: new Types.ObjectId(userId),
-    isDeleted: { $ne: true },
-  };
-
+    (await User.findOne({ email: requestToken.email }))?._id.toString() === userId;
+  
+  const query: any = { ownerId: userId, isDeleted: { $ne: true } };
   if (!isOwner) {
-    filter.visibility = "public";
+    query.visibility = "public";
   }
 
-  const collections = await Collection.find(filter)
+  const collections = await Collection.find(query)
     .sort({ createdAt: -1 })
     .populate({
       path: "storyIds",
       match: { isDeleted: { $ne: true }, isPublished: true },
-      select: "title imageURL",
-      options: { limit: 3 },
+      select: "title imageURL tag",
     });
 
   return collections;
-};
-
-/** ── Add a story to a collection ────────────────────────────────────────── */
-const addStoryToCollection = async (
-  collectionId: string,
-  storyId: string,
-  token: ITokenPayload
-) => {
-  const user = await User.findOne({ email: token.email });
-  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-
-  const collection = await Collection.findOne({
-    _id: collectionId,
-    isDeleted: { $ne: true },
-  });
-  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
-
-  if (collection.ownerId.toString() !== user._id.toString()) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not own this collection.");
-  }
-
-  if (!Types.ObjectId.isValid(storyId)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid story ID.");
-  }
-
-  const post = await Post.findOne({
-    _id: new Types.ObjectId(storyId),
-    author: user._id,
-    isPublished: true,
-    isDeleted: { $ne: true },
-  });
-  if (!post) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "Story not found or you are not its author."
-    );
-  }
-
-  const storyObjectId = new Types.ObjectId(storyId);
-  const alreadyIn = collection.storyIds.some(
-    (id) => id.toString() === storyObjectId.toString()
-  );
-  if (alreadyIn) {
-    throw new ApiError(httpStatus.CONFLICT, "Story is already in this collection.");
-  }
-
-  if (collection.storyIds.length >= MAX_STORIES_PER_COLLECTION) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      `A collection can have at most ${MAX_STORIES_PER_COLLECTION} stories.`
-    );
-  }
-
-  collection.storyIds.push(storyObjectId);
-  await collection.save();
-  return collection;
-};
-
-/** ── Remove a story from a collection ───────────────────────────────────── */
-const removeStoryFromCollection = async (
-  collectionId: string,
-  storyId: string,
-  token: ITokenPayload
-) => {
-  const user = await User.findOne({ email: token.email });
-  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-
-  if (!Types.ObjectId.isValid(storyId)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid story ID.");
-  }
-
-  const collection = await Collection.findOne({
-    _id: collectionId,
-    isDeleted: { $ne: true },
-  });
-  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
-
-  if (collection.ownerId.toString() !== user._id.toString()) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not own this collection.");
-  }
-
-  const before = collection.storyIds.length;
-  collection.storyIds = collection.storyIds.filter(
-    (id) => id.toString() !== storyId
-  );
-  if (collection.storyIds.length === before) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story not found in this collection.");
-  }
-
-  await collection.save();
-  return collection;
-};
-
-/** ── Delete a collection (soft-delete) ──────────────────────────────────── */
-const deleteCollection = async (
-  collectionId: string,
-  token: ITokenPayload
-) => {
-  const user = await User.findOne({ email: token.email });
-  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-
-  const collection = await Collection.findOne({
-    _id: collectionId,
-    isDeleted: { $ne: true },
-  });
-  if (!collection) throw new ApiError(httpStatus.NOT_FOUND, "Collection not found!");
-
-  if (collection.ownerId.toString() !== user._id.toString()) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not own this collection.");
-  }
-
-  collection.isDeleted = true;
-  await collection.save();
-  return { message: "Collection deleted." };
 };
 
 export const CollectionService = {
@@ -256,7 +135,4 @@ export const CollectionService = {
   updateCollection,
   getCollectionById,
   getUserCollections,
-  addStoryToCollection,
-  removeStoryFromCollection,
-  deleteCollection,
 };

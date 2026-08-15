@@ -29,7 +29,8 @@ interface AddStoryBody {
 const getOptionalToken = async (req: Request): Promise<ITokenPayload  | null> => {
   try {
     return getToken(req);
-  } catch {
+  } catch (error) {
+    console.error('[CollectionController] Failed:', error);
     return null;
   }
 };
@@ -93,57 +94,10 @@ const getUserCollections = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const addStoryToCollection = catchAsync(async (req: Request, res: Response) => {
-  const id = routeParam(req.params.id);
-  const { storyId } = req.body as AddStoryBody;
-  const token = await getToken(req);
-  
-  const result = await CollectionService.addStoryToCollection(id, storyId, token);
-  
-  sendResponse(res, {
-    statusCode: httpStatus.CREATED, // Updated to 201 Created
-    success: true,
-    message: "Story added to collection!",
-    data: result,
-  });
-});
-
-const removeStoryFromCollection = catchAsync(async (req: Request, res: Response) => {
-  const id = routeParam(req.params.id);
-  const storyId = routeParam(req.params.storyId);
-  const token = await getToken(req);
-  
-  const result = await CollectionService.removeStoryFromCollection(id, storyId, token);
-  
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Story removed from collection!",
-    data: result,
-  });
-});
-
-const deleteCollection = catchAsync(async (req: Request, res: Response) => {
-  const id = routeParam(req.params.id);
-  const token = await getToken(req);
-  
-  const result = await CollectionService.deleteCollection(id, token);
-  
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: result.message,
-    data: null,
-  });
-});
-
 export const CollectionController = {
   createCollection,
   updateCollection,
   getCollectionById,
   getUserCollections,
-  addStoryToCollection,
-  removeStoryFromCollection,
-  deleteCollection,
 };
     

@@ -65,6 +65,7 @@ const updateUser = z.object({
           bio: z.string().max(1000, "Bio cannot exceed 1000 characters").optional(),
           social: z
             .object({
+
               facebook: z.string().max(200).optional(),
               twitter: z.string().max(200).optional(),
               linkedin: z.string().max(200).optional(),

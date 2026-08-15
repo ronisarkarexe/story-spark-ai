@@ -28,7 +28,8 @@ export const isValidUrl = (url: string): boolean => {
     }
 
     return true;
-  } catch {
+  } catch (error) {
+    console.warn('[URLValidator] Invalid URL:', url);
     return false;
   }
 };

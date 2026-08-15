@@ -41,12 +41,18 @@ const decodeCursor = (cursor?: string): ICursorPayload | null => {
   try {
     const decoded = Buffer.from(cursor, "base64").toString("utf-8");
     const parsed = JSON.parse(decoded);
-    if (!parsed?.id || parsed.value === undefined) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid pagination cursor");
-    }
+   if (!parsed?.id || parsed.value === undefined) {
+  throw new ApiError(
+    httpStatus.BAD_REQUEST,
+    "Invalid pagination cursor"
+  );
+}
     return parsed as ICursorPayload;
   } catch {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid pagination cursor");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid pagination cursor"
+    );
   }
 };
 
@@ -769,3 +775,4 @@ export const PostService = {
   getGenres,
   bulkDeletePosts,
 };
+
