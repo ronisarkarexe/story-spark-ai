@@ -1,12 +1,10 @@
-import React from "react";
-
 type SkeletonVariant = "default" | "featured" | "home-featured";
 
 interface SkeletonCardProps {
   variant?: SkeletonVariant;
 }
 
-const SkeletonCard: React.FC<SkeletonCardProps> = ({ variant = "default" }) => {
+const SkeletonCard = ({ variant = "default" }: SkeletonCardProps) => {
   if (variant === "featured") {
     return (
       <div
@@ -97,11 +95,11 @@ interface SkeletonGridProps {
   columns?: string;
 }
 
-const SkeletonGrid: React.FC<SkeletonGridProps> = ({
+const SkeletonGrid = ({
   count = 6,
   variant = "default",
   columns,
-}) => {
+}: SkeletonGridProps) => {
   const gridCols =
     columns ||
     (variant === "featured" || variant === "home-featured"

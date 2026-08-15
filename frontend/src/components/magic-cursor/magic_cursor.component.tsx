@@ -1,34 +1,38 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useTheme } from "../theme/theme.context";
 import "./magic_cursor.css";
 
 const MAX_TRAIL_PARTICLES = 14;
 const TRAIL_PARTICLE_LIFETIME = 420;
+const SPARKLE_LIFETIME = 1200;
+const MAX_SPARKLES = 30;
+
+type Sparkle = {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  delay: number;
+};
 
 const MagicCursorComponent = () => {
   const { cursorStyle } = useTheme();
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  
   const cursorRef = useRef<HTMLDivElement | null>(null);
   const glowRef = useRef<HTMLDivElement | null>(null);
+  
+  const nextSparkleId = useRef(0);
+  const sparkleTimers = useRef<number[]>([]);
+  const target = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
+  const lastSparkle = useRef({ x: 0, y: 0, time: 0 });
+  const frameId = useRef<number | null>(null);
 
   const showSparkles = cursorStyle === "sparkle";
   const showTrail = cursorStyle === "trail";
   const isPremiumGlow = cursorStyle === "glow-orb";
-
-  useEffect(() => {
-    let lastX = 0;
-    let lastY = 0;
-    let lastTime = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = e.clientX;
-      const y = e.clientY;
-
-    return () => {
-      pointerQuery.removeEventListener("change", updateAvailability);
-      motionQuery.removeEventListener("change", updateAvailability);
-    };
-  }, []);
 
   useEffect(() => {
     if (!enabled || cursorStyle === "off") {
@@ -42,7 +46,7 @@ const MagicCursorComponent = () => {
 
     const addParticle = (x: number, y: number, lifetime: number, cap: number) => {
       const id = nextSparkleId.current++;
-      const particle = {
+      const particle: Sparkle = {
         id,
         x,
         y,
@@ -66,7 +70,6 @@ const MagicCursorComponent = () => {
 
     const handlePointerMove = (event: PointerEvent) => {
       const targetElement = event.target as HTMLElement;
-
       const isTypingElement =
         targetElement.tagName === "TEXTAREA" ||
         targetElement.tagName === "INPUT" ||
@@ -105,10 +108,14 @@ const MagicCursorComponent = () => {
       const x = `${current.current.x}px`;
       const y = `${current.current.y}px`;
 
-      cursorRef.current?.style.setProperty("--cursor-x", x);
-      cursorRef.current?.style.setProperty("--cursor-y", y);
-      glowRef.current?.style.setProperty("--cursor-x", x);
-      glowRef.current?.style.setProperty("--cursor-y", y);
+      if (cursorRef.current) {
+        cursorRef.current.style.setProperty("--cursor-x", x);
+        cursorRef.current.style.setProperty("--cursor-y", y);
+      }
+      if (glowRef.current) {
+        glowRef.current.style.setProperty("--cursor-x", x);
+        glowRef.current.style.setProperty("--cursor-y", y);
+      }
 
       frameId.current = window.requestAnimationFrame(animateCursor);
     };
@@ -124,47 +131,13 @@ const MagicCursorComponent = () => {
       if (frameId.current) {
         window.cancelAnimationFrame(frameId.current);
         frameId.current = null;
-
-      if (glowRef.current && cursorRef.current) {
-        glowRef.current.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-        cursorRef.current.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-      }
-
-      const now = performance.now();
-      const distance = Math.hypot(x - lastX, y - lastY);
-
-      // Drop sparkles more frequently for a dense trail
-      if (distance > 10 && now - lastTime > 40) {
-        const sparkle = document.createElement("span");
-        sparkle.className = "magic-cursor-sparkle";
-        sparkle.style.left = `${x}px`;
-        sparkle.style.top = `${y}px`;
-        document.body.appendChild(sparkle);
-
-        // Keep them around longer (1200ms)
-        setTimeout(() => {
-          sparkle.remove();
-        }, 1200);
-
-        lastX = x;
-        lastY = y;
-        lastTime = now;
       }
     };
   }, [enabled, cursorStyle, showSparkles, showTrail]);
 
-  const isInputFocused =
-    document.activeElement instanceof HTMLInputElement ||
-    document.activeElement instanceof HTMLTextAreaElement;
-
-  if (!enabled || isInputFocused || cursorStyle === "off") {
+  if (!enabled || cursorStyle === "off") {
     return null;
   }
-
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
 
   return (
     <div className="magic-cursor-layer" aria-hidden="true">

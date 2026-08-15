@@ -31,6 +31,8 @@ describe("resolveSocketUrl helper", () => {
     const mod = await import("../socket-url");
     expect(typeof mod.resolveSocketUrl).toBe("function");
     expect(mod.resolveSocketUrl.length).toBe(0);
+  });
+});
 
 /// <reference types="vitest/globals" />
 import { vi } from "vitest";
