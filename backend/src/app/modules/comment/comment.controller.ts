@@ -72,10 +72,34 @@ const deleteComment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const hideComment = catchAsync(async (req: Request, res: Response) => {
+  const commentId = routeParam(req.params.commentId);
+  const result = await CommentService.hideComment(commentId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Comment hidden successfully!",
+    data: result,
+  });
+});
+
+const restoreComment = catchAsync(async (req: Request, res: Response) => {
+  const commentId = routeParam(req.params.commentId);
+  const result = await CommentService.restoreComment(commentId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Comment restored successfully!",
+    data: result,
+  });
+});
+
 export const CommentController = {
   createComment,
   getCommentsByPostId,
   toggleCommentLike,
   toggleCommentHelpful,
   deleteComment,
+  hideComment,
+  restoreComment,
 };

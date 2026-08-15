@@ -106,7 +106,19 @@ const getCommentsByPostId = async (postId: string, token?: ITokenPayload | null)
   }
   verifyPostAccess(post, user);
 
-  return await Comment.find({ postId }).populate("userId", "name profile.avatar").sort({ createdAt: -1 });
+  const isModerator =
+    user?.role === ENUM_USER_ROLE.ADMIN ||
+    user?.role === ENUM_USER_ROLE.SUPER_ADMIN;
+
+  const filter: Record<string, unknown> = { postId };
+  if (!isModerator) {
+    filter.isHidden = { $ne: true };
+    filter.isDeleted = { $ne: true };
+  }
+
+  return await Comment.find(filter)
+    .populate("userId", "name profile.avatar")
+    .sort({ createdAt: -1 });
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
