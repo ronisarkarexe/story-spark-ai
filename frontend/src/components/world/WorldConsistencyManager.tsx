@@ -1,9 +1,13 @@
 import WorldRuleCard from "./WorldRuleCard";
 import { useWorldConsistency } from "../../hooks/useWorldConsistency";
 
+interface WorldConsistencyManagerProps {
+  story: string;
+}
+
 export default function WorldConsistencyManager({
   story,
-}) {
+}: WorldConsistencyManagerProps) {
 
   const { rules } = useWorldConsistency(story);
 

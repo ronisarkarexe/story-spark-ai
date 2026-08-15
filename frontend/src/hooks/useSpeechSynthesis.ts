@@ -218,7 +218,6 @@ export const useSpeechSynthesis = (
     setCurrentWordIndex(0);
   }, []);
 
-
   // Initialize speech synthesis support + voice loading.
   useEffect(() => {
     if (!hasSpeechSupport()) {
@@ -388,11 +387,7 @@ export const useSpeechSynthesis = (
         );
       };
 
-      utterance.onerror = (event) => {
-        if (event.error === "canceled" || event.error === "interrupted") {
-          return;
-        }
-
+      utterance.onerror = () => {
         setIsSpeaking(false);
         setIsPaused(false);
         setError("Unable to play narration. Please try again.");
@@ -401,7 +396,6 @@ export const useSpeechSynthesis = (
       synthRef.current.cancel();
       synthRef.current.speak(utterance);
       setCurrentWordIndex(0);
-
     },
 
     [
