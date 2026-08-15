@@ -49,7 +49,8 @@ const updateApplicationStatus = async (
   
   if (status === "approved") {
     await User.findByIdAndUpdate(application.user, {
-      role: ENUM_USER_ROLE.WRITER,
+      $set: { role: ENUM_USER_ROLE.WRITER },
+      $inc: { tokenVersion: 1 },
     });
   } else {
     // If rejected, we might want to let them apply again by setting isApplyForWriter to false
