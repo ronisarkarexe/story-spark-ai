@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { IStories } from "./stories.view.component";
 
 export interface IRelatedStoriesComponentProps {
@@ -8,7 +8,6 @@ export interface IRelatedStoriesComponentProps {
 }
 
 export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
-  const navigate = useNavigate();
   const MAX_RELATED = 4;
   const filteredPosts = posts
     .filter((post) => post._id !== currentPostId)
