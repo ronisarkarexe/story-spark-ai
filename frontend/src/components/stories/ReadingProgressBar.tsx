@@ -30,7 +30,7 @@ const ReadingProgressBar: React.FC<ReadingProgressBarProps> = ({
       </div>
 
       {/* Continue Reading Button */}
-      {progress > 0 && progress < 100 && (
+      {progress > 0 && progress < 100 && onContinue && (
         <button
           type="button"
           onClick={onContinue}

@@ -105,7 +105,7 @@ describe("useKeyboardShortcuts", () => {
     expect(removeEventListenerSpy).toHaveBeenCalledWith("keydown", handler);
   });
 
-  describe("shift+/ shortcut", () => {
+  describe("? shortcut", () => {
     it("calls onOpenHelp and prevents default", async () => {
       const { unmount } = await renderShortcuts();
       const handler = getKeydownHandler();
@@ -120,6 +120,44 @@ describe("useKeyboardShortcuts", () => {
       handler!(event);
       expect(onOpenHelp).toHaveBeenCalledTimes(1);
       expect(event.preventDefault).toHaveBeenCalled();
+      unmount();
+      currentHook = null;
+    });
+
+    it("works on non-US layouts where ? is on a different physical key", async () => {
+      // On German QWERTZ, "?" is Shift+"/" which is the "Slash" key, but on
+      // other layouts (e.g. some AZERTY) the "?" character maps to a different
+      // e.code. The shortcut must fire on e.key === "?", not on e.code.
+      const { unmount } = await renderShortcuts();
+      const handler = getKeydownHandler();
+      expect(handler).toBeDefined();
+
+      const event = makeKeyboardEvent({
+        shiftKey: true,
+        code: "IntlBackslash", // not "Slash"
+        key: "?",
+      });
+
+      handler!(event);
+      expect(onOpenHelp).toHaveBeenCalledTimes(1);
+      expect(event.preventDefault).toHaveBeenCalled();
+      unmount();
+      currentHook = null;
+    });
+
+    it("does not trigger on plain / without shift producing ?", async () => {
+      const { unmount } = await renderShortcuts();
+      const handler = getKeydownHandler();
+      expect(handler).toBeDefined();
+
+      const event = makeKeyboardEvent({
+        shiftKey: false,
+        code: "Slash",
+        key: "/",
+      });
+
+      handler!(event);
+      expect(onOpenHelp).not.toHaveBeenCalled();
       unmount();
       currentHook = null;
     });

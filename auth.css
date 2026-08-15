@@ -49,6 +49,10 @@ body {
     box-sizing: border-box;
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* ── Particles Canvas (Canvas-driven background) ── */
 
 #particle-canvas {
@@ -395,6 +399,24 @@ input:focus {
     position: relative;
 }
 
+/* Small padding so input icons and action buttons sit inside the card edges */
+.auth-form-card {
+    padding: 28px;
+}
+
+/* Ensure inputs inside the input-group leave room for the left icon and right action */
+.ds-input-group > input,
+.ds-input-group .ds-input {
+    padding-left: 44px; /* room for icon */
+    padding-right: 16px; /* default */
+    box-sizing: border-box;
+}
+
+.ds-input-group.has-action > input,
+.ds-input-group.has-action .ds-input {
+    padding-right: 44px; /* room for action button */
+}
+
 
 /* ── Mobile Layout Media Queries ── */
 @media (min-width: 768px) and (max-width: 1023px) {
@@ -613,4 +635,38 @@ button:disabled {
 .ds-btn-submit,
 .ds-btn-google {
     width: 100%;
+}
+
+/* Main Story Spark AI branding */
+.main-brand {
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    text-align: center;
+    background: linear-gradient(90deg, #4f8cff, #7c6cff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 40px;
+}
+
+.left-pane {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    padding-top: 40px;
+}
+
+.main-brand {
+    text-align: center;
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 45px;
+
+    background: linear-gradient(90deg, #4f8cff, #7c6cff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
