@@ -1,8 +1,6 @@
 /**
  * useVoicePreview.test.ts
  * Unit tests for the useVoicePreview React hook.
- *
- * @jest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
@@ -15,76 +13,57 @@ const makeVoice = (id: string, lang = "en-US"): SpeechVoiceOption => ({
   lang,
 });
 
-const mockUtteranceInstance = {
-  lang: "",
-  rate: 1,
-  voice: null as SpeechSynthesisVoice | null,
-  onstart: null as ((event: SpeechSynthesisEvent) => void) | null,
-  onend: null as ((event: SpeechSynthesisEvent) => void) | null,
-  onerror: null as ((event: SpeechSynthesisErrorEvent) => void) | null,
+let mockSpeak: ReturnType<typeof vi.fn>;
+let mockCancel: ReturnType<typeof vi.fn>;
+let mockGetVoices: ReturnType<typeof vi.fn>;
+let lastInstance: {
+  lang: string;
+  rate: number;
+  voice: SpeechSynthesisVoice | null;
+  onstart: ((e: SpeechSynthesisEvent) => void) | null;
+  onend: ((e: SpeechSynthesisEvent) => void) | null;
+  onerror: ((e: SpeechSynthesisErrorEvent) => void) | null;
 };
 
-let mockGetVoices: () => SpeechSynthesisVoice[];
-let mockCancel: ReturnType<typeof vi.fn>;
-let mockSpeak: ReturnType<typeof vi.fn>;
+function MockSpeechSynthesisUtterance(this: typeof lastInstance) {
+  lastInstance = {
+    lang: "",
+    rate: 1,
+    voice: null,
+    onstart: null,
+    onend: null,
+    onerror: null,
+  };
+  return lastInstance;
+}
 
 const mockSpeechSynthesis = {
   getVoices: () => mockGetVoices(),
-  speak: mockSpeak,
-  cancel: mockCancel,
+  speak: (u: unknown) => mockSpeak(u),
+  cancel: () => mockCancel(),
 };
-
-const MockSpeechSynthesisUtterance = vi.fn(() => {
-  const instance = { ...mockUtteranceInstance };
-  Object.defineProperty(instance, "onstart", {
-    set(fn: ((event: SpeechSynthesisEvent) => void) | null) {
-      mockUtteranceInstance.onstart = fn;
-    },
-    get() {
-      return mockUtteranceInstance.onstart;
-    },
-  });
-  Object.defineProperty(instance, "onend", {
-    set(fn: ((event: SpeechSynthesisEvent) => void) | null) {
-      mockUtteranceInstance.onend = fn;
-    },
-    get() {
-      return mockUtteranceInstance.onend;
-    },
-  });
-  Object.defineProperty(instance, "onerror", {
-    set(fn: ((event: SpeechSynthesisErrorEvent) => void) | null) {
-      mockUtteranceInstance.onerror = fn;
-    },
-    get() {
-      return mockUtteranceInstance.onerror;
-    },
-  });
-  return instance;
-});
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.useFakeTimers();
-
   mockGetVoices = vi.fn(() => []);
-  mockCancel = vi.fn();
   mockSpeak = vi.fn();
+  mockCancel = vi.fn();
 
   Object.defineProperty(window, "speechSynthesis", {
     value: mockSpeechSynthesis,
     writable: true,
+    configurable: true,
   });
 
-  // Mock SpeechSynthesisUtterance globally
-  const globalAny = global as typeof globalThis & {
+  const g = globalThis as typeof globalThis & {
     SpeechSynthesisUtterance: typeof SpeechSynthesisUtterance;
   };
-  globalAny.SpeechSynthesisUtterance = MockSpeechSynthesisUtterance as unknown as typeof SpeechSynthesisUtterance;
+  g.SpeechSynthesisUtterance =
+    MockSpeechSynthesisUtterance as unknown as typeof SpeechSynthesisUtterance;
 });
 
 afterEach(() => {
-  vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 describe("useVoicePreview", () => {
@@ -94,7 +73,7 @@ describe("useVoicePreview", () => {
     expect(result.current.isPreviewPlaying).toBe(false);
   });
 
-  it("playPreview sets previewingVoiceId and isPreviewPlaying to true", () => {
+  it("playPreview sets previewingVoiceId and isPreviewPlaying to true on start", () => {
     const { result } = renderHook(() => useVoicePreview());
     const voice = makeVoice("voice-1", "en-US");
 
@@ -102,16 +81,15 @@ describe("useVoicePreview", () => {
       result.current.playPreview(voice);
     });
 
-    // Simulate utterance onstart event
     act(() => {
-      mockUtteranceInstance.onstart?.({} as SpeechSynthesisEvent);
+      lastInstance.onstart?.({} as SpeechSynthesisEvent);
     });
 
     expect(result.current.previewingVoiceId).toBe("voice-1");
     expect(result.current.isPreviewPlaying).toBe(true);
   });
 
-  it("playPreview calls window.speechSynthesis.speak with the preview text", () => {
+  it("playPreview calls window.speechSynthesis.speak with an utterance", () => {
     const { result } = renderHook(() => useVoicePreview());
     const voice = makeVoice("voice-2", "en-GB");
 
@@ -130,12 +108,16 @@ describe("useVoicePreview", () => {
     act(() => {
       result.current.playPreview(voice1);
     });
+    act(() => {
+      lastInstance.onstart?.({} as SpeechSynthesisEvent);
+    });
+    expect(result.current.isPreviewPlaying).toBe(true);
 
     act(() => {
       result.current.playPreview(voice2);
     });
 
-    // stopPreview should have been called before the second play
+    // stopPreview should have cancelled the previous utterance
     expect(mockCancel).toHaveBeenCalled();
   });
 
@@ -146,11 +128,9 @@ describe("useVoicePreview", () => {
     act(() => {
       result.current.playPreview(voice);
     });
-
     act(() => {
-      mockUtteranceInstance.onstart?.({} as SpeechSynthesisEvent);
+      lastInstance.onstart?.({} as SpeechSynthesisEvent);
     });
-
     expect(result.current.isPreviewPlaying).toBe(true);
 
     act(() => {
@@ -162,6 +142,19 @@ describe("useVoicePreview", () => {
     expect(mockCancel).toHaveBeenCalled();
   });
 
+  it("stopPreview is a no-op for cancel when nothing is playing", () => {
+    const { result } = renderHook(() => useVoicePreview());
+    mockCancel.mockClear();
+
+    act(() => {
+      result.current.stopPreview();
+    });
+
+    expect(result.current.previewingVoiceId).toBeNull();
+    expect(result.current.isPreviewPlaying).toBe(false);
+    expect(mockCancel).not.toHaveBeenCalled();
+  });
+
   it("onend event callback resets state", () => {
     const { result } = renderHook(() => useVoicePreview());
     const voice = makeVoice("voice-end");
@@ -169,15 +162,13 @@ describe("useVoicePreview", () => {
     act(() => {
       result.current.playPreview(voice);
     });
-
     act(() => {
-      mockUtteranceInstance.onstart?.({} as SpeechSynthesisEvent);
+      lastInstance.onstart?.({} as SpeechSynthesisEvent);
     });
-
     expect(result.current.isPreviewPlaying).toBe(true);
 
     act(() => {
-      mockUtteranceInstance.onend?.({} as SpeechSynthesisEvent);
+      lastInstance.onend?.({} as SpeechSynthesisEvent);
     });
 
     expect(result.current.isPreviewPlaying).toBe(false);
@@ -191,15 +182,13 @@ describe("useVoicePreview", () => {
     act(() => {
       result.current.playPreview(voice);
     });
-
     act(() => {
-      mockUtteranceInstance.onstart?.({} as SpeechSynthesisEvent);
+      lastInstance.onstart?.({} as SpeechSynthesisEvent);
     });
-
     expect(result.current.isPreviewPlaying).toBe(true);
 
     act(() => {
-      mockUtteranceInstance.onerror?.({} as SpeechSynthesisErrorEvent);
+      lastInstance.onerror?.({} as SpeechSynthesisErrorEvent);
     });
 
     expect(result.current.isPreviewPlaying).toBe(false);
