@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useCallback, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { diffChars, diffWords, Change } from "diff";
 
 import DiffHighlight from "./DiffHighlight";
@@ -32,7 +32,6 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
   const differences = useMemo(() => {
     return diffFn(version1.content, version2.content);
   }, [version1.content, version2.content, diffMode]);
-
   const stats = useMemo(() => {
     let added = 0;
     let removed = 0;
