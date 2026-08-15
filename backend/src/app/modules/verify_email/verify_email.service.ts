@@ -6,6 +6,7 @@ import config from "../../../config";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
 import crypto from "crypto";
+import { clearOtpAttempts } from "./otp.rate-limiter.middleware";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -190,11 +191,6 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   };
 };
 
-// FIX #3: Converted to a standard function so it gets safely hoisted to the top 
-// of the scope during compilation, preventing potential initialization errors.
-function clearOtpAttempts(email: string) {
-  console.log('Clearing OTP attempts for:', email);
-}
 
 export const VerifyEmailService = {
   VerifyEmail,
