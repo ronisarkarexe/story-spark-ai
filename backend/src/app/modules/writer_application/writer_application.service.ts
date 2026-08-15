@@ -25,7 +25,9 @@ const submitApplication = async (
 };
 
 const getAllApplications = async () => {
-  return await WriterApplication.find().populate("user").sort({ createdAt: -1 });
+  return await WriterApplication.find()
+    .populate("user", "-password -pendingEmailToken -pendingEmailTokenExpires")
+    .sort({ createdAt: -1 });
 };
 
 const updateApplicationStatus = async (
