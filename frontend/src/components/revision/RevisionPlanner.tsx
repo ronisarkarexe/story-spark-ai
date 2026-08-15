@@ -1,9 +1,14 @@
 import { useRevisionPlanner } from "../../hooks/useRevisionPlanner";
 import RevisionTaskCard from "./RevisionTaskCard";
+import type { RevisionTask } from "../../types/revision";
+
+interface RevisionPlannerProps {
+  story: string;
+}
 
 export default function RevisionPlanner({
   story,
-}) {
+}: RevisionPlannerProps) {
   const { tasks, setTasks } =
     useRevisionPlanner(story);
 
@@ -24,7 +29,7 @@ export default function RevisionPlanner({
     acc[task.category] ??= [];
     acc[task.category].push(task);
     return acc;
-  }, {});
+  }, {} as Record<string, RevisionTask[]>);
 
   return (
     <div className="border rounded-xl p-5">
