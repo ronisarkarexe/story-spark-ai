@@ -125,6 +125,13 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
     );
   }
   
+  // The OTP email renders each digit in its own box with 10px gaps, so users
+  // frequently type or paste the code with internal whitespace (e.g. "123 456").
+  // otp.trim() only strips leading/trailing whitespace, so a correctly-typed but
+  // space-separated OTP compared "123456" !== "123 456" and was rejected as
+  // invalid (issue #2746). Strip ALL whitespace before comparing.
+  const normalizedOtp = otp.replace(/\s+/g, "");
+
   const storedOtpRecord = await OTPModel.findOne({ email });
 
   if (!storedOtpRecord) {
@@ -161,7 +168,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   }
 
   // Verify OTP
-  if (storedOtpRecord.otp !== otp.trim()) {
+  if (storedOtpRecord.otp !== normalizedOtp) {
     // Increment failed attempts
     storedOtpRecord.failedAttempts += 1;
     await storedOtpRecord.save();
