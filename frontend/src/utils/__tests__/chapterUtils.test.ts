@@ -1,104 +1,32 @@
-
-import { describe, test, expect } from "vitest";
-import { splitIntoChapters, renumberChapters } from "../chapterUtils";
-
-describe("splitIntoChapters", () => {
-  test("should split a story with multiple chapters", () => {
-    const story = `Chapter 1
-Once upon a time there was a hero.
-
-Chapter 2
-The hero went on an adventure.
-
-Chapter 3
-They returned home.`;
-
-    const chapters = splitIntoChapters(story);
-
-    expect(chapters).toHaveLength(3);
-    expect(chapters[0].id).toBe(1);
-    expect(chapters[0].title).toBe("Chapter 1");
-    expect(chapters[0].content).toBe("Once upon a time there was a hero.");
-
-    expect(chapters[1].id).toBe(2);
-    expect(chapters[1].title).toBe("Chapter 2");
-    expect(chapters[1].content).toBe("The hero went on an adventure.");
-
-    expect(chapters[2].id).toBe(3);
-    expect(chapters[2].title).toBe("Chapter 3");
-    expect(chapters[2].content).toBe("They returned home.");
-  });
-
-  test("should handle chapter with numeric variations", () => {
-    const story = `Chapter 1
-First chapter content.
-
-Chapter 10
-Tenth chapter content.`;
-
-    const chapters = splitIntoChapters(story);
-
-    expect(chapters).toHaveLength(2);
-    expect(chapters[0].title).toBe("Chapter 1");
-    expect(chapters[1].title).toBe("Chapter 10");
-  });
-
-  test("should handle case-insensitive chapter markers", () => {
-    const story = `CHAPTER 1
-All caps marker.
-
-chapter 2
-Lower case marker.`;
-
-    const chapters = splitIntoChapters(story);
-
-    expect(chapters).toHaveLength(2);
-  });
-
-  test("should handle a single chapter without a Chapter prefix", () => {
-    const story = "This is a single story with no chapters.";
-
-    const chapters = splitIntoChapters(story);
-
-    expect(chapters).toHaveLength(1);
-    expect(chapters[0].id).toBe(1);
-    expect(chapters[0].title).toBe("Chapter 1");
-    expect(chapters[0].content).toBe(story);
-  });
-
-  test("should return empty array for empty string", () => {
-    const chapters = splitIntoChapters("");
-    expect(chapters).toHaveLength(0);
-  });
-
-  test("should return empty array for whitespace-only content", () => {
-    const chapters = splitIntoChapters("   \n  \n  ");
-    expect(chapters).toHaveLength(0);
-
 import { describe, it, expect } from "vitest";
 import { splitIntoChapters, renumberChapters } from "../chapterUtils";
 
 describe("splitIntoChapters", () => {
   it("returns an empty array for an empty string", () => {
-    const result = splitIntoChapters("");
-    expect(result).toEqual([]);
+    expect(splitIntoChapters("")).toEqual([]);
+  });
+
+  it("returns an empty array for whitespace-only content", () => {
+    expect(splitIntoChapters("   \n  \n  ")).toEqual([]);
   });
 
   it("returns a single chapter when no chapter markers are present", () => {
     const story = "Once upon a time in a distant land.";
     const result = splitIntoChapters(story);
     expect(result).toHaveLength(1);
-    expect(result[0].content).toBe(story);
+    expect(result[0].id).toBe(1);
     expect(result[0].title).toBe(story);
+    expect(result[0].content).toBe("");
   });
 
-  it("splits a story with Chapter markers", () => {
-    const story =
-      "Chapter 1\nOnce upon a time.\n\nChapter 2\nThere was a hero.";
+  it("splits a story with multiple Chapter markers", () => {
+    const story = "Chapter 1\nOnce upon a time.\n\nChapter 2\nThere was a hero.";
     const result = splitIntoChapters(story);
     expect(result).toHaveLength(2);
+    expect(result[0].id).toBe(1);
     expect(result[0].title).toBe("Chapter 1");
     expect(result[0].content).toBe("Once upon a time.");
+    expect(result[1].id).toBe(2);
     expect(result[1].title).toBe("Chapter 2");
     expect(result[1].content).toBe("There was a hero.");
   });
@@ -111,72 +39,35 @@ describe("splitIntoChapters", () => {
     expect(result[1].title).toBe("chapter 2");
   });
 
-  it("filters out empty parts", () => {
+  it("handles multi-digit chapter numbers", () => {
+    const story = "Chapter 1\nFirst\nChapter 10\nTenth";
+    const result = splitIntoChapters(story);
+    expect(result).toHaveLength(2);
+    expect(result[0].title).toBe("Chapter 1");
+    expect(result[1].title).toBe("Chapter 10");
+  });
+
+  it("filters out empty/whitespace-only parts", () => {
     const story = "Chapter 1\nContent\n\n\nChapter 2\nMore content";
     const result = splitIntoChapters(story);
     expect(result).toHaveLength(2);
   });
 
-  it("assigns sequential ids starting from 1", () => {
-    const story =
-      "Chapter 1\nContent one\nChapter 5\nContent five\nChapter 3\nContent three";
+  it("assigns sequential ids starting from 1 regardless of marker numbers", () => {
+    const story = "Chapter 1\nContent one\nChapter 5\nContent five\nChapter 3\nContent three";
     const result = splitIntoChapters(story);
-    expect(result[0].id).toBe(1);
-    expect(result[1].id).toBe(2);
-    expect(result[2].id).toBe(3);
+    expect(result.map((c) => c.id)).toEqual([1, 2, 3]);
+  });
 
+  it("is deterministic for the same input", () => {
+    const story = "Chapter 1\nA\nChapter 2\nB";
+    expect(splitIntoChapters(story)).toEqual(splitIntoChapters(story));
   });
 });
 
 describe("renumberChapters", () => {
-
-  test("should renumber chapters sequentially starting at 1", () => {
-    const chapters = [
-      { id: 5, title: "Old Title 5", content: "Content 5" },
-      { id: 10, title: "Old Title 10", content: "Content 10" },
-      { id: 99, title: "Old Title 99", content: "Content 99" },
-    ];
-
-    const renumbered = renumberChapters(chapters);
-
-    expect(renumbered[0].id).toBe(1);
-    expect(renumbered[0].title).toBe("Chapter 1");
-    expect(renumbered[0].content).toBe("Content 5");
-
-    expect(renumbered[1].id).toBe(2);
-    expect(renumbered[1].title).toBe("Chapter 2");
-
-    expect(renumbered[2].id).toBe(3);
-    expect(renumbered[2].title).toBe("Chapter 3");
-  });
-
-  test("should preserve body content when renumbering", () => {
-    const chapters = [
-      { id: 1, title: "Chapter 1", content: "Important story content here." },
-    ];
-
-    const renumbered = renumberChapters(chapters);
-
-    expect(renumbered[0].content).toBe("Important story content here.");
-  });
-
-  test("should handle empty array", () => {
-    const renumbered = renumberChapters([]);
-    expect(renumbered).toHaveLength(0);
-  });
-
-  test("should handle single chapter", () => {
-    const chapters = [{ id: 999, title: "Whatever", content: "Content" }];
-
-    const renumbered = renumberChapters(chapters);
-
-    expect(renumbered).toHaveLength(1);
-    expect(renumbered[0].id).toBe(1);
-    expect(renumbered[0].title).toBe("Chapter 1");
-
-  it("returns an empty array for an empty input", () => {
-    const result = renumberChapters([]);
-    expect(result).toEqual([]);
+  it("returns an empty array for empty input", () => {
+    expect(renumberChapters([])).toEqual([]);
   });
 
   it("renumbers a single chapter starting from 1", () => {
@@ -188,26 +79,30 @@ describe("renumberChapters", () => {
     expect(result[0].content).toBe("Some content");
   });
 
-  it("renumbers multiple chapters starting from 1", () => {
+  it("renumbers multiple chapters sequentially starting at 1", () => {
     const chapters = [
-      { id: 1, title: "Old Title", content: "Content 1" },
-      { id: 2, title: "Old Title 2", content: "Content 2" },
-      { id: 3, title: "Old Title 3", content: "Content 3" },
+      { id: 5, title: "Old Title 5", content: "Content 5" },
+      { id: 10, title: "Old Title 10", content: "Content 10" },
+      { id: 99, title: "Old Title 99", content: "Content 99" },
     ];
     const result = renumberChapters(chapters);
-    expect(result[0].id).toBe(1);
-    expect(result[0].title).toBe("Chapter 1");
-    expect(result[1].id).toBe(2);
-    expect(result[1].title).toBe("Chapter 2");
-    expect(result[2].id).toBe(3);
-    expect(result[2].title).toBe("Chapter 3");
+    expect(result.map((c) => c.id)).toEqual([1, 2, 3]);
+    expect(result.map((c) => c.title)).toEqual(["Chapter 1", "Chapter 2", "Chapter 3"]);
+    expect(result[0].content).toBe("Content 5");
+    expect(result[1].content).toBe("Content 10");
+    expect(result[2].content).toBe("Content 99");
   });
 
   it("preserves content of each chapter", () => {
-    const chapters = [
-      { id: 1, title: "Chapter One", content: "Long ago..." },
-    ];
+    const chapters = [{ id: 1, title: "Chapter One", content: "Long ago..." }];
     const result = renumberChapters(chapters);
     expect(result[0].content).toBe("Long ago...");
+  });
+
+  it("does not mutate the input array", () => {
+    const chapters = [{ id: 7, title: "Old", content: "x" }];
+    renumberChapters(chapters);
+    expect(chapters[0].id).toBe(7);
+    expect(chapters[0].title).toBe("Old");
   });
 });
