@@ -223,9 +223,16 @@ StorySparkAI supports two AI providers — switchable via environment variables:
 |---|---|---|
 | OpenAI | `OPEN_AI_KEY` | Story generation + analysis |
 | Google Gemini | `GEMINI_API_KEY` | Story generation + analysis |
+
+**Image assets** (not an AI model — listed here because it is consumed during story cover generation):
+
+| Service | Env var | Used for |
+|---|---|---|
 | Unsplash | `UNSPLASH_KEY_API` | Story cover image fetching |
 
-AI is used **only** for generation and analysis — all story data, user data, and bookmarks are stored in MongoDB.
+AI is used **only** for generation and analysis; Unsplash is an image-asset API
+(not an AI model) used solely to fetch cover images. All story data, user data,
+and bookmarks are stored in MongoDB.
 
 ---
 
