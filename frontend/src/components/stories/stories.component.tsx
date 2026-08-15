@@ -18,8 +18,7 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
-const WARN_THRESHOLD = 0.8;
-const DANGER_THRESHOLD = 0.95;
+const WARN_THRESHOLD = 0.85;
 const lengths = ["short", "medium", "long"] as const;
 
 const StoriesComponent = () => {
@@ -61,9 +60,9 @@ useEffect(() => {
     }
   };
 
-
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
+      setIsDropdownOpen(false);
     }
   };
 
@@ -149,7 +148,7 @@ const handleClearPrompt = () => {
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-  const isDangerLimit = textareaValue.length >= MAX_PROMPT_LENGTH * DANGER_THRESHOLD;
+
   useKeyboardShortcuts({
   onOpenHelp: () => setShowHelpModal(true),
   onCloseHelp: () => setShowHelpModal(false),
@@ -466,8 +465,7 @@ const handleClearPrompt = () => {
         isLogin={login}
         setStories={setStories}
       />
-      {/* Single decorative blur — absolute so it scrolls with content and doesn't bleed over modals */}
-      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
 
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
