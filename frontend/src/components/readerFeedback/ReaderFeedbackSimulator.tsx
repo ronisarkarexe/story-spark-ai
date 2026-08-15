@@ -1,8 +1,14 @@
+import type { ReaderFeedback } from "../../types/readerFeedback";
+
+interface FeedbackSectionProps {
+  feedback: ReaderFeedback | null;
+}
+
 export default function FeedbackSection({
 
 feedback
 
-}){
+}: FeedbackSectionProps){
 
 if(!feedback) return null;
 

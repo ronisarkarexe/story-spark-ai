@@ -1,11 +1,15 @@
 import SceneScoreCard from "./SceneScoreCard";
 import { useSceneImportance } from "../../hooks/useSceneImportance";
 
+interface SceneImportancePanelProps {
+  story: string;
+}
+
 export default function SceneImportancePanel({
 
 story
 
-}){
+}: SceneImportancePanelProps){
 
 const scores=useSceneImportance(story);
 

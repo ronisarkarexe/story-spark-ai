@@ -17,11 +17,10 @@ interface RazorpayFailureResponse {
 
 interface RazorpayOrderResponse {
   success: boolean;
-  order: {
-    id: string;
-    amount: number;
-    currency: string;
-  };
+  orderId: string;
+  amount: number;
+  currency: string;
+  plan?: string;
 }
 
 interface RazorpayInstance {
@@ -43,6 +42,12 @@ const PaymentComponent = () => {
   const [searchParams] = useSearchParams();
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");
+  // Backend createOrder accepts only "monthly" | "yearly"
+  const billing = searchParams.get("billing");
+  const plan: "monthly" | "yearly" =
+    billing === "yearly" || planName.toLowerCase() === "yearly" || planPrice >= 190
+      ? "yearly"
+      : "monthly";
 
   // State variables for checkout card details
   const [name, setName] = useState("");
@@ -83,42 +88,51 @@ const PaymentComponent = () => {
 
     try {
       setLoading(true);
-      // Create order from backend
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        alert("Please log in to continue checkout.");
+        setLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      // Create order from backend — body must be { plan }, not { amount }
       const res = await fetch("/api/v1/payment/create-order", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: Math.round(planPrice * 100), // Convert to paisa
-        }),
+        headers: authHeaders,
+        credentials: "include",
+        body: JSON.stringify({ plan }),
       });
 
       const data: RazorpayOrderResponse = await res.json();
 
-      if (!data.success) {
+      if (!data.success || !data.orderId) {
         alert("Failed to create order.");
         setLoading(false);
         return;
       }
 
-      // Razorpay options
+      // Razorpay options — map flat orderId/amount/currency from API
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: data.order.amount,
-        currency: data.order.currency,
+        amount: data.amount,
+        currency: data.currency,
         name: "StorySparkAI",
         description: `${planName} Subscription`,
-        order_id: data.order.id,
+        order_id: data.orderId,
 
         handler: async (response: RazorpayResponse) => {
           try {
             // Verify payment
             const verifyRes = await fetch("/api/v1/payment/verify", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: authHeaders,
+              credentials: "include",
               body: JSON.stringify(response),
             });
 
