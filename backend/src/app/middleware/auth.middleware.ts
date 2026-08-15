@@ -148,12 +148,9 @@ const auth =
         );
       }
 
-      // Role authorization
+      // Role authorization — use DB role so JWT claim drift cannot escalate privileges
       if (requiredRole.length) {
-        if (
-          !verifiedUser.role ||
-          !requiredRole.includes(verifiedUser.role)
-        ) {
+        if (!user.role || !requiredRole.includes(user.role)) {
           throw new ApiError(
             httpStatus.FORBIDDEN,
             "Forbidden"

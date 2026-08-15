@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import logger from "../utils/logger.util";
 
 const FAVORITES_STORAGE_KEY = "storysparkAI_favoriteVoices";
 
@@ -30,7 +31,7 @@ export const useVoiceFavorites = (): UseVoiceFavoritesResult => {
         setFavoriteVoiceIds(new Set(parsed));
       }
     } catch (error) {
-      console.error("Failed to load favorite voices from localStorage:", error);
+      logger.error("Failed to load favorite voices from localStorage:", error);
     }
     setIsLoaded(true);
   }, []);
@@ -43,7 +44,7 @@ export const useVoiceFavorites = (): UseVoiceFavoritesResult => {
       const toStore = Array.from(favoriteVoiceIds);
       localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(toStore));
     } catch (error) {
-      console.error("Failed to save favorite voices to localStorage:", error);
+      logger.error("Failed to save favorite voices to localStorage:", error);
     }
   }, [favoriteVoiceIds, isLoaded]);
 

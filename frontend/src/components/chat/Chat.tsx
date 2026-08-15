@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, MessageSquare, X, Minus, Trash2, Bot, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,7 +9,7 @@ import {
 import { getUserInfo } from "../../services/auth.service";
 import toast from "react-hot-toast";
 
-const ChatComponent: React.FC = () => {
+const ChatComponent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [message, setMessage] = useState("");

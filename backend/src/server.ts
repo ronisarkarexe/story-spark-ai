@@ -90,8 +90,6 @@ async function connectDB() {
   });
 }
 
-let httpServer: http.Server;
-
 async function main() {
   let httpServer: http.Server | undefined;
 
@@ -128,7 +126,6 @@ async function main() {
     void handleGracefulShutdown('Unhandled Rejection', reason);
   });
 
-
   process.on('uncaughtException', (error: Error) => {
     void handleGracefulShutdown('Uncaught Exception', error);
   });
@@ -147,18 +144,14 @@ async function main() {
       ? ["http://localhost:4001", "http://localhost:4002"]
       : [];
 
-    const socketCorsOrigins = config.cors_origins && config.cors_origins.length > 0
-      ? config.cors_origins
-      : defaultCorsOrigins;
-
-    // Recovers orders left in "paid_pending_entitlement" by a crash between
-    // the Order write and the User write in verifyPayment. See issue #4876.
-    startOrderReconciliationJob();
 
     const socketCorsOrigins =
       config.cors_origins && config.cors_origins.length > 0
         ? config.cors_origins
         : defaultCorsOrigins;
+    // Recovers orders left in "paid_pending_entitlement" by a crash between
+    // the Order write and the User write in verifyPayment. See issue #4876.
+    startOrderReconciliationJob();
 
 
     // Single Socket.IO instance: full CORS methods + credentials, rate
@@ -166,16 +159,8 @@ async function main() {
     const io = new Server(httpServer, {
       cors: {
         origin: socketCorsOrigins,
-
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      },
-    });
-
-    // Apply rate limiting to all Socket.IO connections
-
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true,
       },
     });
 
@@ -217,13 +202,8 @@ async function main() {
       }
     });
 
+
     logger.info("Socket.IO server initialized with rate limiting");
-
-    setNotificationSocket(io);
-    setupCollabSocket(io);
-    new YjsGateway(io);
-
-    logger.info("🔌 Socket.IO server initialized with rate limiting");
 
 
     httpServer.listen(config.port, () => {

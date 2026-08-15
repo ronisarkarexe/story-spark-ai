@@ -1,14 +1,14 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface AudioVisualizerProps {
   isPlaying: boolean;
   barCount?: number;
 }
 
-const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
+const AudioVisualizer = ({
   isPlaying,
   barCount = 32,
-}) => {
+}: AudioVisualizerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const barHeightsRef = useRef<number[]>(

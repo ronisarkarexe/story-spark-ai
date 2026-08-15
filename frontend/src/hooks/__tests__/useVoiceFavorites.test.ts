@@ -1,4 +1,3 @@
-
 /**
  * useVoiceFavorites.test.ts
  * Unit tests for the useVoiceFavorites React hook.
@@ -86,6 +85,8 @@ describe("useVoiceFavorites", () => {
     const { result } = renderHook(() => useVoiceFavorites());
     expect(result.current.favoriteVoiceIds.size).toBe(0);
     consoleError.mockRestore();
+  });
+});
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
