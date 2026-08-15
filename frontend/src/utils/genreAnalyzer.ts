@@ -43,7 +43,7 @@ const genreKeywords: Record<string, string[]> = {
     "dark",
   ],
 
-  Sci-Fi: [
+  "Sci-Fi": [
     "robot",
     "space",
     "planet",

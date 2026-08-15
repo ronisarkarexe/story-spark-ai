@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
-import { setGuestUserIdCookie } from "../../../utils/cookie.util";
-import { randomUUID } from "node:crypto";
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
 import catchAsync from "../../../shared/catch_async";
 import sendResponse from "../../../shared/send_response";
 import { AiModelService } from "./ai_model.service";
 import { IRemixPayload, ITranslatePayload, IChatPayload } from "./ai_model.interface";
-import { reserveGuestQuota } from "./quota.service";
+import { reserveGuestQuota, resolveGuestQuotaIdentity } from "./quota.service";
 import {
   createGuestQuotaGuard,
   runWithQuotaCleanup,
@@ -43,18 +41,13 @@ const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
 
 const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
   const prompt = req.body;
-  let userId = req.cookies.userId as string | undefined;
-
-  if (!userId) {
-    userId = randomUUID();
-    setGuestUserIdCookie(res, userId);
-  }
+  const { quotaKey } = resolveGuestQuotaIdentity(req, res);
 
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
-  await reserveGuestQuota(userId);
-  const guard = createGuestQuotaGuard(userId);
+  await reserveGuestQuota(quotaKey);
+  const guard = createGuestQuotaGuard(quotaKey);
   await runWithQuotaCleanup(guard, async () => {
     const result = await AiModelService.aiFreeModelGenerate(prompt, controller.signal);
     sendResponse(res, {
@@ -94,18 +87,13 @@ const aiModelAlternateEndings = catchAsync(async (req: Request, res: Response) =
 const aiFreeModelAlternateEndings = catchAsync(
   async (req: Request, res: Response) => {
     const payload = req.body;
-    let userId = req.cookies.userId as string | undefined;
-
-    if (!userId) {
-      userId = randomUUID();
-      setGuestUserIdCookie(res, userId);
-    }
+    const { quotaKey } = resolveGuestQuotaIdentity(req, res);
 
     const controller = new AbortController();
     req.on("close", () => controller.abort());
 
-    await reserveGuestQuota(userId);
-    const guard = createGuestQuotaGuard(userId);
+    await reserveGuestQuota(quotaKey);
+    const guard = createGuestQuotaGuard(quotaKey);
     await runWithQuotaCleanup(guard, async () => {
       const result = await AiModelService.aiFreeModelAlternateEndings(payload, controller.signal);
       sendResponse(res, {
@@ -195,18 +183,13 @@ const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
 
 const aiFreeModelRemix = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as IRemixPayload;
-  let userId = req.cookies.userId as string | undefined;
-
-  if (!userId) {
-    userId = randomUUID();
-    setGuestUserIdCookie(res, userId);
-  }
+  const { quotaKey } = resolveGuestQuotaIdentity(req, res);
 
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
-  await reserveGuestQuota(userId);
-  const guard = createGuestQuotaGuard(userId);
+  await reserveGuestQuota(quotaKey);
+  const guard = createGuestQuotaGuard(quotaKey);
   await runWithQuotaCleanup(guard, async () => {
     const result = await AiModelService.aiFreeModelRemix(payload, controller.signal);
     sendResponse(res, {
@@ -245,18 +228,13 @@ const aiModelTranslate = catchAsync(async (req: Request, res: Response) => {
 
 const aiFreeModelTranslate = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as ITranslatePayload;
-  let userId = req.cookies.userId as string | undefined;
-
-  if (!userId) {
-    userId = randomUUID();
-    setGuestUserIdCookie(res, userId);
-  }
+  const { quotaKey } = resolveGuestQuotaIdentity(req, res);
 
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
-  await reserveGuestQuota(userId);
-  const guard = createGuestQuotaGuard(userId);
+  await reserveGuestQuota(quotaKey);
+  const guard = createGuestQuotaGuard(quotaKey);
   await runWithQuotaCleanup(guard, async () => {
     const result = await AiModelService.aiFreeModelTranslate(payload, controller.signal);
     sendResponse(res, {
@@ -295,18 +273,13 @@ const aiModelChat = catchAsync(async (req: Request, res: Response) => {
 
 const aiFreeModelChat = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as IChatPayload;
-  let userId = req.cookies.userId as string | undefined;
-
-  if (!userId) {
-    userId = randomUUID();
-    setGuestUserIdCookie(res, userId);
-  }
+  const { quotaKey } = resolveGuestQuotaIdentity(req, res);
 
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
-  await reserveGuestQuota(userId);
-  const guard = createGuestQuotaGuard(userId);
+  await reserveGuestQuota(quotaKey);
+  const guard = createGuestQuotaGuard(quotaKey);
   await runWithQuotaCleanup(guard, async () => {
     const result = await AiModelService.aiFreeModelChat(payload, controller.signal);
     sendResponse(res, {
@@ -345,18 +318,13 @@ const aiStoryContinuation = catchAsync(async (req: Request, res: Response) => {
 
 const aiFreeStoryContinuation = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as { prompt: string; language?: string };
-  let userId = req.cookies.userId as string | undefined;
-
-  if (!userId) {
-    userId = randomUUID();
-    setGuestUserIdCookie(res, userId);
-  }
+  const { quotaKey } = resolveGuestQuotaIdentity(req, res);
 
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
-  await reserveGuestQuota(userId);
-  const guard = createGuestQuotaGuard(userId);
+  await reserveGuestQuota(quotaKey);
+  const guard = createGuestQuotaGuard(quotaKey);
   await runWithQuotaCleanup(guard, async () => {
     const result = await AiModelService.aiFreeStoryContinuation(payload, controller.signal);
     sendResponse(res, {

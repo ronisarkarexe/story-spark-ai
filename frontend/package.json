@@ -37,6 +37,7 @@
     "fdir": "^6.5.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.5.0",
+    "fuse.js": "^7.5.0",
     "gsap": "^3.15.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
@@ -47,6 +48,7 @@
     "quill-cursors": "^4.0.2",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
+    "react-circular-progressbar": "^2.2.0",
     "react-dom": "^19.0.0",
     "react-helmet-async": "^3.0.0",
     "react-hook-form": "^7.54.2",
@@ -58,10 +60,11 @@
     "recharts": "^3.8.1",
     "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.0.6",
+    "use-debounce": "^10.1.1",
     "y-indexeddb": "^9.0.12",
-    "yjs": "^13.6.31",
+    "y-protocols": "^1.0.6",
     "y-quill": "^1.0.0",
-    "y-protocols": "^1.0.6"
+    "yjs": "^13.6.31"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
@@ -96,5 +99,3 @@
     "@rollup/rollup-linux-x64-gnu": "^4.60.4"
   }
 }
-
-

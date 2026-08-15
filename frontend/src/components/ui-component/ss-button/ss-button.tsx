@@ -1,5 +1,3 @@
-import { FC } from "react";
-
 interface SSButtonProps {
   text: string;
   isLoading?: boolean;
@@ -9,14 +7,14 @@ interface SSButtonProps {
   disabled?: boolean;
 }
 
-const SSButton: FC<SSButtonProps> = ({
+const SSButton = ({
   text,
   isLoading = false,
   onClick,
   type = "button",
   className = "",
   disabled,
-}) => {
+}: SSButtonProps) => {
   const isDisabled = disabled || isLoading;
 
   return (

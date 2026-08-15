@@ -204,7 +204,7 @@ const approveWriterApplication = async (email: string) => {
     }
     const result = await User.findOneAndUpdate(
       { email: email },
-      { role: ENUM_USER_ROLE.WRITER },
+      { $set: { role: ENUM_USER_ROLE.WRITER }, $inc: { tokenVersion: 1 } },
       {
         new: true,
         runValidators: true,

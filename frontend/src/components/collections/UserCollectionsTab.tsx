@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useGetUserCollectionsQuery, useCreateCollectionMutation } from "../../redux/apis/collection.api";
@@ -9,7 +9,7 @@ interface Props {
   isOwner: boolean;
 }
 
-const UserCollectionsTab: React.FC<Props> = ({ userId, isOwner }) => {
+const UserCollectionsTab = ({ userId, isOwner }: Props) => {
   const { data: collections, isLoading } = useGetUserCollectionsQuery(userId);
   const [createCollection, { isLoading: isCreating }] = useCreateCollectionMutation();
 
