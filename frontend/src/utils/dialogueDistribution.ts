@@ -16,6 +16,6 @@ export function getDialogueDistribution(): CharacterDialogue[] {
 
   return characters.map((c) => ({
     ...c,
-    percentage: Math.round((c.lines / total) * 100),
+    percentage: total > 0 ? Math.round((c.lines / total) * 100) : 0,
   }));
 }
