@@ -18,11 +18,15 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
 
   // Check if user is logged in
   if (!isLoggedIn()) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    if (import.meta.env.DEV) {
+      console.warn("Dev mode: Bypassing auth check for protected route.");
+    } else {
+      return <Navigate to="/login" replace state={{ from: location }} />;
+    }
   }
 
   // Check if user has required role
-  if (allowedRoles) {
+  if (allowedRoles && !import.meta.env.DEV) {
     const user = getUserInfo();
     if (!user || !allowedRoles.includes(user.role)) {
       return <Navigate to="/login" replace state={{ from: location }} />;

@@ -47,32 +47,22 @@
 
     <!-- MAIN WRAPPER -->
 
-    <div class="auth-wrapper">
- 
+   <div class="auth-wrapper">
 
-        <!-- MAIN CONTAINER -->
+    <div class="main-brand">
+        STORY SPARK AI
+    </div>
 
-        <main class="auth-container">
+    <main class="auth-container">
 
-            <!-- LEFT PANEL -->
+           <!-- LEFT PANEL -->
 
-            <!-- LEFT PANEL (HIDDEN IN CSS) -->
-            <section class="left-pane"></section>
-
-            <!-- RIGHT PANEL -->
-
-            <section class="right-pane">
+<!-- RIGHT PANEL -->
+<section class="right-pane">
 
                 <div class="auth-form-card">
 
-                    <!-- CARD BRANDING -->
-                    <div class="auth-card-brand">
-                        <div class="auth-card-icon">
-                            <i class="fi fi-rr-sparkles" style="color: white; font-size: 18px;"></i>
-                        </div>
-                        <div class="auth-card-title">Story Spark AI</div>
-                    </div>
-
+                   
                     <!-- HEADER MOVED TO LEFT PANE -->
 
                     <!-- TABS -->
@@ -205,6 +195,7 @@
                                      <input
                                          type="email"
                                          id="email-field"
+                                         class="ds-input"
                                          placeholder="name@storyspark.ai"
                                          autocomplete="email"
                                          required
@@ -250,10 +241,11 @@
 
                                 </div>
 
-                                <div class="ds-input-group">
+                                <div class="ds-input-group has-action">
                                      <i class="fi fi-rr-lock ds-input-icon"></i>
                                      <input
                                          id="password-field"
+                                         class="ds-input"
                                          placeholder="••••••••"
                                          type="password"
                                          autocomplete="current-password"
@@ -264,21 +256,7 @@
                                          onclick="togglePasswordVisibility()"
                                          type="button"
                                          aria-label="Toggle password visibility"
-                                         style="
-                                             position:absolute;
-                                             right:18px;
-                                             top:50%;
-                                             transform:translateY(-50%);
-                                             display:flex;
-                                             align-items:center;
-                                             justify-content:center;
-                                             padding:0;
-                                             margin:0;
-                                             background:none;
-                                             border:none;
-                                             color:rgba(255,255,255,.5);
-                                             cursor:pointer;
-                                         "
+                                         class="ds-input-action"
                                      >
                                          <i class="fi fi-rr-eye-crossed" id="eye-icon"></i>
                                      </button>

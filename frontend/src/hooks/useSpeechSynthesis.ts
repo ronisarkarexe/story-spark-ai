@@ -388,7 +388,11 @@ export const useSpeechSynthesis = (
         );
       };
 
-      utterance.onerror = () => {
+      utterance.onerror = (event) => {
+        if (event.error === "canceled" || event.error === "interrupted") {
+          return;
+        }
+
         setIsSpeaking(false);
         setIsPaused(false);
         setError("Unable to play narration. Please try again.");
@@ -397,7 +401,7 @@ export const useSpeechSynthesis = (
       synthRef.current.cancel();
       synthRef.current.speak(utterance);
       setCurrentWordIndex(0);
-  });
+
     },
 
     [
