@@ -6,6 +6,8 @@ import FooterComponent from "../footer/footer.component";
 import ChatComponent from "../chat/Chat";
 import ScrollToTopButton from "../ScrollToTopButton";
 
+import PageTransition from "./PageTransition";
+
 interface RootLayoutProps {
   children: ReactNode;
 }
@@ -31,7 +33,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
       {!hideHeader && <NavListComponent />}
       <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
 
-      <div className="flex-grow min-h-0">{children}</div>
+      <PageTransition className="flex-grow min-h-0">{children}</PageTransition>
       {!hideFooter && <FooterComponent />}
       {!isAuthPage && (
         <>

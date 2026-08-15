@@ -1,7 +1,4 @@
-body, a, button, input, textarea, select {
-    cursor: none !important;
-  }
-  
+
   .magic-cursor-layer {
     pointer-events: none;
     position: fixed;
@@ -15,6 +12,8 @@ body, a, button, input, textarea, select {
   
   .magic-cursor-glow {
     position: absolute;
+    left: var(--cursor-x, -100px);
+    top: var(--cursor-y, -100px);
     width: 45px;
     height: 45px;
     background: transparent;
@@ -26,6 +25,8 @@ body, a, button, input, textarea, select {
   
   .magic-cursor-dot {
     position: absolute;
+    left: var(--cursor-x, -100px);
+    top: var(--cursor-y, -100px);
     width: 14px;
     height: 14px;
     background-color: #f97316;
