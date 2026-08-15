@@ -45,8 +45,14 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
     const a = document.createElement("a");
     a.href = url;
     a.download = "recent-prompts.json";
+    // Firefox requires the anchor to be in the DOM to trigger a download.
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    // Defer revocation — browser initiates download asynchronously.
+    // Synchronous revocation races the download and causes silent failures
+    // in Firefox and Safari.
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   return (
@@ -132,6 +138,7 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
                     <button
                       type="button"
                       onClick={() => {
+                        onPromptUse?.(item.id);  // track usage — same as clicking prompt text
                         onSelectPrompt(item.prompt);
                         onToggle();
                       }}

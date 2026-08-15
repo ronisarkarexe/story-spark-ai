@@ -4,11 +4,23 @@ import {
   setRefreshTokenCookie,
   clearRefreshTokenCookie,
   setGuestUserIdCookie,
+  signGuestUserId,
+  verifySignedGuestUserId,
+  guestQuotaKeyForIp,
+  getRequestClientIp,
 } from "../utils/cookie.util";
 
 jest.mock("../config", () => ({
   __esModule: true,
-  default: { env: "development" },
+  default: {
+    env: "development",
+    jwt: {
+      secret: "test-jwt-secret",
+      refresh_secret: "test-refresh-secret",
+      expires_in: "15m",
+      refresh_expires_in: "7d",
+    },
+  },
 }));
 
 function buildMockRes(): {
@@ -98,7 +110,8 @@ describe("setGuestUserIdCookie", () => {
     expect(cookieMock).toHaveBeenCalledTimes(1);
     const [name, value] = cookieMock.mock.calls[0];
     expect(name).toBe("userId");
-    expect(value).toBe("guest-uuid-123");
+    expect(typeof value).toBe("string");
+    expect(value.startsWith("s:guest-uuid-123.")).toBe(true);
   });
 
   it("passes httpOnly, secure, sameSite, path from cookieOptions", () => {
@@ -116,5 +129,26 @@ describe("setGuestUserIdCookie", () => {
     setGuestUserIdCookie(res, "guest-uuid");
     const [, , options] = cookieMock.mock.calls[0];
     expect(options.maxAge).toBe(30 * 24 * 60 * 60 * 1000);
+  });
+});
+
+
+describe("signed guest cookie + IP quota key", () => {
+  it("round-trips a signed guest user id", () => {
+    const signed = signGuestUserId("guest-uuid-123");
+    expect(verifySignedGuestUserId(signed)).toBe("guest-uuid-123");
+    expect(verifySignedGuestUserId("s:guest-uuid-123.deadbeef")).toBeNull();
+  });
+
+  it("builds a stable IP-bound guest quota key", () => {
+    expect(guestQuotaKeyForIp("203.0.113.10")).toBe("ip:203.0.113.10");
+  });
+
+  it("reads client IP from x-forwarded-for when present", () => {
+    const req = {
+      headers: { "x-forwarded-for": "198.51.100.4, 10.0.0.1" },
+      ip: "10.0.0.1",
+    } as any;
+    expect(getRequestClientIp(req)).toBe("198.51.100.4");
   });
 });

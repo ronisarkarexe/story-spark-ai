@@ -39,7 +39,9 @@ flex flex-col justify-between h-full">    <div className="absolute inset-0 bg-wh
 group-hover:text-slate-900
 dark:group-hover:text-white
 transition-colors duration-300">
-    <div className="flex items-center gap-3 mt-auto relative z-10">
+    {writer.feedback}
+  </p>
+  <div className="flex items-center gap-3 mt-auto relative z-10">
       <img className="h-10 w-10 shrink-0 rounded-full object-cover
             ring-2 ring-indigo-50 dark:ring-indigo-500/20
             transition-all duration-300

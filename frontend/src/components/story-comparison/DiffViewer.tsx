@@ -1,7 +1,5 @@
-import React, { useMemo } from "react";
-import { diffChars, diffWords, Change } from "jsdiff";
-import React, { useMemo, useRef, useCallback } from "react";
-import { diffChars, Change } from "jsdiff";
+import React, { useMemo, useRef, useCallback, useState } from "react";
+import { diffChars, diffWords, Change } from "diff";
 
 import DiffHighlight from "./DiffHighlight";
 
@@ -34,12 +32,6 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
   const differences = useMemo(() => {
     return diffFn(version1.content, version2.content);
   }, [version1.content, version2.content, diffMode]);
-  // diffWords is O(words²) not O(chars²) — critical for large story content.
-  // diffChars on 7000-char stories triggers ~49M operations, freezing the UI.
-  const differences = useMemo(() => {
-    return diffWords(version1.content, version2.content);
-  }, [version1.content, version2.content]);
-
 
   const stats = useMemo(() => {
     let added = 0;

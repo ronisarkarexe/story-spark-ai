@@ -1,11 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { useDebounced } from '../global';
+import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useDebounce } from "../useDebounce";
 
-describe('useDebounced hook', () => {
+describe("useDebounce", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -15,109 +15,115 @@ describe('useDebounced hook', () => {
     vi.useRealTimers();
   });
 
-  it('returns the initial value immediately on render', () => {
-    const { result } = renderHook(() =>
-      useDebounced({ searchQuery: 'initial search', delay: 500 })
-    );
-    expect(result.current).toBe('initial search');
+  it("returns the initial value immediately on first render", () => {
+    const { result } = renderHook(() => useDebounce("initial", 500));
+    expect(result.current).toBe("initial");
   });
 
-  it('updates the debounced value after the delay period', () => {
-    const { result, rerender } = renderHook(
-      ({ searchQuery, delay }) => useDebounced({ searchQuery, delay }),
-      {
-        initialProps: { searchQuery: 'hello', delay: 500 },
-      }
-    );
+  it("does not update the debounced value before the delay elapses", () => {
+    const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
+      initialProps: { value: "hello", delay: 500 },
+    });
+    expect(result.current).toBe("hello");
 
-    expect(result.current).toBe('hello');
-
-    rerender({ searchQuery: 'hello world', delay: 500 });
-    // Value should remain unchanged before the delay period finishes
-    expect(result.current).toBe('hello');
-
+    rerender({ value: "hello world", delay: 500 });
     act(() => {
       vi.advanceTimersByTime(499);
     });
-    expect(result.current).toBe('hello');
-
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
-    expect(result.current).toBe('hello world');
+    expect(result.current).toBe("hello");
   });
 
-  it('clears and resets the timeout on a new searchQuery before delay completes', () => {
-    const { result, rerender } = renderHook(
-      ({ searchQuery, delay }) => useDebounced({ searchQuery, delay }),
-      {
-        initialProps: { searchQuery: 'a', delay: 500 },
-      }
-    );
+  it("updates the debounced value after the delay period", () => {
+    const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
+      initialProps: { value: "hello", delay: 500 },
+    });
 
-    rerender({ searchQuery: 'ab', delay: 500 });
+    rerender({ value: "hello world", delay: 500 });
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(result.current).toBe("hello world");
+  });
 
+  it("resets the timer when a new value arrives before the delay completes", () => {
+    const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
+      initialProps: { value: "a", delay: 500 },
+    });
+
+    rerender({ value: "ab", delay: 500 });
     act(() => {
       vi.advanceTimersByTime(300);
     });
-    expect(result.current).toBe('a');
+    expect(result.current).toBe("a");
 
-    // User types 'abc' before the 'ab' delay of 500ms finishes
-    rerender({ searchQuery: 'abc', delay: 500 });
-
+    rerender({ value: "abc", delay: 500 });
     act(() => {
       vi.advanceTimersByTime(300);
     });
-    // Should still be 'a' because 'abc' timer is reset and needs 500ms
-    expect(result.current).toBe('a');
+    expect(result.current).toBe("a");
 
     act(() => {
       vi.advanceTimersByTime(200);
     });
-    expect(result.current).toBe('abc');
+    expect(result.current).toBe("abc");
   });
 
-  it('cleans up timeout on unmount', () => {
-    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
-    const { unmount } = renderHook(() =>
-      useDebounced({ searchQuery: 'test', delay: 500 })
-    );
+  it("defaults to a 300ms delay when none is provided", () => {
+    const { result, rerender } = renderHook(({ value }) => useDebounce(value), {
+      initialProps: { value: "start" },
+    });
 
+    rerender({ value: "updated" });
+    act(() => {
+      vi.advanceTimersByTime(299);
+    });
+    expect(result.current).toBe("start");
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(result.current).toBe("updated");
+  });
+
+  it("clears the pending timeout on unmount", () => {
+    const clearTimeoutSpy = vi.spyOn(window, "clearTimeout");
+    const { unmount } = renderHook(() => useDebounce("test", 500));
     unmount();
     expect(clearTimeoutSpy).toHaveBeenCalled();
   });
 
-  it('handles different delay values correctly', () => {
-    const { result, rerender } = renderHook(
-      ({ searchQuery, delay }) => useDebounced({ searchQuery, delay }),
-      {
-        initialProps: { searchQuery: 'start', delay: 200 },
-      }
-    );
-
-    rerender({ searchQuery: 'fast update', delay: 200 });
-
-    act(() => {
-      vi.advanceTimersByTime(100);
+  it("handles a changing delay value", () => {
+    const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
+      initialProps: { value: "start", delay: 200 },
     });
-    expect(result.current).toBe('start');
 
+    rerender({ value: "fast", delay: 200 });
     act(() => {
-      vi.advanceTimersByTime(100);
+      vi.advanceTimersByTime(200);
     });
-    expect(result.current).toBe('fast update');
+    expect(result.current).toBe("fast");
 
-    // Test with a longer delay
-    rerender({ searchQuery: 'slow update', delay: 1000 });
+    rerender({ value: "slow", delay: 1000 });
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(result.current).toBe("fast");
 
     act(() => {
       vi.advanceTimersByTime(500);
     });
-    expect(result.current).toBe('fast update');
+    expect(result.current).toBe("slow");
+  });
 
-    act(() => {
-      vi.advanceTimersByTime(500);
+  it("works with non-string values (e.g. numbers)", () => {
+    const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
+      initialProps: { value: 1, delay: 100 },
     });
-    expect(result.current).toBe('slow update');
+
+    rerender({ value: 42, delay: 100 });
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(result.current).toBe(42);
   });
 });
