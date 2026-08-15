@@ -7,11 +7,7 @@ const HELP_SECTIONS = [
   { id: "troubleshoot-section", label: "Troubleshooting", icon: "fa-screwdriver-wrench", color: "from-orange-500 to-red-500" },
   { id: "setup-guide-section", label: "Setup Guide", icon: "fa-rocket", color: "from-emerald-500 to-teal-500" },
   { id: "support-links-section", label: "Support", icon: "fa-headset", color: "from-pink-500 to-rose-500" },
-fix/merge-conflicts
-]; // ✅ FIXED: Added closing bracket and semicolon
-
 ];
- main
 
 const HelpSidebar = () => {
   const [activeSection, setActiveSection] = useState<string>(
@@ -110,7 +106,6 @@ const HelpSidebar = () => {
                       ? "border-blue-300 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-indigo-500/10"
                       : "border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.03] hover:border-blue-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
                       }`}
- fix/merge-conflicts
                     >
                       {/* ✅ FIXED: Removed duplicate code, kept only one button structure */}
                       {isActive && (
@@ -134,31 +129,6 @@ const HelpSidebar = () => {
                 })}
               </div>
 
-              <motion.div
-                whileHover={{ y: -2 }}
-                className="relative overflow-hidden mt-8 rounded-3xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-6"
-              >
-                <div className="absolute top-0 right-0 w-28 h-28 bg-blue-500/10 rounded-full blur-3xl" />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg">
-                      <i className="fa-solid fa-sparkles text-lg"></i>
-
-                  >
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      <i className={`fa-solid ${section.icon} text-sm ${isActive ? "text-blue-600" : "text-slate-500"}`} aria-hidden="true" />
-                      <p className={`font-bold text-xs sm:text-sm tracking-tight text-left transition-colors duration-200 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"}`}>
-                        {section.label}
-                      </p>
- main
-                    </div>
-                    <div className="shrink-0 ml-2">
-                      <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-slate-300 dark:bg-slate-700"}`} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
 
             {/* Support Box */}
             <motion.div
