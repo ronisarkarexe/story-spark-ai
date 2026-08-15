@@ -78,7 +78,6 @@ const StoryConsistencyGuardian = lazy(() => import("./components/story-consisten
 const LoreManager = lazy(() => import("./components/LoreManager"));
 
 // --- Suspense helper ---
-
 const lazyPage = (element: React.ReactElement) => (
   <Suspense fallback={<LoadingAnimation />}>
     {element}
@@ -364,7 +363,6 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
-      <MagicCursorComponent />
       <RouterProvider router={router} />
     </>
   );

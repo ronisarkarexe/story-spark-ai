@@ -1,8 +1,17 @@
 import { useState } from "react";
 
+interface StoryComment {
+  id: string;
+  author: string;
+  text: string;
+  selectedText: string;
+  resolved: boolean;
+  replies: string[];
+}
+
 export default function useComments() {
 
-  const [comments, setComments] = useState([
+  const [comments, setComments] = useState<StoryComment[]>([
     {
       id: "1",
       author: "Reviewer",
