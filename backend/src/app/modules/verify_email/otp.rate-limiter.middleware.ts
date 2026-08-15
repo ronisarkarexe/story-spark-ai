@@ -118,6 +118,7 @@ export const otpRateLimiter = (
   }
 };
 
+/** Removes the in-memory attempt record after a successful OTP verify. */
 export const clearOtpAttempts = (email: string) => {
   const normalizedEmail = email.toString().toLowerCase().trim();
   const key = `otp_${normalizedEmail}`;
