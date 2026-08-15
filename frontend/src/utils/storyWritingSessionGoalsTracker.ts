@@ -40,18 +40,28 @@ export function calculateSessionProgress(
     (Date.now() - startTime) / 60000
   );
 
+  // Guard zero/NaN targets: when a goal is unset (0) or invalid (NaN),
+  // the corresponding progress is undefined (NaN/Infinity) and pollutes the
+  // UI. Treat such targets as "no goal" → 0 progress.
+  const safeTarget = (target: number): number =>
+    Number.isFinite(target) && target > 0 ? target : 0;
+
+  const wordTarget = safeTarget(goals.targetWords);
+  const timeTarget = safeTarget(goals.targetMinutes);
+  const chapterTarget = safeTarget(goals.targetChapters);
+
   const wordProgress = Math.min(
-    (wordCount / goals.targetWords) * 100,
+    wordTarget > 0 ? (wordCount / wordTarget) * 100 : 0,
     100
   );
 
   const timeProgress = Math.min(
-    (minutes / goals.targetMinutes) * 100,
+    timeTarget > 0 ? (minutes / timeTarget) * 100 : 0,
     100
   );
 
   const chapterProgress = Math.min(
-    (chapterCount / goals.targetChapters) * 100,
+    chapterTarget > 0 ? (chapterCount / chapterTarget) * 100 : 0,
     100
   );
 
