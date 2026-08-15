@@ -262,22 +262,38 @@ const DashboardComponent = () => {
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
               <div className="min-w-0 rounded-2xl border border-blue-100 bg-slate-50/50 p-5 dark:border-blue-500/15 dark:bg-white/[0.02] sm:p-6">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Users Distribution</h2>
-                <UsersPieChart data={data.users!} />
+                {data.users ? (
+                  <UsersPieChart data={data.users} />
+                ) : (
+                  <p className="py-10 text-center text-sm text-slate-500">No user data available.</p>
+                )}
               </div>
 
               <div className="min-w-0 rounded-2xl border border-emerald-100 bg-slate-50/50 p-5 dark:border-emerald-500/15 dark:bg-white/[0.02] sm:p-6">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Subscription Overview</h2>
-                <SubscriptionChart data={data.subscriptionTypes!} />
+                {data.subscriptionTypes ? (
+                  <SubscriptionChart data={data.subscriptionTypes} />
+                ) : (
+                  <p className="py-10 text-center text-sm text-slate-500">No subscription data available.</p>
+                )}
               </div>
 
               <div className="min-w-0 rounded-2xl border border-violet-100 bg-slate-50/50 p-5 dark:border-violet-500/15 dark:bg-white/[0.02] sm:p-6">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Monthly Posts</h2>
-                <PostsPerMonthChart perMonth={data.posts!.perMonth} />
+                {data.posts?.perMonth && Object.keys(data.posts.perMonth).length > 0 ? (
+                  <PostsPerMonthChart perMonth={data.posts.perMonth} />
+                ) : (
+                  <p className="py-10 text-center text-sm text-slate-500">No monthly posts data available.</p>
+                )}
               </div>
 
               <div className="min-w-0 rounded-2xl border border-amber-100 bg-slate-50/50 p-5 dark:border-amber-500/15 dark:bg-white/[0.02] sm:p-6">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Topics Analytics</h2>
-                <TopicsChart topics={data.posts!.topics} />
+                {data.posts?.topics && Object.keys(data.posts.topics).length > 0 ? (
+                  <TopicsChart topics={data.posts.topics} />
+                ) : (
+                  <p className="py-10 text-center text-sm text-slate-500">No topics data available.</p>
+                )}
               </div>
             </div>
           )}

@@ -25,8 +25,9 @@ interface Props {
 }
 
 const TopicsChart: FC<Props> = ({ topics }) => {
-  const labels = Object.keys(topics);
-  const values = Object.values(topics);
+  const t = topics ?? {};
+  const labels = Object.keys(t);
+  const values = Object.values(t);
 
   const chartData: ChartData<"bar", number[], string> = {
     labels,
