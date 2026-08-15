@@ -1,4 +1,3 @@
-import React from "react";
 import toast from "react-hot-toast";
 import {
   CharacterResponse,
@@ -9,9 +8,7 @@ interface CharacterPortraitProps {
   character: CharacterResponse;
 }
 
-const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
-  character,
-}) => {
+const CharacterPortrait = ({ character }: CharacterPortraitProps) => {
   const [generatePortrait, { isLoading }] =
     useGenerateCharacterPortraitMutation();
 

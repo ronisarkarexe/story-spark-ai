@@ -49,14 +49,10 @@ const decodeCursor = (cursor?: string): ICursorPayload | null => {
 }
     return parsed as ICursorPayload;
   } catch {
-  throw new ApiError(
-    httpStatus.BAD_REQUEST,
-    "Invalid pagination cursor"
-  );
-}
-
-  } catch (error) {
-    console.error('[PostService] Failed to add XP:', error);
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid pagination cursor"
+    );
   }
 };
 
@@ -690,7 +686,7 @@ const forkStory = async (postId: string, token: ITokenPayload) => {
 
 const getGenres = async (): Promise<string[]> => {
   const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
-  return genres.sort((a, b) => a - b);
+  return genres.sort((a, b) => a.localeCompare(b));
 };
 
 const bulkDeletePosts = async (ids: string[], token: ITokenPayload) => {
