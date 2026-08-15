@@ -1,19 +1,19 @@
 import ChecklistItem from "./ChecklistItem";
-import {usePublishingChecklist} from "../../hooks/usePublishingChecklist";
+import usePublishingChecklist from "../../hooks/usePublicationChecklist";
 
 export default function PublishingChecklist({
 
 story
 
-}){
+}: any){
 
-const checklist=usePublishingChecklist(story);
+const checklist=usePublishingChecklist();
 
 const passed=
 
 checklist.filter(
 
-i=>i.status==="Passed"
+(i: any)=>i.status==="Passed"
 
 ).length;
 

@@ -35,16 +35,38 @@ export async function reconcilePendingOrders(): Promise<void> {
         continue;
       }
 
-      const subscriptionExpiry = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
+      const durationMs = plan.durationDays * 24 * 60 * 60 * 1000;
+      const now = new Date();
 
+      // Stack remaining premium: max(now, currentExpiry) + plan duration.
       const updatedUser = await User.findByIdAndUpdate(
         order.userId,
-        {
-          subscriptionType: "premium",
-          subscriptionExpiry,
-          lastPaymentId: order.razorpayPaymentId,
-          lastOrderId: order.razorpayOrderId,
-        },
+        [
+          {
+            $set: {
+              subscriptionType: "premium",
+              lastPaymentId: order.razorpayPaymentId,
+              lastOrderId: order.razorpayOrderId,
+              subscriptionExpiry: {
+                $add: [
+                  {
+                    $cond: [
+                      {
+                        $and: [
+                          { $ne: [{ $ifNull: ["$subscriptionExpiry", null] }, null] },
+                          { $gt: ["$subscriptionExpiry", now] },
+                        ],
+                      },
+                      "$subscriptionExpiry",
+                      now,
+                    ],
+                  },
+                  durationMs,
+                ],
+              },
+            },
+          },
+        ],
         { new: true }
       );
 
@@ -82,5 +104,5 @@ export function startOrderReconciliationJob(): void {
       logger.error("[reconcile] Unhandled error in scheduled sweep:", err)
     );
   });
-  logger.info("🔁 Order reconciliation job scheduled (every 5 minutes).");
+  logger.info("Order reconciliation job scheduled (every 5 minutes).");
 }
