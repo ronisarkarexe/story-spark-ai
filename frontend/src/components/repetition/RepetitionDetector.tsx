@@ -1,11 +1,15 @@
 import RepetitionCard from "./RepetitionCard";
 import { useRepetitionAnalysis } from "../../hooks/useRepetitionAnalysis";
 
+interface RepetitionDetectorProps {
+  story: string;
+}
+
 export default function RepetitionDetector({
 
 story
 
-}){
+}: RepetitionDetectorProps){
 
 const issues=useRepetitionAnalysis(story);
 
