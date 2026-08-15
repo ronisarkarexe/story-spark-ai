@@ -1,4 +1,18 @@
-import React from 'react';
-export default function RepetitionCard({ issue }: any) {
-  return <div className="p-4 border mb-2 rounded bg-gray-50">{JSON.stringify(issue)}</div>;
+import type { RepetitionIssue } from "../../types/repetition";
+
+interface RepetitionCardProps {
+  issue: RepetitionIssue;
+}
+
+export default function RepetitionCard({ issue }: RepetitionCardProps) {
+  return (
+    <article className="mb-4 rounded-lg border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-semibold">{issue.type}</h3>
+        <span>{issue.severity}</span>
+      </div>
+      <p className="mt-2">“{issue.repeatedText}” ({issue.occurrences} times)</p>
+      <p className="mt-2 text-sm">{issue.suggestion}</p>
+    </article>
+  );
 }

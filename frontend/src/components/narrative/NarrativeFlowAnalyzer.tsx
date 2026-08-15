@@ -1,9 +1,13 @@
 import FlowIssueCard from "./FlowIssueCard";
 import { useNarrativeFlow } from "../../hooks/useNarrativeFlow";
 
+interface NarrativeFlowAnalyzerProps {
+  story: string;
+}
+
 export default function NarrativeFlowAnalyzer({
   story,
-}) {
+}: NarrativeFlowAnalyzerProps) {
 
   const { issues } = useNarrativeFlow(story);
 
