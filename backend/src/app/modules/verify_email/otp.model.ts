@@ -25,7 +25,9 @@ const otpSchema = new Schema<IOTP>(
     expiresAt: {
       type: Date,
       required: true,
-      index: { expireAfterSeconds: 0 }, // Auto-delete expired OTPs
+      // TTL deletes the whole document. After OTP verify, service extends this
+      // to verificationTokenExpires so register/reset still finds the token.
+      index: { expireAfterSeconds: 0 },
     },
     failedAttempts: {
       type: Number,

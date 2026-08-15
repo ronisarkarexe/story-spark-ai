@@ -178,6 +178,9 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   storedOtpRecord.isVerified = true;
   storedOtpRecord.verificationToken = verificationToken;
   storedOtpRecord.verificationTokenExpires = verificationTokenExpires;
+  // OTP TTL index is on expiresAt; extend it so the verificationToken window is honored
+  // instead of Mongo deleting the document at the original OTP expiry.
+  storedOtpRecord.expiresAt = verificationTokenExpires;
   await storedOtpRecord.save();
 
   // Clear memory rate limit attempts on success

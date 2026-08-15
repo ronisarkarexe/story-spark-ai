@@ -4,6 +4,7 @@ import { Story, StoryVersion } from "../../types/story.types";
 interface StoryState {
   currentStory: Story | null;
   versions: StoryVersion[];
+  currentVersionId: string | null;
 }
 
 const loadStoryFromStorage = (): Story | null => {
@@ -19,6 +20,7 @@ const loadStoryFromStorage = (): Story | null => {
 const initialState: StoryState = {
   currentStory: loadStoryFromStorage(),
   versions: [],
+  currentVersionId: null,
 }; 
 
 const storySlice = createSlice({
@@ -83,6 +85,7 @@ const storySlice = createSlice({
       const version = state.versions.find((v) => v.id === action.payload);
       if (version) {
         state.currentStory = version.storySnapshot;
+        state.currentVersionId = version.id;
       }
     },
 
