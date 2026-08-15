@@ -5,11 +5,16 @@ export interface StoryRecoveryData {
 
 const STORAGE_KEY = "story-session-recovery";
 
-export function saveDraft(content: string) {
+const hasLocalStorage = (): boolean =>
+  typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+
+export function saveDraft(content: string): StoryRecoveryData | null {
   const draft: StoryRecoveryData = {
     content,
     savedAt: new Date().toISOString(),
   };
+
+  if (!hasLocalStorage()) return draft;
 
   localStorage.setItem(
     STORAGE_KEY,
@@ -20,6 +25,8 @@ export function saveDraft(content: string) {
 }
 
 export function getRecoveredDraft(): StoryRecoveryData | null {
+  if (!hasLocalStorage()) return null;
+
   const data = localStorage.getItem(STORAGE_KEY);
 
   if (!data) return null;
@@ -32,6 +39,7 @@ export function getRecoveredDraft(): StoryRecoveryData | null {
 }
 
 export function discardRecoveredDraft() {
+  if (!hasLocalStorage()) return;
   localStorage.removeItem(STORAGE_KEY);
 }
 
