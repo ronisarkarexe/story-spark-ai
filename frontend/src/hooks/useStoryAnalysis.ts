@@ -1,18 +1,14 @@
 import { useEffect, useState } from "react";
-import debounce from "lodash.debounce";
-import { analyzeStory } from "../utils/storyAssistant";
+import { analyzeStory, type Suggestion } from "../utils/storyAssistant";
 
 export function useStoryAnalysis(story: string) {
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
   useEffect(() => {
-    const update = debounce(() => {
+    const timer = window.setTimeout(() => {
       setSuggestions(analyzeStory(story));
     }, 500);
-
-    update();
-
-    return () => update.cancel();
+    return () => window.clearTimeout(timer);
   }, [story]);
 
   return suggestions;

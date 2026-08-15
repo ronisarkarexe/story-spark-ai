@@ -19,7 +19,7 @@ const SYMBOLS = [
 export function analyzeSymbols(story: string): StorySymbol[] {
   const text = story.toLowerCase();
 
-  return SYMBOLS.map((item) => {
+  return SYMBOLS.map((item): StorySymbol => {
     const count = (text.match(new RegExp(item, "g")) || []).length;
 
     return {
