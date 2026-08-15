@@ -1,11 +1,15 @@
 import ChecklistItem from "./ChecklistItem";
 import {usePublishingChecklist} from "../../hooks/usePublishingChecklist";
 
+interface PublishingChecklistProps {
+  story: string;
+}
+
 export default function PublishingChecklist({
 
 story
 
-}){
+}: PublishingChecklistProps){
 
 const checklist=usePublishingChecklist(story);
 
@@ -17,11 +21,7 @@ i=>i.status==="Passed"
 
 ).length;
 
-const readiness=Math.round(
-
-(passed/checklist.length)*100
-
-);
+const readiness = checklist.length === 0 ? 0 : Math.round((passed / checklist.length) * 100);
 
 return(
 

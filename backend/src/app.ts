@@ -14,7 +14,6 @@ import cookieParser from "cookie-parser";
 import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
-import leaderboardRoute from "./routes/leaderboard.route";
 import globalRateLimiter from "./app/middleware/global.rate-limiter";
 import { sanitizeAllMiddleware } from "./app/middleware/sanitize.middleware";
 import ApiError from "./errors/api_error";
@@ -81,10 +80,6 @@ app.use(cookieParser() as unknown as RequestHandler);
 app.use(sanitizeAllMiddleware);
 
 
-// Global XSS sanitization for all incoming request bodies and query parameters
-app.use(sanitizeAllMiddleware);
-
-
 app.use((req, res, next) => {
   if (
     req.method === "GET" &&
@@ -96,28 +91,6 @@ app.use((req, res, next) => {
 });
 
 
-// Payload limit set to 10mb to support large story content and
-// character network data without triggering 413 errors.
-// Previously used Express default (100kb) which was too restrictive.
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(cookieParser() as unknown as RequestHandler);
-
-
-app.use("/api/v1", Routers);
-
-// ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  const error = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
-  (error as any).errorMessages = [
-    {
-      path: req.originalUrl,
-      message: "The requested API endpoint route does not exist.",
-    },
-  ];
-  next(error);
-=======
-
 app.use("/api/v1", Routers);
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
@@ -127,7 +100,6 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
       `The requested API endpoint route does not exist: ${req.originalUrl}`
     )
   );
-
 });
 app.use(globalErrorHandler);
 

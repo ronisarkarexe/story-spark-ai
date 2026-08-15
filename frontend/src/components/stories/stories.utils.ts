@@ -106,6 +106,14 @@ export const getWordCount = (str: string | undefined): number => {
   if (typeof str !== "string") {
     return 0;
   }
+  const normalizedText = str.replace(/[\r\n]+/g, " ").trim();
+  if (!normalizedText) {
+    return 0;
+  }
+
+  return normalizedText.split(/\s+/).length;
+};
+
 export const getReadingTime = (
   text: string | undefined,
   wordsPerMinute = 200
@@ -117,13 +125,6 @@ export const getReadingTime = (
   }
 
   return Math.max(1, Math.ceil(words / wordsPerMinute));
-};
-  const normalizedText = str.replace(/[\r\n]+/g, " ").trim();
-  if (!normalizedText) {
-    return 0;
-  }
-
-  return normalizedText.split(/\s+/).length;
 };
 
 export const prompts = [

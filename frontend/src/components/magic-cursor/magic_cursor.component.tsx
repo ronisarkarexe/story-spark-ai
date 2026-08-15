@@ -1,5 +1,16 @@
-import { useEffect, useRef } from "react";
-import "./magic_cursor.css";
+import { useEffect, useRef, useState } from "react";
+import { useTheme } from "../theme/theme.context";
+
+type Sparkle = {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  delay: number;
+};
+
+const MAX_SPARKLES = 9;
+const SPARKLE_LIFETIME = 760;
 
 const MAX_TRAIL_PARTICLES = 14;
 const TRAIL_PARTICLE_LIFETIME = 420;
@@ -10,19 +21,28 @@ const MagicCursorComponent = () => {
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const cursorRef = useRef<HTMLDivElement | null>(null);
   const glowRef = useRef<HTMLDivElement | null>(null);
+  const target = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
+  const lastSparkle = useRef({ x: 0, y: 0, time: 0 });
+  const nextSparkleId = useRef(1);
+  const frameId = useRef<number | null>(null);
+  const sparkleTimers = useRef<number[]>([]);
 
   const showSparkles = cursorStyle === "sparkle";
   const showTrail = cursorStyle === "trail";
   const isPremiumGlow = cursorStyle === "glow-orb";
 
   useEffect(() => {
-    let lastX = 0;
-    let lastY = 0;
-    let lastTime = 0;
+    const pointerQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = e.clientX;
-      const y = e.clientY;
+    const updateAvailability = () => {
+      setEnabled(pointerQuery.matches && !motionQuery.matches);
+    };
+
+    updateAvailability();
+    pointerQuery.addEventListener("change", updateAvailability);
+    motionQuery.addEventListener("change", updateAvailability);
 
     return () => {
       pointerQuery.removeEventListener("change", updateAvailability);
@@ -124,32 +144,10 @@ const MagicCursorComponent = () => {
       if (frameId.current) {
         window.cancelAnimationFrame(frameId.current);
         frameId.current = null;
-
-      if (glowRef.current && cursorRef.current) {
-        glowRef.current.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-        cursorRef.current.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
       }
 
-      const now = performance.now();
-      const distance = Math.hypot(x - lastX, y - lastY);
-
-      // Drop sparkles more frequently for a dense trail
-      if (distance > 10 && now - lastTime > 40) {
-        const sparkle = document.createElement("span");
-        sparkle.className = "magic-cursor-sparkle";
-        sparkle.style.left = `${x}px`;
-        sparkle.style.top = `${y}px`;
-        document.body.appendChild(sparkle);
-
-        // Keep them around longer (1200ms)
-        setTimeout(() => {
-          sparkle.remove();
-        }, 1200);
-
-        lastX = x;
-        lastY = y;
-        lastTime = now;
-      }
+      sparkleTimers.current.forEach((timerId) => window.clearTimeout(timerId));
+      sparkleTimers.current = [];
     };
   }, [enabled, cursorStyle, showSparkles, showTrail]);
 
@@ -160,11 +158,6 @@ const MagicCursorComponent = () => {
   if (!enabled || isInputFocused || cursorStyle === "off") {
     return null;
   }
-
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
 
   return (
     <div className="magic-cursor-layer" aria-hidden="true">

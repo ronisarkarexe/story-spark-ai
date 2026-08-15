@@ -1,5 +1,5 @@
-import ScoreCard from "./ScoreCard";
-import { analyzeStoryQuality } from "../../utils/storyQualityAnalyzer";
+import ScoreCard from "../components/story-quality/ScoreCard";
+import { analyzeStoryQuality } from "./storyQualityAnalyzer";
 
 interface Props {
   story: string;
