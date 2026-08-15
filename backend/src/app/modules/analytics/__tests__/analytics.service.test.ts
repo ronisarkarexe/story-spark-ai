@@ -313,3 +313,127 @@ describe("AnalyticsService aggregation endpoints", () => {
     ]);
   });
 });
+
+describe("AnalyticsService.getOverview longest streak", () => {
+  const mockPosts = (
+    posts: Array<{
+      publishedAt?: Date;
+      createdAt?: Date;
+      content?: string;
+      likesCount?: number;
+      viewsCount?: number;
+    }>
+  ) => {
+    mockedPost.find.mockReturnValue({
+      lean: jest.fn().mockResolvedValue(posts),
+    } as never);
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("returns zero longest streak when there are no posts", async () => {
+    mockPosts([]);
+
+    const result = await AnalyticsService.getOverview(token);
+
+    expect(result.totalStories).toBe(0);
+    expect(result.longestStreak).toBe(0);
+  });
+
+  it("returns a one-day longest streak for a single published story", async () => {
+    mockPosts([
+      {
+        publishedAt: new Date("2026-03-01T12:00:00.000Z"),
+        content: "once upon a time",
+      },
+    ]);
+
+    const result = await AnalyticsService.getOverview(token);
+
+    expect(result.totalStories).toBe(1);
+    expect(result.longestStreak).toBe(1);
+  });
+
+  it("counts duplicate same-day posts as a single day in the streak", async () => {
+    mockPosts([
+      {
+        publishedAt: new Date(2026, 2, 1, 8, 0, 0),
+        content: "morning draft",
+      },
+      {
+        publishedAt: new Date(2026, 2, 1, 20, 0, 0),
+        content: "evening draft",
+      },
+    ]);
+
+    const result = await AnalyticsService.getOverview(token);
+
+    expect(result.totalStories).toBe(2);
+    expect(result.longestStreak).toBe(1);
+  });
+
+  it("keeps longest streak at one for separated non-adjacent dates", async () => {
+    mockPosts([
+      {
+        publishedAt: new Date(2026, 2, 1, 12, 0, 0),
+        content: "first",
+      },
+      {
+        publishedAt: new Date(2026, 2, 5, 12, 0, 0),
+        content: "second",
+      },
+    ]);
+
+    const result = await AnalyticsService.getOverview(token);
+
+    expect(result.totalStories).toBe(2);
+    expect(result.longestStreak).toBe(1);
+  });
+
+  it("measures the longest adjacent run across multiple gaps", async () => {
+    mockPosts([
+      {
+        publishedAt: new Date(2026, 2, 1, 12, 0, 0),
+        content: "a",
+      },
+      {
+        publishedAt: new Date(2026, 2, 2, 12, 0, 0),
+        content: "b",
+      },
+      {
+        publishedAt: new Date(2026, 2, 5, 12, 0, 0),
+        content: "c",
+      },
+      {
+        publishedAt: new Date(2026, 2, 6, 12, 0, 0),
+        content: "d",
+      },
+      {
+        publishedAt: new Date(2026, 2, 7, 12, 0, 0),
+        content: "e",
+      },
+    ]);
+
+    const result = await AnalyticsService.getOverview(token);
+
+    expect(result.totalStories).toBe(5);
+    expect(result.longestStreak).toBe(3);
+  });
+
+  it("treats local midnight boundaries as adjacent calendar days", async () => {
+    const first = new Date(2026, 2, 1, 23, 30, 0);
+    const second = new Date(2026, 2, 2, 0, 30, 0);
+
+    mockPosts([
+      { publishedAt: first, content: "late night" },
+      { publishedAt: second, content: "early morning" },
+    ]);
+
+    const result = await AnalyticsService.getOverview(token);
+
+    expect(result.totalStories).toBe(2);
+    expect(result.longestStreak).toBe(2);
+  });
+});
