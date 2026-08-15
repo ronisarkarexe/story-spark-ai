@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { calculateReadingTime } from "../utils/readingTime";
+import React, { useMemo } from "react";
+import { getReadingTime as calculateReadingTime } from "../utils/readingTime";
 
 interface ReadingTimeProps {
   content: string | undefined | null;
@@ -7,12 +7,15 @@ interface ReadingTimeProps {
   iconClassName?: string;
 }
 
-export const ReadingTime = ({
+export const ReadingTime: React.FC<ReadingTimeProps> = ({
   content,
   className = "inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium",
   iconClassName = "far fa-clock text-current text-[11px]",
-}: ReadingTimeProps) => {
-  const readingTimeStr = useMemo(() => calculateReadingTime(content), [content]);
+}) => {
+  const readingTimeStr = useMemo(() => {
+    const { minutes } = calculateReadingTime(content ?? "");
+    return `${minutes} min read`;
+  }, [content]);
 
   return (
     <span
