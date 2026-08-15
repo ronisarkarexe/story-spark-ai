@@ -1,7 +1,14 @@
+import type { Suggestion } from "../../utils/storyAssistant";
+
+interface SuggestionCardProps {
+  suggestion: Suggestion;
+  onDismiss: (id: number) => void;
+}
+
 export default function SuggestionCard({
   suggestion,
   onDismiss,
-}) {
+}: SuggestionCardProps) {
   return (
     <div className="border rounded-lg p-4 mb-3">
       <h4 className="font-semibold">
