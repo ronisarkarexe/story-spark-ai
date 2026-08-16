@@ -43,6 +43,7 @@
     "jspdf": "^4.2.1",
     "jszip": "^3.10.1",
     "jwt-decode": "^4.0.0",
+    "lodash.debounce": "^4.0.8",
     "lucide-react": "^1.16.0",
     "quill": "^2.0.0",
     "quill-cursors": "^4.0.2",
