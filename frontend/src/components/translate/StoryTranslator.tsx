@@ -161,8 +161,10 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
     a.download = `${translatedTitle || "translated-story"}.txt`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 100);
     toast.success("Story downloaded!");
   };
 

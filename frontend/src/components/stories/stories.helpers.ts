@@ -118,6 +118,9 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
   link.download = fileName;
   document.body.appendChild(link);
   link.click();
-  link.remove();
-  URL.revokeObjectURL(url); // Release blob reference immediately after download triggers
+
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+  }, 100);
 };
