@@ -16,7 +16,12 @@ export const downloadTXT = (story: any) => {
 
   link.download = `${story.title.replace(/[\\/:*?"<>|\s]+/g, "_")}.txt`;
 
+  // Firefox and Safari require the anchor to be attached to the DOM before click()
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 
-  URL.revokeObjectURL(url);
+  // Defer revocation so the browser finishes reading the blob; a 0ms timeout
+  // pushes it off the current task, after the download has started.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 };
