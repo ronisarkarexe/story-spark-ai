@@ -13,10 +13,13 @@ export const downloadTXT = (story: any) => {
 
   const link = document.createElement("a");
   link.href = url;
-
   link.download = `${story.title.replace(/[\\/:*?"<>|\s]+/g, "_")}.txt`;
 
+  document.body.appendChild(link);
   link.click();
 
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+  }, 100);
 };

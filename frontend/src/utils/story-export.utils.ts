@@ -23,9 +23,11 @@ export const downloadBlob = (blob: Blob, fileName: string): void => {
   link.download = fileName;
   document.body.appendChild(link);
   link.click();
-  link.remove();
 
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+  }, 100);
 };
 
 const escapeHtml = (value: string): string =>

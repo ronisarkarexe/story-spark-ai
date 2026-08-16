@@ -39,7 +39,9 @@ const StoryCoverGenerator: React.FC<StoryCoverGeneratorProps> = ({
     const link = document.createElement("a");
     link.href = image;
     link.download = "story-cover.png";
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   return (
