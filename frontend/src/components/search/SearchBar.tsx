@@ -36,7 +36,8 @@ export const SearchBar: React.FC = () => {
           setLoading(false);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("[SearchBar] Failed:", err);
         if (!cancelled) {
           setError(true);
           setLoading(false);
