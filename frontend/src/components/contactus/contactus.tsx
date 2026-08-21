@@ -26,6 +26,7 @@ import { instance as axios } from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
 import storybook from "../../assets/storybook.png";
 
+import logger from "../../utils/logger.util";
 // --- Types ---
 
 type FormData = {
@@ -429,7 +430,7 @@ export default function Contact() {
         setError("Failed to send message. Please try again.");
       }
     } catch (err: unknown) {
-      console.error("Contact Form Error:", err);
+      logger.error("Contact Form Error:", err);
       setError(
         err instanceof Error
           ? err.message

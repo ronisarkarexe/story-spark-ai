@@ -13,6 +13,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { WandSparkles } from "lucide-react";
 
+import logger from "../../utils/logger.util";
 type Inputs = {
   email: string;
   password: string;
@@ -81,12 +82,12 @@ const LoginComponent = () => {
         try {
           navigate(from, { replace: true });
         } catch (error) {
-          console.error("Navigation after login failed", error);
+          logger.error("Navigation after login failed", error);
           window.location.href = from;
         }
       }
     } catch (error) {
-      console.error("Google login failed", error);
+      logger.error("Google login failed", error);
       toast.error("Failed to login with Google. Please try again.");
     } finally {
       setIsBusy(false);

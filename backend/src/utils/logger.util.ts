@@ -1,31 +1,29 @@
+import util from 'util';
+import winston from 'winston';
 import config from '../config';
 
 const isDevelopment = config.env === 'development';
-const disableLogs = config.disable_logs;
-const formatTimestamp = (): string => {
-  return new Date().toISOString();
-};
 
-const writeLog = (level: 'debug' | 'info' | 'warn' | 'error', args: unknown[]) => {
-  if (disableLogs) return;
-  if (!isDevelopment && level === 'debug') return;
-  const prefix = `${formatTimestamp()} ${level.toUpperCase()}:`;
-  if (level === 'error') {
-    console.error(prefix, ...args);
-    return;
-  }
-  if (level === 'warn') {
-    console.warn(prefix, ...args);
-    return;
-  }
-  console.log(prefix, ...args);
-};
-
-const logger = {
-  debug: (...args: unknown[]) => writeLog('debug', args),
-  info: (...args: unknown[]) => writeLog('info', args),
-  warn: (...args: unknown[]) => writeLog('warn', args),
-  error: (...args: unknown[]) => writeLog('error', args),
-};
+const logger = winston.createLogger({
+  level: isDevelopment ? 'debug' : 'info',
+  silent: config.disable_logs,
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
+    winston.format.errors({ stack: true }),
+    isDevelopment
+      ? winston.format.combine(
+          winston.format.colorize(),
+          winston.format.printf((info) => {
+            const { timestamp, level, message, stack, ...meta } = info;
+            const splat = info[Symbol.for('splat') as unknown as keyof typeof info];
+            const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+            const splatStr = splat ? ` ${util.inspect(splat, { colors: true, depth: null })}` : '';
+            return `${timestamp} ${level}: ${stack || message}${metaStr}${splatStr}`;
+          })
+        )
+      : winston.format.json()
+  ),
+  transports: [new winston.transports.Console()],
+});
 
 export default logger;

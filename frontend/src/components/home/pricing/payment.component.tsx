@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
 import { loadRazorpayScript } from "../../../utils/loadRazorpay";
 
+import logger from "../../../utils/logger.util";
 interface RazorpayResponse {
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
@@ -132,7 +133,7 @@ const PaymentComponent = () => {
               alert("Payment verification failed.");
             }
           } catch (error) {
-            console.error(error);
+            logger.error(error);
             alert("Verification failed.");
           } finally {
             setLoading(false);
@@ -157,7 +158,7 @@ const PaymentComponent = () => {
       paymentObject.on(
         "payment.failed",
         (response: RazorpayFailureResponse) => {
-          console.error(response.error);
+          logger.error(response.error);
           alert(response.error?.description || "Payment failed.");
           setLoading(false);
         }
@@ -165,7 +166,7 @@ const PaymentComponent = () => {
 
       paymentObject.open();
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       alert("Something went wrong.");
       setLoading(false);
     }

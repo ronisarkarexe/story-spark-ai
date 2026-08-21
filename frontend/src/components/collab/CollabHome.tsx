@@ -4,6 +4,7 @@ import { io } from "socket.io-client";
 import { getUserInfo, isLoggedIn, getToken } from "../../services/auth.service";
 import { resolveSocketUrl } from "../../helpers/socket-url";
 
+import logger from "../../utils/logger.util";
 interface CreateRoomResponse {
   roomId?: string;
   message?: string;
@@ -71,7 +72,7 @@ export default function CollabHome() {
         setIsCreating(false);
       });
     } catch (err) {
-      console.error("Create room error:", err);
+      logger.error("Create room error:", err);
       setError("Error creating room. Please try again.");
       setIsCreating(false);
     }

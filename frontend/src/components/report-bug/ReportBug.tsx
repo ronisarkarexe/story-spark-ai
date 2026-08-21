@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import logger from "../../utils/logger.util";
 interface ReportBugFormData {
   title: string;
   category: string;
@@ -78,7 +79,7 @@ const ReportBug = () => {
 
     sessionStorage.removeItem("error-report");
   } catch (err) {
-    console.error("Failed to load error report", err);
+    logger.error("Failed to load error report", err);
   }
 }, [reset]);
 
@@ -99,7 +100,7 @@ const ReportBug = () => {
       // Scroll to top of form or success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      console.error("Bug report submission failed:", err);
+      logger.error("Bug report submission failed:", err);
       toast.error("Failed to submit report. Please try again.");
     }
   };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import StoryRemix from "../components/remix/StoryRemix";
 
+import logger from "../utils/logger.util";
 interface GalleryStory {
   id: string;
   title: string;
@@ -25,7 +26,7 @@ export default function Gallery() {
       const data = await res.json();
       setStories(data.stories || []);
     } catch (err) {
-      console.error("Failed to load gallery stories:", err);
+      logger.error("Failed to load gallery stories:", err);
     }
   };
 
@@ -42,7 +43,7 @@ export default function Gallery() {
       });
       fetchGalleryStories(sortBy);
     } catch (err) {
-      console.error("Failed to submit rating:", err);
+      logger.error("Failed to submit rating:", err);
     }
   };
 

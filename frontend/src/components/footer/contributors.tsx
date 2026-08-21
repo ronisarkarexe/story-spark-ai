@@ -14,6 +14,7 @@ import {
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+import logger from "../../utils/logger.util";
 gsap.registerPlugin(ScrollTrigger);
 
 interface Contributor {
@@ -407,7 +408,7 @@ const data = await response.json();
           setContributors(filtered);
         }
       } catch (error) {
-        console.error("Failed to fetch contributors:", error);
+        logger.error("Failed to fetch contributors:", error);
       } finally {
         setLoading(false);
       }

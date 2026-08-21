@@ -16,6 +16,7 @@ import config from "../../../config";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 
+import logger from "../../../utils/logger.util";
 const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
 
 const getAllUsers = async (): Promise<IUser[]> => {
@@ -111,7 +112,7 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
           });
         }
       } catch (error) {
-        console.error('[UserService] Error:', error);
+        logger.error('[UserService] Error:', error);
       }
       return {
         pendingEmail: newEmail,

@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { flushSync } from "react-dom";
 
+import logger from "../../utils/logger.util";
 const ThemeToggle: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const iconRef = useRef<HTMLDivElement>(null);
@@ -80,7 +81,7 @@ const ThemeToggle: React.FC = () => {
             : "::view-transition-new(root)",
         }
       );
-    }).catch(err => console.error(err));
+    }).catch((err) => logger.error(err));
 
     transition.finished.finally(() => {
       document.documentElement.classList.remove("theme-transitioning");

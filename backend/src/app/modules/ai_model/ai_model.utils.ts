@@ -155,6 +155,7 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
 
 import { GenerativeModel } from "@google/generative-ai";
 
+import logger from "../../../utils/logger.util";
 const executeWithRetryAndFallback = async <T>(
   operation: (activeModel: GenerativeModel) => Promise<T>,
   signal?: AbortSignal,
@@ -310,7 +311,7 @@ export async function generateWithGeminiStories(
       } catch (e) {
         const errorMsg = e instanceof Error ? e.message : String(e);
         const logTitle = story?.title || story?.tag || "Unknown Story";
-        console.error(
+        logger.error(
           `[AI] Failed to generate cover image for "${logTitle}": ${errorMsg}`,
         );
         coverImages.push("");

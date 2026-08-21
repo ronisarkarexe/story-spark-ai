@@ -1,4 +1,5 @@
 import config from "../config";
+import logger from "./logger.util";
 
 /**
  * Generate storyboard image using configured AI provider
@@ -18,7 +19,7 @@ export async function generateStoryboardImage(
 
   // Return null if no provider is configured
   if (!provider || !apiKey) {
-    console.warn(
+    logger.warn(
       `[Image Generation] No provider or API key configured. Provider: ${provider}, Has API Key: ${!!apiKey}`
     );
     return null;
@@ -30,11 +31,11 @@ export async function generateStoryboardImage(
     } else if (provider === "stability") {
       return await generateWithStability(prompt, apiKey, signal);
     } else {
-      console.warn(`[Image Generation] Unknown provider: ${provider}`);
+      logger.warn(`[Image Generation] Unknown provider: ${provider}`);
       return null;
     }
   } catch (error) {
-    console.error(
+    logger.error(
       `[Image Generation] Error generating image: ${error instanceof Error ? error.message : String(error)}`
     );
     return null;
@@ -69,7 +70,7 @@ async function generateWithOpenAI(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(
+      logger.error(
         `[OpenAI API Error] ${response.status}: ${errorData.error?.message || "Unknown error"}`
       );
       return null;
@@ -79,17 +80,17 @@ async function generateWithOpenAI(
     const imageUrl = data.data?.[0]?.url;
 
     if (!imageUrl) {
-      console.warn("[OpenAI API] No image URL in response");
+      logger.warn("[OpenAI API] No image URL in response");
       return null;
     }
 
     return imageUrl;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      console.log("[Image Generation] Request aborted");
+      logger.info("[Image Generation] Request aborted");
       return null;
     }
-    console.error(`[OpenAI Generation] ${error instanceof Error ? error.message : String(error)}`);
+    logger.error(`[OpenAI Generation] ${error instanceof Error ? error.message : String(error)}`);
     return null;
   }
 }
@@ -125,7 +126,7 @@ async function generateWithStability(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(
+      logger.error(
         `[Stability AI API Error] ${response.status}: ${JSON.stringify(errorData)}`
       );
       return null;
@@ -135,17 +136,17 @@ async function generateWithStability(
     const imageData = data.artifacts?.[0]?.base64;
 
     if (!imageData) {
-      console.warn("[Stability AI] No image data in response");
+      logger.warn("[Stability AI] No image data in response");
       return null;
     }
 
     return `data:image/png;base64,${imageData}`;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      console.log("[Image Generation] Request aborted");
+      logger.info("[Image Generation] Request aborted");
       return null;
     }
-    console.error(`[Stability Generation] ${error instanceof Error ? error.message : String(error)}`);
+    logger.error(`[Stability Generation] ${error instanceof Error ? error.message : String(error)}`);
     return null;
   }
 }

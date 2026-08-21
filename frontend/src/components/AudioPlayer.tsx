@@ -24,6 +24,7 @@ import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
 import { useVoicePreview } from "../hooks/useVoicePreview";
 import { useVoiceFavorites } from "../hooks/useVoiceFavorites";
 
+import logger from "../utils/logger.util";
 export type NarrationPlaybackState = "idle" | "playing" | "paused";
 
 export interface AudioPlayerHandle {
@@ -73,7 +74,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       try {
         localStorage.setItem("story-spark-narration-gender", voiceGender);
       } catch (e) {
-        console.warn(e);
+        logger.warn(e);
       }
     }, [voiceGender]);
 

@@ -2,6 +2,7 @@ import axios from "axios";
 import { API_V1 } from "../helpers/config";
 import { getToken } from "./auth.service";
 
+import logger from "../utils/logger.util";
 const API_BASE = API_V1;
 
 export interface IChatMessage {
@@ -28,7 +29,7 @@ export const chatWithSparky = async (messages: ISparkyMessage[]) => {
 
     return response.data.data;
   } catch (error) {
-    console.error("Sparky AI chat request failed:", error);
+    logger.error("Sparky AI chat request failed:", error);
     throw new Error("Failed to communicate with Sparky AI service.");
   }
 };
@@ -51,7 +52,7 @@ export const chatWithAI = async (
 
     return response.data.data;
   } catch (error) {
-    console.error("AI chat request failed:", error);
+    logger.error("AI chat request failed:", error);
     throw new Error("Failed to communicate with AI service.");
   }
 };
@@ -74,7 +75,7 @@ export const chatWithAIFree = async (
 
     return response.data.data;
   } catch (error) {
-    console.error("Free AI chat request failed:", error);
+    logger.error("Free AI chat request failed:", error);
     throw new Error("Failed to communicate with AI service.");
   }
 };

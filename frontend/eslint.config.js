@@ -26,6 +26,13 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      'no-console': 'error',
     },
   },
+  {
+    files: ['src/utils/logger.util.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  }
 )

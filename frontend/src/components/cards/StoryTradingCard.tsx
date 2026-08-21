@@ -5,6 +5,7 @@ import { getWordCount } from "../stories/stories.utils";
 import StoryCoverImage from "../stories/StoryCoverImage";
 import { isSessionBookmarked, addSessionBookmark, removeSessionBookmark } from "../../utils/session-bookmarks";
 
+import logger from "../../utils/logger.util";
 export type StoryCardRarity = "Common" | "Rare" | "Epic" | "Legendary";
 
 const rarityConfig: Record<
@@ -151,7 +152,7 @@ const StoryTradingCard = ({
       toast.success("Story copied to clipboard!");
       setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy story text", error);
+      logger.error("Failed to copy story text", error);
       toast.error("Could not copy story text.");
     }
   };
@@ -179,7 +180,7 @@ const StoryTradingCard = ({
       toast.dismiss(toastId);
       toast.success("Trading card downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.dismiss(toastId);
       toast.error("Could not download this card.");
     }

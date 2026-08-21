@@ -8,6 +8,7 @@ import {
 } from "../utils/local-storage";
 import { validateTokenPayload } from "../utils/auth-validator";
 
+import logger from "../utils/logger.util";
 const AUTH_CHANGE_EVENT = "story-spark-auth-change";
 
 const emitAuthChange = () => {
@@ -80,7 +81,7 @@ export const getValidDecodedToken = () => {
         iat: decodedData.iat ?? 0,
       });
     } catch (error) {
-      console.error("Invalid auth token:", error);
+      logger.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);
       return null;
     }
@@ -93,7 +94,7 @@ export const storeUserInfo = ({ accessToken }: AccessToken) => {
     const decodedData = decodeToken(accessToken);
     validateTokenPayload(decodedData as Record<string, unknown>);
   } catch (error) {
-    console.error("Refusing to store invalid access token:", error);
+    logger.error("Refusing to store invalid access token:", error);
     throw new Error("Received an invalid access token. Please try logging in again.");
   }
 

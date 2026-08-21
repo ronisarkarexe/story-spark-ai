@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
+import logger from "../utils/logger.util";
 export interface IExportStory {
   uuid: string;
   title: string;
@@ -30,7 +31,7 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
         return await cachedResponse.blob();
       }
     } catch (e) {
-      console.warn("[ExportService] Failed to match image in Cache Storage:", e);
+      logger.warn("[ExportService] Failed to match image in Cache Storage:", e);
     }
   }
 
@@ -47,13 +48,13 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
         const cache = await caches.open(CACHE_NAME);
         await cache.put(url, response.clone());
       } catch (cacheError) {
-        console.warn("[ExportService] Failed to cache image:", cacheError);
+        logger.warn("[ExportService] Failed to cache image:", cacheError);
       }
     }
 
     return blob;
   } catch (error) {
-    console.warn("Direct image fetch failed (CORS or network). Trying HTML Canvas fallback...", error);
+    logger.warn("Direct image fetch failed (CORS or network). Trying HTML Canvas fallback...", error);
     
     // Canvas fallback using Image element with crossOrigin
     return new Promise((resolve, reject) => {
@@ -162,7 +163,7 @@ export const exportStoryToPDF = async (
       doc.addImage(base64Image, "PNG", 35, coverY, 140, 105);
       coverY += 115;
     } catch (e) {
-      console.error("Failed to add image to PDF cover:", e);
+      logger.error("Failed to add image to PDF cover:", e);
       doc.setDrawColor(51, 65, 85);
       doc.setLineWidth(0.5);
       doc.line(40, coverY + 20, 170, coverY + 20);
@@ -203,7 +204,7 @@ export const exportStoryToPDF = async (
       doc.addImage(base64Image, "PNG", 45, yCursor, 120, 90);
       yCursor += 100;
     } catch (e) {
-      console.error("Failed to add image to PDF content:", e);
+      logger.error("Failed to add image to PDF content:", e);
     }
   }
 

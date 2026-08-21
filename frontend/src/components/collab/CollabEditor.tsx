@@ -8,6 +8,7 @@ import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } from 'y-protoc
 import { io, Socket } from 'socket.io-client';
 import { resolveSocketUrl } from '../../helpers/socket-url';
 
+import logger from "../../utils/logger.util";
 interface CollabEditorProps {
   storyId: string;
   userId: string;
@@ -113,7 +114,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       socketRef.current = socket;
 
       socket.on('connect_error', (err: Error) => {
-        console.warn('[Story Spark] Collab editor socket connection error:', err.message);
+        logger.warn('[Story Spark] Collab editor socket connection error:', err.message);
       });
 
       // Receive initial sync from server
@@ -144,7 +145,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
         applyAwarenessUpdate(awareness, aw, socket);
       });
     } else {
-      console.warn(
+      logger.warn(
         '[Story Spark] Real-time sync disabled: VITE_SOCKET_URL is not configured. ' +
         'The collaborative editor will work locally only (no live sync between users).'
       );

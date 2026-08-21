@@ -8,6 +8,7 @@ import {
 } from "./chapter_illustration.interface";
 import crypto from "crypto";
 
+import logger from "../../../utils/logger.util";
 const CACHE_TTL_DAYS = 30; // Cache illustrations for 30 days
 
 /**
@@ -179,7 +180,7 @@ const checkCache = async (
     }
   } catch (error) {
     // Cache lookup failure is non-critical
-    console.warn("Cache lookup failed:", error);
+    logger.warn("Cache lookup failed:", error);
   }
 
   return null;
@@ -207,7 +208,7 @@ const cacheImage = async (
     });
   } catch (error) {
     // Cache storage failure is non-critical
-    console.warn("Cache storage failed:", error);
+    logger.warn("Cache storage failed:", error);
   }
 };
 
@@ -280,7 +281,7 @@ const generateChapterIllustration = async (
     }
 
     const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error("Image generation failed:", errorMsg);
+    logger.error("Image generation failed:", errorMsg);
 
     // Return failed result instead of throwing to enable fallback
     return {
@@ -326,7 +327,7 @@ const clearExpiredCache = async (): Promise<number> => {
     });
     return result.deletedCount || 0;
   } catch (error) {
-    console.error("Cache cleanup failed:", error);
+    logger.error("Cache cleanup failed:", error);
     return 0;
   }
 };

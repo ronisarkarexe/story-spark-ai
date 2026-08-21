@@ -1,6 +1,7 @@
 import { ChapterIllustrationService } from "./chapter_illustration.service";
 import { IChapterIllustrationPayload } from "./chapter_illustration.interface";
 
+import logger from "../../../utils/logger.util";
 /**
  * Integration hooks for chapter illustration with story creation workflows
  * Provides optional automatic illustration generation when chapters are created
@@ -32,19 +33,19 @@ export async function generateIllustrationForChapter(payload: {
     // In production, this should be handled by a task queue
     ChapterIllustrationService.generateChapterIllustration(illustrationPayload)
       .then((result) => {
-        console.log(
+        logger.info(
           `[Chapter Illustration] Generated for chapter ${payload.chapterId}:`,
           result.imageStatus
         );
       })
       .catch((error) => {
-        console.error(
+        logger.error(
           `[Chapter Illustration] Failed for chapter ${payload.chapterId}:`,
           error
         );
       });
   } catch (error) {
-    console.error(
+    logger.error(
       "[Chapter Illustration Integration] Error in async generation:",
       error
     );
@@ -101,13 +102,13 @@ export async function generateIllustrationsForChapters(
       if (result.imageStatus !== "failed" && result.imageUrl) {
         illustrations.set(chapterId, result.imageUrl);
       } else {
-        console.warn(
+        logger.warn(
           `[Chapter Illustration Integration] Chapter ${chapterId} returned failed status`
         );
         failedChapterIds.push(chapterId);
       }
     } else {
-      console.error(
+      logger.error(
         `[Chapter Illustration Integration] Chapter ${chapterId} failed:`,
         settled.reason
       );
@@ -119,7 +120,7 @@ export async function generateIllustrationsForChapters(
   const failedCount = failedChapterIds.length;
 
   if (failedCount > 0) {
-    console.warn(
+    logger.warn(
       `[Chapter Illustration Integration] Partial failure: ${successCount} succeeded, ${failedCount} failed`,
       { failedChapterIds }
     );
@@ -148,7 +149,7 @@ export async function checkChapterIllustrationCache(
 
     return await ChapterIllustrationService.checkCache(cacheKey);
   } catch (error) {
-    console.warn(
+    logger.warn(
       "[Chapter Illustration Integration] Cache check error:",
       error
     );

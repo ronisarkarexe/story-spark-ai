@@ -10,6 +10,7 @@ import {
 import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
+import logger from "../../../utils/logger.util";
 /**
  * Service for managing story branching logic
  */
@@ -291,7 +292,7 @@ export class StoryBranchingService {
         { upsert: true, new: true }
       );
     } catch (error) {
-      console.error("Failed to update choice statistics:", error);
+      logger.error("Failed to update choice statistics:", error);
       // Non-critical, don't throw
     }
   }

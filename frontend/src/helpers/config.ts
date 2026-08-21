@@ -1,7 +1,8 @@
+import logger from "../utils/logger.util";
 const BASE_URL = import.meta.env.VITE_BASE_URL as string | undefined;
 
 if (!BASE_URL) {
-  console.error(
+  logger.error(
     "[api.config] VITE_BASE_URL is not defined.\n" +
     "Copy .env.example to frontend/.env and set VITE_BASE_URL=http://localhost:5000"
   );

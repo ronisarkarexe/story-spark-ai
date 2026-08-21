@@ -1,3 +1,4 @@
+import logger from "../../utils/logger.util";
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import {
@@ -37,7 +38,7 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
             base64Image = await blobToBase64(imageBlob);
           }
         } catch (error) {
-          console.error("Failed to fetch image for export", error);
+          logger.error("Failed to fetch image for export", error);
           toast.error("Failed to include cover image, but exporting anyway...");
         }
       }
@@ -51,7 +52,7 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
       toast.success(`${format.toUpperCase()} exported successfully!`);
       onClose();
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error(`Failed to export ${format.toUpperCase()}.`);
     } finally {
       setIsExporting(false);

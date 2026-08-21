@@ -1,6 +1,17 @@
 
 import dotenv from "dotenv";
 import path from "path";
+import winston from "winston";
+
+// Inline logger for config module since it can't import logger.util.ts (circular dep)
+const configLogger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
+    winston.format.simple()
+  ),
+  transports: [new winston.transports.Console()],
+});
 
 dotenv.config({
   path: path.join(__dirname, "../../.env"),
@@ -57,19 +68,19 @@ export const assertAIProviderConfigured = (): void => {
   }
 
   if (!hasOpenAI) {
-    console.warn(
+    configLogger.warn(
       "[Config] OPEN_AI_KEY not set — OpenAI provider unavailable."
     );
   }
 
   if (!hasGemini) {
-    console.warn(
+    configLogger.warn(
       "[Config] GEMINI_API_KEY not set — Gemini provider unavailable."
     );
   }
 
   if (!hasAnthropic) {
-    console.warn(
+    configLogger.warn(
       "[Config] ANTHROPIC_API_KEY not set — Anthropic provider unavailable."
     );
   }

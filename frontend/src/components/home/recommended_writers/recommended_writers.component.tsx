@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { isLoggedIn } from "../../../services/auth.service";
 import { useToggleFollowMutation } from "../../../redux/apis/user.api";
 
+import logger from "../../../utils/logger.util";
 const RecommendedWritersComponent = () => {
   const recommendedWriters = [
     {
@@ -44,7 +45,7 @@ const RecommendedWritersComponent = () => {
         setFollowing([...following, index]);
       }
     } catch (error) {
-      console.error("Failed to toggle follow:", error);
+      logger.error("Failed to toggle follow:", error);
     }
   };
 

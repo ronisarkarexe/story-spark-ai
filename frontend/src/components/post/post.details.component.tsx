@@ -49,6 +49,7 @@ import { IStories } from "../stories/stories.view.component";
 
 
 
+import logger from "../../utils/logger.util";
 interface IStoryVersion {
   _id: string;
   storyId: string;
@@ -157,7 +158,7 @@ const PostDetailsComponent = () => {
     try {
       await toggleFollow(authorId).unwrap();
     } catch (error) {
-      console.error("Failed to update follow status", error);
+      logger.error("Failed to update follow status", error);
       toast.error("Failed to update follow status");
     }
   };
@@ -168,7 +169,7 @@ const PostDetailsComponent = () => {
     try {
       await toggleReaction({ postId: id }).unwrap();
     } catch (error) {
-      console.error("Failed to toggle reaction", error);
+      logger.error("Failed to toggle reaction", error);
       toast.error("You need to login to perform this action");
     }
   };
@@ -191,7 +192,7 @@ const PostDetailsComponent = () => {
       toast.success("Story updated and version snapshot saved!");
       setIsEditing(false);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       toast.error("Failed to update story. Please try again.");
     }
   };
@@ -207,7 +208,7 @@ const PostDetailsComponent = () => {
       toast.success("Story successfully restored to selected version!");
       setShowTimeline(false);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       toast.error("Failed to restore version.");
     }
   };
@@ -223,7 +224,7 @@ const PostDetailsComponent = () => {
 
     toast.success("Branch created successfully!");
   } catch (error) {
-    console.error(error);
+    logger.error(error);
 
     toast.error(
       "Failed to create branch"
@@ -279,7 +280,7 @@ const PostDetailsComponent = () => {
     toast.success("Link copied to clipboard!");
     setShowShareMenu(false);
   } catch (error) {
-    console.error("Failed to copy link", error);
+    logger.error("Failed to copy link", error);
     toast.error("Failed to copy link.");
   }
 };
@@ -311,7 +312,7 @@ const PostDetailsComponent = () => {
       toast.success("Story removed successfully.");
       navigate("/explore");
     } catch (error) {
-      console.error("Failed to delete post", error);
+      logger.error("Failed to delete post", error);
       toast.error("Unable to remove this story. Please try again.");
     }
   };

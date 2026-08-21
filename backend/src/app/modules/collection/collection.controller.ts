@@ -7,6 +7,7 @@ import httpStatus from "http-status";
 import { CollectionService } from "./collection.service";
 import { ITokenPayload } from "../../../interfaces/token";
 
+import logger from "../../../utils/logger.util";
 // --- Interfaces for Request Bodies (Type Safety) ---
 interface CreateCollectionBody {
   name: string;
@@ -30,7 +31,7 @@ const getOptionalToken = async (req: Request): Promise<ITokenPayload  | null> =>
   try {
     return getToken(req);
   } catch (error) {
-    console.error('[CollectionController] Failed:', error);
+    logger.error('[CollectionController] Failed:', error);
     return null;
   }
 };

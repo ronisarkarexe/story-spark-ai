@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { CharacterProfile } from "./stories.utils";
 import toast from "react-hot-toast";
 
+import logger from "../../utils/logger.util";
 interface CharacterProfileCardProps {
   profile: CharacterProfile;
 }
@@ -30,7 +31,7 @@ Relationships: ${profile.relationships}
         setIsCopied(false);
       }, 2000);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to copy profile.");
     }
   };

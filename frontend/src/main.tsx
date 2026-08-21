@@ -8,10 +8,11 @@ import { store } from "./redux/store.ts";
 import { ThemeProvider } from "./components/theme/theme.context";
 import "./index.css";
 
+import logger from "./utils/logger.util";
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
 
 if (!GOOGLE_CLIENT_ID) {
-  console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
+  logger.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
 }
 
 const container = document.getElementById("root");

@@ -1,6 +1,7 @@
 import axios from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
+import logger from "../utils/logger.util";
 const API_BASE = "/v1";
 
 export const continueStory = async (chapters: Chapter[]) => {
@@ -30,7 +31,7 @@ ${previousContent}
 
     return response.data.data.continuation;
   } catch (error) {
-    console.error("Story continuation request failed:", error);
+    logger.error("Story continuation request failed:", error);
     throw new Error("Failed to continue story.");
   }
 };
@@ -72,7 +73,7 @@ ${previousContent}
     }
     return [];
   } catch (error) {
-    console.error("Story batch continuation request failed:", error);
+    logger.error("Story batch continuation request failed:", error);
     throw new Error("Failed to generate story continuations.");
   }
 };

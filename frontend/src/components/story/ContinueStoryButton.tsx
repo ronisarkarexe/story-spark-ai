@@ -6,6 +6,7 @@ import { RootState } from "../../redux/store";
 import { continueStory } from "../../services/continuation.service";
 import { addChapter } from "../../redux/slices/storySlice";
 
+import logger from "../../utils/logger.util";
 const TONE_OPTIONS = [
   "Default",
   "Horror",
@@ -43,7 +44,7 @@ const ContinueStoryButton = () => {
       dispatch(addChapter(nextChapter));
       toast.success("New chapter generated successfully!");
     } catch (error: unknown) {
-      console.error(error);
+      logger.error(error);
       const errorMsg =
         error instanceof Error
           ? error.message

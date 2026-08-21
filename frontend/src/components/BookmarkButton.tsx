@@ -1,3 +1,4 @@
+import logger from "../utils/logger.util";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -47,7 +48,7 @@ const BookmarkButton = ({
         toast.success(response.message);
       }
     } catch (error: unknown) {
-      console.error("Failed to toggle bookmark", error);
+      logger.error("Failed to toggle bookmark", error);
       const message =
         (error as { data?: { message?: string } })?.data?.message ||
         "Something went wrong. Please try again.";

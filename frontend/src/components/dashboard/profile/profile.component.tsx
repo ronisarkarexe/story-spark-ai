@@ -13,6 +13,7 @@ import { ProfileCompletionIndicator } from "./ProfileCompletionIndicator";
 import { instance } from "../../../helpers/axios/axiosInstance";
 
 
+import logger from "../../../utils/logger.util";
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();
   const [updateProfile] = useUpdateProfileMutation();
@@ -28,7 +29,7 @@ const ProfileComponent = () => {
         toast.success("Profile updated successfully.");
       }
     } catch (error) {
-      console.error("Failed to update profile", error);
+      logger.error("Failed to update profile", error);
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -54,7 +55,7 @@ const ProfileComponent = () => {
       toast.success("Account deleted successfully.");
       auth?.logout();
     } catch (error) {
-      console.error("Failed to delete account", error);
+      logger.error("Failed to delete account", error);
       toast.error("Unable to delete account. Please try again.");
     } finally {
       setDeleting(false);

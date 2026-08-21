@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import CollabEditor from './CollabEditor';
 import { io, type Socket } from "socket.io-client";
 import CollabChatPanel from './CollabChatPanel';
+import logger from '../../utils/logger.util';
 
 interface Participant {
   userId: string;
@@ -157,7 +158,7 @@ export default function CollabRoom() {
         socketInstance.disconnect();
       };
    } catch (err) {
-  console.error("Collab initialization error:", err);
+  logger.error("Collab initialization error:", err);
   setError("Failed to initialize collaboration space.");
   setLoading(false);
   }
@@ -180,7 +181,7 @@ export default function CollabRoom() {
           url: currentUrl,
         });
      } catch (err) {
-  console.debug("Native share canceled or failed, using fallback.", err);
+  logger.debug("Native share canceled or failed, using fallback.", err);
   fallbackCopyToClipboard(currentUrl);
 }
     } else {
@@ -192,7 +193,7 @@ export default function CollabRoom() {
     navigator.clipboard.writeText(text)
       .then(() => toast.success("Room link copied!"))
       .catch((err) => {
-        console.error(err);
+        logger.error(err);
         toast.error("Failed to copy link.");
       });
   };

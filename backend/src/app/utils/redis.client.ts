@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 
+import logger from "../../utils/logger.util";
 type RedisLike = {
   status: string;
   on: (event: string, listener: (...args: unknown[]) => void) => RedisLike;
@@ -65,7 +66,7 @@ if (redisUrl) {
       // Redis is not running. Caching will be skipped until the connection recovers.
       return;
     }
-    console.error("Redis Error:", err);
+    logger.error("Redis Error:", err);
   });
 }
 

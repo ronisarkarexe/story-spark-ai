@@ -4,6 +4,7 @@ import { AchievementUnlock } from "./achievement_unlock.model";
 import { ACHIEVEMENT_DEFINITIONS } from "./achievements.constant";
 import { GamificationService } from "./gamification.service";
 
+import logger from "../../../utils/logger.util";
 const getUtcDateOnly = (date: Date) => {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 };
@@ -53,7 +54,7 @@ const updateStreakAndUnlocks = async (userId: string) => {
     // Now evaluate achievements
     await checkAndAwardAchievements(userId);
   } catch (error) {
-    console.error("Error updating writing streak:", error);
+    logger.error("Error updating writing streak:", error);
   }
 };
 
@@ -102,7 +103,7 @@ const checkAndAwardAchievements = async (userId: string) => {
       }
     }
   } catch (error) {
-    console.error("Error evaluating achievements:", error);
+    logger.error("Error evaluating achievements:", error);
   }
 };
 

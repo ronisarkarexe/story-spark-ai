@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { chatWithSparky, ISparkyMessage } from "../../services/ai.service";
 import toast from "react-hot-toast";
 
+import logger from "../../utils/logger.util";
 const STARTER_PROMPTS = [
   {
     text: "Help me brainstorm a sci-fi mystery plot",
@@ -50,7 +51,7 @@ const ChatPage = () => {
       if (e instanceof DOMException && e.name === "QuotaExceededError") {
         toast.error("Chat history could not be saved because storage is full.");
       } else {
-        console.warn("Failed to persist chat history:", e);
+        logger.warn("Failed to persist chat history:", e);
       }
     }
     scrollToBottom();
@@ -77,7 +78,7 @@ const ChatPage = () => {
       const botMessage: ISparkyMessage = { role: "model", content: response.content };
       setMessages((prev) => [...prev, botMessage]);
     } catch (err: any) {
-      console.error(err);
+      logger.error(err);
       const errMsg = err.message || "Failed to communicate with Sparky AI service.";
       setErrorState(errMsg);
       toast.error(errMsg);
@@ -120,7 +121,7 @@ const ChatPage = () => {
     try {
       localStorage.removeItem("sparky_chat_history");
     } catch (e) {
-      console.warn("Failed to clear chat history from storage:", e);
+      logger.warn("Failed to clear chat history from storage:", e);
     }
     toast.success("Conversation cleared");
   };

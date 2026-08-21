@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
+import logger from "../../utils/logger.util";
 interface StoryGenreTransformationProps {
   story: {
     title: string;
@@ -51,7 +52,7 @@ ${story.content}
         toast.success("Story transformed successfully!");
       }, 1500);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       setLoading(false);
       toast.error("Transformation failed.");
     }

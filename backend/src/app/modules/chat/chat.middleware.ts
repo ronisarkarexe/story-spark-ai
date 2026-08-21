@@ -4,6 +4,7 @@ import config from "../../../config";
 import { JwtHelpers } from "../../../utils/jwt.helper";
 import chatRateLimiter from "../../middleware/chat.rate-limiter";
 
+import logger from "../../../utils/logger.util";
 export const flexibleChatRateLimiter = async (
   req: Request,
   res: Response,
@@ -37,7 +38,7 @@ export const flexibleChatRateLimiter = async (
         return next();
       }
     } catch {
-      console.warn('[ChatMiddleware] Token verification failed, applying guest rate limit');
+      logger.warn('[ChatMiddleware] Token verification failed, applying guest rate limit');
     }
   }
 

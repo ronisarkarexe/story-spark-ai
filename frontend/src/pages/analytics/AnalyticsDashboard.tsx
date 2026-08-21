@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
 import { Edit2, Check, X, Target, Award, TrendingUp } from "lucide-react";
 import { useGetProfileInfoQuery, useUpdateWritingGoalsMutation } from "../../redux/apis/user.api";
 
+import logger from "../../utils/logger.util";
 // ─── LOCAL COMPONENT FOR PROGRESS RING ───
 interface ProgressRingProps {
   percentage: number;
@@ -123,7 +124,7 @@ const AnalyticsDashboard: React.FC = () => {
       }).unwrap();
       setIsEditing(false);
     } catch (err) {
-      console.error("Failed to persist updated writing targets:", err);
+      logger.error("Failed to persist updated writing targets:", err);
     }
   };
 

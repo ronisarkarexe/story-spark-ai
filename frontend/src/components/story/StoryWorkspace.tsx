@@ -1,3 +1,4 @@
+import logger from "../../utils/logger.util";
 import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
@@ -113,7 +114,7 @@ const StoryWorkspace = () => {
     await navigator.clipboard.writeText(storyText);
     toast.success("Story copied to clipboard!");
   } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to copy story.");
     }
   };
@@ -143,7 +144,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export Markdown.");
     }
   };
@@ -174,7 +175,7 @@ const StoryWorkspace = () => {
 
       toast.success("PDF downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export PDF.");
     } finally {
       toast.dismiss(toastId);
@@ -207,7 +208,7 @@ const StoryWorkspace = () => {
       downloadBlob(blob, getSafeFileName(title, "docx"));
       toast.success("DOCX downloaded!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export DOCX.");
     }
   };
@@ -409,7 +410,7 @@ const StoryWorkspace = () => {
   onInsertPrompt={(prompt) => {
     // TODO: dispatch action to insert prompt into the active editor
     toast("Prompt insertion coming soon!", { icon: "🚧" });
-    console.warn("[TODO] onInsertPrompt not wired:", prompt);
+    logger.warn("[TODO] onInsertPrompt not wired:", prompt);
   }}
 />
 
@@ -418,7 +419,7 @@ const StoryWorkspace = () => {
   onReplace={(newTitle) => {
     // TODO: dispatch updateStoryTitle action
     toast("Title replacement coming soon!", { icon: "🚧" });
-    console.warn("[TODO] onReplace title not wired:", newTitle);
+    logger.warn("[TODO] onReplace title not wired:", newTitle);
   }}
 />
 
@@ -455,7 +456,7 @@ const StoryWorkspace = () => {
   onRestore={(draft) => {
     // TODO: dispatch action to restore draft content to editor
     toast("Draft restore coming soon!", { icon: "🚧" });
-    console.warn("[TODO] onRestore draft not wired:", draft);
+    logger.warn("[TODO] onRestore draft not wired:", draft);
   }}
 />
 {/* StoryComparisonDashboard requires a second story source (e.g. a saved
@@ -497,7 +498,7 @@ const StoryWorkspace = () => {
   onApply={(twist) => {
     // TODO: dispatch action to append plot twist to story
     toast("Plot twist apply coming soon!", { icon: "🚧" });
-    console.warn("[TODO] onApply twist not wired:", twist);
+    logger.warn("[TODO] onApply twist not wired:", twist);
   }}
 />
 
@@ -511,7 +512,7 @@ const StoryWorkspace = () => {
   revisions={revisions}
   onRestore={(content) => {
     // TODO: dispatch action to restore story content from revision
-    console.warn("Restore revision not yet wired to Redux store:", content);
+    logger.warn("Restore revision not yet wired to Redux store:", content);
   }}
 />
 
@@ -522,7 +523,7 @@ const StoryWorkspace = () => {
   onRegenerate={(prompt) => {
     // TODO: dispatch action to regenerate story ending
     toast("Ending regeneration coming soon!", { icon: "🚧" });
-    console.warn("[TODO] onRegenerate ending not wired:", prompt);
+    logger.warn("[TODO] onRegenerate ending not wired:", prompt);
   }}
 />
 
@@ -532,7 +533,7 @@ const StoryWorkspace = () => {
   onInsert={(name) => {
     // TODO: dispatch action to insert name into editor at cursor position
     toast("Name insertion coming soon!", { icon: "🚧" });
-    console.warn("[TODO] onInsert name not wired:", name);
+    logger.warn("[TODO] onInsert name not wired:", name);
   }}
 />
 
@@ -570,7 +571,7 @@ const StoryWorkspace = () => {
       .join("\n\n") || ""
   }
   onInsert={(text) => {
-    console.log("Insert continuation:", text);
+    logger.debug("Insert continuation:", text);
   }}
 />
 

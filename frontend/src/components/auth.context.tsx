@@ -7,6 +7,7 @@ import {
 } from "../services/auth.service";
 import { AUTH_KEY } from "../constants/storage-key";
 
+import logger from "../utils/logger.util";
 interface User {
   id: string;
   name: string;
@@ -81,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         subscriptionType: userInfo.subscriptionType,
       });
     } catch (error) {
-      console.error("Invalid token:", error);
+      logger.error("Invalid token:", error);
       logout();
     }
   }, [accessToken, logout]);

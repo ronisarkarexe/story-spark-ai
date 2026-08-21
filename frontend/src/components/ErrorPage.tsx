@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AUTH_KEY } from "../constants/storage-key";
 
+import logger from "../utils/logger.util";
 const ErrorPage = () => {
   const navigate = useNavigate();
   const [isReloading, setIsReloading] = useState(false);
@@ -30,7 +31,7 @@ const ErrorPage = () => {
         window.location.reload();
       }, 300);
     } catch (error) {
-      console.error("Failed to reset cache", error);
+      logger.error("Failed to reset cache", error);
       window.location.reload();
     }
   };

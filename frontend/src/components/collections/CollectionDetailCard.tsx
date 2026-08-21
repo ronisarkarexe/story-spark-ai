@@ -1,3 +1,4 @@
+import logger from "../../utils/logger.util";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Collection } from "../../models/collection";
@@ -26,7 +27,7 @@ const CollectionDetailCard = ({ collection, isOwner, onDelete }: Props) => {
       onDelete?.();
       navigate(-1);
     } catch (error) {
-      console.error("Failed to delete collection", error);
+      logger.error("Failed to delete collection", error);
       toast.error("Failed to delete collection.");
     }
   };
@@ -36,7 +37,7 @@ const CollectionDetailCard = ({ collection, isOwner, onDelete }: Props) => {
       await removeStory({ collectionId: collection._id, storyId }).unwrap();
       toast.success("Story removed from collection.");
     } catch (error) {
-      console.error("Failed to remove story from collection", error);
+      logger.error("Failed to remove story from collection", error);
       toast.error("Failed to remove story.");
     }
   };
@@ -50,7 +51,7 @@ const CollectionDetailCard = ({ collection, isOwner, onDelete }: Props) => {
       }).unwrap();
       toast.success(`Collection is now ${newVisibility}.`);
     } catch (error) {
-      console.error("Failed to update collection visibility", error);
+      logger.error("Failed to update collection visibility", error);
       toast.error("Failed to update visibility.");
     }
   };

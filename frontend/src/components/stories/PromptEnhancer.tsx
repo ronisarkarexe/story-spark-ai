@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { useEnhancePromptMutation } from "../../redux/apis/enhance.prompt.api";
 
+import logger from "../../utils/logger.util";
 interface PromptEnhancerProps {
   /** The current value of the story prompt textarea */
   prompt: string;
@@ -46,7 +47,7 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
       setIsEnhanced(true);
       toast.success("Prompt enhanced!");
     } catch (error) {
-      console.error("Prompt enhancement failed", error);
+      logger.error("Prompt enhancement failed", error);
       toast.error("Enhancement failed. Please try again.");
       setOriginalPrompt(null);
     }
