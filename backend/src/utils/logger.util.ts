@@ -1,3 +1,4 @@
+import util from 'util';
 import winston from 'winston';
 import config from '../config';
 
@@ -12,9 +13,12 @@ const logger = winston.createLogger({
     isDevelopment
       ? winston.format.combine(
           winston.format.colorize(),
-          winston.format.printf(({ timestamp, level, message, stack, ...meta }) => {
+          winston.format.printf((info) => {
+            const { timestamp, level, message, stack, ...meta } = info;
+            const splat = info[Symbol.for('splat') as unknown as keyof typeof info];
             const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-            return `${timestamp} ${level}: ${stack || message}${metaStr}`;
+            const splatStr = splat ? ` ${util.inspect(splat, { colors: true, depth: null })}` : '';
+            return `${timestamp} ${level}: ${stack || message}${metaStr}${splatStr}`;
           })
         )
       : winston.format.json()

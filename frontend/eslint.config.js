@@ -29,4 +29,10 @@ export default tseslint.config(
       'no-console': 'error',
     },
   },
+  {
+    files: ['src/utils/logger.util.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  }
 )
