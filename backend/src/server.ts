@@ -19,13 +19,7 @@ if (config.dns_servers?.length) {
   dns.setServers(config.dns_servers);
 }
 
-if (config.disable_logs) {
-  // Silence only verbose channels; keep warn/error so failures stay visible in logs
-  const noop = () => undefined;
-  console.log = noop;
-  console.info = noop;
-  console.debug = noop;
-}
+// Log suppression is handled by Winston's `silent` option in logger.util.ts
 
 const MAX_MONGO_RECONNECT_ATTEMPTS = 5;
 const MONGO_RECONNECT_DELAY_MS = 2000;

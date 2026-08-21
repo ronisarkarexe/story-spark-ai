@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logoNew.png";
 
+import logger from "../../utils/logger.util";
 const DEFAULT_GITHUB_ISSUES_URL =
   "https://github.com/ronisarkarexe/story-spark-ai/issues";
 
@@ -48,7 +49,7 @@ const FooterComponent: React.FC = () => {
         setMessage(data.message || "Something went wrong.");
       }
     } catch (error) {
-      console.error("Newsletter subscription failed", error);
+      logger.error("Newsletter subscription failed", error);
       setStatus("error");
       setMessage("Network error. Please try again.");
     }

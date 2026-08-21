@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Story, StoryVersion } from "../../types/story.types";
 
+import logger from "../../utils/logger.util";
 interface StoryState {
   currentStory: Story | null;
   versions: StoryVersion[];
@@ -41,9 +42,9 @@ const storySlice = createSlice({
         localStorage.setItem(storageKey, JSON.stringify(safeData));
       } catch (error: any) {
         if (error.name === "QuotaExceededError") {
-          console.error("Storage limit reached. Cannot save story locally.");
+          logger.error("Storage limit reached. Cannot save story locally.");
         } else {
-          console.error("Error saving story to storage", error);
+          logger.error("Error saving story to storage", error);
         }
       }
     },
@@ -72,9 +73,9 @@ const storySlice = createSlice({
         localStorage.setItem(storageKey, JSON.stringify(safeData));
       } catch (error: any) {
         if (error.name === "QuotaExceededError") {
-          console.error("Storage limit reached. Cannot save story locally.");
+          logger.error("Storage limit reached. Cannot save story locally.");
         } else {
-          console.error("Error saving story to storage", error);
+          logger.error("Error saving story to storage", error);
         }
       }
     },

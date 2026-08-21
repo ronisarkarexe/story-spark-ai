@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import ErrorPage from "./ErrorPage";
 
+import logger from "../utils/logger.util";
 interface Props {
   children: ReactNode;
 }
@@ -63,7 +64,7 @@ class ErrorBoundary extends Component<Props, State> {
       retryCount: prev.retryCount + 1,
     }));
 
-    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+    logger.error("Error caught by ErrorBoundary:", error, errorInfo);
 
     try {
       const errorLog = {

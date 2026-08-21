@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '../services/api';
 
+import logger from "../utils/logger.util";
 interface StoryGeneratorProps {
   onStoryGenerated?: (stories: any[]) => void;
 }
@@ -75,7 +76,7 @@ export const StoryGenerator = ({ onStoryGenerated }: StoryGeneratorProps) => {
         throw new Error('No variations received from AI service');
       }
     } catch (error: any) {
-      console.error('AI Generation Error:', error);
+      logger.error('AI Generation Error:', error);
 
       let errorMessage = 'Failed to generate stories. Please try again.';
 

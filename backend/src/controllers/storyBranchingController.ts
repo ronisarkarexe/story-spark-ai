@@ -3,6 +3,7 @@ import { generateStory } from "../services/ai.service";
 import sendResponse from "../shared/send_response";
 import { storyQueue } from "../services/storyRequestQueue";
 import { compressContext, serializeLore } from "../utils/contextCompressor";
+import logger from "../utils/logger.util";
 
 /** Maximum number of characters allowed in storyContext before rejection. */
 export const MAX_STORY_CONTEXT_LENGTH = 8000;
@@ -210,7 +211,7 @@ Task:
           throw new Error("Missing required fields in parsed JSON");
         }
       } catch (e) {
-        console.warn("[Branching] JSON parsing failed, attempting fallback. Error:", e);
+        logger.warn("[Branching] JSON parsing failed, attempting fallback. Error:", e);
         const jsonMatch = result.story.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           try {
@@ -248,7 +249,7 @@ Task:
       });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      console.error("[StoryBranching] generation error:", detail);
+      logger.error("[StoryBranching] generation error:", detail);
       return sendResponse(res, {
         success: false,
         statusCode: 503,

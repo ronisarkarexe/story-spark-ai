@@ -9,6 +9,7 @@ import {
 import { getUserInfo } from "../../services/auth.service";
 import toast from "react-hot-toast";
 
+import logger from "../../utils/logger.util";
 const ChatComponent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -55,7 +56,7 @@ const ChatComponent = () => {
       const botMessage: IChatMessage = { role: "model", parts: response };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error: unknown) {
-  console.error("Chat error:", error);
+  logger.error("Chat error:", error);
 
   const errorMessage =
     error &&

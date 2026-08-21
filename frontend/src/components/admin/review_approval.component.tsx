@@ -8,6 +8,7 @@ import {
 } from "../../redux/apis/review.api";
 import { Review } from "../../models/review";
 
+import logger from "../../utils/logger.util";
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } = useGetPendingReviewsQuery({});
   const [approveReview, { isLoading: isApproving }] = useApproveReviewMutation();
@@ -29,7 +30,7 @@ const ReviewApprovalComponent = () => {
       toast.success("Review approved successfully!");
     } catch (error: unknown) {
       toast.error("Failed to approve review. Please try again.");
-      console.error(error);
+      logger.error(error);
     }
   };
 
@@ -41,7 +42,7 @@ const handleApproveSelected = async () => {
       setSelectedReviews([]);
     } catch (error: unknown) {
       toast.error("Failed to approve some reviews. Please try again.");
-      console.error(error);
+      logger.error(error);
     }
   };
 

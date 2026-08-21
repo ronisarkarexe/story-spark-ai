@@ -5,6 +5,7 @@ import { Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
 import ImageFallback from "../../ImageFallback";
 
+import logger from "../../../utils/logger.util";
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);
@@ -33,7 +34,7 @@ const PostListsComponent: React.FC = () => {
       await deletePost(confirmDeleteId).unwrap();
       setConfirmDeleteId(null);
     } catch (error) {
-      console.error("Failed to delete post:", error);
+      logger.error("Failed to delete post:", error);
     }
   };
 

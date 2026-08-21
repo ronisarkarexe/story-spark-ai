@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
+import logger from "../../../utils/logger.util";
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 
 type StarRatingProps = {
@@ -102,7 +103,7 @@ const ReviewForm: React.FC = () => {
       setRating(0);
       setErrors({});
     } catch (error) {
-      console.error("Failed to submit review", error);
+      logger.error("Failed to submit review", error);
       setErrors({ submit: "Failed to submit review. Please try again." });
       setSuccess(false);
     }

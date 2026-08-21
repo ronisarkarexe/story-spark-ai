@@ -1,0 +1,3745 @@
+diff --git a/backend/src/app/modules/ai_model/ai_model.utils.ts b/backend/src/app/modules/ai_model/ai_model.utils.ts
+index e9cb0f55..07046ecb 100644
+--- a/backend/src/app/modules/ai_model/ai_model.utils.ts
++++ b/backend/src/app/modules/ai_model/ai_model.utils.ts
+@@ -155,6 +155,7 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
+ 
+ import { GenerativeModel } from "@google/generative-ai";
+ 
++import logger from "../../../utils/logger.util";
+ const executeWithRetryAndFallback = async <T>(
+   operation: (activeModel: GenerativeModel) => Promise<T>,
+   signal?: AbortSignal,
+@@ -310,7 +311,7 @@ export async function generateWithGeminiStories(
+       } catch (e) {
+         const errorMsg = e instanceof Error ? e.message : String(e);
+         const logTitle = story?.title || story?.tag || "Unknown Story";
+-        console.error(
++        logger.error(
+           `[AI] Failed to generate cover image for "${logTitle}": ${errorMsg}`,
+         );
+         coverImages.push("");
+diff --git a/backend/src/app/modules/analytics/analytics.service.ts b/backend/src/app/modules/analytics/analytics.service.ts
+index fd57ff3c..4c009d7d 100644
+--- a/backend/src/app/modules/analytics/analytics.service.ts
++++ b/backend/src/app/modules/analytics/analytics.service.ts
+@@ -3,6 +3,7 @@ import { Types } from "mongoose";
+ import { ITokenPayload } from "../../../interfaces/token";
+ import { performance } from "perf_hooks";
+ 
++import logger from "../../../utils/logger.util";
+ const STOP_WORDS = new Set([
+   "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
+   "of", "with", "by", "from", "is", "was", "are", "were", "be", "been",
+@@ -36,7 +37,7 @@ const runMeasuredAnalytics = async <T>(
+     const heapAfter = process.memoryUsage().heapUsed;
+     const heapDeltaKb = (heapAfter - heapBefore) / 1024;
+ 
+-    console.info(
++    logger.info(
+       `[analytics:benchmark] ${label} duration=${durationMs.toFixed(
+         2
+       )}ms heapDelta=${heapDeltaKb.toFixed(2)}KB`
+diff --git a/backend/src/app/modules/auth/auth.service.ts b/backend/src/app/modules/auth/auth.service.ts
+index e9c1c446..ed41c053 100644
+--- a/backend/src/app/modules/auth/auth.service.ts
++++ b/backend/src/app/modules/auth/auth.service.ts
+@@ -140,7 +140,7 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
+   const accessToken = issueAccessToken(isExistUser, rememberMe ? "30d" : "15m");
+   const refreshToken = await issueRefreshToken(isExistUser);
+ 
+-  GamificationService.updateDailyStreak(String(isExistUser._id)).catch(console.error);
++  GamificationService.updateDailyStreak(String(isExistUser._id)).catch((err) => logger.error(err));
+ 
+   return {
+     accessToken,
+@@ -353,7 +353,7 @@ const googleLogin = async (payload: { token: string }) => {
+     const accessToken = issueAccessToken(user);
+     const refreshTokenData = await issueRefreshToken(user);
+ 
+-    GamificationService.updateDailyStreak(String(user._id)).catch(console.error);
++    GamificationService.updateDailyStreak(String(user._id)).catch((err) => logger.error(err));
+ 
+     return {
+       accessToken,
+diff --git a/backend/src/app/modules/bug_report/bug_report.service.ts b/backend/src/app/modules/bug_report/bug_report.service.ts
+index 70a6316d..4a0db483 100644
+--- a/backend/src/app/modules/bug_report/bug_report.service.ts
++++ b/backend/src/app/modules/bug_report/bug_report.service.ts
+@@ -2,6 +2,7 @@ import { IBugReport } from "./bug_report.interface";
+ import { BugReport } from "./bug_report.model";
+ import { createGithubIssue } from "../../../utils/github.util";
+ 
++import logger from "../../../utils/logger.util";
+ const submitBugReport = async (payload: IBugReport): Promise<IBugReport> => {
+   // Save to database
+   const result = await BugReport.create(payload);
+@@ -9,7 +10,7 @@ const submitBugReport = async (payload: IBugReport): Promise<IBugReport> => {
+   // Trigger GitHub issue creation
+   // We trigger it asynchronously and handle errors so it doesn't delay the API response
+   createGithubIssue(payload).catch((err) => {
+-    console.error("[GitHub Integration] Background error creating issue:", err);
++    logger.error("[GitHub Integration] Background error creating issue:", err);
+   });
+ 
+   return result;
+diff --git a/backend/src/app/modules/chapter_illustration/chapter_illustration.integration.ts b/backend/src/app/modules/chapter_illustration/chapter_illustration.integration.ts
+index 5d80e74d..fcf53747 100644
+--- a/backend/src/app/modules/chapter_illustration/chapter_illustration.integration.ts
++++ b/backend/src/app/modules/chapter_illustration/chapter_illustration.integration.ts
+@@ -1,6 +1,7 @@
+ import { ChapterIllustrationService } from "./chapter_illustration.service";
+ import { IChapterIllustrationPayload } from "./chapter_illustration.interface";
+ 
++import logger from "../../../utils/logger.util";
+ /**
+  * Integration hooks for chapter illustration with story creation workflows
+  * Provides optional automatic illustration generation when chapters are created
+@@ -32,19 +33,19 @@ export async function generateIllustrationForChapter(payload: {
+     // In production, this should be handled by a task queue
+     ChapterIllustrationService.generateChapterIllustration(illustrationPayload)
+       .then((result) => {
+-        console.log(
++        logger.info(
+           `[Chapter Illustration] Generated for chapter ${payload.chapterId}:`,
+           result.imageStatus
+         );
+       })
+       .catch((error) => {
+-        console.error(
++        logger.error(
+           `[Chapter Illustration] Failed for chapter ${payload.chapterId}:`,
+           error
+         );
+       });
+   } catch (error) {
+-    console.error(
++    logger.error(
+       "[Chapter Illustration Integration] Error in async generation:",
+       error
+     );
+@@ -101,13 +102,13 @@ export async function generateIllustrationsForChapters(
+       if (result.imageStatus !== "failed" && result.imageUrl) {
+         illustrations.set(chapterId, result.imageUrl);
+       } else {
+-        console.warn(
++        logger.warn(
+           `[Chapter Illustration Integration] Chapter ${chapterId} returned failed status`
+         );
+         failedChapterIds.push(chapterId);
+       }
+     } else {
+-      console.error(
++      logger.error(
+         `[Chapter Illustration Integration] Chapter ${chapterId} failed:`,
+         settled.reason
+       );
+@@ -119,7 +120,7 @@ export async function generateIllustrationsForChapters(
+   const failedCount = failedChapterIds.length;
+ 
+   if (failedCount > 0) {
+-    console.warn(
++    logger.warn(
+       `[Chapter Illustration Integration] Partial failure: ${successCount} succeeded, ${failedCount} failed`,
+       { failedChapterIds }
+     );
+@@ -148,7 +149,7 @@ export async function checkChapterIllustrationCache(
+ 
+     return await ChapterIllustrationService.checkCache(cacheKey);
+   } catch (error) {
+-    console.warn(
++    logger.warn(
+       "[Chapter Illustration Integration] Cache check error:",
+       error
+     );
+diff --git a/backend/src/app/modules/chapter_illustration/chapter_illustration.service.ts b/backend/src/app/modules/chapter_illustration/chapter_illustration.service.ts
+index b23c633d..28316865 100644
+--- a/backend/src/app/modules/chapter_illustration/chapter_illustration.service.ts
++++ b/backend/src/app/modules/chapter_illustration/chapter_illustration.service.ts
+@@ -8,6 +8,7 @@ import {
+ } from "./chapter_illustration.interface";
+ import crypto from "crypto";
+ 
++import logger from "../../../utils/logger.util";
+ const CACHE_TTL_DAYS = 30; // Cache illustrations for 30 days
+ 
+ /**
+@@ -179,7 +180,7 @@ const checkCache = async (
+     }
+   } catch (error) {
+     // Cache lookup failure is non-critical
+-    console.warn("Cache lookup failed:", error);
++    logger.warn("Cache lookup failed:", error);
+   }
+ 
+   return null;
+@@ -207,7 +208,7 @@ const cacheImage = async (
+     });
+   } catch (error) {
+     // Cache storage failure is non-critical
+-    console.warn("Cache storage failed:", error);
++    logger.warn("Cache storage failed:", error);
+   }
+ };
+ 
+@@ -280,7 +281,7 @@ const generateChapterIllustration = async (
+     }
+ 
+     const errorMsg = error instanceof Error ? error.message : String(error);
+-    console.error("Image generation failed:", errorMsg);
++    logger.error("Image generation failed:", errorMsg);
+ 
+     // Return failed result instead of throwing to enable fallback
+     return {
+@@ -326,7 +327,7 @@ const clearExpiredCache = async (): Promise<number> => {
+     });
+     return result.deletedCount || 0;
+   } catch (error) {
+-    console.error("Cache cleanup failed:", error);
++    logger.error("Cache cleanup failed:", error);
+     return 0;
+   }
+ };
+diff --git a/backend/src/app/modules/chat/chat.middleware.ts b/backend/src/app/modules/chat/chat.middleware.ts
+index 6f3ff7fe..c02c1066 100644
+--- a/backend/src/app/modules/chat/chat.middleware.ts
++++ b/backend/src/app/modules/chat/chat.middleware.ts
+@@ -4,6 +4,7 @@ import config from "../../../config";
+ import { JwtHelpers } from "../../../utils/jwt.helper";
+ import chatRateLimiter from "../../middleware/chat.rate-limiter";
+ 
++import logger from "../../../utils/logger.util";
+ export const flexibleChatRateLimiter = async (
+   req: Request,
+   res: Response,
+@@ -37,7 +38,7 @@ export const flexibleChatRateLimiter = async (
+         return next();
+       }
+     } catch {
+-      console.warn('[ChatMiddleware] Token verification failed, applying guest rate limit');
++      logger.warn('[ChatMiddleware] Token verification failed, applying guest rate limit');
+     }
+   }
+ 
+diff --git a/backend/src/app/modules/collection/collection.controller.ts b/backend/src/app/modules/collection/collection.controller.ts
+index 41ee16a4..4242224b 100644
+--- a/backend/src/app/modules/collection/collection.controller.ts
++++ b/backend/src/app/modules/collection/collection.controller.ts
+@@ -7,6 +7,7 @@ import httpStatus from "http-status";
+ import { CollectionService } from "./collection.service";
+ import { ITokenPayload } from "../../../interfaces/token";
+ 
++import logger from "../../../utils/logger.util";
+ // --- Interfaces for Request Bodies (Type Safety) ---
+ interface CreateCollectionBody {
+   name: string;
+@@ -30,7 +31,7 @@ const getOptionalToken = async (req: Request): Promise<ITokenPayload  | null> =>
+   try {
+     return getToken(req);
+   } catch (error) {
+-    console.error('[CollectionController] Failed:', error);
++    logger.error('[CollectionController] Failed:', error);
+     return null;
+   }
+ };
+diff --git a/backend/src/app/modules/engagement/engagement.controller.ts b/backend/src/app/modules/engagement/engagement.controller.ts
+index 7b2813a3..d4e32168 100644
+--- a/backend/src/app/modules/engagement/engagement.controller.ts
++++ b/backend/src/app/modules/engagement/engagement.controller.ts
+@@ -1,6 +1,7 @@
+ import { Request, Response } from "express";
+ import { analyzeEngagement } from "./engagement.service";
+ 
++import logger from "../../../utils/logger.util";
+ export const EngagementController = {
+   analyzeChapter: async (req: Request, res: Response) => {
+     try {
+@@ -8,7 +9,7 @@ export const EngagementController = {
+       const data = await analyzeEngagement(chapterText, title);
+       return res.status(200).json({ success: true, data });
+     } catch (error) {
+-      console.error("Engagement analysis failed", error);
++      logger.error("Engagement analysis failed", error);
+       return res.status(500).json({
+         success: false,
+         message: "Engagement analysis failed. Please try again.",
+diff --git a/backend/src/app/modules/gamification/gamification.service.ts b/backend/src/app/modules/gamification/gamification.service.ts
+index 91a595c6..3b76a449 100644
+--- a/backend/src/app/modules/gamification/gamification.service.ts
++++ b/backend/src/app/modules/gamification/gamification.service.ts
+@@ -1,5 +1,6 @@
+ import { User } from "../user/user.model";
+ 
++import logger from "../../../utils/logger.util";
+ const DAILY_LOGIN_XP = 10;
+ 
+ const calculateLevel = (xp: number) => {
+@@ -88,7 +89,7 @@ const updateDailyStreak = async (userId: string) => {
+       );
+     }
+   } catch (error) {
+-    console.error("Error updating daily streak:", error);
++    logger.error("Error updating daily streak:", error);
+   }
+ };
+ 
+@@ -115,7 +116,7 @@ const addXp = async (userId: string, amount: number, reason: string) => {
+       ]
+     );
+   } catch (error) {
+-    console.error(`Error adding XP for ${reason}:`, error);
++    logger.error(`Error adding XP for ${reason}:`, error);
+   }
+ };
+ 
+@@ -125,7 +126,7 @@ const awardBadge = async (userId: string, badgeName: string) => {
+       $addToSet: { "gamification.badges": badgeName },
+     });
+   } catch (error) {
+-    console.error("Error awarding badge:", error);
++    logger.error("Error awarding badge:", error);
+   }
+ };
+ 
+diff --git a/backend/src/app/modules/gamification/writing_streak.service.ts b/backend/src/app/modules/gamification/writing_streak.service.ts
+index c73400aa..a04527fc 100644
+--- a/backend/src/app/modules/gamification/writing_streak.service.ts
++++ b/backend/src/app/modules/gamification/writing_streak.service.ts
+@@ -4,6 +4,7 @@ import { AchievementUnlock } from "./achievement_unlock.model";
+ import { ACHIEVEMENT_DEFINITIONS } from "./achievements.constant";
+ import { GamificationService } from "./gamification.service";
+ 
++import logger from "../../../utils/logger.util";
+ const getUtcDateOnly = (date: Date) => {
+   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+ };
+@@ -53,7 +54,7 @@ const updateStreakAndUnlocks = async (userId: string) => {
+     // Now evaluate achievements
+     await checkAndAwardAchievements(userId);
+   } catch (error) {
+-    console.error("Error updating writing streak:", error);
++    logger.error("Error updating writing streak:", error);
+   }
+ };
+ 
+@@ -102,7 +103,7 @@ const checkAndAwardAchievements = async (userId: string) => {
+       }
+     }
+   } catch (error) {
+-    console.error("Error evaluating achievements:", error);
++    logger.error("Error evaluating achievements:", error);
+   }
+ };
+ 
+diff --git a/backend/src/app/modules/post/post.service.ts b/backend/src/app/modules/post/post.service.ts
+index 8402b29d..39b13237 100644
+--- a/backend/src/app/modules/post/post.service.ts
++++ b/backend/src/app/modules/post/post.service.ts
+@@ -128,10 +128,10 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
+         { $inc: { postsCount: 1 } },
+         { new: true }
+       );
+-      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+-      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
++      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch((err) => logger.error(err));
++      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch((err) => logger.error(err));
+       if (updatedUser && updatedUser.postsCount === 1) {
+-        GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
++        GamificationService.awardBadge(String(user._id), "First Story").catch((err) => logger.error(err));
+       }
+     }
+     return res;
+@@ -598,7 +598,7 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload)
+       user._id,
+       { $inc: { postsCount: 1 } }
+     );
+-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
++    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch((err) => logger.error(err));
+   }
+ 
+   return res;
+@@ -643,7 +643,7 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
+       user._id,
+       { $inc: { postsCount: 1 } }
+     );
+-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
++    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch((err) => logger.error(err));
+   }
+ 
+   return res;
+diff --git a/backend/src/app/modules/prompt_analysis/prompt_analysis.service.ts b/backend/src/app/modules/prompt_analysis/prompt_analysis.service.ts
+index 818cb225..275f04de 100644
+--- a/backend/src/app/modules/prompt_analysis/prompt_analysis.service.ts
++++ b/backend/src/app/modules/prompt_analysis/prompt_analysis.service.ts
+@@ -1,3 +1,4 @@
++import logger from "../../../utils/logger.util";
+ import { GoogleGenerativeAI } from "@google/generative-ai";
+ import httpStatus from "http-status";
+ import ApiError from "../../../errors/api_error";
+@@ -404,7 +405,7 @@ Provide concrete suggestions to make it more creative, specific, and story-gener
+           : [],
+       };
+     } catch (error) {
+-      console.error("Gemini enhancement failed:", error);
++      logger.error("Gemini enhancement failed:", error);
+       return this.getFallbackEnhancements(originalPrompt);
+     }
+   }
+diff --git a/backend/src/app/modules/review/review.service.ts b/backend/src/app/modules/review/review.service.ts
+index c0636aff..dc90ee2e 100644
+--- a/backend/src/app/modules/review/review.service.ts
++++ b/backend/src/app/modules/review/review.service.ts
+@@ -6,6 +6,7 @@ import redis from "../../utils/redis.client";
+ import { IReviewPayload } from "./review.interface";
+ import { Review } from "./review.model";
+ 
++import logger from "../../../utils/logger.util";
+ const PUBLISHED_REVIEWS_KEY = "reviews:published:v1";
+ const REVIEWS_CACHE_TTL = Number(process.env.REVIEWS_CACHE_TTL) || 300; // seconds
+ 
+@@ -20,7 +21,7 @@ const createReview = async (payload: IReviewPayload, token: ITokenPayload) => {
+     try {
+       await redis.del(PUBLISHED_REVIEWS_KEY);
+     } catch (err) {
+-      console.warn("Redis DEL failed (createReview):", err);
++      logger.warn("Redis DEL failed (createReview):", err);
+     }
+   }
+ 
+@@ -36,7 +37,7 @@ const getPublishedReviews = async () => {
+         return JSON.parse(cached);
+       }
+     } catch (err) {
+-      console.warn("Redis GET failed (getPublishedReviews):", err);
++      logger.warn("Redis GET failed (getPublishedReviews):", err);
+     }
+   }
+ 
+@@ -50,7 +51,7 @@ const getPublishedReviews = async () => {
+     try {
+       await redis.set(PUBLISHED_REVIEWS_KEY, JSON.stringify(result), "EX", REVIEWS_CACHE_TTL);
+     } catch (err) {
+-      console.warn("Redis SET failed (getPublishedReviews):", err);
++      logger.warn("Redis SET failed (getPublishedReviews):", err);
+     }
+   }
+ 
+@@ -84,7 +85,7 @@ const approveReview = async (id: string) => {
+   try {
+     await redis.del(PUBLISHED_REVIEWS_KEY);
+   } catch (err) {
+-    console.warn("Redis DEL failed (approveReview):", err);
++    logger.warn("Redis DEL failed (approveReview):", err);
+   }
+ 
+   return result;
+diff --git a/backend/src/app/modules/story_branching/story_branching.service.ts b/backend/src/app/modules/story_branching/story_branching.service.ts
+index 9b54ceb8..d6df4b1b 100644
+--- a/backend/src/app/modules/story_branching/story_branching.service.ts
++++ b/backend/src/app/modules/story_branching/story_branching.service.ts
+@@ -10,6 +10,7 @@ import {
+ import { Types } from "mongoose";
+ import { v4 as uuidv4 } from "uuid";
+ 
++import logger from "../../../utils/logger.util";
+ /**
+  * Service for managing story branching logic
+  */
+@@ -291,7 +292,7 @@ export class StoryBranchingService {
+         { upsert: true, new: true }
+       );
+     } catch (error) {
+-      console.error("Failed to update choice statistics:", error);
++      logger.error("Failed to update choice statistics:", error);
+       // Non-critical, don't throw
+     }
+   }
+diff --git a/backend/src/app/modules/story_version/character_network.utils.ts b/backend/src/app/modules/story_version/character_network.utils.ts
+index 3e5ae270..37f65cfe 100644
+--- a/backend/src/app/modules/story_version/character_network.utils.ts
++++ b/backend/src/app/modules/story_version/character_network.utils.ts
+@@ -1,3 +1,4 @@
++import logger from "../../../utils/logger.util";
+ import { GoogleGenerativeAI } from "@google/generative-ai";
+ import config from "../../../config";
+ import {
+@@ -191,7 +192,7 @@ export async function analyzeCharacterNetwork(content: string): Promise<ICharact
+   const geminiApiKey = config.gemini_api_key?.trim();
+   
+   if (!geminiApiKey) {
+-    console.log("[AI] Gemini key not configured, falling back to offline character network extraction.");
++    logger.info("[AI] Gemini key not configured, falling back to offline character network extraction.");
+     return extractCharacterNetworkOffline(content);
+   }
+ 
+@@ -239,8 +240,8 @@ Return ONLY valid JSON format containing:
+ 
+     return parsed;
+   } catch (error) {
+-    console.error("[AI] Gemini character network analysis failed:", error);
+-    console.log("[AI] Executing fallback offline character network extraction.");
++    logger.error("[AI] Gemini character network analysis failed:", error);
++    logger.info("[AI] Executing fallback offline character network extraction.");
+     return extractCharacterNetworkOffline(content);
+   }
+ }
+diff --git a/backend/src/app/modules/story_version/story_version.service.ts b/backend/src/app/modules/story_version/story_version.service.ts
+index ae02ab49..914ab66e 100644
+--- a/backend/src/app/modules/story_version/story_version.service.ts
++++ b/backend/src/app/modules/story_version/story_version.service.ts
+@@ -14,6 +14,7 @@ import {
+ import { analyzeCharacterNetwork, ICharacterNetworkResponse } from "./character_network.utils";
+ import { compressContext, serializeLore } from "../../../utils/contextCompressor";
+ 
++import logger from "../../../utils/logger.util";
+ interface IBranchTreeNode {
+   id: string;
+   parentId: string | null;
+@@ -74,7 +75,7 @@ const createVersionSnapshot = async (
+     }
+     return null;
+   } catch (error) {
+-    console.error("Story version snapshot creation failed:", error);
++    logger.error("Story version snapshot creation failed:", error);
+     return null;
+   }
+ };
+diff --git a/backend/src/app/modules/user/user.service.ts b/backend/src/app/modules/user/user.service.ts
+index 29a8ab66..d8f74c5c 100644
+--- a/backend/src/app/modules/user/user.service.ts
++++ b/backend/src/app/modules/user/user.service.ts
+@@ -16,6 +16,7 @@ import config from "../../../config";
+ import nodemailer from "nodemailer";
+ import crypto from "crypto";
+ 
++import logger from "../../../utils/logger.util";
+ const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
+ 
+ const getAllUsers = async (): Promise<IUser[]> => {
+@@ -111,7 +112,7 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
+           });
+         }
+       } catch (error) {
+-        console.error('[UserService] Error:', error);
++        logger.error('[UserService] Error:', error);
+       }
+       return {
+         pendingEmail: newEmail,
+diff --git a/backend/src/app/modules/verify_email/verify_email.service.ts b/backend/src/app/modules/verify_email/verify_email.service.ts
+index 5d307dd8..7ee903bb 100644
+--- a/backend/src/app/modules/verify_email/verify_email.service.ts
++++ b/backend/src/app/modules/verify_email/verify_email.service.ts
+@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
+ import { IEmailBody, IVerifyOtpBody } from "./verify_email.interface";
+ import ApiError from "../../../errors/api_error";
+ import config from "../../../config";
++import logger from "../../../utils/logger.util";
+ import httpStatus from "http-status";
+ import { OTPModel } from "./otp.model";
+ import crypto from "crypto";
+@@ -45,7 +46,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
+     );
+ 
+     if (!config.verify_email || !config.verify_password) {
+-      console.log(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
++      logger.debug(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
+       return {
+         expiresAt,
+       };
+@@ -110,7 +111,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
+     if (error instanceof ApiError) {
+       throw error;
+     }
+-    console.error("Mail Error:", error);
++    logger.error("Mail Error:", error);
+     throw new ApiError(500, "Failed to send email");
+   }
+ };
+@@ -193,7 +194,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
+ // FIX #3: Converted to a standard function so it gets safely hoisted to the top 
+ // of the scope during compilation, preventing potential initialization errors.
+ function clearOtpAttempts(email: string) {
+-  console.log('Clearing OTP attempts for:', email);
++  logger.debug('Clearing OTP attempts for:', email);
+ }
+ 
+ export const VerifyEmailService = {
+diff --git a/backend/src/app/utils/redis.client.ts b/backend/src/app/utils/redis.client.ts
+index ffe813ab..2141f3d2 100644
+--- a/backend/src/app/utils/redis.client.ts
++++ b/backend/src/app/utils/redis.client.ts
+@@ -1,5 +1,6 @@
+ import Redis from "ioredis";
+ 
++import logger from "../../utils/logger.util";
+ type RedisLike = {
+   status: string;
+   on: (event: string, listener: (...args: unknown[]) => void) => RedisLike;
+@@ -65,7 +66,7 @@ if (redisUrl) {
+       // Redis is not running. Caching will be skipped until the connection recovers.
+       return;
+     }
+-    console.error("Redis Error:", err);
++    logger.error("Redis Error:", err);
+   });
+ }
+ 
+diff --git a/backend/src/app/utils/urlValidator.ts b/backend/src/app/utils/urlValidator.ts
+index 08c0565b..404a8bb9 100644
+--- a/backend/src/app/utils/urlValidator.ts
++++ b/backend/src/app/utils/urlValidator.ts
+@@ -1,3 +1,5 @@
++import logger from "../../utils/logger.util";
++
+ /**
+  * URL validation helpers for safely validating user-supplied URL strings.
+  * Used in route handlers and validation schemas to ensure URL fields
+@@ -29,7 +31,7 @@ export const isValidUrl = (url: string): boolean => {
+ 
+     return true;
+   } catch (error) {
+-    console.warn('[URLValidator] Invalid URL:', url);
++    logger.warn('[URLValidator] Invalid URL:', url);
+     return false;
+   }
+ };
+diff --git a/backend/src/config/index.ts b/backend/src/config/index.ts
+index 3586d93c..b32e32d2 100644
+--- a/backend/src/config/index.ts
++++ b/backend/src/config/index.ts
+@@ -1,6 +1,17 @@
+ 
+ import dotenv from "dotenv";
+ import path from "path";
++import winston from "winston";
++
++// Inline logger for config module since it can't import logger.util.ts (circular dep)
++const configLogger = winston.createLogger({
++  level: 'info',
++  format: winston.format.combine(
++    winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
++    winston.format.simple()
++  ),
++  transports: [new winston.transports.Console()],
++});
+ 
+ dotenv.config({
+   path: path.join(__dirname, "../../.env"),
+@@ -57,19 +68,19 @@ export const assertAIProviderConfigured = (): void => {
+   }
+ 
+   if (!hasOpenAI) {
+-    console.warn(
++    configLogger.warn(
+       "[Config] OPEN_AI_KEY not set — OpenAI provider unavailable."
+     );
+   }
+ 
+   if (!hasGemini) {
+-    console.warn(
++    configLogger.warn(
+       "[Config] GEMINI_API_KEY not set — Gemini provider unavailable."
+     );
+   }
+ 
+   if (!hasAnthropic) {
+-    console.warn(
++    configLogger.warn(
+       "[Config] ANTHROPIC_API_KEY not set — Anthropic provider unavailable."
+     );
+   }
+diff --git a/backend/src/controllers/leaderboard.controller.ts b/backend/src/controllers/leaderboard.controller.ts
+index 63ae72cc..5d252b92 100644
+--- a/backend/src/controllers/leaderboard.controller.ts
++++ b/backend/src/controllers/leaderboard.controller.ts
+@@ -1,5 +1,6 @@
+ import { Request, Response } from "express";
+ import { getWeeklyLeaderboard } from "../services/leaderboard.service";
++import logger from "../utils/logger.util";
+ 
+ export const weeklyLeaderboardController = async (
+   _req: Request,
+@@ -13,7 +14,7 @@ export const weeklyLeaderboardController = async (
+       data,
+     });
+   } catch (error) {
+-    console.error(error);
++    logger.error(error);
+ 
+     return res.status(500).json({
+       success: false,
+diff --git a/backend/src/controllers/payment.controller.ts b/backend/src/controllers/payment.controller.ts
+index 05b32ce8..de36965b 100644
+--- a/backend/src/controllers/payment.controller.ts
++++ b/backend/src/controllers/payment.controller.ts
+@@ -4,12 +4,13 @@ import crypto from "crypto";
+ import { User } from "../app/modules/user/user.model";
+ import { Order } from "../app/modules/payment/order.model";
+ import { IOrder } from "../app/modules/payment/order.interface";
++import logger from "../utils/logger.util";
+ 
+ let razorpayInstance: any = null;
+ const getRazorpay = () => {
+   if (!razorpayInstance) {
+     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+-      console.warn("Razorpay credentials missing. Payment features will fail.");
++      logger.warn("Razorpay credentials missing. Payment features will fail.");
+       return null;
+     }
+     razorpayInstance = new Razorpay({
+diff --git a/backend/src/controllers/storyBranchingController.ts b/backend/src/controllers/storyBranchingController.ts
+index d536ef60..b98404f0 100644
+--- a/backend/src/controllers/storyBranchingController.ts
++++ b/backend/src/controllers/storyBranchingController.ts
+@@ -3,6 +3,7 @@ import { generateStory } from "../services/ai.service";
+ import sendResponse from "../shared/send_response";
+ import { storyQueue } from "../services/storyRequestQueue";
+ import { compressContext, serializeLore } from "../utils/contextCompressor";
++import logger from "../utils/logger.util";
+ 
+ /** Maximum number of characters allowed in storyContext before rejection. */
+ export const MAX_STORY_CONTEXT_LENGTH = 8000;
+@@ -210,7 +211,7 @@ Task:
+           throw new Error("Missing required fields in parsed JSON");
+         }
+       } catch (e) {
+-        console.warn("[Branching] JSON parsing failed, attempting fallback. Error:", e);
++        logger.warn("[Branching] JSON parsing failed, attempting fallback. Error:", e);
+         const jsonMatch = result.story.match(/\{[\s\S]*\}/);
+         if (jsonMatch) {
+           try {
+@@ -248,7 +249,7 @@ Task:
+       });
+     } catch (error) {
+       const detail = error instanceof Error ? error.message : String(error);
+-      console.error("[StoryBranching] generation error:", detail);
++      logger.error("[StoryBranching] generation error:", detail);
+       return sendResponse(res, {
+         success: false,
+         statusCode: 503,
+diff --git a/backend/src/server.ts b/backend/src/server.ts
+index 9c623bca..22d31090 100644
+--- a/backend/src/server.ts
++++ b/backend/src/server.ts
+@@ -19,13 +19,7 @@ if (config.dns_servers?.length) {
+   dns.setServers(config.dns_servers);
+ }
+ 
+-if (config.disable_logs) {
+-  // Silence only verbose channels; keep warn/error so failures stay visible in logs
+-  const noop = () => undefined;
+-  console.log = noop;
+-  console.info = noop;
+-  console.debug = noop;
+-}
++// Log suppression is handled by Winston's `silent` option in logger.util.ts
+ 
+ const MAX_MONGO_RECONNECT_ATTEMPTS = 5;
+ const MONGO_RECONNECT_DELAY_MS = 2000;
+diff --git a/backend/src/services/ai.service.ts b/backend/src/services/ai.service.ts
+index 4e5ab0f3..c74f9449 100644
+--- a/backend/src/services/ai.service.ts
++++ b/backend/src/services/ai.service.ts
+@@ -1,5 +1,6 @@
+ // backend/src/services/ai.service.ts
+ 
++import logger from "../utils/logger.util";
+ import { validateAndFormatPrompt, validateOutput } from "../utils/promptSecurity";
+ import { buildStoryPrompt, PromptOptions } from "../utils/promptBuilder";
+ import OpenAI from "openai";
+@@ -170,7 +171,7 @@ export async function generateStory(
+   try {
+     const existingCache = await StoryCache.findOne({ promptKey: cacheKey });
+     if (existingCache) {
+-      console.log("[CACHE HIT] Serving story instantly from MongoDB cache");
++      logger.info("[CACHE HIT] Serving story instantly from MongoDB cache");
+       return {
+         story: existingCache.storyData,
+         provider: existingCache.provider as "openai" | "gemini" | "anthropic",
+@@ -179,7 +180,7 @@ export async function generateStory(
+     }
+   } catch (cacheError) {
+     // If the database cache check fails for any strange reason, log it but don't crash the generation flow
+-    console.warn("[CACHE ERROR] Failed to query cache:", cacheError);
++    logger.warn("[CACHE ERROR] Failed to query cache:", cacheError);
+   }
+ 
+   const chosenProvider = provider?.toLowerCase();
+@@ -191,10 +192,10 @@ export async function generateStory(
+     try {
+       let story = await generateWithAnthropic(systemPrompt, userPrompt);
+       story = validateOutput(story); // Security layer: validate output
+-      console.log("[AI] Story generated successfully via Anthropic");
++      logger.info("[AI] Story generated successfully via Anthropic");
+       finalResult = { story, provider: "anthropic", fallbackUsed: false };
+     } catch (anthropicError) {
+-      console.warn(
++      logger.warn(
+         "[AI] Anthropic failed:",
+         anthropicError instanceof Error ? anthropicError.message : anthropicError
+       );
+@@ -205,18 +206,18 @@ export async function generateStory(
+         );
+       }
+       didFallbackToGemini = true;
+-      console.log("[AI] Falling back to Gemini...");
++      logger.info("[AI] Falling back to Gemini...");
+     }
+   } else if (chosenProvider === "openai" || !chosenProvider) {
+     // ── Try OpenAI first ──────────────────────────────────────────────────────
+     try {
+       let story = await generateWithOpenAI(systemPrompt, userPrompt);
+       story = validateOutput(story); // Security layer: validate output
+-      console.log("[AI] Story generated successfully via OpenAI");
++      logger.info("[AI] Story generated successfully via OpenAI");
+       finalResult = { story, provider: "openai", fallbackUsed: false };
+ 
+     } catch (openAIError) {
+-      console.warn(
++      logger.warn(
+         "[AI] OpenAI failed:",
+         openAIError instanceof Error ? openAIError.message : openAIError
+       );
+@@ -229,7 +230,7 @@ export async function generateStory(
+       }
+ 
+       didFallbackToGemini = true;
+-      console.log("[AI] Falling back to Gemini.");
++      logger.info("[AI] Falling back to Gemini.");
+     }
+   } else if (chosenProvider === "gemini") {
+     // Skip OpenAI/Anthropic blocks
+@@ -243,11 +244,11 @@ export async function generateStory(
+     try {
+       let story = await generateWithGemini(systemPrompt, userPrompt);
+       story = validateOutput(story); // Security layer: validate output
+-      console.log(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
++      logger.info(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
+       finalResult = { story, provider: "gemini", fallbackUsed: didFallbackToGemini };
+ 
+     } catch (geminiError) {
+-      console.error(
++      logger.error(
+         "[AI] Gemini also failed.",
+         geminiError instanceof Error ? geminiError.message : geminiError
+       );
+@@ -266,9 +267,9 @@ export async function generateStory(
+       provider: finalResult.provider,
+       storyData: finalResult.story
+     });
+-    console.log("[CACHE STORED] New AI story cached to MongoDB successfully");
++    logger.info("[CACHE STORED] New AI story cached to MongoDB successfully");
+   } catch (saveCacheError) {
+-    console.warn("[CACHE ERROR] Failed to save story generation to cache:", saveCacheError);
++    logger.warn("[CACHE ERROR] Failed to save story generation to cache:", saveCacheError);
+   }
+ 
+   return finalResult;
+@@ -437,7 +438,7 @@ export async function generateReaderRoomFeedback(
+       usedProvider = "openai";
+     }
+   } catch (primaryError) {
+-    console.warn(
++    logger.warn(
+       "[Reader Room] Primary provider failed, falling back to Gemini:",
+       primaryError instanceof Error ? primaryError.message : primaryError
+     );
+diff --git a/backend/src/services/analysis.service.ts b/backend/src/services/analysis.service.ts
+index 66009980..94735d40 100644
+--- a/backend/src/services/analysis.service.ts
++++ b/backend/src/services/analysis.service.ts
+@@ -1,4 +1,5 @@
+ import mongoose from 'mongoose';
++import logger from '../utils/logger.util';
+ import { User } from '../app/modules/user/user.model';
+ import { Post } from '../app/modules/post/post.model';
+ import { WriterApplication } from '../app/modules/writer_application/writer_application.model';
+@@ -102,7 +103,7 @@ export const getDashboardAnalysis = async (userId: string, userRole: string) =>
+     };
+     
+   } catch (error: any) {
+-    console.error('Error in getDashboardAnalysis:', error);
++    logger.error('Error in getDashboardAnalysis:', error);
+     return {
+       success: false,
+       error: error.message || 'Failed to fetch dashboard analysis'
+diff --git a/backend/src/utils/email.util.ts b/backend/src/utils/email.util.ts
+index 7535acac..371b0bd9 100644
+--- a/backend/src/utils/email.util.ts
++++ b/backend/src/utils/email.util.ts
+@@ -1,5 +1,6 @@
+ import nodemailer from "nodemailer";
+ import config from "../config";
++import logger from "./logger.util";
+ 
+ export const escapeHtml = (unsafe: string): string => {
+   return unsafe
+@@ -16,7 +17,7 @@ export const sendVerificationEmail = async (
+   unsubscribeUrl?: string
+ ) => {
+   if (!config.verify_email || !config.verify_password) {
+-    console.warn("Email configuration missing. Verification email not sent.");
++    logger.warn("Email configuration missing. Verification email not sent.");
+     return;
+   }
+ 
+@@ -58,7 +59,7 @@ export const sendVerificationEmail = async (
+   try {
+     await transporter.sendMail(mailOptions);
+   } catch (error) {
+-    console.error("Error sending verification email:", error);
++    logger.error("Error sending verification email:", error);
+     // Don't throw an error here, so we don't break the subscription flow if email fails.
+     // The user record will still be created and they can request another verification if needed.
+   }
+@@ -72,7 +73,7 @@ export const sendContactEmail = async (data: {
+   message: string;
+ }) => {
+   if (!config.verify_email || !config.verify_password) {
+-    console.warn("Email configuration missing. Contact email not sent.");
++    logger.warn("Email configuration missing. Contact email not sent.");
+     return;
+   }
+ 
+@@ -122,7 +123,7 @@ export const sendContactEmail = async (data: {
+   try {
+     await transporter.sendMail(mailOptions);
+   } catch (error) {
+-    console.error("Error sending contact email:", error);
++    logger.error("Error sending contact email:", error);
+     throw new Error("Failed to send email. Please try again later.");
+   }
+ };
+diff --git a/backend/src/utils/github.util.ts b/backend/src/utils/github.util.ts
+index 349bfefa..e5406a3c 100644
+--- a/backend/src/utils/github.util.ts
++++ b/backend/src/utils/github.util.ts
+@@ -1,5 +1,6 @@
+ import https from "https";
+ import config from "../config";
++import logger from "./logger.util";
+ 
+ interface IGithubIssuePayload {
+   title: string;
+@@ -17,7 +18,7 @@ export const createGithubIssue = async (payload: IGithubIssuePayload): Promise<v
+   const repo = config.github.repo;
+ 
+   if (!token) {
+-    console.warn("[GitHub Integration] GITHUB_TOKEN is not set. Skipping GitHub issue creation.");
++    logger.warn("[GitHub Integration] GITHUB_TOKEN is not set. Skipping GitHub issue creation.");
+     return;
+   }
+ 
+@@ -74,13 +75,13 @@ ${payload.email || "Not provided"}
+         if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+           try {
+             const parsed = JSON.parse(data);
+-            console.info(`[GitHub Integration] Successfully created issue: ${parsed.html_url}`);
++            logger.info(`[GitHub Integration] Successfully created issue: ${parsed.html_url}`);
+           } catch {
+-            console.info("[GitHub Integration] Successfully created issue, failed to parse response.");
++            logger.info("[GitHub Integration] Successfully created issue, failed to parse response.");
+           }
+           resolve();
+         } else {
+-          console.error(
++          logger.error(
+             `[GitHub Integration] Failed to create issue. Status: ${res.statusCode}. Response: ${data}`
+           );
+           resolve(); // Resolve anyway to not block the main database submission
+@@ -89,7 +90,7 @@ ${payload.email || "Not provided"}
+     });
+ 
+     req.on("error", (error) => {
+-      console.error("[GitHub Integration] Error calling GitHub API:", error);
++      logger.error("[GitHub Integration] Error calling GitHub API:", error);
+       resolve(); // Resolve anyway to not block database submission
+     });
+ 
+diff --git a/backend/src/utils/logger.util.ts b/backend/src/utils/logger.util.ts
+index 45ec555d..f6501097 100644
+--- a/backend/src/utils/logger.util.ts
++++ b/backend/src/utils/logger.util.ts
+@@ -1,31 +1,25 @@
++import winston from 'winston';
+ import config from '../config';
+ 
+ const isDevelopment = config.env === 'development';
+-const disableLogs = config.disable_logs;
+-const formatTimestamp = (): string => {
+-  return new Date().toISOString();
+-};
+ 
+-const writeLog = (level: 'debug' | 'info' | 'warn' | 'error', args: unknown[]) => {
+-  if (disableLogs) return;
+-  if (!isDevelopment && level === 'debug') return;
+-  const prefix = `${formatTimestamp()} ${level.toUpperCase()}:`;
+-  if (level === 'error') {
+-    console.error(prefix, ...args);
+-    return;
+-  }
+-  if (level === 'warn') {
+-    console.warn(prefix, ...args);
+-    return;
+-  }
+-  console.log(prefix, ...args);
+-};
+-
+-const logger = {
+-  debug: (...args: unknown[]) => writeLog('debug', args),
+-  info: (...args: unknown[]) => writeLog('info', args),
+-  warn: (...args: unknown[]) => writeLog('warn', args),
+-  error: (...args: unknown[]) => writeLog('error', args),
+-};
++const logger = winston.createLogger({
++  level: isDevelopment ? 'debug' : 'info',
++  silent: config.disable_logs,
++  format: winston.format.combine(
++    winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
++    winston.format.errors({ stack: true }),
++    isDevelopment
++      ? winston.format.combine(
++          winston.format.colorize(),
++          winston.format.printf(({ timestamp, level, message, stack, ...meta }) => {
++            const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
++            return `${timestamp} ${level}: ${stack || message}${metaStr}`;
++          })
++        )
++      : winston.format.json()
++  ),
++  transports: [new winston.transports.Console()],
++});
+ 
+ export default logger;
+diff --git a/backend/src/utils/storyboard_image.ts b/backend/src/utils/storyboard_image.ts
+index 16a05f49..f83c2bd3 100644
+--- a/backend/src/utils/storyboard_image.ts
++++ b/backend/src/utils/storyboard_image.ts
+@@ -1,4 +1,5 @@
+ import config from "../config";
++import logger from "./logger.util";
+ 
+ /**
+  * Generate storyboard image using configured AI provider
+@@ -18,7 +19,7 @@ export async function generateStoryboardImage(
+ 
+   // Return null if no provider is configured
+   if (!provider || !apiKey) {
+-    console.warn(
++    logger.warn(
+       `[Image Generation] No provider or API key configured. Provider: ${provider}, Has API Key: ${!!apiKey}`
+     );
+     return null;
+@@ -30,11 +31,11 @@ export async function generateStoryboardImage(
+     } else if (provider === "stability") {
+       return await generateWithStability(prompt, apiKey, signal);
+     } else {
+-      console.warn(`[Image Generation] Unknown provider: ${provider}`);
++      logger.warn(`[Image Generation] Unknown provider: ${provider}`);
+       return null;
+     }
+   } catch (error) {
+-    console.error(
++    logger.error(
+       `[Image Generation] Error generating image: ${error instanceof Error ? error.message : String(error)}`
+     );
+     return null;
+@@ -69,7 +70,7 @@ async function generateWithOpenAI(
+ 
+     if (!response.ok) {
+       const errorData = await response.json().catch(() => ({}));
+-      console.error(
++      logger.error(
+         `[OpenAI API Error] ${response.status}: ${errorData.error?.message || "Unknown error"}`
+       );
+       return null;
+@@ -79,17 +80,17 @@ async function generateWithOpenAI(
+     const imageUrl = data.data?.[0]?.url;
+ 
+     if (!imageUrl) {
+-      console.warn("[OpenAI API] No image URL in response");
++      logger.warn("[OpenAI API] No image URL in response");
+       return null;
+     }
+ 
+     return imageUrl;
+   } catch (error) {
+     if (error instanceof Error && error.name === "AbortError") {
+-      console.log("[Image Generation] Request aborted");
++      logger.info("[Image Generation] Request aborted");
+       return null;
+     }
+-    console.error(`[OpenAI Generation] ${error instanceof Error ? error.message : String(error)}`);
++    logger.error(`[OpenAI Generation] ${error instanceof Error ? error.message : String(error)}`);
+     return null;
+   }
+ }
+@@ -125,7 +126,7 @@ async function generateWithStability(
+ 
+     if (!response.ok) {
+       const errorData = await response.json().catch(() => ({}));
+-      console.error(
++      logger.error(
+         `[Stability AI API Error] ${response.status}: ${JSON.stringify(errorData)}`
+       );
+       return null;
+@@ -135,17 +136,17 @@ async function generateWithStability(
+     const imageData = data.artifacts?.[0]?.base64;
+ 
+     if (!imageData) {
+-      console.warn("[Stability AI] No image data in response");
++      logger.warn("[Stability AI] No image data in response");
+       return null;
+     }
+ 
+     return `data:image/png;base64,${imageData}`;
+   } catch (error) {
+     if (error instanceof Error && error.name === "AbortError") {
+-      console.log("[Image Generation] Request aborted");
++      logger.info("[Image Generation] Request aborted");
+       return null;
+     }
+-    console.error(`[Stability Generation] ${error instanceof Error ? error.message : String(error)}`);
++    logger.error(`[Stability Generation] ${error instanceof Error ? error.message : String(error)}`);
+     return null;
+   }
+ }
+diff --git a/backend/start-mongo.js b/backend/start-mongo.js
+new file mode 100644
+index 00000000..3ec8ad91
+--- /dev/null
++++ b/backend/start-mongo.js
+@@ -0,0 +1,18 @@
++const { MongoMemoryServer } = require('mongodb-memory-server');
++
++(async () => {
++  try {
++    const mongod = await MongoMemoryServer.create({
++      instance: {
++        port: 27017,
++        dbName: 'story_spark_ai'
++      }
++    });
++    console.log(`MongoDB Memory Server started at ${mongod.getUri()}`);
++    // keep alive
++    setInterval(() => {}, 1000 * 60 * 60);
++  } catch (err) {
++    console.error('Error starting mongodb memory server:', err);
++    process.exit(1);
++  }
++})();
+diff --git a/frontend/eslint.config.js b/frontend/eslint.config.js
+index cb598e34..8e0bb318 100644
+--- a/frontend/eslint.config.js
++++ b/frontend/eslint.config.js
+@@ -26,6 +26,7 @@ export default tseslint.config(
+         'warn',
+         { allowConstantExport: true },
+       ],
++      'no-console': 'error',
+     },
+   },
+ )
+diff --git a/frontend/src/components/AchievementsGrid.tsx b/frontend/src/components/AchievementsGrid.tsx
+index 562b67bb..c6e069c8 100644
+--- a/frontend/src/components/AchievementsGrid.tsx
++++ b/frontend/src/components/AchievementsGrid.tsx
+@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
+ import { Achievement } from "../types";
+ import AchievementBadge from "./AchievementBadge";
+ 
++import logger from "../utils/logger.util";
+ interface AchievementsGridProps {
+   achievements?: Achievement[];
+   isLoading?: boolean;
+@@ -29,7 +30,7 @@ const AchievementsGrid = ({
+         const parsed = JSON.parse(celebratedBadgesStr);
+         celebratedBadges = Array.isArray(parsed) ? parsed : [];
+       } catch (e) {
+-        console.error("Error parsing celebrated_badges from localStorage:", e);
++        logger.error("Error parsing celebrated_badges from localStorage:", e);
+         localStorage.removeItem("celebrated_badges");
+       }
+     }
+diff --git a/frontend/src/components/AudioPlayer.tsx b/frontend/src/components/AudioPlayer.tsx
+index 1d9f3cf4..94e3d5f8 100644
+--- a/frontend/src/components/AudioPlayer.tsx
++++ b/frontend/src/components/AudioPlayer.tsx
+@@ -24,6 +24,7 @@ import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
+ import { useVoicePreview } from "../hooks/useVoicePreview";
+ import { useVoiceFavorites } from "../hooks/useVoiceFavorites";
+ 
++import logger from "../utils/logger.util";
+ export type NarrationPlaybackState = "idle" | "playing" | "paused";
+ 
+ export interface AudioPlayerHandle {
+@@ -73,7 +74,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
+       try {
+         localStorage.setItem("story-spark-narration-gender", voiceGender);
+       } catch (e) {
+-        console.warn(e);
++        logger.warn(e);
+       }
+     }, [voiceGender]);
+ 
+diff --git a/frontend/src/components/BookmarkButton.tsx b/frontend/src/components/BookmarkButton.tsx
+index c64b2816..b149ad29 100644
+--- a/frontend/src/components/BookmarkButton.tsx
++++ b/frontend/src/components/BookmarkButton.tsx
+@@ -1,3 +1,4 @@
++import logger from "../utils/logger.util";
+ import { useState } from "react";
+ import { useNavigate } from "react-router-dom";
+ import { toast } from "react-hot-toast";
+@@ -47,7 +48,7 @@ const BookmarkButton = ({
+         toast.success(response.message);
+       }
+     } catch (error: unknown) {
+-      console.error("Failed to toggle bookmark", error);
++      logger.error("Failed to toggle bookmark", error);
+       const message =
+         (error as { data?: { message?: string } })?.data?.message ||
+         "Something went wrong. Please try again.";
+diff --git a/frontend/src/components/Contributors.tsx b/frontend/src/components/Contributors.tsx
+index 1c7fc3de..51da65be 100644
+--- a/frontend/src/components/Contributors.tsx
++++ b/frontend/src/components/Contributors.tsx
+@@ -2,6 +2,7 @@
+ import { useState, useEffect } from 'react';
+ import { FaGithub, FaStar, FaCodeBranch, FaUsers } from 'react-icons/fa';
+ 
++import logger from "../utils/logger.util";
+ interface Contributor {
+   id: number;
+   login: string;
+@@ -59,7 +60,7 @@ export const Contributors = () => {
+ 
+       } catch (err) {
+         setError(err instanceof Error ? err.message : 'Failed to fetch contributors');
+-        console.error('Error fetching contributors:', err);
++        logger.error('Error fetching contributors:', err);
+       } finally {
+         setLoading(false);
+       }
+diff --git a/frontend/src/components/ErrorBoundary.tsx b/frontend/src/components/ErrorBoundary.tsx
+index 7e40a918..3219c24a 100644
+--- a/frontend/src/components/ErrorBoundary.tsx
++++ b/frontend/src/components/ErrorBoundary.tsx
+@@ -1,6 +1,7 @@
+ import React, { Component, ErrorInfo, ReactNode } from "react";
+ import ErrorPage from "./ErrorPage";
+ 
++import logger from "../utils/logger.util";
+ interface Props {
+   children: ReactNode;
+ }
+@@ -63,7 +64,7 @@ class ErrorBoundary extends Component<Props, State> {
+       retryCount: prev.retryCount + 1,
+     }));
+ 
+-    console.error("Error caught by ErrorBoundary:", error, errorInfo);
++    logger.error("Error caught by ErrorBoundary:", error, errorInfo);
+ 
+     try {
+       const errorLog = {
+diff --git a/frontend/src/components/ErrorPage.tsx b/frontend/src/components/ErrorPage.tsx
+index 20b80b8e..b6e96418 100644
+--- a/frontend/src/components/ErrorPage.tsx
++++ b/frontend/src/components/ErrorPage.tsx
+@@ -2,6 +2,7 @@ import React, { useState } from "react";
+ import { useNavigate } from "react-router-dom";
+ import { AUTH_KEY } from "../constants/storage-key";
+ 
++import logger from "../utils/logger.util";
+ const ErrorPage = () => {
+   const navigate = useNavigate();
+   const [isReloading, setIsReloading] = useState(false);
+@@ -30,7 +31,7 @@ const ErrorPage = () => {
+         window.location.reload();
+       }, 300);
+     } catch (error) {
+-      console.error("Failed to reset cache", error);
++      logger.error("Failed to reset cache", error);
+       window.location.reload();
+     }
+   };
+diff --git a/frontend/src/components/ProtectedRoute.tsx b/frontend/src/components/ProtectedRoute.tsx
+index d37318a9..713fb242 100644
+--- a/frontend/src/components/ProtectedRoute.tsx
++++ b/frontend/src/components/ProtectedRoute.tsx
+@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
+ import { isLoggedIn, getUserInfo } from '../services/auth.service';
+ 
+ 
++import logger from "../utils/logger.util";
+ interface ProtectedRouteProps {
+   allowedRoles?: string[];
+   children?: ReactNode;
+@@ -19,7 +20,7 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
+   // Check if user is logged in
+   if (!isLoggedIn()) {
+     if (import.meta.env.DEV) {
+-      console.warn("Dev mode: Bypassing auth check for protected route.");
++      logger.warn("Dev mode: Bypassing auth check for protected route.");
+     } else {
+       return <Navigate to="/login" replace state={{ from: location }} />;
+     }
+diff --git a/frontend/src/components/StoryGenerator.tsx b/frontend/src/components/StoryGenerator.tsx
+index 289034cb..1cb1b2c3 100644
+--- a/frontend/src/components/StoryGenerator.tsx
++++ b/frontend/src/components/StoryGenerator.tsx
+@@ -2,6 +2,7 @@
+ import { useState, useRef, useEffect } from 'react';
+ import api from '../services/api';
+ 
++import logger from "../utils/logger.util";
+ interface StoryGeneratorProps {
+   onStoryGenerated?: (stories: any[]) => void;
+ }
+@@ -75,7 +76,7 @@ export const StoryGenerator = ({ onStoryGenerated }: StoryGeneratorProps) => {
+         throw new Error('No variations received from AI service');
+       }
+     } catch (error: any) {
+-      console.error('AI Generation Error:', error);
++      logger.error('AI Generation Error:', error);
+ 
+       let errorMessage = 'Failed to generate stories. Please try again.';
+ 
+diff --git a/frontend/src/components/admin/review_approval.component.tsx b/frontend/src/components/admin/review_approval.component.tsx
+index 3b4c6dd4..1c6611c7 100644
+--- a/frontend/src/components/admin/review_approval.component.tsx
++++ b/frontend/src/components/admin/review_approval.component.tsx
+@@ -8,6 +8,7 @@ import {
+ } from "../../redux/apis/review.api";
+ import { Review } from "../../models/review";
+ 
++import logger from "../../utils/logger.util";
+ const ReviewApprovalComponent = () => {
+   const { data: reviews = [], isLoading } = useGetPendingReviewsQuery({});
+   const [approveReview, { isLoading: isApproving }] = useApproveReviewMutation();
+@@ -29,7 +30,7 @@ const ReviewApprovalComponent = () => {
+       toast.success("Review approved successfully!");
+     } catch (error: unknown) {
+       toast.error("Failed to approve review. Please try again.");
+-      console.error(error);
++      logger.error(error);
+     }
+   };
+ 
+@@ -41,7 +42,7 @@ const handleApproveSelected = async () => {
+       setSelectedReviews([]);
+     } catch (error: unknown) {
+       toast.error("Failed to approve some reviews. Please try again.");
+-      console.error(error);
++      logger.error(error);
+     }
+   };
+ 
+diff --git a/frontend/src/components/analytics/AnalyticsDashboard.tsx b/frontend/src/components/analytics/AnalyticsDashboard.tsx
+index 192a486d..301c0594 100644
+--- a/frontend/src/components/analytics/AnalyticsDashboard.tsx
++++ b/frontend/src/components/analytics/AnalyticsDashboard.tsx
+@@ -8,6 +8,7 @@ import { AUTH_KEY } from "../../constants/storage-key";
+ import { getBaseUrl } from "../../helpers/config";
+ import { getFromLocalStorage } from "../../utils/local-storage";
+ 
++import logger from "../../utils/logger.util";
+ const API_BASE = getBaseUrl();
+ 
+ const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#14b8a6"];
+@@ -90,7 +91,7 @@ export default function AnalyticsDashboard() {
+         }
+       } catch (e) {
+         if ((e as Error).name !== "AbortError") {
+-          console.error(e);
++          logger.error(e);
+           setError(e instanceof Error ? e.message : "Unable to load analytics data");
+         }
+       } finally {
+diff --git a/frontend/src/components/auth.context.tsx b/frontend/src/components/auth.context.tsx
+index 0f8fd093..79f40013 100644
+--- a/frontend/src/components/auth.context.tsx
++++ b/frontend/src/components/auth.context.tsx
+@@ -7,6 +7,7 @@ import {
+ } from "../services/auth.service";
+ import { AUTH_KEY } from "../constants/storage-key";
+ 
++import logger from "../utils/logger.util";
+ interface User {
+   id: string;
+   name: string;
+@@ -81,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+         subscriptionType: userInfo.subscriptionType,
+       });
+     } catch (error) {
+-      console.error("Invalid token:", error);
++      logger.error("Invalid token:", error);
+       logout();
+     }
+   }, [accessToken, logout]);
+diff --git a/frontend/src/components/cards/StoryTradingCard.tsx b/frontend/src/components/cards/StoryTradingCard.tsx
+index 2e253787..2504520a 100644
+--- a/frontend/src/components/cards/StoryTradingCard.tsx
++++ b/frontend/src/components/cards/StoryTradingCard.tsx
+@@ -5,6 +5,7 @@ import { getWordCount } from "../stories/stories.utils";
+ import StoryCoverImage from "../stories/StoryCoverImage";
+ import { isSessionBookmarked, addSessionBookmark, removeSessionBookmark } from "../../utils/session-bookmarks";
+ 
++import logger from "../../utils/logger.util";
+ export type StoryCardRarity = "Common" | "Rare" | "Epic" | "Legendary";
+ 
+ const rarityConfig: Record<
+@@ -151,7 +152,7 @@ const StoryTradingCard = ({
+       toast.success("Story copied to clipboard!");
+       setTimeout(() => setIsCopied(false), 2000);
+     } catch (error) {
+-      console.error("Failed to copy story text", error);
++      logger.error("Failed to copy story text", error);
+       toast.error("Could not copy story text.");
+     }
+   };
+@@ -179,7 +180,7 @@ const StoryTradingCard = ({
+       toast.dismiss(toastId);
+       toast.success("Trading card downloaded!");
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       toast.dismiss(toastId);
+       toast.error("Could not download this card.");
+     }
+diff --git a/frontend/src/components/character-portrait/CharacterPortrait.tsx b/frontend/src/components/character-portrait/CharacterPortrait.tsx
+index 88bac551..0121be6c 100644
+--- a/frontend/src/components/character-portrait/CharacterPortrait.tsx
++++ b/frontend/src/components/character-portrait/CharacterPortrait.tsx
+@@ -1,3 +1,4 @@
++import logger from "../../utils/logger.util";
+ import toast from "react-hot-toast";
+ import {
+   CharacterResponse,
+@@ -22,7 +23,7 @@ const CharacterPortrait = ({ character }: CharacterPortraitProps) => {
+           : "Character portrait generated!"
+       );
+     } catch (error) {
+-      console.error("Failed to generate character portrait:", error);
++      logger.error("Failed to generate character portrait:", error);
+       toast.error("Failed to generate character portrait.");
+     }
+   };
+diff --git a/frontend/src/components/chat/Chat.tsx b/frontend/src/components/chat/Chat.tsx
+index eea7c36a..aa22c207 100644
+--- a/frontend/src/components/chat/Chat.tsx
++++ b/frontend/src/components/chat/Chat.tsx
+@@ -9,6 +9,7 @@ import {
+ import { getUserInfo } from "../../services/auth.service";
+ import toast from "react-hot-toast";
+ 
++import logger from "../../utils/logger.util";
+ const ChatComponent = () => {
+   const [isOpen, setIsOpen] = useState(false);
+   const [isMinimized, setIsMinimized] = useState(false);
+@@ -55,7 +56,7 @@ const ChatComponent = () => {
+       const botMessage: IChatMessage = { role: "model", parts: response };
+       setMessages((prev) => [...prev, botMessage]);
+     } catch (error: unknown) {
+-  console.error("Chat error:", error);
++  logger.error("Chat error:", error);
+ 
+   const errorMessage =
+     error &&
+diff --git a/frontend/src/components/chat/ChatPage.tsx b/frontend/src/components/chat/ChatPage.tsx
+index 29988068..588d9679 100644
+--- a/frontend/src/components/chat/ChatPage.tsx
++++ b/frontend/src/components/chat/ChatPage.tsx
+@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
+ import { chatWithSparky, ISparkyMessage } from "../../services/ai.service";
+ import toast from "react-hot-toast";
+ 
++import logger from "../../utils/logger.util";
+ const STARTER_PROMPTS = [
+   {
+     text: "Help me brainstorm a sci-fi mystery plot",
+@@ -50,7 +51,7 @@ const ChatPage = () => {
+       if (e instanceof DOMException && e.name === "QuotaExceededError") {
+         toast.error("Chat history could not be saved because storage is full.");
+       } else {
+-        console.warn("Failed to persist chat history:", e);
++        logger.warn("Failed to persist chat history:", e);
+       }
+     }
+     scrollToBottom();
+@@ -77,7 +78,7 @@ const ChatPage = () => {
+       const botMessage: ISparkyMessage = { role: "model", content: response.content };
+       setMessages((prev) => [...prev, botMessage]);
+     } catch (err: any) {
+-      console.error(err);
++      logger.error(err);
+       const errMsg = err.message || "Failed to communicate with Sparky AI service.";
+       setErrorState(errMsg);
+       toast.error(errMsg);
+@@ -120,7 +121,7 @@ const ChatPage = () => {
+     try {
+       localStorage.removeItem("sparky_chat_history");
+     } catch (e) {
+-      console.warn("Failed to clear chat history from storage:", e);
++      logger.warn("Failed to clear chat history from storage:", e);
+     }
+     toast.success("Conversation cleared");
+   };
+diff --git a/frontend/src/components/collab/CollabEditor.tsx b/frontend/src/components/collab/CollabEditor.tsx
+index 4d74e23c..917c3ff3 100644
+--- a/frontend/src/components/collab/CollabEditor.tsx
++++ b/frontend/src/components/collab/CollabEditor.tsx
+@@ -8,6 +8,7 @@ import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } from 'y-protoc
+ import { io, Socket } from 'socket.io-client';
+ import { resolveSocketUrl } from '../../helpers/socket-url';
+ 
++import logger from "../../utils/logger.util";
+ interface CollabEditorProps {
+   storyId: string;
+   userId: string;
+@@ -113,7 +114,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
+       socketRef.current = socket;
+ 
+       socket.on('connect_error', (err: Error) => {
+-        console.warn('[Story Spark] Collab editor socket connection error:', err.message);
++        logger.warn('[Story Spark] Collab editor socket connection error:', err.message);
+       });
+ 
+       // Receive initial sync from server
+@@ -144,7 +145,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
+         applyAwarenessUpdate(awareness, aw, socket);
+       });
+     } else {
+-      console.warn(
++      logger.warn(
+         '[Story Spark] Real-time sync disabled: VITE_SOCKET_URL is not configured. ' +
+         'The collaborative editor will work locally only (no live sync between users).'
+       );
+diff --git a/frontend/src/components/collab/CollabHome.tsx b/frontend/src/components/collab/CollabHome.tsx
+index e28f67bc..ffa06a92 100644
+--- a/frontend/src/components/collab/CollabHome.tsx
++++ b/frontend/src/components/collab/CollabHome.tsx
+@@ -4,6 +4,7 @@ import { io } from "socket.io-client";
+ import { getUserInfo, isLoggedIn, getToken } from "../../services/auth.service";
+ import { resolveSocketUrl } from "../../helpers/socket-url";
+ 
++import logger from "../../utils/logger.util";
+ interface CreateRoomResponse {
+   roomId?: string;
+   message?: string;
+@@ -71,7 +72,7 @@ export default function CollabHome() {
+         setIsCreating(false);
+       });
+     } catch (err) {
+-      console.error("Create room error:", err);
++      logger.error("Create room error:", err);
+       setError("Error creating room. Please try again.");
+       setIsCreating(false);
+     }
+diff --git a/frontend/src/components/collab/CollabRoom.tsx b/frontend/src/components/collab/CollabRoom.tsx
+index a22bddd5..af20c4a4 100644
+--- a/frontend/src/components/collab/CollabRoom.tsx
++++ b/frontend/src/components/collab/CollabRoom.tsx
+@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
+ import CollabEditor from './CollabEditor';
+ import { io, type Socket } from "socket.io-client";
+ import CollabChatPanel from './CollabChatPanel';
++import logger from '../../utils/logger.util';
+ 
+ interface Participant {
+   userId: string;
+@@ -157,7 +158,7 @@ export default function CollabRoom() {
+         socketInstance.disconnect();
+       };
+    } catch (err) {
+-  console.error("Collab initialization error:", err);
++  logger.error("Collab initialization error:", err);
+   setError("Failed to initialize collaboration space.");
+   setLoading(false);
+   }
+@@ -180,7 +181,7 @@ export default function CollabRoom() {
+           url: currentUrl,
+         });
+      } catch (err) {
+-  console.debug("Native share canceled or failed, using fallback.", err);
++  logger.debug("Native share canceled or failed, using fallback.", err);
+   fallbackCopyToClipboard(currentUrl);
+ }
+     } else {
+@@ -192,7 +193,7 @@ export default function CollabRoom() {
+     navigator.clipboard.writeText(text)
+       .then(() => toast.success("Room link copied!"))
+       .catch((err) => {
+-        console.error(err);
++        logger.error(err);
+         toast.error("Failed to copy link.");
+       });
+   };
+diff --git a/frontend/src/components/collections/CollectionDetailCard.tsx b/frontend/src/components/collections/CollectionDetailCard.tsx
+index 649ae448..0c9fea03 100644
+--- a/frontend/src/components/collections/CollectionDetailCard.tsx
++++ b/frontend/src/components/collections/CollectionDetailCard.tsx
+@@ -1,3 +1,4 @@
++import logger from "../../utils/logger.util";
+ import { Link, useNavigate } from "react-router-dom";
+ import { toast } from "react-hot-toast";
+ import { Collection } from "../../models/collection";
+@@ -26,7 +27,7 @@ const CollectionDetailCard = ({ collection, isOwner, onDelete }: Props) => {
+       onDelete?.();
+       navigate(-1);
+     } catch (error) {
+-      console.error("Failed to delete collection", error);
++      logger.error("Failed to delete collection", error);
+       toast.error("Failed to delete collection.");
+     }
+   };
+@@ -36,7 +37,7 @@ const CollectionDetailCard = ({ collection, isOwner, onDelete }: Props) => {
+       await removeStory({ collectionId: collection._id, storyId }).unwrap();
+       toast.success("Story removed from collection.");
+     } catch (error) {
+-      console.error("Failed to remove story from collection", error);
++      logger.error("Failed to remove story from collection", error);
+       toast.error("Failed to remove story.");
+     }
+   };
+@@ -50,7 +51,7 @@ const CollectionDetailCard = ({ collection, isOwner, onDelete }: Props) => {
+       }).unwrap();
+       toast.success(`Collection is now ${newVisibility}.`);
+     } catch (error) {
+-      console.error("Failed to update collection visibility", error);
++      logger.error("Failed to update collection visibility", error);
+       toast.error("Failed to update visibility.");
+     }
+   };
+diff --git a/frontend/src/components/community/Githubcontributors.component.tsx b/frontend/src/components/community/Githubcontributors.component.tsx
+index f187f82f..c7e5f4a8 100644
+--- a/frontend/src/components/community/Githubcontributors.component.tsx
++++ b/frontend/src/components/community/Githubcontributors.component.tsx
+@@ -1,6 +1,7 @@
+ import React, { useEffect, useRef, useState } from 'react'
+ import githubHero from "../../assets/github-hero.png";
+ import ImageFallback from "../ImageFallback";
++import logger from "../../utils/logger.util";
+ interface GitHubContributor {
+   id: number;
+   login: string;
+@@ -50,7 +51,7 @@ const GithubcontributorData = async () => {
+     }
+   } catch (err: unknown) {
+     if ((err as Error).name !== "AbortError") {
+-      console.error("Failed to load GitHub data", err);
++      logger.error("Failed to load GitHub data", err);
+     }
+   }
+ };
+diff --git a/frontend/src/components/contactus/contactus.tsx b/frontend/src/components/contactus/contactus.tsx
+index ea83e30f..79ffb520 100644
+--- a/frontend/src/components/contactus/contactus.tsx
++++ b/frontend/src/components/contactus/contactus.tsx
+@@ -26,6 +26,7 @@ import { instance as axios } from "../../helpers/axios/axiosInstance";
+ import { getBaseUrl } from "../../helpers/config";
+ import storybook from "../../assets/storybook.png";
+ 
++import logger from "../../utils/logger.util";
+ // --- Types ---
+ 
+ type FormData = {
+@@ -429,7 +430,7 @@ export default function Contact() {
+         setError("Failed to send message. Please try again.");
+       }
+     } catch (err: unknown) {
+-      console.error("Contact Form Error:", err);
++      logger.error("Contact Form Error:", err);
+       setError(
+         err instanceof Error
+           ? err.message
+diff --git a/frontend/src/components/dashboard/analytics/analytics.page.tsx b/frontend/src/components/dashboard/analytics/analytics.page.tsx
+index 519a7347..1f69221f 100644
+--- a/frontend/src/components/dashboard/analytics/analytics.page.tsx
++++ b/frontend/src/components/dashboard/analytics/analytics.page.tsx
+@@ -7,6 +7,7 @@ import {
+ import { getToken } from "../../../services/auth.service";
+ import { getBaseUrl } from "../../../helpers/config";
+ 
++import logger from "../../../utils/logger.util";
+ const API_BASE = getBaseUrl();
+ 
+ const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#14b8a6"];
+@@ -99,7 +100,7 @@ const AnalyticsPage = () => {
+           return;
+         }
+ 
+-        console.error(e);
++        logger.error(e);
+         const status = (e as Error & { status?: number }).status;
+         const isAuthExpired = status === 401;
+         setError({
+diff --git a/frontend/src/components/dashboard/posts/post_lists.component.tsx b/frontend/src/components/dashboard/posts/post_lists.component.tsx
+index 23c649ee..9a3e07ac 100644
+--- a/frontend/src/components/dashboard/posts/post_lists.component.tsx
++++ b/frontend/src/components/dashboard/posts/post_lists.component.tsx
+@@ -5,6 +5,7 @@ import { Topic } from "../../../models/post";
+ import PaginationComponent from "../../pagination/pagination.component";
+ import ImageFallback from "../../ImageFallback";
+ 
++import logger from "../../../utils/logger.util";
+ const PostListsComponent: React.FC = () => {
+   const [searchTerm, setSearchTerm] = useState<string>("");
+   const [size, setSize] = useState<number>(10);
+@@ -33,7 +34,7 @@ const PostListsComponent: React.FC = () => {
+       await deletePost(confirmDeleteId).unwrap();
+       setConfirmDeleteId(null);
+     } catch (error) {
+-      console.error("Failed to delete post:", error);
++      logger.error("Failed to delete post:", error);
+     }
+   };
+ 
+diff --git a/frontend/src/components/dashboard/profile/profile.component.tsx b/frontend/src/components/dashboard/profile/profile.component.tsx
+index 691a0f0a..99c8008a 100644
+--- a/frontend/src/components/dashboard/profile/profile.component.tsx
++++ b/frontend/src/components/dashboard/profile/profile.component.tsx
+@@ -13,6 +13,7 @@ import { ProfileCompletionIndicator } from "./ProfileCompletionIndicator";
+ import { instance } from "../../../helpers/axios/axiosInstance";
+ 
+ 
++import logger from "../../../utils/logger.util";
+ const ProfileComponent = () => {
+   const { data, isLoading } = useGetProfileInfoQuery();
+   const [updateProfile] = useUpdateProfileMutation();
+@@ -28,7 +29,7 @@ const ProfileComponent = () => {
+         toast.success("Profile updated successfully.");
+       }
+     } catch (error) {
+-      console.error("Failed to update profile", error);
++      logger.error("Failed to update profile", error);
+       toast.error("Something went wrong. Please try again.");
+     } finally {
+       setLoading(false);
+@@ -54,7 +55,7 @@ const ProfileComponent = () => {
+       toast.success("Account deleted successfully.");
+       auth?.logout();
+     } catch (error) {
+-      console.error("Failed to delete account", error);
++      logger.error("Failed to delete account", error);
+       toast.error("Unable to delete account. Please try again.");
+     } finally {
+       setDeleting(false);
+diff --git a/frontend/src/components/footer/contributors.tsx b/frontend/src/components/footer/contributors.tsx
+index 8cf7c1e8..61c88fa3 100644
+--- a/frontend/src/components/footer/contributors.tsx
++++ b/frontend/src/components/footer/contributors.tsx
+@@ -14,6 +14,7 @@ import {
+ import gsap from "gsap";
+ import { ScrollTrigger } from "gsap/ScrollTrigger";
+ 
++import logger from "../../utils/logger.util";
+ gsap.registerPlugin(ScrollTrigger);
+ 
+ interface Contributor {
+@@ -407,7 +408,7 @@ const data = await response.json();
+           setContributors(filtered);
+         }
+       } catch (error) {
+-        console.error("Failed to fetch contributors:", error);
++        logger.error("Failed to fetch contributors:", error);
+       } finally {
+         setLoading(false);
+       }
+diff --git a/frontend/src/components/footer/footer.component.tsx b/frontend/src/components/footer/footer.component.tsx
+index 61d041cb..fdee8b22 100644
+--- a/frontend/src/components/footer/footer.component.tsx
++++ b/frontend/src/components/footer/footer.component.tsx
+@@ -2,6 +2,7 @@ import React, { useState } from "react";
+ import { Link } from "react-router-dom";
+ import logo from "../../assets/logoNew.png";
+ 
++import logger from "../../utils/logger.util";
+ const DEFAULT_GITHUB_ISSUES_URL =
+   "https://github.com/ronisarkarexe/story-spark-ai/issues";
+ 
+@@ -48,7 +49,7 @@ const FooterComponent: React.FC = () => {
+         setMessage(data.message || "Something went wrong.");
+       }
+     } catch (error) {
+-      console.error("Newsletter subscription failed", error);
++      logger.error("Newsletter subscription failed", error);
+       setStatus("error");
+       setMessage("Network error. Please try again.");
+     }
+diff --git a/frontend/src/components/home/pricing/payment.component.tsx b/frontend/src/components/home/pricing/payment.component.tsx
+index 7c89ae1a..de72bf6e 100644
+--- a/frontend/src/components/home/pricing/payment.component.tsx
++++ b/frontend/src/components/home/pricing/payment.component.tsx
+@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
+ import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
+ import { loadRazorpayScript } from "../../../utils/loadRazorpay";
+ 
++import logger from "../../../utils/logger.util";
+ interface RazorpayResponse {
+   razorpay_payment_id?: string;
+   razorpay_order_id?: string;
+@@ -132,7 +133,7 @@ const PaymentComponent = () => {
+               alert("Payment verification failed.");
+             }
+           } catch (error) {
+-            console.error(error);
++            logger.error(error);
+             alert("Verification failed.");
+           } finally {
+             setLoading(false);
+@@ -157,7 +158,7 @@ const PaymentComponent = () => {
+       paymentObject.on(
+         "payment.failed",
+         (response: RazorpayFailureResponse) => {
+-          console.error(response.error);
++          logger.error(response.error);
+           alert(response.error?.description || "Payment failed.");
+           setLoading(false);
+         }
+@@ -165,7 +166,7 @@ const PaymentComponent = () => {
+ 
+       paymentObject.open();
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       alert("Something went wrong.");
+       setLoading(false);
+     }
+diff --git a/frontend/src/components/home/recommended_writers/recommended_writers.component.tsx b/frontend/src/components/home/recommended_writers/recommended_writers.component.tsx
+index eeeafa35..7c353b81 100644
+--- a/frontend/src/components/home/recommended_writers/recommended_writers.component.tsx
++++ b/frontend/src/components/home/recommended_writers/recommended_writers.component.tsx
+@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
+ import { isLoggedIn } from "../../../services/auth.service";
+ import { useToggleFollowMutation } from "../../../redux/apis/user.api";
+ 
++import logger from "../../../utils/logger.util";
+ const RecommendedWritersComponent = () => {
+   const recommendedWriters = [
+     {
+@@ -44,7 +45,7 @@ const RecommendedWritersComponent = () => {
+         setFollowing([...following, index]);
+       }
+     } catch (error) {
+-      console.error("Failed to toggle follow:", error);
++      logger.error("Failed to toggle follow:", error);
+     }
+   };
+ 
+diff --git a/frontend/src/components/home/writer_feedback/ReviewForm.tsx b/frontend/src/components/home/writer_feedback/ReviewForm.tsx
+index fda539ae..23e67b60 100644
+--- a/frontend/src/components/home/writer_feedback/ReviewForm.tsx
++++ b/frontend/src/components/home/writer_feedback/ReviewForm.tsx
+@@ -1,6 +1,7 @@
+ import React, { useState, useCallback } from "react";
+ import { useCreateReviewMutation } from "../../../redux/apis/review.api";
+ 
++import logger from "../../../utils/logger.util";
+ const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
+ 
+ type StarRatingProps = {
+@@ -102,7 +103,7 @@ const ReviewForm: React.FC = () => {
+       setRating(0);
+       setErrors({});
+     } catch (error) {
+-      console.error("Failed to submit review", error);
++      logger.error("Failed to submit review", error);
+       setErrors({ submit: "Failed to submit review. Please try again." });
+       setSuccess(false);
+     }
+diff --git a/frontend/src/components/login/login.component.tsx b/frontend/src/components/login/login.component.tsx
+index 6cbc5532..0bed2fd7 100644
+--- a/frontend/src/components/login/login.component.tsx
++++ b/frontend/src/components/login/login.component.tsx
+@@ -13,6 +13,7 @@ import toast, { Toaster } from "react-hot-toast";
+ import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+ import { WandSparkles } from "lucide-react";
+ 
++import logger from "../../utils/logger.util";
+ type Inputs = {
+   email: string;
+   password: string;
+@@ -81,12 +82,12 @@ const LoginComponent = () => {
+         try {
+           navigate(from, { replace: true });
+         } catch (error) {
+-          console.error("Navigation after login failed", error);
++          logger.error("Navigation after login failed", error);
+           window.location.href = from;
+         }
+       }
+     } catch (error) {
+-      console.error("Google login failed", error);
++      logger.error("Google login failed", error);
+       toast.error("Failed to login with Google. Please try again.");
+     } finally {
+       setIsBusy(false);
+diff --git a/frontend/src/components/post/post.details.component.tsx b/frontend/src/components/post/post.details.component.tsx
+index cecb4a1b..707b54c4 100644
+--- a/frontend/src/components/post/post.details.component.tsx
++++ b/frontend/src/components/post/post.details.component.tsx
+@@ -49,6 +49,7 @@ import { IStories } from "../stories/stories.view.component";
+ 
+ 
+ 
++import logger from "../../utils/logger.util";
+ interface IStoryVersion {
+   _id: string;
+   storyId: string;
+@@ -157,7 +158,7 @@ const PostDetailsComponent = () => {
+     try {
+       await toggleFollow(authorId).unwrap();
+     } catch (error) {
+-      console.error("Failed to update follow status", error);
++      logger.error("Failed to update follow status", error);
+       toast.error("Failed to update follow status");
+     }
+   };
+@@ -168,7 +169,7 @@ const PostDetailsComponent = () => {
+     try {
+       await toggleReaction({ postId: id }).unwrap();
+     } catch (error) {
+-      console.error("Failed to toggle reaction", error);
++      logger.error("Failed to toggle reaction", error);
+       toast.error("You need to login to perform this action");
+     }
+   };
+@@ -191,7 +192,7 @@ const PostDetailsComponent = () => {
+       toast.success("Story updated and version snapshot saved!");
+       setIsEditing(false);
+     } catch (err) {
+-      console.error(err);
++      logger.error(err);
+       toast.error("Failed to update story. Please try again.");
+     }
+   };
+@@ -207,7 +208,7 @@ const PostDetailsComponent = () => {
+       toast.success("Story successfully restored to selected version!");
+       setShowTimeline(false);
+     } catch (err) {
+-      console.error(err);
++      logger.error(err);
+       toast.error("Failed to restore version.");
+     }
+   };
+@@ -223,7 +224,7 @@ const PostDetailsComponent = () => {
+ 
+     toast.success("Branch created successfully!");
+   } catch (error) {
+-    console.error(error);
++    logger.error(error);
+ 
+     toast.error(
+       "Failed to create branch"
+@@ -279,7 +280,7 @@ const PostDetailsComponent = () => {
+     toast.success("Link copied to clipboard!");
+     setShowShareMenu(false);
+   } catch (error) {
+-    console.error("Failed to copy link", error);
++    logger.error("Failed to copy link", error);
+     toast.error("Failed to copy link.");
+   }
+ };
+@@ -311,7 +312,7 @@ const PostDetailsComponent = () => {
+       toast.success("Story removed successfully.");
+       navigate("/explore");
+     } catch (error) {
+-      console.error("Failed to delete post", error);
++      logger.error("Failed to delete post", error);
+       toast.error("Unable to remove this story. Please try again.");
+     }
+   };
+diff --git a/frontend/src/components/profile/public_profile.component.tsx b/frontend/src/components/profile/public_profile.component.tsx
+index 9d0ed4ac..ca187a8f 100644
+--- a/frontend/src/components/profile/public_profile.component.tsx
++++ b/frontend/src/components/profile/public_profile.component.tsx
+@@ -12,6 +12,7 @@ import SSProfile from "../ui-component/ss-profile/ss-profile";
+ import toast, { Toaster } from "react-hot-toast";
+ import UserCollectionsTab from "../collections/UserCollectionsTab";
+ 
++import logger from "../../utils/logger.util";
+ const PublicProfileComponent = () => {
+   const { id } = useParams<{ id: string }>();
+   const navigate = useNavigate();
+@@ -54,7 +55,7 @@ const PublicProfileComponent = () => {
+         toast.success(`Unfollowed ${user?.name || "writer"}.`);
+       }
+     } catch (error) {
+-      console.error("Failed to toggle follow", error);
++      logger.error("Failed to toggle follow", error);
+       toast.error("Something went wrong. Please try again.");
+     }
+   };
+diff --git a/frontend/src/components/report-bug/ReportBug.tsx b/frontend/src/components/report-bug/ReportBug.tsx
+index fdd38b4f..911ce6be 100644
+--- a/frontend/src/components/report-bug/ReportBug.tsx
++++ b/frontend/src/components/report-bug/ReportBug.tsx
+@@ -19,6 +19,7 @@ import {
+ } from "lucide-react";
+ import { motion, AnimatePresence } from "framer-motion";
+ 
++import logger from "../../utils/logger.util";
+ interface ReportBugFormData {
+   title: string;
+   category: string;
+@@ -78,7 +79,7 @@ const ReportBug = () => {
+ 
+     sessionStorage.removeItem("error-report");
+   } catch (err) {
+-    console.error("Failed to load error report", err);
++    logger.error("Failed to load error report", err);
+   }
+ }, [reset]);
+ 
+@@ -99,7 +100,7 @@ const ReportBug = () => {
+       // Scroll to top of form or success message
+       window.scrollTo({ top: 0, behavior: 'smooth' });
+     } catch (err) {
+-      console.error("Bug report submission failed:", err);
++      logger.error("Bug report submission failed:", err);
+       toast.error("Failed to submit report. Please try again.");
+     }
+   };
+diff --git a/frontend/src/components/stories/BranchingStory.tsx b/frontend/src/components/stories/BranchingStory.tsx
+index 86315987..711929b5 100644
+--- a/frontend/src/components/stories/BranchingStory.tsx
++++ b/frontend/src/components/stories/BranchingStory.tsx
+@@ -6,6 +6,7 @@ import StorySegment from "./StorySegment";
+ import StoryTimeline, { StoryTimelineEntry } from "./StoryTimeline";
+ import { useCreateBranchingStoryMutation } from "../../redux/apis/branching.story.api";
+ 
++import logger from "../../utils/logger.util";
+ type BranchingHistoryEntry = StoryTimelineEntry;
+ 
+ type CurrentStoryState = {
+@@ -59,7 +60,7 @@ const BranchingStory = () => {
+         segmentIndex: response.data.segmentIndex,
+       });
+     } catch (error) {
+-      console.error("Unable to load branching story", error);
++      logger.error("Unable to load branching story", error);
+       toast.error("The story engine stalled. A fallback scene is ready.");
+       setCurrentStory(fallbackStory(history.length + 1));
+     } finally {
+diff --git a/frontend/src/components/stories/CharacterProfileCard.tsx b/frontend/src/components/stories/CharacterProfileCard.tsx
+index c0174c85..0edc8025 100644
+--- a/frontend/src/components/stories/CharacterProfileCard.tsx
++++ b/frontend/src/components/stories/CharacterProfileCard.tsx
+@@ -2,6 +2,7 @@ import React, { useState } from "react";
+ import { CharacterProfile } from "./stories.utils";
+ import toast from "react-hot-toast";
+ 
++import logger from "../../utils/logger.util";
+ interface CharacterProfileCardProps {
+   profile: CharacterProfile;
+ }
+@@ -30,7 +31,7 @@ Relationships: ${profile.relationships}
+         setIsCopied(false);
+       }, 2000);
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       toast.error("Failed to copy profile.");
+     }
+   };
+diff --git a/frontend/src/components/stories/ExportStoryModal.tsx b/frontend/src/components/stories/ExportStoryModal.tsx
+index b98a64b3..d1b5d622 100644
+--- a/frontend/src/components/stories/ExportStoryModal.tsx
++++ b/frontend/src/components/stories/ExportStoryModal.tsx
+@@ -1,3 +1,4 @@
++import logger from "../../utils/logger.util";
+ import React, { useState } from 'react';
+ import toast from 'react-hot-toast';
+ import {
+@@ -37,7 +38,7 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
+             base64Image = await blobToBase64(imageBlob);
+           }
+         } catch (error) {
+-          console.error("Failed to fetch image for export", error);
++          logger.error("Failed to fetch image for export", error);
+           toast.error("Failed to include cover image, but exporting anyway...");
+         }
+       }
+@@ -51,7 +52,7 @@ const ExportStoryModal: React.FC<ExportStoryModalProps> = ({ isOpen, onClose, st
+       toast.success(`${format.toUpperCase()} exported successfully!`);
+       onClose();
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       toast.error(`Failed to export ${format.toUpperCase()}.`);
+     } finally {
+       setIsExporting(false);
+diff --git a/frontend/src/components/stories/PromptEnhancer.tsx b/frontend/src/components/stories/PromptEnhancer.tsx
+index 09a3529b..112d9771 100644
+--- a/frontend/src/components/stories/PromptEnhancer.tsx
++++ b/frontend/src/components/stories/PromptEnhancer.tsx
+@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
+ import toast from "react-hot-toast";
+ import { useEnhancePromptMutation } from "../../redux/apis/enhance.prompt.api";
+ 
++import logger from "../../utils/logger.util";
+ interface PromptEnhancerProps {
+   /** The current value of the story prompt textarea */
+   prompt: string;
+@@ -46,7 +47,7 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
+       setIsEnhanced(true);
+       toast.success("Prompt enhanced!");
+     } catch (error) {
+-      console.error("Prompt enhancement failed", error);
++      logger.error("Prompt enhancement failed", error);
+       toast.error("Enhancement failed. Please try again.");
+       setOriginalPrompt(null);
+     }
+diff --git a/frontend/src/components/stories/StoryGenreTransformation.tsx b/frontend/src/components/stories/StoryGenreTransformation.tsx
+index 90a0c181..60bfc6af 100644
+--- a/frontend/src/components/stories/StoryGenreTransformation.tsx
++++ b/frontend/src/components/stories/StoryGenreTransformation.tsx
+@@ -1,6 +1,7 @@
+ import React, { useState } from "react";
+ import toast from "react-hot-toast";
+ 
++import logger from "../../utils/logger.util";
+ interface StoryGenreTransformationProps {
+   story: {
+     title: string;
+@@ -51,7 +52,7 @@ ${story.content}
+         toast.success("Story transformed successfully!");
+       }, 1500);
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       setLoading(false);
+       toast.error("Transformation failed.");
+     }
+diff --git a/frontend/src/components/stories/stories.view.component.tsx b/frontend/src/components/stories/stories.view.component.tsx
+index cc177bd5..428c3bd5 100644
+--- a/frontend/src/components/stories/stories.view.component.tsx
++++ b/frontend/src/components/stories/stories.view.component.tsx
+@@ -21,6 +21,7 @@ import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from
+ import { useLocation } from "react-router-dom";
+ import ExportStoryModal from "./ExportStoryModal";
+ 
++import logger from "../../utils/logger.util";
+ export interface IStories {
+   uuid: string;
+   title: string;
+@@ -146,7 +147,7 @@ useEffect(() => {
+       await createPost(post).unwrap();
+       toast.success("Story auto-saved!");
+     } catch (error) {
+-      console.error("Auto-save failed", error);
++      logger.error("Auto-save failed", error);
+     }
+   }, 1500);
+ 
+@@ -223,7 +224,7 @@ const data = await response.json();
+ 
+     toast.success("Character profiles generated!");
+   } catch (error) {
+-    console.error(error);
++    logger.error(error);
+     toast.error("Failed to generate profiles.");
+   } finally {
+     setProfileLoading(false);
+diff --git a/frontend/src/components/story/ContinueStoryButton.tsx b/frontend/src/components/story/ContinueStoryButton.tsx
+index 87937a80..b711d32e 100644
+--- a/frontend/src/components/story/ContinueStoryButton.tsx
++++ b/frontend/src/components/story/ContinueStoryButton.tsx
+@@ -6,6 +6,7 @@ import { RootState } from "../../redux/store";
+ import { continueStory } from "../../services/continuation.service";
+ import { addChapter } from "../../redux/slices/storySlice";
+ 
++import logger from "../../utils/logger.util";
+ const TONE_OPTIONS = [
+   "Default",
+   "Horror",
+@@ -43,7 +44,7 @@ const ContinueStoryButton = () => {
+       dispatch(addChapter(nextChapter));
+       toast.success("New chapter generated successfully!");
+     } catch (error: unknown) {
+-      console.error(error);
++      logger.error(error);
+       const errorMsg =
+         error instanceof Error
+           ? error.message
+diff --git a/frontend/src/components/story/StoryViewer.tsx b/frontend/src/components/story/StoryViewer.tsx
+index 74425c9c..24a7e643 100644
+--- a/frontend/src/components/story/StoryViewer.tsx
++++ b/frontend/src/components/story/StoryViewer.tsx
+@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
+ import JSZip from "jszip";
+ import AudioPlayer from "../AudioPlayer";
+ 
++import logger from "../../utils/logger.util";
+ interface Props {
+   chapters: Chapter[];
+   storyId: string;
+@@ -165,7 +166,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
+       doc.save(`${safeName}.pdf`);
+       toast.success("PDF downloaded with custom styles!");
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       toast.error("Failed to export PDF.");
+     }
+   };
+@@ -309,7 +310,7 @@ ${ncxNavPoints}  </navMap>
+ 
+       toast.success("EPUB downloaded successfully!");
+     } catch (err) {
+-      console.error(err);
++      logger.error(err);
+       toast.error("Failed to generate EPUB file.");
+     }
+   };
+diff --git a/frontend/src/components/story/StoryWorkspace.tsx b/frontend/src/components/story/StoryWorkspace.tsx
+index 61b8eec6..d66f8c9a 100644
+--- a/frontend/src/components/story/StoryWorkspace.tsx
++++ b/frontend/src/components/story/StoryWorkspace.tsx
+@@ -1,3 +1,4 @@
++import logger from "../../utils/logger.util";
+ import React, { useState, useMemo } from "react";
+ import { useSelector } from "react-redux";
+ import toast, { Toaster } from "react-hot-toast";
+@@ -113,7 +114,7 @@ const StoryWorkspace = () => {
+     await navigator.clipboard.writeText(storyText);
+     toast.success("Story copied to clipboard!");
+   } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       toast.error("Failed to copy story.");
+     }
+   };
+@@ -143,7 +144,7 @@ const StoryWorkspace = () => {
+       downloadBlob(blob, getSafeFileName(title, "md"));
+       toast.success("Markdown downloaded!");
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       toast.error("Failed to export Markdown.");
+     }
+   };
+@@ -174,7 +175,7 @@ const StoryWorkspace = () => {
+ 
+       toast.success("PDF downloaded!");
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       toast.error("Failed to export PDF.");
+     } finally {
+       toast.dismiss(toastId);
+@@ -207,7 +208,7 @@ const StoryWorkspace = () => {
+       downloadBlob(blob, getSafeFileName(title, "docx"));
+       toast.success("DOCX downloaded!");
+     } catch (error) {
+-      console.error(error);
++      logger.error(error);
+       toast.error("Failed to export DOCX.");
+     }
+   };
+@@ -409,7 +410,7 @@ const StoryWorkspace = () => {
+   onInsertPrompt={(prompt) => {
+     // TODO: dispatch action to insert prompt into the active editor
+     toast("Prompt insertion coming soon!", { icon: "🚧" });
+-    console.warn("[TODO] onInsertPrompt not wired:", prompt);
++    logger.warn("[TODO] onInsertPrompt not wired:", prompt);
+   }}
+ />
+ 
+@@ -418,7 +419,7 @@ const StoryWorkspace = () => {
+   onReplace={(newTitle) => {
+     // TODO: dispatch updateStoryTitle action
+     toast("Title replacement coming soon!", { icon: "🚧" });
+-    console.warn("[TODO] onReplace title not wired:", newTitle);
++    logger.warn("[TODO] onReplace title not wired:", newTitle);
+   }}
+ />
+ 
+@@ -455,7 +456,7 @@ const StoryWorkspace = () => {
+   onRestore={(draft) => {
+     // TODO: dispatch action to restore draft content to editor
+     toast("Draft restore coming soon!", { icon: "🚧" });
+-    console.warn("[TODO] onRestore draft not wired:", draft);
++    logger.warn("[TODO] onRestore draft not wired:", draft);
+   }}
+ />
+ {/* StoryComparisonDashboard requires a second story source (e.g. a saved
+@@ -497,7 +498,7 @@ const StoryWorkspace = () => {
+   onApply={(twist) => {
+     // TODO: dispatch action to append plot twist to story
+     toast("Plot twist apply coming soon!", { icon: "🚧" });
+-    console.warn("[TODO] onApply twist not wired:", twist);
++    logger.warn("[TODO] onApply twist not wired:", twist);
+   }}
+ />
+ 
+@@ -511,7 +512,7 @@ const StoryWorkspace = () => {
+   revisions={revisions}
+   onRestore={(content) => {
+     // TODO: dispatch action to restore story content from revision
+-    console.warn("Restore revision not yet wired to Redux store:", content);
++    logger.warn("Restore revision not yet wired to Redux store:", content);
+   }}
+ />
+ 
+@@ -522,7 +523,7 @@ const StoryWorkspace = () => {
+   onRegenerate={(prompt) => {
+     // TODO: dispatch action to regenerate story ending
+     toast("Ending regeneration coming soon!", { icon: "🚧" });
+-    console.warn("[TODO] onRegenerate ending not wired:", prompt);
++    logger.warn("[TODO] onRegenerate ending not wired:", prompt);
+   }}
+ />
+ 
+@@ -532,7 +533,7 @@ const StoryWorkspace = () => {
+   onInsert={(name) => {
+     // TODO: dispatch action to insert name into editor at cursor position
+     toast("Name insertion coming soon!", { icon: "🚧" });
+-    console.warn("[TODO] onInsert name not wired:", name);
++    logger.warn("[TODO] onInsert name not wired:", name);
+   }}
+ />
+ 
+@@ -570,7 +571,7 @@ const StoryWorkspace = () => {
+       .join("\n\n") || ""
+   }
+   onInsert={(text) => {
+-    console.log("Insert continuation:", text);
++    logger.debug("Insert continuation:", text);
+   }}
+ />
+ 
+diff --git a/frontend/src/components/theme/theme_toggle.component.tsx b/frontend/src/components/theme/theme_toggle.component.tsx
+index 100a5aff..8dd5b17f 100644
+--- a/frontend/src/components/theme/theme_toggle.component.tsx
++++ b/frontend/src/components/theme/theme_toggle.component.tsx
+@@ -5,6 +5,7 @@ import gsap from "gsap";
+ import { useGSAP } from "@gsap/react";
+ import { flushSync } from "react-dom";
+ 
++import logger from "../../utils/logger.util";
+ const ThemeToggle: React.FC = () => {
+   const { isDark, toggleTheme } = useTheme();
+   const iconRef = useRef<HTMLDivElement>(null);
+@@ -80,7 +81,7 @@ const ThemeToggle: React.FC = () => {
+             : "::view-transition-new(root)",
+         }
+       );
+-    }).catch(err => console.error(err));
++    }).catch((err) => logger.error(err));
+ 
+     transition.finished.finally(() => {
+       document.documentElement.classList.remove("theme-transitioning");
+diff --git a/frontend/src/components/writing-assistant/PlotHoleAnalyzer.tsx b/frontend/src/components/writing-assistant/PlotHoleAnalyzer.tsx
+index d95df404..aa4695b5 100644
+--- a/frontend/src/components/writing-assistant/PlotHoleAnalyzer.tsx
++++ b/frontend/src/components/writing-assistant/PlotHoleAnalyzer.tsx
+@@ -4,6 +4,7 @@ import { getBaseUrl } from "../../helpers/config";
+ import { motion, AnimatePresence } from "framer-motion";
+ import toast from "react-hot-toast";
+ 
++import logger from "../../utils/logger.util";
+ interface IPlotHole {
+   inconsistency: string;
+   context: string;
+@@ -62,7 +63,7 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
+         throw new Error("Invalid response format received from backend.");
+       }
+     } catch (err: unknown) {
+-      console.error("Plot hole analysis error:", err);
++      logger.error("Plot hole analysis error:", err);
+ 
+       const errMsg =
+         axios.isAxiosError(err)
+diff --git a/frontend/src/helpers/config.ts b/frontend/src/helpers/config.ts
+index 051df8f2..18f653d3 100644
+--- a/frontend/src/helpers/config.ts
++++ b/frontend/src/helpers/config.ts
+@@ -1,7 +1,8 @@
++import logger from "../utils/logger.util";
+ const BASE_URL = import.meta.env.VITE_BASE_URL as string | undefined;
+ 
+ if (!BASE_URL) {
+-  console.error(
++  logger.error(
+     "[api.config] VITE_BASE_URL is not defined.\n" +
+     "Copy .env.example to frontend/.env and set VITE_BASE_URL=http://localhost:5000"
+   );
+diff --git a/frontend/src/helpers/socket-url.ts b/frontend/src/helpers/socket-url.ts
+index cc57c5f8..7e71c532 100644
+--- a/frontend/src/helpers/socket-url.ts
++++ b/frontend/src/helpers/socket-url.ts
+@@ -1,7 +1,8 @@
++import logger from "../utils/logger.util";
+ export const resolveSocketUrl = (): string => {
+   const socketUrl = import.meta.env.VITE_SOCKET_URL;
+   if (!socketUrl && import.meta.env.DEV) {
+-    console.warn(
++    logger.warn(
+       "[Story Spark] VITE_SOCKET_URL is unset. Copy frontend/.env.example to frontend/.env and set the Socket.IO server URL."
+     );
+   }
+diff --git a/frontend/src/main.tsx b/frontend/src/main.tsx
+index a1cbef9b..6528bdc3 100644
+--- a/frontend/src/main.tsx
++++ b/frontend/src/main.tsx
+@@ -8,10 +8,11 @@ import { store } from "./redux/store.ts";
+ import { ThemeProvider } from "./components/theme/theme.context";
+ import "./index.css";
+ 
++import logger from "./utils/logger.util";
+ const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
+ 
+ if (!GOOGLE_CLIENT_ID) {
+-  console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
++  logger.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
+ }
+ 
+ const container = document.getElementById("root");
+diff --git a/frontend/src/pages/Gallery.tsx b/frontend/src/pages/Gallery.tsx
+index 073d608a..71d2bd16 100644
+--- a/frontend/src/pages/Gallery.tsx
++++ b/frontend/src/pages/Gallery.tsx
+@@ -1,6 +1,7 @@
+ import React, { useState, useEffect } from "react";
+ import StoryRemix from "../components/remix/StoryRemix";
+ 
++import logger from "../utils/logger.util";
+ interface GalleryStory {
+   id: string;
+   title: string;
+@@ -25,7 +26,7 @@ export default function Gallery() {
+       const data = await res.json();
+       setStories(data.stories || []);
+     } catch (err) {
+-      console.error("Failed to load gallery stories:", err);
++      logger.error("Failed to load gallery stories:", err);
+     }
+   };
+ 
+@@ -42,7 +43,7 @@ export default function Gallery() {
+       });
+       fetchGalleryStories(sortBy);
+     } catch (err) {
+-      console.error("Failed to submit rating:", err);
++      logger.error("Failed to submit rating:", err);
+     }
+   };
+ 
+diff --git a/frontend/src/pages/Leaderboard.tsx b/frontend/src/pages/Leaderboard.tsx
+index 3d1d0ba6..96e642c0 100644
+--- a/frontend/src/pages/Leaderboard.tsx
++++ b/frontend/src/pages/Leaderboard.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useState } from "react";
+ import { motion } from "framer-motion";
++import logger from "../utils/logger.util";
+ import {
+   Trophy,
+   Crown,
+@@ -40,7 +41,7 @@ export default function Leaderboard() {
+ 
+       setData(json.data ?? json);
+     } catch (err) {
+-      console.error("Leaderboard fetch error:", err);
++      logger.error("Leaderboard fetch error:", err);
+       setError("Failed to load leaderboard. Please try again.");
+     } finally {
+       setLoading(false);
+diff --git a/frontend/src/pages/analytics/AnalyticsDashboard.tsx b/frontend/src/pages/analytics/AnalyticsDashboard.tsx
+index d28a8d5a..e9081fb4 100644
+--- a/frontend/src/pages/analytics/AnalyticsDashboard.tsx
++++ b/frontend/src/pages/analytics/AnalyticsDashboard.tsx
+@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
+ import { Edit2, Check, X, Target, Award, TrendingUp } from "lucide-react";
+ import { useGetProfileInfoQuery, useUpdateWritingGoalsMutation } from "../../redux/apis/user.api";
+ 
++import logger from "../../utils/logger.util";
+ // ─── LOCAL COMPONENT FOR PROGRESS RING ───
+ interface ProgressRingProps {
+   percentage: number;
+@@ -123,7 +124,7 @@ const AnalyticsDashboard: React.FC = () => {
+       }).unwrap();
+       setIsEditing(false);
+     } catch (err) {
+-      console.error("Failed to persist updated writing targets:", err);
++      logger.error("Failed to persist updated writing targets:", err);
+     }
+   };
+ 
+diff --git a/frontend/src/redux/slices/storySlice.ts b/frontend/src/redux/slices/storySlice.ts
+index 8e538d28..90cb0213 100644
+--- a/frontend/src/redux/slices/storySlice.ts
++++ b/frontend/src/redux/slices/storySlice.ts
+@@ -1,6 +1,7 @@
+ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+ import { Story, StoryVersion } from "../../types/story.types";
+ 
++import logger from "../../utils/logger.util";
+ interface StoryState {
+   currentStory: Story | null;
+   versions: StoryVersion[];
+@@ -41,9 +42,9 @@ const storySlice = createSlice({
+         localStorage.setItem(storageKey, JSON.stringify(safeData));
+       } catch (error: any) {
+         if (error.name === "QuotaExceededError") {
+-          console.error("Storage limit reached. Cannot save story locally.");
++          logger.error("Storage limit reached. Cannot save story locally.");
+         } else {
+-          console.error("Error saving story to storage", error);
++          logger.error("Error saving story to storage", error);
+         }
+       }
+     },
+@@ -72,9 +73,9 @@ const storySlice = createSlice({
+         localStorage.setItem(storageKey, JSON.stringify(safeData));
+       } catch (error: any) {
+         if (error.name === "QuotaExceededError") {
+-          console.error("Storage limit reached. Cannot save story locally.");
++          logger.error("Storage limit reached. Cannot save story locally.");
+         } else {
+-          console.error("Error saving story to storage", error);
++          logger.error("Error saving story to storage", error);
+         }
+       }
+     },
+diff --git a/frontend/src/services/ai.service.ts b/frontend/src/services/ai.service.ts
+index e12b5be7..1f3c2206 100644
+--- a/frontend/src/services/ai.service.ts
++++ b/frontend/src/services/ai.service.ts
+@@ -2,6 +2,7 @@ import axios from "axios";
+ import { API_V1 } from "../helpers/config";
+ import { getToken } from "./auth.service";
+ 
++import logger from "../utils/logger.util";
+ const API_BASE = API_V1;
+ 
+ export interface IChatMessage {
+@@ -28,7 +29,7 @@ export const chatWithSparky = async (messages: ISparkyMessage[]) => {
+ 
+     return response.data.data;
+   } catch (error) {
+-    console.error("Sparky AI chat request failed:", error);
++    logger.error("Sparky AI chat request failed:", error);
+     throw new Error("Failed to communicate with Sparky AI service.");
+   }
+ };
+@@ -51,7 +52,7 @@ export const chatWithAI = async (
+ 
+     return response.data.data;
+   } catch (error) {
+-    console.error("AI chat request failed:", error);
++    logger.error("AI chat request failed:", error);
+     throw new Error("Failed to communicate with AI service.");
+   }
+ };
+@@ -74,7 +75,7 @@ export const chatWithAIFree = async (
+ 
+     return response.data.data;
+   } catch (error) {
+-    console.error("Free AI chat request failed:", error);
++    logger.error("Free AI chat request failed:", error);
+     throw new Error("Failed to communicate with AI service.");
+   }
+ };
+\ No newline at end of file
+diff --git a/frontend/src/services/auth.service.ts b/frontend/src/services/auth.service.ts
+index 8256abf9..280dcba5 100644
+--- a/frontend/src/services/auth.service.ts
++++ b/frontend/src/services/auth.service.ts
+@@ -8,6 +8,7 @@ import {
+ } from "../utils/local-storage";
+ import { validateTokenPayload } from "../utils/auth-validator";
+ 
++import logger from "../utils/logger.util";
+ const AUTH_CHANGE_EVENT = "story-spark-auth-change";
+ 
+ const emitAuthChange = () => {
+@@ -80,7 +81,7 @@ export const getValidDecodedToken = () => {
+         iat: decodedData.iat ?? 0,
+       });
+     } catch (error) {
+-      console.error("Invalid auth token:", error);
++      logger.error("Invalid auth token:", error);
+       removeFromLocalStorage(AUTH_KEY);
+       return null;
+     }
+@@ -93,7 +94,7 @@ export const storeUserInfo = ({ accessToken }: AccessToken) => {
+     const decodedData = decodeToken(accessToken);
+     validateTokenPayload(decodedData as Record<string, unknown>);
+   } catch (error) {
+-    console.error("Refusing to store invalid access token:", error);
++    logger.error("Refusing to store invalid access token:", error);
+     throw new Error("Received an invalid access token. Please try logging in again.");
+   }
+ 
+diff --git a/frontend/src/services/character.service.ts b/frontend/src/services/character.service.ts
+index 9662fac0..7fd53d83 100644
+--- a/frontend/src/services/character.service.ts
++++ b/frontend/src/services/character.service.ts
+@@ -1,6 +1,7 @@
++import logger from "../utils/logger.util";
+ export const saveCharacter = async (characterData: any) => {
+   // Logic to save character to backend
+-  console.log("Saving character:", characterData);
++  logger.debug("Saving character:", characterData);
+ };
+ 
+ export const getCharacters = async () => {
+diff --git a/frontend/src/services/continuation.service.ts b/frontend/src/services/continuation.service.ts
+index 0a4117ca..be933eed 100644
+--- a/frontend/src/services/continuation.service.ts
++++ b/frontend/src/services/continuation.service.ts
+@@ -1,6 +1,7 @@
+ import axios from "../helpers/axios/axiosInstance";
+ import { Chapter } from "../types/story.types";
+ 
++import logger from "../utils/logger.util";
+ const API_BASE = "/v1";
+ 
+ export const continueStory = async (chapters: Chapter[]) => {
+@@ -30,7 +31,7 @@ ${previousContent}
+ 
+     return response.data.data.continuation;
+   } catch (error) {
+-    console.error("Story continuation request failed:", error);
++    logger.error("Story continuation request failed:", error);
+     throw new Error("Failed to continue story.");
+   }
+ };
+@@ -72,7 +73,7 @@ ${previousContent}
+     }
+     return [];
+   } catch (error) {
+-    console.error("Story batch continuation request failed:", error);
++    logger.error("Story batch continuation request failed:", error);
+     throw new Error("Failed to generate story continuations.");
+   }
+ };
+\ No newline at end of file
+diff --git a/frontend/src/services/export.service.ts b/frontend/src/services/export.service.ts
+index 54ed2c9a..bdb5bd31 100644
+--- a/frontend/src/services/export.service.ts
++++ b/frontend/src/services/export.service.ts
+@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
+ import JSZip from "jszip";
+ import { saveAs } from "file-saver";
+ 
++import logger from "../utils/logger.util";
+ export interface IExportStory {
+   uuid: string;
+   title: string;
+@@ -30,7 +31,7 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
+         return await cachedResponse.blob();
+       }
+     } catch (e) {
+-      console.warn("[ExportService] Failed to match image in Cache Storage:", e);
++      logger.warn("[ExportService] Failed to match image in Cache Storage:", e);
+     }
+   }
+ 
+@@ -47,13 +48,13 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
+         const cache = await caches.open(CACHE_NAME);
+         await cache.put(url, response.clone());
+       } catch (cacheError) {
+-        console.warn("[ExportService] Failed to cache image:", cacheError);
++        logger.warn("[ExportService] Failed to cache image:", cacheError);
+       }
+     }
+ 
+     return blob;
+   } catch (error) {
+-    console.warn("Direct image fetch failed (CORS or network). Trying HTML Canvas fallback...", error);
++    logger.warn("Direct image fetch failed (CORS or network). Trying HTML Canvas fallback...", error);
+     
+     // Canvas fallback using Image element with crossOrigin
+     return new Promise((resolve, reject) => {
+@@ -162,7 +163,7 @@ export const exportStoryToPDF = async (
+       doc.addImage(base64Image, "PNG", 35, coverY, 140, 105);
+       coverY += 115;
+     } catch (e) {
+-      console.error("Failed to add image to PDF cover:", e);
++      logger.error("Failed to add image to PDF cover:", e);
+       doc.setDrawColor(51, 65, 85);
+       doc.setLineWidth(0.5);
+       doc.line(40, coverY + 20, 170, coverY + 20);
+@@ -203,7 +204,7 @@ export const exportStoryToPDF = async (
+       doc.addImage(base64Image, "PNG", 45, yCursor, 120, 90);
+       yCursor += 100;
+     } catch (e) {
+-      console.error("Failed to add image to PDF content:", e);
++      logger.error("Failed to add image to PDF content:", e);
+     }
+   }
+ 
+diff --git a/frontend/src/utils/imageCache.ts b/frontend/src/utils/imageCache.ts
+index f318bcea..2af25fdb 100644
+--- a/frontend/src/utils/imageCache.ts
++++ b/frontend/src/utils/imageCache.ts
+@@ -1,3 +1,4 @@
++import logger from "./logger.util";
+ const CACHE_NAME = "story-spark-ai-image-cache";
+ 
+ // In-memory mapping of remote url -> object URL to avoid recreating them during the session
+@@ -57,7 +58,7 @@ export async function getCachedImageUrl(url: string): Promise<string> {
+       objectUrlMap.set(url, blobUrl);
+       return blobUrl;
+     } catch (error) {
+-      console.warn(`[ImageCache] Failed to load/cache image "${url}":`, error);
++      logger.warn(`[ImageCache] Failed to load/cache image "${url}":`, error);
+       // Fallback to original remote URL if fetch/caching fails (e.g., CORS restrictions)
+       return url;
+     } finally {
+diff --git a/frontend/src/utils/jwt.ts b/frontend/src/utils/jwt.ts
+index 70b5eb9f..d0e32721 100644
+--- a/frontend/src/utils/jwt.ts
++++ b/frontend/src/utils/jwt.ts
+@@ -1,5 +1,6 @@
+ import { jwtDecode, JwtPayload } from "jwt-decode";
+ 
++import logger from "./logger.util";
+ export interface CustomJwtPayload extends JwtPayload {
+   // Standard JWT claim `sub` is inherited from JwtPayload — not redeclared here
+   email?: string;
+@@ -66,7 +67,7 @@ export const decodeToken = (token: string): CustomJwtPayload => {
+ 
+   const VALID_ROLES = ["user", "admin", "super_admin", "writer", "guest"] as const;
+   if (!VALID_ROLES.includes(decoded.role as typeof VALID_ROLES[number])) {
+-    console.warn(`Unrecognised token role: "${decoded.role}". Allowed: ${VALID_ROLES.join(", ")}`);
++    logger.warn(`Unrecognised token role: "${decoded.role}". Allowed: ${VALID_ROLES.join(", ")}`);
+     // Warn but do not throw — prevents valid tokens from being rejected if backend adds new roles.
+   }
+ 
+@@ -77,7 +78,7 @@ export const decodeToken = (token: string): CustomJwtPayload => {
+ 
+   const VALID_SUBSCRIPTIONS = ["free", "pro", "premium"] as const;
+   if (!VALID_SUBSCRIPTIONS.includes(decoded.subscriptionType as typeof VALID_SUBSCRIPTIONS[number])) {
+-    console.warn(`Unrecognised subscription type: "${decoded.subscriptionType}". Allowed: ${VALID_SUBSCRIPTIONS.join(", ")}`);
++    logger.warn(`Unrecognised subscription type: "${decoded.subscriptionType}". Allowed: ${VALID_SUBSCRIPTIONS.join(", ")}`);
+     // Warn but do not throw — prevents valid tokens from being rejected if backend adds new plans.
+   }
+ 
+diff --git a/frontend/src/utils/session-bookmarks.ts b/frontend/src/utils/session-bookmarks.ts
+index ffa631ac..99cba560 100644
+--- a/frontend/src/utils/session-bookmarks.ts
++++ b/frontend/src/utils/session-bookmarks.ts
+@@ -1,5 +1,6 @@
+ import { IStories } from "../components/stories/stories.view.component";
+ 
++import logger from "./logger.util";
+ const SESSION_KEY = "story_spark_session_bookmarks";
+ 
+ export const getSessionBookmarks = (): IStories[] => {
+@@ -11,13 +12,13 @@ export const getSessionBookmarks = (): IStories[] => {
+     if (!data) return [];
+     const parsed = JSON.parse(data);
+     if (!Array.isArray(parsed)) {
+-      console.warn("Session bookmarks data is corrupted (not an array). Resetting.");
++      logger.warn("Session bookmarks data is corrupted (not an array). Resetting.");
+       sessionStorage.removeItem(SESSION_KEY);
+       return [];
+     }
+     return parsed as IStories[];
+   } catch (error) {
+-    console.error("Failed to read session bookmarks", error);
++    logger.error("Failed to read session bookmarks", error);
+     sessionStorage.removeItem(SESSION_KEY); // clear corrupted data
+     return [];
+   }
+@@ -35,7 +36,7 @@ export const addSessionBookmark = (story: IStories): void => {
+       window.dispatchEvent(new Event("session_bookmarks_changed"));
+     }
+   } catch (error) {
+-    console.error("Failed to add session bookmark", error);
++    logger.error("Failed to add session bookmark", error);
+   }
+ };
+ 
+@@ -51,7 +52,7 @@ export const removeSessionBookmark = (uuid: string): void => {
+     sessionStorage.setItem(SESSION_KEY, JSON.stringify(updated));
+     window.dispatchEvent(new Event("session_bookmarks_changed"));
+   } catch (error) {
+-    console.error("Failed to remove session bookmark", error);
++    logger.error("Failed to remove session bookmark", error);
+   }
+ };
+ 
+diff --git a/frontend/src/utils/story-draft.ts b/frontend/src/utils/story-draft.ts
+index 6335c1e7..96b3e1aa 100644
+--- a/frontend/src/utils/story-draft.ts
++++ b/frontend/src/utils/story-draft.ts
+@@ -1,5 +1,6 @@
+ import { getFromLocalStorage, removeFromLocalStorage, setToLocalStorage } from "./local-storage";
+ 
++import logger from "./logger.util";
+ const STORY_DRAFT_KEY = "storyspark_story_draft_v1";
+ 
+ export interface StoryDraftData {
+@@ -32,7 +33,7 @@ export const loadStoryDraft = (): StoryDraftData | null => {
+   try {
+     return JSON.parse(raw) as StoryDraftData;
+   } catch (error) {
+-    console.error("Failed to parse saved story draft:", error);
++    logger.error("Failed to parse saved story draft:", error);
+     return null;
+   }
+ };
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index ae6575a6..6e6faf9b 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -72,6 +72,9 @@ importers:
+       dotenv:
+         specifier: ^16.6.1
+         version: 16.6.1
++      epub-gen-memory:
++        specifier: ^1.1.2
++        version: 1.1.2
+       express:
+         specifier: ^4.21.1
+         version: 4.22.2
+@@ -126,6 +129,9 @@ importers:
+       uuid:
+         specifier: ^11.1.0
+         version: 11.1.1
++      web-push:
++        specifier: ^3.6.7
++        version: 3.6.7
+       winston:
+         specifier: ^3.19.0
+         version: 3.19.0
+@@ -166,6 +172,9 @@ importers:
+       '@types/multer':
+         specifier: ^1.4.12
+         version: 1.4.13
++      '@types/node':
++        specifier: ^22.13.9
++        version: 22.19.19
+       '@types/node-cron':
+         specifier: ^3.0.11
+         version: 3.0.11
+@@ -175,6 +184,9 @@ importers:
+       '@types/supertest':
+         specifier: ^7.2.0
+         version: 7.2.0
++      '@types/web-push':
++        specifier: ^3.6.4
++        version: 3.6.4
+       jest:
+         specifier: ^29.7.0
+         version: 29.7.0(@types/node@22.19.19)(ts-node@10.9.2(@types/node@22.19.19)(typescript@5.7.3))
+@@ -238,6 +250,9 @@ importers:
+       d3:
+         specifier: ^7.9.0
+         version: 7.9.0
++      diff:
++        specifier: ^7.0.0
++        version: 7.0.0
+       docx:
+         specifier: ^9.7.1
+         version: 9.7.1
+@@ -256,15 +271,15 @@ importers:
+       framer-motion:
+         specifier: ^12.5.0
+         version: 12.40.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
++      fuse.js:
++        specifier: ^7.5.0
++        version: 7.5.0
+       gsap:
+         specifier: ^3.15.0
+         version: 3.15.0
+       html2canvas:
+         specifier: ^1.4.1
+         version: 1.4.1
+-      jsdiff:
+-        specifier: ^1.1.1
+-        version: 1.1.1
+       jspdf:
+         specifier: ^4.2.1
+         version: 4.2.1
+@@ -289,12 +304,15 @@ importers:
+       react-chartjs-2:
+         specifier: ^5.3.0
+         version: 5.3.1(chart.js@4.5.1)(react@19.2.6)
++      react-circular-progressbar:
++        specifier: ^2.2.0
++        version: 2.2.0(react@19.2.6)
+       react-dom:
+         specifier: ^19.0.0
+         version: 19.2.6(react@19.2.6)
+       react-helmet-async:
+-        specifier: ^2.0.5
+-        version: 2.0.5(react@19.2.6)
++        specifier: ^3.0.0
++        version: 3.0.0(react@19.2.6)
+       react-hook-form:
+         specifier: ^7.54.2
+         version: 7.76.1(react@19.2.6)
+@@ -322,6 +340,9 @@ importers:
+       tailwindcss:
+         specifier: ^4.0.6
+         version: 4.3.0
++      use-debounce:
++        specifier: ^10.1.1
++        version: 10.1.1(react@19.2.6)
+       y-indexeddb:
+         specifier: ^9.0.12
+         version: 9.0.12(yjs@13.6.31)
+@@ -338,9 +359,6 @@ importers:
+       '@rollup/rollup-linux-x64-gnu':
+         specifier: ^4.60.4
+         version: 4.60.4
+-      lightningcss-linux-x64-gnu:
+-        specifier: ^1.32.0
+-        version: 1.32.0
+     devDependencies:
+       '@eslint/js':
+         specifier: ^9.19.0
+@@ -366,6 +384,9 @@ importers:
+       '@types/d3':
+         specifier: ^7.4.3
+         version: 7.4.3
++      '@types/diff':
++        specifier: ^7.0.2
++        version: 7.0.2
+       '@types/dompurify':
+         specifier: ^3.0.5
+         version: 3.2.0
+@@ -415,8 +436,8 @@ importers:
+         specifier: ^6.1.0
+         version: 6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)
+       vite-plugin-pwa:
+-        specifier: ^0.19.8
+-        version: 0.19.8(vite@6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4))(workbox-build@7.4.1(@types/babel__core@7.20.5))(workbox-window@7.4.1)
++        specifier: ^1.3.0
++        version: 1.3.0(vite@6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4))(workbox-build@7.4.1(@types/babel__core@7.20.5))(workbox-window@7.4.1)
+       vitest:
+         specifier: ^4.1.8
+         version: 4.1.10(@types/node@22.19.19)(jsdom@29.1.1(@noble/hashes@1.8.0))(vite@6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4))
+@@ -1688,18 +1709,6 @@ packages:
+     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
+     engines: {node: ^14.21.3 || >=16}
+ 
+-  '@nodelib/fs.scandir@2.1.5':
+-    resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
+-    engines: {node: '>= 8'}
+-
+-  '@nodelib/fs.stat@2.0.5':
+-    resolution: {integrity: sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A==}
+-    engines: {node: '>= 8'}
+-
+-  '@nodelib/fs.walk@1.2.8':
+-    resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
+-    engines: {node: '>= 8'}
+-
+   '@paralleldrive/cuid2@2.3.1':
+     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
+ 
+@@ -1904,6 +1913,10 @@ packages:
+   '@sinclair/typebox@0.27.10':
+     resolution: {integrity: sha512-MTBk/3jGLNB2tVxv6uLlFh1iu64iYOQ2PbdOSK3NW8JZsmlaOh2q6sdtKowBhfw8QFLmYNzTW4/oK4uATIi6ZA==}
+ 
++  '@sindresorhus/is@4.6.0':
++    resolution: {integrity: sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==}
++    engines: {node: '>=10'}
++
+   '@sinonjs/commons@3.0.1':
+     resolution: {integrity: sha512-K3mCHKQ9sVh8o1C9cxkwxaOmXoAMlDxC1mYyHrjqOWEcBjYr76t96zL2zlj5dUGZ3HSw240X1qgH3Mjf1yJWpQ==}
+ 
+@@ -2205,6 +2218,9 @@ packages:
+   '@types/deep-eql@4.0.2':
+     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
+ 
++  '@types/diff@7.0.2':
++    resolution: {integrity: sha512-JSWRMozjFKsGlEjiiKajUjIJVKuKdE3oVy2DNtK+fUo8q82nhFZ2CPQwicAIkXrofahDXrWJ7mjelvZphMS98Q==}
++
+   '@types/dompurify@3.2.0':
+     resolution: {integrity: sha512-Fgg31wv9QbLDA0SpTOXO3MaxySc4DKGLi8sna4/Utjo4r3ZRPdCt4UQee8BWr+Q5z21yifghREPJGYaEOEIACg==}
+     deprecated: This is a stub types definition. dompurify provides its own type definitions, so you do not need this installed.
+@@ -2341,6 +2357,9 @@ packages:
+   '@types/use-sync-external-store@0.0.6':
+     resolution: {integrity: sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==}
+ 
++  '@types/web-push@3.6.4':
++    resolution: {integrity: sha512-GnJmSr40H3RAnj0s34FNTcJi1hmWFV5KXugE0mYWnYhgTAHLJ/dJKAwDmvPJYMke0RplY2XE9LnM4hqSqKIjhQ==}
++
+   '@types/webidl-conversions@7.0.3':
+     resolution: {integrity: sha512-CiJJvcRtIgzadHCYXw7dqEnMNRjhGZlYK05Mj9OyktqV8uVT8fD2BFOB7S1uwBE3Kj2Z+4UyPmFw/Ixgw/LAlA==}
+ 
+@@ -2572,6 +2591,9 @@ packages:
+   asap@2.0.6:
+     resolution: {integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==}
+ 
++  asn1.js@5.4.1:
++    resolution: {integrity: sha512-+I//4cYPccV8LdmBLiX8CYvf9Sp3vQsrqu2QNXRcrbiWvcx/UdlFiqUJJzxRQxgsZmvhXhn4cSKeSmoFjVdupA==}
++
+   assertion-error@2.0.1:
+     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
+     engines: {node: '>=12'}
+@@ -2733,10 +2755,16 @@ packages:
+     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
+     engines: {node: '>=8'}
+ 
++  bn.js@4.12.5:
++    resolution: {integrity: sha512-3aRg6/JxfffFD+OlOjOFR3Vo79l39ooBTFucxx+MT3dhCtzn3EmiUPQo+6/OZuI2jbXi3YKgmiTFBgChQMwIRQ==}
++
+   body-parser@1.20.5:
+     resolution: {integrity: sha512-3grm+/2tUOvu2cjJkvsIxrv/wVpfXQW4PsQHYm7yk4vfpu7Ekl6nEsYBoJUL6qDwZUx8wUhQ8tR2qz+ad9c9OA==}
+     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
+ 
++  boolbase@1.0.0:
++    resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
++
+   brace-expansion@1.1.14:
+     resolution: {integrity: sha512-MWPGfDxnyzKU7rNOW9SP/c50vi3xrmrua/+6hfPbCS2ABNWfx24vPidzvC7krjU/RTo235sV776ymlsMtGKj8g==}
+ 
+@@ -2995,10 +3023,17 @@ packages:
+   css-line-break@2.1.0:
+     resolution: {integrity: sha512-FHcKFCZcAha3LwfVBhCQbW2nCNbkZXn7KVUJcsT5/P8YmfsVja0FMPJr0B903j/E69HUphKiV9iQArX8SDYA4w==}
+ 
++  css-select@4.3.0:
++    resolution: {integrity: sha512-wPpOYtnsVontu2mODhA19JrqWxNsfdatRKd64kmpRbQgh1KtItko5sTnEpPdpSaJszTOhEMlF/RPz28qj4HqhQ==}
++
+   css-tree@3.2.1:
+     resolution: {integrity: sha512-X7sjQzceUhu1u7Y/ylrRZFU2FS6LRiFVp6rKLPg23y3x3c3DOKAwuXGDp+PAGjh6CSnCjYeAul8pcT8bAl+lSA==}
+     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
+ 
++  css-what@6.2.2:
++    resolution: {integrity: sha512-u/O3vwbptzhMs3L1fQE82ZSLHQQfto5gyZzwteVIEyeaY5Fc7R4dapF/BvRoSYFeqfBk4m0V1Vafq5Pjv25wvA==}
++    engines: {node: '>= 6'}
++
+   css.escape@1.5.1:
+     resolution: {integrity: sha512-YUifsXXuknHlUsmlgyY0PKzgPOr7/FjCePfHNt0jxm83wHZi44VDMQ7/fGNkjY3/jV1MC+1CmZbaHzugyeRtpg==}
+ 
+@@ -3237,6 +3272,9 @@ packages:
+   dezalgo@1.0.4:
+     resolution: {integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==}
+ 
++  diacritics@1.3.0:
++    resolution: {integrity: sha512-wlwEkqcsaxvPJML+rDh/2iS824jbREk6DUMUKkEaSlxdYHeS43cClJtsWglvw2RfeXGm6ohKDqsXteJ5sP5enA==}
++
+   diff-sequences@29.6.3:
+     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
+     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+@@ -3245,6 +3283,10 @@ packages:
+     resolution: {integrity: sha512-X07nttJQkwkfKfvTPG/KSnE2OMdcUCao6+eXF3wmnIQRn2aPAHH3VxDbDOdegkd6JbPsXqShpvEOHfAT+nCNwQ==}
+     engines: {node: '>=0.3.1'}
+ 
++  diff@7.0.0:
++    resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
++    engines: {node: '>=0.3.1'}
++
+   docx@9.7.1:
+     resolution: {integrity: sha512-ilXFf9Moz47ABjFpDiA5s1w9lpb4EFSp7+5iiJSbfyYDM+bpZdAgLlSr7fW4aXhVe/E+F6QCv0EvRVFEd5CsWg==}
+     engines: {node: '>=10'}
+@@ -3255,12 +3297,29 @@ packages:
+   dom-accessibility-api@0.6.3:
+     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
+ 
++  dom-serializer@1.4.1:
++    resolution: {integrity: sha512-VHwB3KfrcOOkelEG2ZOfxqLZdfkil8PtJi4P8N2MMXucZq2yLp75ClViUlOVwyoHEDjYU433Aq+5zWP61+RGag==}
++
++  domelementtype@2.3.0:
++    resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
++
++  domhandler@4.3.1:
++    resolution: {integrity: sha512-GrwoxYN+uWlzO8uhUXRl0P+kHE4GtVPfYzVLcUxPL7KNdHKj66vvlhiweIHqYYXWlw+T8iLMp42Lm67ghw4WMQ==}
++    engines: {node: '>= 4'}
++
+   dompurify@3.4.5:
+     resolution: {integrity: sha512-OrwIBKsdNSVEeubdJ1HBv/wNENRM9ytAVCv7YXt//A3vPdVMNuACRqK9mXCGCBW2ln7BT/A4X0jXHo2Gu89miA==}
+ 
+   dompurify@3.4.8:
+     resolution: {integrity: sha512-yb1cEmaOum7wFvOCSQxyfgVlv5D47Rc30iZWoMpbDIWTnJ6grDDQyu2KFJzB2k7u0pMuJcQ1zphH//fFnw2tjQ==}
+ 
++  domutils@2.8.0:
++    resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
++
++  dot-prop@6.0.1:
++    resolution: {integrity: sha512-tE7ztYzXHIeyvc7N+hR3oi7FIbf/NIjVP9hmAt3yMXzrQ072/fpjGLx2GxNxGxUl5V73MEqYzioOMoVhGMJ5cA==}
++    engines: {node: '>=10'}
++
+   dotenv@16.6.1:
+     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+     engines: {node: '>=12'}
+@@ -3324,10 +3383,21 @@ packages:
+     resolution: {integrity: sha512-xYcDWrpELkFzz9SpZ3PlI6Eu6eD93Yf0WLDRxikGhWJ3MAir2SNZTIVCVZqZ/NUyx8AdMc2gT9C0gPiw18kG+A==}
+     engines: {node: '>=10.13.0'}
+ 
++  entities@2.2.0:
++    resolution: {integrity: sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==}
++
++  entities@3.0.1:
++    resolution: {integrity: sha512-WiyBqoomrwMdFG1e0kqvASYfnlb0lp8M5o5Fw2OFq1hNZxxcNk8Ik0Xm7LxzBhuidnZB/UtBqVCgUz3kBOP51Q==}
++    engines: {node: '>=0.12'}
++
+   entities@8.0.0:
+     resolution: {integrity: sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==}
+     engines: {node: '>=20.19.0'}
+ 
++  epub-gen-memory@1.1.2:
++    resolution: {integrity: sha512-vwGM6MVNqKIskFzPZqhi4ZOs0ZTUXco9oDuHFX1vB2Il9pTAkaHWFBFgHrrl832dYmBPb/raGVUZXFvZYueRyw==}
++    engines: {node: '>=10.0.0'}
++
+   errno@0.1.8:
+     resolution: {integrity: sha512-dJ6oBr5SQ1VSd9qkk7ByRgb/1SH4JZjCHSW/mr63/QcXO9zLVxvJ6Oy13nio03rxpSnVDDjFor75SjVeZWPW/A==}
+     hasBin: true
+@@ -3518,10 +3588,6 @@ packages:
+   fast-fifo@1.3.2:
+     resolution: {integrity: sha512-/d9sfos4yxzpwkDkuN7k2SqFKtYNmCTzgfEpz82x34IM9/zc8KGxQoXg1liNC/izpRM/MBdt44Nmx41ZWqk+FQ==}
+ 
+-  fast-glob@3.3.3:
+-    resolution: {integrity: sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==}
+-    engines: {node: '>=8.6.0'}
+-
+   fast-json-stable-stringify@2.1.0:
+     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
+ 
+@@ -3540,9 +3606,6 @@ packages:
+   fast-uri@3.1.4:
+     resolution: {integrity: sha512-8JnbkQ4juDyvYs4mgFGQqg4yCYtFDtUtmp2QIQq11ZZe5CFQ5wcqm1rqDgAh/QdMySuBnPzMUiJUNZG5N/AiQw==}
+ 
+-  fastq@1.20.1:
+-    resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
+-
+   fb-watchman@2.0.2:
+     resolution: {integrity: sha512-p5161BqbuCaSnB8jIbzQHOlpgsPmK5rJVDfDKO91Axs5NC1uu3HRQm6wt9cd9/+GtQQIO53JdGXXoyDpTAsgYA==}
+ 
+@@ -3843,6 +3906,9 @@ packages:
+     resolution: {integrity: sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA==}
+     engines: {node: '>=8.0.0'}
+ 
++  htmlparser2@7.2.0:
++    resolution: {integrity: sha512-H7MImA4MS6cw7nbyURtLPO1Tms7C5H602LRETv95z1MxO/7CP7rDVROehUYeYBUYEON94NXXDEPmZuq+hX4sog==}
++
+   http-errors@2.0.1:
+     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
+     engines: {node: '>= 0.8'}
+@@ -3851,6 +3917,10 @@ packages:
+     resolution: {integrity: sha512-O5kPr7AW7wYd/BBiOezTwnVAnmSNFY+J7hlZD2X5IOxVBetjcHAiTXhzj0gMrnojQlwy+UT1/Y3H3vJ3UlmvLA==}
+     engines: {node: '>= 0.4.0'}
+ 
++  http_ece@1.2.0:
++    resolution: {integrity: sha512-JrF8SSLVmcvc5NducxgyOrKXe3EsyHMgBFgSaIUGmArKe+rwr0uphRkRXvwiom3I+fpIfoItveHrfudL8/rxuA==}
++    engines: {node: '>=16'}
++
+   https-proxy-agent@5.0.1:
+     resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
+     engines: {node: '>= 6'}
+@@ -3993,10 +4063,6 @@ packages:
+     resolution: {integrity: sha512-+XSoyS05OdBbhFuELhgTCpFNHkpBOJqtsZfUFFpe5QTw+9Sjbh8zitxhQkYAo6wV7e1Vb8cAPvpCk9jGam/82g==}
+     engines: {node: '>= 0.4'}
+ 
+-  is-equal@0.1.0:
+-    resolution: {integrity: sha512-TXeTngl99D9PltZtHiuAJE8YpG7V3KR8Djya8SQQ9MMJ+nDuAui+AxQY8a0y8csxUlOn/ZpFj4ACh8semteBGQ==}
+-    engines: {node: '>= 0.4'}
+-
+   is-extglob@2.1.1:
+     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
+     engines: {node: '>=0.10.0'}
+@@ -4044,6 +4110,10 @@ packages:
+     resolution: {integrity: sha512-l4RyHgRqGN4Y3+9JHVrNqO+tN0rV5My76uW5/nuO4K1b6vw5G8d/cmFjP9tRfEsdhZNt0IFdZuK/c2Vr4Nb+Qg==}
+     engines: {node: '>=0.10.0'}
+ 
++  is-obj@2.0.0:
++    resolution: {integrity: sha512-drqDG3cbczxxEJRoOXcOjtdp1J/lyp1mNn0xaznRs8+muBhgQcrnbspox5X5fOw0HnMnbfDzvnEMEtqDEJEo8w==}
++    engines: {node: '>=8'}
++
+   is-potential-custom-element-name@1.0.1:
+     resolution: {integrity: sha512-bCYeRA2rVibKZd+s2625gGnGF/t7DSqDs4dP7CrLA1m7jKWz6pps0LpYLJN8Q64HtmPKJ1hrN3nzPNKFEKOUiQ==}
+ 
+@@ -4280,9 +4350,6 @@ packages:
+     resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
+     hasBin: true
+ 
+-  jsdiff@1.1.1:
+-    resolution: {integrity: sha512-a3k+sL1kZ9cGcEzu+4juqCp4QbEDibhu0mHSlBL/fNmekWyfRpffZ8tGhlxD3mBNVLa/GCYeTwxex351hGlerw==}
+-
+   jsdom@29.1.1:
+     resolution: {integrity: sha512-ECi4Fi2f7BdJtUKTflYRTiaMxIB0O6zfR1fX0GXpUrf6flp8QIYn1UT20YQqdSOfk2dfkCwS8LAFoJDEppNK5Q==}
+     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
+@@ -4612,10 +4679,6 @@ packages:
+   merge-stream@2.0.0:
+     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
+ 
+-  merge2@1.4.1:
+-    resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
+-    engines: {node: '>= 8'}
+-
+   methods@1.1.2:
+     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
+     engines: {node: '>= 0.6'}
+@@ -4858,6 +4921,9 @@ packages:
+     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
+     engines: {node: '>=8'}
+ 
++  nth-check@2.1.1:
++    resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
++
+   object-assign@4.1.1:
+     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
+     engines: {node: '>=0.10.0'}
+@@ -4912,6 +4978,10 @@ packages:
+     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
+     engines: {node: '>= 0.8.0'}
+ 
++  ow@0.28.2:
++    resolution: {integrity: sha512-dD4UpyBh/9m4X2NVjA+73/ZPBRF+uF4zIMFvvQsabMiEK8x41L3rQ8EENOi35kyyoaJwNxEeJcP6Fj1H4U409Q==}
++    engines: {node: '>=12'}
++
+   own-keys@1.0.2:
+     resolution: {integrity: sha512-19YVAg7T+WTrxggPukVq7DjTv6+PJ867TmhCvBsYwmbFCsZd344rq2Ld1p0wo8f8Qrrhgp82c6FJRqdXWtSEhg==}
+     engines: {node: '>= 0.4'}
+@@ -5073,9 +5143,6 @@ packages:
+     resolution: {integrity: sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==}
+     engines: {node: '>=0.6'}
+ 
+-  queue-microtask@1.2.3:
+-    resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
+-
+   quill-cursors@4.3.0:
+     resolution: {integrity: sha512-fHG6Ryon9KwD05L3gO14d8gqdapdVr2G/Rszl4g7T0X7ZQfG1j+/wAPx8JjhzZz+uWAekA9U0RjstfIt9M35IA==}
+ 
+@@ -5107,6 +5174,11 @@ packages:
+       chart.js: ^4.1.1
+       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+ 
++  react-circular-progressbar@2.2.0:
++    resolution: {integrity: sha512-cgyqEHOzB0nWMZjKfWN3MfSa1LV3OatcDjPz68lchXQUEiBD5O1WsAtoVK4/DSL0B4USR//cTdok4zCBkq8X5g==}
++    peerDependencies:
++      react: '>=0.14.0'
++
+   react-dom@19.2.6:
+     resolution: {integrity: sha512-0prMI+hvBbPjsWnxDLxlCGyM8PN6UuWjEUCYmZhO67xIV9Xasa/r/vDnq+Xyq4Lo27g8QSbO5YzARu0D1Sps3g==}
+     peerDependencies:
+@@ -5115,10 +5187,10 @@ packages:
+   react-fast-compare@3.2.2:
+     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
+ 
+-  react-helmet-async@2.0.5:
+-    resolution: {integrity: sha512-rYUYHeus+i27MvFE+Jaa4WsyBKGkL6qVgbJvSBoX8mbsWoABJXdEO0bZyi0F6i+4f0NuIb8AvqPMj3iXFHkMwg==}
++  react-helmet-async@3.0.0:
++    resolution: {integrity: sha512-nA3IEZfXiclgrz4KLxAhqJqIfFDuvzQwlKwpdmzZIuC1KNSghDEIXmyU0TKtbM+NafnkICcwx8CECFrZ/sL/1w==}
+     peerDependencies:
+-      react: ^16.6.0 || ^17.0.0 || ^18.0.0
++      react: ^16.6.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+ 
+   react-hook-form@7.76.1:
+     resolution: {integrity: sha512-rYM7tPiWlu3nZchkR/ex7piyzui2vFPyaLnXnI/RnblB/L4qfMmyses8llJVtF1NpE9WBBsJlGtcSZzPCXW1qQ==}
+@@ -5286,10 +5358,6 @@ packages:
+     engines: {node: '>= 0.4'}
+     hasBin: true
+ 
+-  reusify@1.1.0:
+-    resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
+-    engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
+-
+   rgbcolor@1.0.1:
+     resolution: {integrity: sha512-9aZLIrhRaD97sgVhtJOW6ckOEh6/GnvQtdVNfdZ6s67+3/XwLS9lBcQYzEEhYVeUowN7pRzMLsyGhK2i/xvWbw==}
+     engines: {node: '>= 0.8.15'}
+@@ -5307,9 +5375,6 @@ packages:
+     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
+     hasBin: true
+ 
+-  run-parallel@1.2.0:
+-    resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
+-
+   rw@1.3.3:
+     resolution: {integrity: sha512-PdhdWy89SiZogBLaw42zdeqtRJ//zFd2PgQavcICDUgJT5oW10QCRKbJ6bg4r0/UY2M6BWd5tkxuGFRvCkgfHQ==}
+ 
+@@ -5442,6 +5507,10 @@ packages:
+     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
+     engines: {node: '>=8'}
+ 
++  slugify@1.6.9:
++    resolution: {integrity: sha512-vZ7rfeehZui7wQs438JXBckYLkIIdfHOXsaVEUMyS5fHo1483l1bMdo0EDSWYclY0yZKFOipDy4KHuKs6ssvdg==}
++    engines: {node: '>=8.0.0'}
++
+   smob@1.6.2:
+     resolution: {integrity: sha512-RQsvleCbF8cVHEv+xuDGaA4pOizFqJ0GgjtMSRo6oP8pnN7WsigHgVGey6aILRBKv4W2YOMHLqbKdnB6hpB9fw==}
+     engines: {node: '>=20.0.0'}
+@@ -5942,6 +6011,10 @@ packages:
+     resolution: {integrity: sha512-kiGUalWN+rgBJ/1OHZsBtU4rXZOfj/7rKQxULKlIzwzQSvMJUUNgPwJEEh7gU6xEVxC0ahoOBvN2YI8GH6FNgA==}
+     engines: {node: '>=10.12.0'}
+ 
++  vali-date@1.0.0:
++    resolution: {integrity: sha512-sgECfZthyaCKW10N0fm27cg8HYTFK5qMWgypqkXMQ4Wbl/zZKx7xZICgcoxIIE+WFAP/MBL2EFwC/YvLxw3Zeg==}
++    engines: {node: '>=0.10.0'}
++
+   vary@1.1.2:
+     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
+     engines: {node: '>= 0.8'}
+@@ -5949,14 +6022,14 @@ packages:
+   victory-vendor@37.3.6:
+     resolution: {integrity: sha512-SbPDPdDBYp+5MJHhBCAyI7wKM3d5ivekigc2Dk2s7pgbZ9wIgIBYGVw4zGHBml/qTFbexrofXW6Gu4noGxrOwQ==}
+ 
+-  vite-plugin-pwa@0.19.8:
+-    resolution: {integrity: sha512-e1oK0dfhzhDhY3VBuML6c0h8Xfx6EkOVYqolj7g+u8eRfdauZe5RLteCIA/c5gH0CBQ0CNFAuv/AFTx4Z7IXTw==}
++  vite-plugin-pwa@1.3.0:
++    resolution: {integrity: sha512-c5kMgN+ITrOtHXp8PAtk2uOIEea6XjP/unCGxOWWBzQ6qa65qj/awHg0wf+QF9E/2u9vh86LqxPwzEPNbM2r5A==}
+     engines: {node: '>=16.0.0'}
+     peerDependencies:
+-      '@vite-pwa/assets-generator': ^0.2.4
+-      vite: ^3.1.0 || ^4.0.0 || ^5.0.0
+-      workbox-build: ^7.0.0
+-      workbox-window: ^7.0.0
++      '@vite-pwa/assets-generator': ^1.0.0
++      vite: ^3.1.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
++      workbox-build: ^7.4.1
++      workbox-window: ^7.4.1
+     peerDependenciesMeta:
+       '@vite-pwa/assets-generator':
+         optional: true
+@@ -6049,6 +6122,11 @@ packages:
+   walker@1.0.8:
+     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
+ 
++  web-push@3.6.7:
++    resolution: {integrity: sha512-OpiIUe8cuGjrj3mMBFWY+e4MMIkW3SVT+7vEIjvD9kejGUypv8GPDf84JdPWskK8zMRIJ6xYGm+Kxr8YkPyA0A==}
++    engines: {node: '>= 16'}
++    hasBin: true
++
+   web-streams-polyfill@3.3.3:
+     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
+     engines: {node: '>= 8'}
+@@ -7115,7 +7193,7 @@ snapshots:
+     dependencies:
+       '@babel/core': 7.29.0
+       '@babel/helper-plugin-utils': 7.29.7
+-      '@babel/types': 7.29.0
++      '@babel/types': 7.29.7
+       esutils: 2.0.3
+ 
+   '@babel/runtime@7.29.2': {}
+@@ -7668,18 +7746,6 @@ snapshots:
+ 
+   '@noble/hashes@1.8.0': {}
+ 
+-  '@nodelib/fs.scandir@2.1.5':
+-    dependencies:
+-      '@nodelib/fs.stat': 2.0.5
+-      run-parallel: 1.2.0
+-
+-  '@nodelib/fs.stat@2.0.5': {}
+-
+-  '@nodelib/fs.walk@1.2.8':
+-    dependencies:
+-      '@nodelib/fs.scandir': 2.1.5
+-      fastq: 1.20.1
+-
+   '@paralleldrive/cuid2@2.3.1':
+     dependencies:
+       '@noble/hashes': 1.8.0
+@@ -7708,7 +7774,7 @@ snapshots:
+   '@rollup/plugin-babel@6.1.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.60.4)':
+     dependencies:
+       '@babel/core': 7.29.0
+-      '@babel/helper-module-imports': 7.28.6
++      '@babel/helper-module-imports': 7.29.7
+       '@rollup/pluginutils': 5.4.0(rollup@4.60.4)
+     optionalDependencies:
+       '@types/babel__core': 7.20.5
+@@ -7826,6 +7892,8 @@ snapshots:
+ 
+   '@sinclair/typebox@0.27.10': {}
+ 
++  '@sindresorhus/is@4.6.0': {}
++
+   '@sinonjs/commons@3.0.1':
+     dependencies:
+       type-detect: 4.0.8
+@@ -8146,6 +8214,8 @@ snapshots:
+ 
+   '@types/deep-eql@4.0.2': {}
+ 
++  '@types/diff@7.0.2': {}
++
+   '@types/dompurify@3.2.0':
+     dependencies:
+       dompurify: 3.4.8
+@@ -8297,6 +8367,10 @@ snapshots:
+ 
+   '@types/use-sync-external-store@0.0.6': {}
+ 
++  '@types/web-push@3.6.4':
++    dependencies:
++      '@types/node': 22.19.19
++
+   '@types/webidl-conversions@7.0.3': {}
+ 
+   '@types/whatwg-url@11.0.5':
+@@ -8601,6 +8675,13 @@ snapshots:
+ 
+   asap@2.0.6: {}
+ 
++  asn1.js@5.4.1:
++    dependencies:
++      bn.js: 4.12.5
++      inherits: 2.0.4
++      minimalistic-assert: 1.0.1
++      safer-buffer: 2.1.2
++
+   assertion-error@2.0.1: {}
+ 
+   async-function@1.0.0: {}
+@@ -8771,6 +8852,8 @@ snapshots:
+ 
+   binary-extensions@2.3.0: {}
+ 
++  bn.js@4.12.5: {}
++
+   body-parser@1.20.5:
+     dependencies:
+       bytes: 3.1.2
+@@ -8788,6 +8871,8 @@ snapshots:
+     transitivePeerDependencies:
+       - supports-color
+ 
++  boolbase@1.0.0: {}
++
+   brace-expansion@1.1.14:
+     dependencies:
+       balanced-match: 1.0.2
+@@ -9050,11 +9135,21 @@ snapshots:
+     dependencies:
+       utrie: 1.0.2
+ 
++  css-select@4.3.0:
++    dependencies:
++      boolbase: 1.0.0
++      css-what: 6.2.2
++      domhandler: 4.3.1
++      domutils: 2.8.0
++      nth-check: 2.1.1
++
+   css-tree@3.2.1:
+     dependencies:
+       mdn-data: 2.27.1
+       source-map-js: 1.2.1
+ 
++  css-what@6.2.2: {}
++
+   css.escape@1.5.1: {}
+ 
+   csstype@3.2.3: {}
+@@ -9297,10 +9392,14 @@ snapshots:
+       asap: 2.0.6
+       wrappy: 1.0.2
+ 
++  diacritics@1.3.0: {}
++
+   diff-sequences@29.6.3: {}
+ 
+   diff@4.0.4: {}
+ 
++  diff@7.0.0: {}
++
+   docx@9.7.1:
+     dependencies:
+       '@types/node': 25.9.2
+@@ -9314,6 +9413,18 @@ snapshots:
+ 
+   dom-accessibility-api@0.6.3: {}
+ 
++  dom-serializer@1.4.1:
++    dependencies:
++      domelementtype: 2.3.0
++      domhandler: 4.3.1
++      entities: 2.2.0
++
++  domelementtype@2.3.0: {}
++
++  domhandler@4.3.1:
++    dependencies:
++      domelementtype: 2.3.0
++
+   dompurify@3.4.5:
+     optionalDependencies:
+       '@types/trusted-types': 2.0.7
+@@ -9323,6 +9434,16 @@ snapshots:
+     optionalDependencies:
+       '@types/trusted-types': 2.0.7
+ 
++  domutils@2.8.0:
++    dependencies:
++      dom-serializer: 1.4.1
++      domelementtype: 2.3.0
++      domhandler: 4.3.1
++
++  dot-prop@6.0.1:
++    dependencies:
++      is-obj: 2.0.0
++
+   dotenv@16.6.1: {}
+ 
+   dunder-proto@1.0.1:
+@@ -9401,8 +9522,30 @@ snapshots:
+       graceful-fs: 4.2.11
+       tapable: 2.3.3
+ 
++  entities@2.2.0: {}
++
++  entities@3.0.1: {}
++
+   entities@8.0.0: {}
+ 
++  epub-gen-memory@1.1.2:
++    dependencies:
++      abort-controller: 3.0.0
++      css-select: 4.3.0
++      diacritics: 1.3.0
++      dom-serializer: 1.4.1
++      domhandler: 4.3.1
++      domutils: 2.8.0
++      ejs: 3.1.10
++      htmlparser2: 7.2.0
++      jszip: 3.10.1
++      mime: 2.6.0
++      node-fetch: 2.7.0
++      ow: 0.28.2
++      slugify: 1.6.9
++    transitivePeerDependencies:
++      - encoding
++
+   errno@0.1.8:
+     dependencies:
+       prr: 1.0.1
+@@ -9443,7 +9586,7 @@ snapshots:
+       has-property-descriptors: 1.0.2
+       has-proto: 1.2.0
+       has-symbols: 1.1.0
+-      hasown: 2.0.3
++      hasown: 2.0.4
+       internal-slot: 1.1.0
+       is-array-buffer: 3.0.5
+       is-callable: 1.2.7
+@@ -9743,14 +9886,6 @@ snapshots:
+ 
+   fast-fifo@1.3.2: {}
+ 
+-  fast-glob@3.3.3:
+-    dependencies:
+-      '@nodelib/fs.stat': 2.0.5
+-      '@nodelib/fs.walk': 1.2.8
+-      glob-parent: 5.1.2
+-      merge2: 1.4.1
+-      micromatch: 4.0.8
+-
+   fast-json-stable-stringify@2.1.0: {}
+ 
+   fast-levenshtein@2.0.6: {}
+@@ -9767,10 +9902,6 @@ snapshots:
+ 
+   fast-uri@3.1.4: {}
+ 
+-  fastq@1.20.1:
+-    dependencies:
+-      reusify: 1.1.0
+-
+   fb-watchman@2.0.2:
+     dependencies:
+       bser: 2.1.1
+@@ -10087,6 +10218,13 @@ snapshots:
+       css-line-break: 2.1.0
+       text-segmentation: 1.0.3
+ 
++  htmlparser2@7.2.0:
++    dependencies:
++      domelementtype: 2.3.0
++      domhandler: 4.3.1
++      domutils: 2.8.0
++      entities: 3.0.1
++
+   http-errors@2.0.1:
+     dependencies:
+       depd: 2.0.0
+@@ -10097,6 +10235,8 @@ snapshots:
+ 
+   http-status@2.1.0: {}
+ 
++  http_ece@1.2.0: {}
++
+   https-proxy-agent@5.0.1:
+     dependencies:
+       agent-base: 6.0.2
+@@ -10167,7 +10307,7 @@ snapshots:
+   internal-slot@1.1.0:
+     dependencies:
+       es-errors: 1.3.0
+-      hasown: 2.0.3
++      hasown: 2.0.4
+       side-channel: 1.1.0
+ 
+   internmap@2.0.3: {}
+@@ -10244,8 +10384,6 @@ snapshots:
+     dependencies:
+       call-bound: 1.0.4
+ 
+-  is-equal@0.1.0: {}
+-
+   is-extglob@2.1.1: {}
+ 
+   is-finalizationregistry@1.1.1:
+@@ -10283,6 +10421,8 @@ snapshots:
+ 
+   is-obj@1.0.1: {}
+ 
++  is-obj@2.0.0: {}
++
+   is-potential-custom-element-name@1.0.1: {}
+ 
+   is-regex@1.2.1:
+@@ -10290,7 +10430,7 @@ snapshots:
+       call-bound: 1.0.4
+       gopd: 1.2.0
+       has-tostringtag: 1.0.2
+-      hasown: 2.0.3
++      hasown: 2.0.4
+ 
+   is-regexp@1.0.0: {}
+ 
+@@ -10709,10 +10849,6 @@ snapshots:
+     dependencies:
+       argparse: 2.0.1
+ 
+-  jsdiff@1.1.1:
+-    dependencies:
+-      is-equal: 0.1.0
+-
+   jsdom@29.1.1(@noble/hashes@1.8.0):
+     dependencies:
+       '@asamuzakjp/css-color': 5.1.11
+@@ -11044,8 +11180,6 @@ snapshots:
+ 
+   merge-stream@2.0.0: {}
+ 
+-  merge2@1.4.1: {}
+-
+   methods@1.1.2: {}
+ 
+   micromatch@4.0.8:
+@@ -11264,6 +11398,10 @@ snapshots:
+     dependencies:
+       path-key: 3.1.1
+ 
++  nth-check@2.1.1:
++    dependencies:
++      boolbase: 1.0.0
++
+   object-assign@4.1.1: {}
+ 
+   object-inspect@1.13.4: {}
+@@ -11323,6 +11461,14 @@ snapshots:
+       type-check: 0.4.0
+       word-wrap: 1.2.5
+ 
++  ow@0.28.2:
++    dependencies:
++      '@sindresorhus/is': 4.6.0
++      callsites: 3.1.0
++      dot-prop: 6.0.1
++      lodash.isequal: 4.5.0
++      vali-date: 1.0.0
++
+   own-keys@1.0.2:
+     dependencies:
+       call-bound: 1.0.4
+@@ -11464,8 +11610,6 @@ snapshots:
+     dependencies:
+       side-channel: 1.1.0
+ 
+-  queue-microtask@1.2.3: {}
+-
+   quill-cursors@4.3.0: {}
+ 
+   quill-delta@5.1.0:
+@@ -11507,6 +11651,10 @@ snapshots:
+       chart.js: 4.5.1
+       react: 19.2.6
+ 
++  react-circular-progressbar@2.2.0(react@19.2.6):
++    dependencies:
++      react: 19.2.6
++
+   react-dom@19.2.6(react@19.2.6):
+     dependencies:
+       react: 19.2.6
+@@ -11514,7 +11662,7 @@ snapshots:
+ 
+   react-fast-compare@3.2.2: {}
+ 
+-  react-helmet-async@2.0.5(react@19.2.6):
++  react-helmet-async@3.0.0(react@19.2.6):
+     dependencies:
+       invariant: 2.2.4
+       react: 19.2.6
+@@ -11695,8 +11843,6 @@ snapshots:
+       path-parse: 1.0.7
+       supports-preserve-symlinks-flag: 1.0.0
+ 
+-  reusify@1.1.0: {}
+-
+   rgbcolor@1.0.1:
+     optional: true
+ 
+@@ -11737,10 +11883,6 @@ snapshots:
+       '@rollup/rollup-win32-x64-msvc': 4.60.4
+       fsevents: 2.3.3
+ 
+-  run-parallel@1.2.0:
+-    dependencies:
+-      queue-microtask: 1.2.3
+-
+   rw@1.3.3: {}
+ 
+   rxjs@7.8.2:
+@@ -11891,6 +12033,8 @@ snapshots:
+ 
+   slash@3.0.0: {}
+ 
++  slugify@1.6.9: {}
++
+   smob@1.6.2: {}
+ 
+   socket.io-adapter@2.5.7:
+@@ -12438,6 +12582,8 @@ snapshots:
+       '@types/istanbul-lib-coverage': 2.0.6
+       convert-source-map: 2.0.0
+ 
++  vali-date@1.0.0: {}
++
+   vary@1.1.2: {}
+ 
+   victory-vendor@37.3.6:
+@@ -12457,11 +12603,11 @@ snapshots:
+       d3-time: 3.1.0
+       d3-timer: 3.0.1
+ 
+-  vite-plugin-pwa@0.19.8(vite@6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4))(workbox-build@7.4.1(@types/babel__core@7.20.5))(workbox-window@7.4.1):
++  vite-plugin-pwa@1.3.0(vite@6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4))(workbox-build@7.4.1(@types/babel__core@7.20.5))(workbox-window@7.4.1):
+     dependencies:
+       debug: 4.4.3
+-      fast-glob: 3.3.3
+       pretty-bytes: 6.1.1
++      tinyglobby: 0.2.16
+       vite: 6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)
+       workbox-build: 7.4.1(@types/babel__core@7.20.5)
+       workbox-window: 7.4.1
+@@ -12520,6 +12666,16 @@ snapshots:
+     dependencies:
+       makeerror: 1.0.12
+ 
++  web-push@3.6.7:
++    dependencies:
++      asn1.js: 5.4.1
++      http_ece: 1.2.0
++      https-proxy-agent: 7.0.6
++      jws: 4.0.1
++      minimist: 1.2.8
++    transitivePeerDependencies:
++      - supports-color
++
+   web-streams-polyfill@3.3.3: {}
+ 
+   web-streams-polyfill@4.0.0-beta.3: {}

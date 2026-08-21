@@ -1,3 +1,4 @@
+import logger from "../../utils/logger.util";
 import toast from "react-hot-toast";
 import {
   CharacterResponse,
@@ -22,7 +23,7 @@ const CharacterPortrait = ({ character }: CharacterPortraitProps) => {
           : "Character portrait generated!"
       );
     } catch (error) {
-      console.error("Failed to generate character portrait:", error);
+      logger.error("Failed to generate character portrait:", error);
       toast.error("Failed to generate character portrait.");
     }
   };

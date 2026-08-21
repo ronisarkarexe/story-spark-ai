@@ -12,6 +12,7 @@ import SSProfile from "../ui-component/ss-profile/ss-profile";
 import toast, { Toaster } from "react-hot-toast";
 import UserCollectionsTab from "../collections/UserCollectionsTab";
 
+import logger from "../../utils/logger.util";
 const PublicProfileComponent = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const PublicProfileComponent = () => {
         toast.success(`Unfollowed ${user?.name || "writer"}.`);
       }
     } catch (error) {
-      console.error("Failed to toggle follow", error);
+      logger.error("Failed to toggle follow", error);
       toast.error("Something went wrong. Please try again.");
     }
   };

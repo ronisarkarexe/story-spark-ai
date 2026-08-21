@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import JSZip from "jszip";
 import AudioPlayer from "../AudioPlayer";
 
+import logger from "../../utils/logger.util";
 interface Props {
   chapters: Chapter[];
   storyId: string;
@@ -165,7 +166,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       doc.save(`${safeName}.pdf`);
       toast.success("PDF downloaded with custom styles!");
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error("Failed to export PDF.");
     }
   };
@@ -309,7 +310,7 @@ ${ncxNavPoints}  </navMap>
 
       toast.success("EPUB downloaded successfully!");
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       toast.error("Failed to generate EPUB file.");
     }
   };

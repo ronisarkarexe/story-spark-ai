@@ -4,6 +4,7 @@ import { getBaseUrl } from "../../helpers/config";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
+import logger from "../../utils/logger.util";
 interface IPlotHole {
   inconsistency: string;
   context: string;
@@ -62,7 +63,7 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
         throw new Error("Invalid response format received from backend.");
       }
     } catch (err: unknown) {
-      console.error("Plot hole analysis error:", err);
+      logger.error("Plot hole analysis error:", err);
 
       const errMsg =
         axios.isAxiosError(err)

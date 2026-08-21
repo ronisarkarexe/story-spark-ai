@@ -1,3 +1,4 @@
+import logger from "../../../utils/logger.util";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
@@ -404,7 +405,7 @@ Provide concrete suggestions to make it more creative, specific, and story-gener
           : [],
       };
     } catch (error) {
-      console.error("Gemini enhancement failed:", error);
+      logger.error("Gemini enhancement failed:", error);
       return this.getFallbackEnhancements(originalPrompt);
     }
   }

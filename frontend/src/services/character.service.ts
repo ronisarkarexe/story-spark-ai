@@ -1,6 +1,7 @@
+import logger from "../utils/logger.util";
 export const saveCharacter = async (characterData: any) => {
   // Logic to save character to backend
-  console.log("Saving character:", characterData);
+  logger.debug("Saving character:", characterData);
 };
 
 export const getCharacters = async () => {

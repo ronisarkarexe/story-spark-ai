@@ -1,5 +1,6 @@
 import { getFromLocalStorage, removeFromLocalStorage, setToLocalStorage } from "./local-storage";
 
+import logger from "./logger.util";
 const STORY_DRAFT_KEY = "storyspark_story_draft_v1";
 
 export interface StoryDraftData {
@@ -32,7 +33,7 @@ export const loadStoryDraft = (): StoryDraftData | null => {
   try {
     return JSON.parse(raw) as StoryDraftData;
   } catch (error) {
-    console.error("Failed to parse saved story draft:", error);
+    logger.error("Failed to parse saved story draft:", error);
     return null;
   }
 };

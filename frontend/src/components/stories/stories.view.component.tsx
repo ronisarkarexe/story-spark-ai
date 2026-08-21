@@ -21,6 +21,7 @@ import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from
 import { useLocation } from "react-router-dom";
 import ExportStoryModal from "./ExportStoryModal";
 
+import logger from "../../utils/logger.util";
 export interface IStories {
   uuid: string;
   title: string;
@@ -146,7 +147,7 @@ useEffect(() => {
       await createPost(post).unwrap();
       toast.success("Story auto-saved!");
     } catch (error) {
-      console.error("Auto-save failed", error);
+      logger.error("Auto-save failed", error);
     }
   }, 1500);
 
@@ -223,7 +224,7 @@ const data = await response.json();
 
     toast.success("Character profiles generated!");
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     toast.error("Failed to generate profiles.");
   } finally {
     setProfileLoading(false);

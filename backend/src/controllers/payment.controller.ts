@@ -4,12 +4,13 @@ import crypto from "crypto";
 import { User } from "../app/modules/user/user.model";
 import { Order } from "../app/modules/payment/order.model";
 import { IOrder } from "../app/modules/payment/order.interface";
+import logger from "../utils/logger.util";
 
 let razorpayInstance: any = null;
 const getRazorpay = () => {
   if (!razorpayInstance) {
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      console.warn("Razorpay credentials missing. Payment features will fail.");
+      logger.warn("Razorpay credentials missing. Payment features will fail.");
       return null;
     }
     razorpayInstance = new Razorpay({

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { FaGithub, FaStar, FaCodeBranch, FaUsers } from 'react-icons/fa';
 
+import logger from "../utils/logger.util";
 interface Contributor {
   id: number;
   login: string;
@@ -59,7 +60,7 @@ export const Contributors = () => {
 
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch contributors');
-        console.error('Error fetching contributors:', err);
+        logger.error('Error fetching contributors:', err);
       } finally {
         setLoading(false);
       }

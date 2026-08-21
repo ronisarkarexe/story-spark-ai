@@ -1,3 +1,5 @@
+import logger from "../../utils/logger.util";
+
 /**
  * URL validation helpers for safely validating user-supplied URL strings.
  * Used in route handlers and validation schemas to ensure URL fields
@@ -29,7 +31,7 @@ export const isValidUrl = (url: string): boolean => {
 
     return true;
   } catch (error) {
-    console.warn('[URLValidator] Invalid URL:', url);
+    logger.warn('[URLValidator] Invalid URL:', url);
     return false;
   }
 };

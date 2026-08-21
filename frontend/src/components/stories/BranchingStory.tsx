@@ -6,6 +6,7 @@ import StorySegment from "./StorySegment";
 import StoryTimeline, { StoryTimelineEntry } from "./StoryTimeline";
 import { useCreateBranchingStoryMutation } from "../../redux/apis/branching.story.api";
 
+import logger from "../../utils/logger.util";
 type BranchingHistoryEntry = StoryTimelineEntry;
 
 type CurrentStoryState = {
@@ -59,7 +60,7 @@ const BranchingStory = () => {
         segmentIndex: response.data.segmentIndex,
       });
     } catch (error) {
-      console.error("Unable to load branching story", error);
+      logger.error("Unable to load branching story", error);
       toast.error("The story engine stalled. A fallback scene is ready.");
       setCurrentStory(fallbackStory(history.length + 1));
     } finally {

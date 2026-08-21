@@ -1,3 +1,4 @@
+import logger from "./logger.util";
 const CACHE_NAME = "story-spark-ai-image-cache";
 
 // In-memory mapping of remote url -> object URL to avoid recreating them during the session
@@ -57,7 +58,7 @@ export async function getCachedImageUrl(url: string): Promise<string> {
       objectUrlMap.set(url, blobUrl);
       return blobUrl;
     } catch (error) {
-      console.warn(`[ImageCache] Failed to load/cache image "${url}":`, error);
+      logger.warn(`[ImageCache] Failed to load/cache image "${url}":`, error);
       // Fallback to original remote URL if fetch/caching fails (e.g., CORS restrictions)
       return url;
     } finally {

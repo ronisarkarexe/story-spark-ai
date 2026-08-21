@@ -1,5 +1,6 @@
 import { IStories } from "../components/stories/stories.view.component";
 
+import logger from "./logger.util";
 const SESSION_KEY = "story_spark_session_bookmarks";
 
 export const getSessionBookmarks = (): IStories[] => {
@@ -11,13 +12,13 @@ export const getSessionBookmarks = (): IStories[] => {
     if (!data) return [];
     const parsed = JSON.parse(data);
     if (!Array.isArray(parsed)) {
-      console.warn("Session bookmarks data is corrupted (not an array). Resetting.");
+      logger.warn("Session bookmarks data is corrupted (not an array). Resetting.");
       sessionStorage.removeItem(SESSION_KEY);
       return [];
     }
     return parsed as IStories[];
   } catch (error) {
-    console.error("Failed to read session bookmarks", error);
+    logger.error("Failed to read session bookmarks", error);
     sessionStorage.removeItem(SESSION_KEY); // clear corrupted data
     return [];
   }
@@ -35,7 +36,7 @@ export const addSessionBookmark = (story: IStories): void => {
       window.dispatchEvent(new Event("session_bookmarks_changed"));
     }
   } catch (error) {
-    console.error("Failed to add session bookmark", error);
+    logger.error("Failed to add session bookmark", error);
   }
 };
 
@@ -51,7 +52,7 @@ export const removeSessionBookmark = (uuid: string): void => {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event("session_bookmarks_changed"));
   } catch (error) {
-    console.error("Failed to remove session bookmark", error);
+    logger.error("Failed to remove session bookmark", error);
   }
 };
 

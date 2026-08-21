@@ -1,5 +1,6 @@
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
+import logger from "./logger.util";
 export interface CustomJwtPayload extends JwtPayload {
   // Standard JWT claim `sub` is inherited from JwtPayload — not redeclared here
   email?: string;
@@ -66,7 +67,7 @@ export const decodeToken = (token: string): CustomJwtPayload => {
 
   const VALID_ROLES = ["user", "admin", "super_admin", "writer", "guest"] as const;
   if (!VALID_ROLES.includes(decoded.role as typeof VALID_ROLES[number])) {
-    console.warn(`Unrecognised token role: "${decoded.role}". Allowed: ${VALID_ROLES.join(", ")}`);
+    logger.warn(`Unrecognised token role: "${decoded.role}". Allowed: ${VALID_ROLES.join(", ")}`);
     // Warn but do not throw — prevents valid tokens from being rejected if backend adds new roles.
   }
 
@@ -77,7 +78,7 @@ export const decodeToken = (token: string): CustomJwtPayload => {
 
   const VALID_SUBSCRIPTIONS = ["free", "pro", "premium"] as const;
   if (!VALID_SUBSCRIPTIONS.includes(decoded.subscriptionType as typeof VALID_SUBSCRIPTIONS[number])) {
-    console.warn(`Unrecognised subscription type: "${decoded.subscriptionType}". Allowed: ${VALID_SUBSCRIPTIONS.join(", ")}`);
+    logger.warn(`Unrecognised subscription type: "${decoded.subscriptionType}". Allowed: ${VALID_SUBSCRIPTIONS.join(", ")}`);
     // Warn but do not throw — prevents valid tokens from being rejected if backend adds new plans.
   }
 

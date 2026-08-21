@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
 import { Achievement } from "../types";
 import AchievementBadge from "./AchievementBadge";
 
+import logger from "../utils/logger.util";
 interface AchievementsGridProps {
   achievements?: Achievement[];
   isLoading?: boolean;
@@ -29,7 +30,7 @@ const AchievementsGrid = ({
         const parsed = JSON.parse(celebratedBadgesStr);
         celebratedBadges = Array.isArray(parsed) ? parsed : [];
       } catch (e) {
-        console.error("Error parsing celebrated_badges from localStorage:", e);
+        logger.error("Error parsing celebrated_badges from localStorage:", e);
         localStorage.removeItem("celebrated_badges");
       }
     }

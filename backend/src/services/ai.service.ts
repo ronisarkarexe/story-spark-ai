@@ -1,5 +1,6 @@
 // backend/src/services/ai.service.ts
 
+import logger from "../utils/logger.util";
 import { validateAndFormatPrompt, validateOutput } from "../utils/promptSecurity";
 import { buildStoryPrompt, PromptOptions } from "../utils/promptBuilder";
 import OpenAI from "openai";
@@ -170,7 +171,7 @@ export async function generateStory(
   try {
     const existingCache = await StoryCache.findOne({ promptKey: cacheKey });
     if (existingCache) {
-      console.log("[CACHE HIT] Serving story instantly from MongoDB cache");
+      logger.info("[CACHE HIT] Serving story instantly from MongoDB cache");
       return {
         story: existingCache.storyData,
         provider: existingCache.provider as "openai" | "gemini" | "anthropic",
@@ -179,7 +180,7 @@ export async function generateStory(
     }
   } catch (cacheError) {
     // If the database cache check fails for any strange reason, log it but don't crash the generation flow
-    console.warn("[CACHE ERROR] Failed to query cache:", cacheError);
+    logger.warn("[CACHE ERROR] Failed to query cache:", cacheError);
   }
 
   const chosenProvider = provider?.toLowerCase();
@@ -191,10 +192,10 @@ export async function generateStory(
     try {
       let story = await generateWithAnthropic(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log("[AI] Story generated successfully via Anthropic");
+      logger.info("[AI] Story generated successfully via Anthropic");
       finalResult = { story, provider: "anthropic", fallbackUsed: false };
     } catch (anthropicError) {
-      console.warn(
+      logger.warn(
         "[AI] Anthropic failed:",
         anthropicError instanceof Error ? anthropicError.message : anthropicError
       );
@@ -205,18 +206,18 @@ export async function generateStory(
         );
       }
       didFallbackToGemini = true;
-      console.log("[AI] Falling back to Gemini...");
+      logger.info("[AI] Falling back to Gemini...");
     }
   } else if (chosenProvider === "openai" || !chosenProvider) {
     // ── Try OpenAI first ──────────────────────────────────────────────────────
     try {
       let story = await generateWithOpenAI(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log("[AI] Story generated successfully via OpenAI");
+      logger.info("[AI] Story generated successfully via OpenAI");
       finalResult = { story, provider: "openai", fallbackUsed: false };
 
     } catch (openAIError) {
-      console.warn(
+      logger.warn(
         "[AI] OpenAI failed:",
         openAIError instanceof Error ? openAIError.message : openAIError
       );
@@ -229,7 +230,7 @@ export async function generateStory(
       }
 
       didFallbackToGemini = true;
-      console.log("[AI] Falling back to Gemini.");
+      logger.info("[AI] Falling back to Gemini.");
     }
   } else if (chosenProvider === "gemini") {
     // Skip OpenAI/Anthropic blocks
@@ -243,11 +244,11 @@ export async function generateStory(
     try {
       let story = await generateWithGemini(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
+      logger.info(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
       finalResult = { story, provider: "gemini", fallbackUsed: didFallbackToGemini };
 
     } catch (geminiError) {
-      console.error(
+      logger.error(
         "[AI] Gemini also failed.",
         geminiError instanceof Error ? geminiError.message : geminiError
       );
@@ -266,9 +267,9 @@ export async function generateStory(
       provider: finalResult.provider,
       storyData: finalResult.story
     });
-    console.log("[CACHE STORED] New AI story cached to MongoDB successfully");
+    logger.info("[CACHE STORED] New AI story cached to MongoDB successfully");
   } catch (saveCacheError) {
-    console.warn("[CACHE ERROR] Failed to save story generation to cache:", saveCacheError);
+    logger.warn("[CACHE ERROR] Failed to save story generation to cache:", saveCacheError);
   }
 
   return finalResult;
@@ -437,7 +438,7 @@ export async function generateReaderRoomFeedback(
       usedProvider = "openai";
     }
   } catch (primaryError) {
-    console.warn(
+    logger.warn(
       "[Reader Room] Primary provider failed, falling back to Gemini:",
       primaryError instanceof Error ? primaryError.message : primaryError
     );

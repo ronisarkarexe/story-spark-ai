@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { isLoggedIn, getUserInfo } from '../services/auth.service';
 
 
+import logger from "../utils/logger.util";
 interface ProtectedRouteProps {
   allowedRoles?: string[];
   children?: ReactNode;
@@ -19,7 +20,7 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
   // Check if user is logged in
   if (!isLoggedIn()) {
     if (import.meta.env.DEV) {
-      console.warn("Dev mode: Bypassing auth check for protected route.");
+      logger.warn("Dev mode: Bypassing auth check for protected route.");
     } else {
       return <Navigate to="/login" replace state={{ from: location }} />;
     }

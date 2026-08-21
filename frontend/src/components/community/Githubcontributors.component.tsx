@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import githubHero from "../../assets/github-hero.png";
 import ImageFallback from "../ImageFallback";
+import logger from "../../utils/logger.util";
 interface GitHubContributor {
   id: number;
   login: string;
@@ -50,7 +51,7 @@ const GithubcontributorData = async () => {
     }
   } catch (err: unknown) {
     if ((err as Error).name !== "AbortError") {
-      console.error("Failed to load GitHub data", err);
+      logger.error("Failed to load GitHub data", err);
     }
   }
 };

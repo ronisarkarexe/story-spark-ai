@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { IEmailBody, IVerifyOtpBody } from "./verify_email.interface";
 import ApiError from "../../../errors/api_error";
 import config from "../../../config";
+import logger from "../../../utils/logger.util";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
 import crypto from "crypto";
@@ -45,7 +46,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
     );
 
     if (!config.verify_email || !config.verify_password) {
-      console.log(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
+      logger.debug(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
       return {
         expiresAt,
       };
@@ -110,7 +111,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
     if (error instanceof ApiError) {
       throw error;
     }
-    console.error("Mail Error:", error);
+    logger.error("Mail Error:", error);
     throw new ApiError(500, "Failed to send email");
   }
 };
@@ -193,7 +194,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
 // FIX #3: Converted to a standard function so it gets safely hoisted to the top 
 // of the scope during compilation, preventing potential initialization errors.
 function clearOtpAttempts(email: string) {
-  console.log('Clearing OTP attempts for:', email);
+  logger.debug('Clearing OTP attempts for:', email);
 }
 
 export const VerifyEmailService = {

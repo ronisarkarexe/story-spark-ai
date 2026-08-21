@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import logger from "../utils/logger.util";
 import {
   Trophy,
   Crown,
@@ -40,7 +41,7 @@ export default function Leaderboard() {
 
       setData(json.data ?? json);
     } catch (err) {
-      console.error("Leaderboard fetch error:", err);
+      logger.error("Leaderboard fetch error:", err);
       setError("Failed to load leaderboard. Please try again.");
     } finally {
       setLoading(false);

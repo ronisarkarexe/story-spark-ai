@@ -8,6 +8,7 @@ import { AUTH_KEY } from "../../constants/storage-key";
 import { getBaseUrl } from "../../helpers/config";
 import { getFromLocalStorage } from "../../utils/local-storage";
 
+import logger from "../../utils/logger.util";
 const API_BASE = getBaseUrl();
 
 const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#14b8a6"];
@@ -90,7 +91,7 @@ export default function AnalyticsDashboard() {
         }
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
-          console.error(e);
+          logger.error(e);
           setError(e instanceof Error ? e.message : "Unable to load analytics data");
         }
       } finally {
