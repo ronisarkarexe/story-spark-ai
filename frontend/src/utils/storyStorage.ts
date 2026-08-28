@@ -1,6 +1,10 @@
 export function clearStorySession(): void {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return;
   }
-  localStorage.removeItem("storySession");
+  try {
+    localStorage.removeItem('storySession');
+  } catch {
+    // Ignore storage restriction error
+  }
 }
