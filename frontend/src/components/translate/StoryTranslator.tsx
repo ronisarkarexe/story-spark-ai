@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useTranslateStoryMutation, useTranslateFreeStoryMutation } from "../../redux/apis/ai.model.api";
 import { IStories } from "../stories/stories.view.component";
 
@@ -190,7 +190,6 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-center justify-center p-4">
-      <Toaster position="top-center" />
       <div className="w-full max-w-4xl bg-[#0f1117] rounded-2xl border border-white/10 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
 
         {/* Header */}
