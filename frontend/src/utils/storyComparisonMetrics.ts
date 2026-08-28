@@ -18,6 +18,8 @@ export function calculateStoryMetrics(
     words.map((word) => word.toLowerCase())
   );
 
+  const dialoguePairs = (story.match(/"[^"]*"/g) || []).length;
+
   return {
     wordCount,
     readingTime: Math.max(1, Math.ceil(wordCount / 200)),
@@ -26,9 +28,7 @@ export function calculateStoryMetrics(
     ),
     dialoguePercentage: Math.min(
       100,
-      Math.round(
-        ((story.match(/"/g)?.length || 0) / 2) * 5
-      )
+      Math.round(dialoguePairs * 5)
     ),
     pacing:
       wordCount > 800
