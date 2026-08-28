@@ -1,4 +1,3 @@
-/* eslint-disable */
 import baseApi from "../base_api/base.api";
 import { tagTypes } from "../tag-types";
 
@@ -19,6 +18,24 @@ export interface StoryTreeEdge {
 export interface StoryTreeResponse {
   nodes: StoryTreeNode[];
   edges: StoryTreeEdge[];
+}
+
+export interface Character {
+  id: string;
+  name: string;
+  [key: string]: unknown; // extensible — add known fields as the API stabilises
+}
+
+export interface Relationship {
+  source: string;
+  target: string;
+  type: string;
+  [key: string]: unknown;
+}
+
+export interface CharacterNetworkResponse {
+  characters: Character[];
+  relationships: Relationship[];
 }
 
 const storyVersionApi = baseApi.injectEndpoints({
@@ -75,12 +92,12 @@ const storyVersionApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.StoryVersion],
     }),
 
-    getCharacterNetwork: build.query<{ characters: any[]; relationships: any[] }, string>({
+    getCharacterNetwork: build.query<CharacterNetworkResponse, string>({
       query: (storyId: string) => ({
         url: `/story/${storyId}/character-network`,
         method: "GET",
       }),
-      transformResponse: (response: { data: { characters: any[]; relationships: any[] } }) => response.data,
+      transformResponse: (response: { data: CharacterNetworkResponse }) => response.data,
       providesTags: [tagTypes.StoryVersion],
     }),
   }),
