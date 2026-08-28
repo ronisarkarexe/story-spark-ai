@@ -234,7 +234,7 @@ const PromptAnalysisCard: React.FC<PromptAnalysisCardProps> = ({
                   <div className="mb-1 flex items-center justify-between text-xs">
                     <span className="text-slate-400">Positive</span>
                     <span className="font-semibold text-emerald-300">
-                      {Math.round(analysis.sentimentScore.positive * 100)}%
+                      {Math.round(analysis.sentimentScore.positive * 100 + Number.EPSILON)}%
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-slate-700">
