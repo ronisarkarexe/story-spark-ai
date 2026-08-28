@@ -21,8 +21,12 @@ describe("imageCache utility", () => {
     expect(result).toBe("");
   });
 
+  it("returns empty string for undefined or null url", async () => {
+    expect(await getCachedImageUrl(undefined as any)).toBe("");
+  });
+
   it("falls back to original URL when caches API is not in window", async () => {
-    const originalCaches = window.caches;
+    const originalCaches = (window as any).caches;
     delete (window as any).caches;
 
     const result = await getCachedImageUrl(TEST_URL);
@@ -58,6 +62,26 @@ describe("imageCache utility", () => {
 
     const result = await getCachedImageUrl(TEST_URL);
     expect(result).toBe(TEST_URL);
+  });
+
+  it("returns blob URL on cache hit", async () => {
+    const mockBlob = new Blob(["test"], { type: "image/png" });
+    const mockResponse = {
+      blob: vi.fn().mockResolvedValue(mockBlob),
+    };
+    const openSpy = vi.fn().mockResolvedValue({
+      match: vi.fn().mockResolvedValue(mockResponse),
+      put: vi.fn(),
+    });
+
+    vi.stubGlobal("caches", { open: openSpy });
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn().mockReturnValue("blob:http://localhost/cached-blob"),
+      revokeObjectURL: vi.fn(),
+    });
+
+    const result = await getCachedImageUrl("https://example.com/cached.png");
+    expect(result).toBe("blob:http://localhost/cached-blob");
   });
 
   it("deduplicates concurrent requests for the same URL", async () => {
