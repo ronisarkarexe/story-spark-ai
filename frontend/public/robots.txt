@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://storysparkai.vercel.app/sitemap.xml
