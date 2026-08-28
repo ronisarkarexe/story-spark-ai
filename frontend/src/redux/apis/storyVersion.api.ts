@@ -68,7 +68,7 @@ const storyVersionApi = baseApi.injectEndpoints({
       }) => ({
         url: `/story/version/${versionId}/branch`,
         method: "POST",
-        data: {
+        body: {          // ← fetchBaseQuery uses 'body', not 'data'
           branchName,
         },
       }),
