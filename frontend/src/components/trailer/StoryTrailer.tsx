@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import CinematicSlide from "./CinematicSlide";
-import { useGenerateModelMutation } from "../../redux/apis/ai.model.api";
+import { useGenerateModelMutation, useGenerateFreeModelMutation } from "../../redux/apis/ai.model.api";
 
 interface Props {
   title: string;
@@ -19,8 +19,10 @@ export default function StoryTrailer({ title, content, tag, isLogin, onClose }: 
 
   const totalSlides = scenes.length + 1; // +1 for final title slide
 
-  // Extract scenes using Gemini via existing API
+  // Use authenticated or free mutation based on login state — same pattern as StoryTranslator
   const [generateModel] = useGenerateModelMutation();
+  const [generateFreeModel] = useGenerateFreeModelMutation();
+  const generateScene = isLogin ? generateModel : generateFreeModel;
 
   useEffect(() => {
     const extractScenes = async () => {
@@ -32,7 +34,7 @@ Story: ${content.slice(0, 1000)}
 
 Example format: ["The darkness consumed everything around him", "She ran but could not escape", "A secret buried for decades revealed", "Their eyes met across the burning room", "Nothing would ever be the same again"]`;
 
-        const result = await generateModel({
+        const result = await generateScene({
           prompt,
           wordLength: 50,
           numStories: 1,
