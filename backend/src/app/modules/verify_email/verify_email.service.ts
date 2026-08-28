@@ -125,7 +125,11 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
     );
   }
   
-  const storedOtpRecord = await OTPModel.findOne({ email });
+ const storedOtpRecord = await OTPModel.findOne({
+  email,
+  expiresAt: { $gt: new Date() },
+  isVerified: false,
+});
 
   if (!storedOtpRecord) {
     throw new ApiError(
@@ -181,7 +185,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   await storedOtpRecord.save();
 
   // Clear memory rate limit attempts on success
-  clearOtpAttempts(email);
+await clearOtpAttempts(email);
 
   return { 
     verified: true,
