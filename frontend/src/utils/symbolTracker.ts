@@ -25,7 +25,7 @@ export function analyzeSymbols(story: string): StorySymbol[] {
     return {
       symbol: item,
       occurrences: count,
-      status: count > 1 ? "Resolved" : "Unresolved",
+      status: (count > 1 ? "Resolved" : "Unresolved") as "Resolved" | "Unresolved",
     };
   }).filter((s) => s.occurrences > 0);
 }
