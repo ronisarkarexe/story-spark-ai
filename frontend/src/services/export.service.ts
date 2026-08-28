@@ -107,6 +107,19 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 /**
+ * Detects the jsPDF image format string from a base64 data URL.
+ */
+function detectImageFormat(base64DataUrl: string): string {
+  if (base64DataUrl.startsWith("data:image/jpeg") || base64DataUrl.startsWith("data:image/jpg")) {
+    return "JPEG";
+  }
+  if (base64DataUrl.startsWith("data:image/webp")) {
+    return "WEBP";
+  }
+  return "PNG"; // default
+}
+
+/**
  * Compiles and exports the story to a beautifully structured PDF.
  */
 export const exportStoryToPDF = async (
@@ -159,7 +172,7 @@ export const exportStoryToPDF = async (
   // Cover Page Illustration (Centered Frame)
   if (base64Image) {
     try {
-      doc.addImage(base64Image, "PNG", 35, coverY, 140, 105);
+      doc.addImage(base64Image, detectImageFormat(base64Image), 35, coverY, 140, 105);
       coverY += 115;
     } catch (e) {
       console.error("Failed to add image to PDF cover:", e);
@@ -200,7 +213,7 @@ export const exportStoryToPDF = async (
   // Add the illustration at the top of content page
   if (base64Image) {
     try {
-      doc.addImage(base64Image, "PNG", 45, yCursor, 120, 90);
+      doc.addImage(base64Image, detectImageFormat(base64Image), 45, yCursor, 120, 90);
       yCursor += 100;
     } catch (e) {
       console.error("Failed to add image to PDF content:", e);
