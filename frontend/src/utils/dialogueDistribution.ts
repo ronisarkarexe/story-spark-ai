@@ -14,6 +14,13 @@ export function getDialogueDistribution(): CharacterDialogue[] {
 
   const total = characters.reduce((sum, c) => sum + c.lines, 0);
 
+  if (total === 0) {
+    return characters.map((c) => ({
+      ...c,
+      percentage: 0,
+    }));
+  }
+
   return characters.map((c) => ({
     ...c,
     percentage: Math.round((c.lines / total) * 100),
