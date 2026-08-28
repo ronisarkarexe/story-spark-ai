@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { Edit2, Check, X, Target, Award, TrendingUp } from "lucide-react";
 import { useGetProfileInfoQuery, useUpdateWritingGoalsMutation } from "../../redux/apis/user.api";
@@ -122,8 +123,11 @@ const AnalyticsDashboard: React.FC = () => {
         },
       }).unwrap();
       setIsEditing(false);
+      toast.success("Writing goals updated!");
     } catch (err) {
       console.error("Failed to persist updated writing targets:", err);
+      // Show user-facing error — edit form stays open so user doesn't lose changes
+      toast.error("Failed to save goals. Please check your connection and try again.");
     }
   };
 
