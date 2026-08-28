@@ -40,20 +40,20 @@ export function calculateSessionProgress(
     (Date.now() - startTime) / 60000
   );
 
-  const wordProgress = Math.min(
-    (wordCount / goals.targetWords) * 100,
-    100
-  );
+  const wordProgress =
+    goals.targetWords > 0
+      ? Math.min((wordCount / goals.targetWords) * 100, 100)
+      : 0;
 
-  const timeProgress = Math.min(
-    (minutes / goals.targetMinutes) * 100,
-    100
-  );
+  const timeProgress =
+    goals.targetMinutes > 0
+      ? Math.min((minutes / goals.targetMinutes) * 100, 100)
+      : 0;
 
-  const chapterProgress = Math.min(
-    (chapterCount / goals.targetChapters) * 100,
-    100
-  );
+  const chapterProgress =
+    goals.targetChapters > 0
+      ? Math.min((chapterCount / goals.targetChapters) * 100, 100)
+      : 0;
 
   let milestone = "Keep Writing!";
 
