@@ -7,9 +7,18 @@ export interface ITokenBlacklist {
 
 const tokenBlacklistSchema = new Schema<ITokenBlacklist>(
   {
-    token: { type: String, required: true, unique: true, index: true },
-    createdAt: { type: Date, default: Date.now, expires: '1d' },
+    token: { type: String, required: true, unique: true },
+    createdAt: { type: Date, default: Date.now },
   }
+);
+
+// Index for O(1) token lookup on every authenticated request
+tokenBlacklistSchema.index({ token: 1 }, { unique: true });
+
+// TTL index — automatically removes blacklisted tokens after 7 days
+tokenBlacklistSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 86400 * 7 }
 );
 
 export const TokenBlacklist = model<ITokenBlacklist>(
