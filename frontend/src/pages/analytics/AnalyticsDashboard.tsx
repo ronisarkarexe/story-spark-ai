@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { Edit2, Check, X, Target, Award, TrendingUp } from "lucide-react";
 import { useGetProfileInfoQuery, useUpdateWritingGoalsMutation } from "../../redux/apis/user.api";
@@ -85,6 +85,9 @@ const AnalyticsDashboard: React.FC = () => {
     }
   }, [user]);
 
+  // Store RAF ID so we can cancel the confetti loop on unmount
+  const rafIdRef = useRef<number | null>(null);
+
   // Trigger celebration micro-interactions when milestones are achieved
   useEffect(() => {
     if (dailyPercentage >= 100 || weeklyPercentage >= 100) {
@@ -106,11 +109,19 @@ const AnalyticsDashboard: React.FC = () => {
         });
 
         if (Date.now() < end) {
-          requestAnimationFrame(frame);
+          rafIdRef.current = requestAnimationFrame(frame);
         }
       };
       frame();
     }
+
+    // Cancel the RAF loop if the component unmounts or percentages change
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
   }, [dailyPercentage, weeklyPercentage]);
 
   const handleSaveGoals = async () => {
