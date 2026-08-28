@@ -6,8 +6,13 @@ export const subscribe = async (req: Request, res: Response) => {
   try {
     const { email, name, source } = req.body;
 
-    if (!email || !email.includes("@")) {
-      return res.status(400).json({ message: "Valid email is required." });
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!email || !emailRegex.test(email.trim())) {
+      return res.status(400).json({
+        message: "Valid email is required."
+      });
     }
 
     const userId = (req as any).user?.id;
