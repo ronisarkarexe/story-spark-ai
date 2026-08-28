@@ -5,67 +5,49 @@ export interface CharacterConflict {
   current: string;
 }
 
-// All supported hair color keywords (including fantasy colors)
-const HAIR_COLOR_SET = new Set([
-  "silver", "silvery", "black", "brown", "blonde", "red",
-  "grey", "gray", "white", "ginger", "auburn",
-  "purple", "blue", "pink", "golden", "dark", "light",
-]);
+const HAIR_COLORS = [
+  "silver", "silvery", "black", "brown", "blonde", "red", "ginger",
+  "grey", "gray", "white", "auburn", "golden", "chestnut", "purple", "blue", "pink"
+];
 
-// Pattern 1: "silver hair", "silvery hair", "silver-colored hair"
-const COLOR_THEN_HAIR =
-  /(silver|silvery|black|brown|blonde|red|grey|gray|white|ginger|auburn|purple|blue|pink|golden|dark|light)(?:-colored)?\s+hair/gi;
-
-// Pattern 2: "hair was silver", "hair is gray", "hair: auburn"
-// Captures the word after hair + optional verb, then we validate it's a color
-const HAIR_THEN_COLOR = /hair\s+(?:(?:was|is|were|color[:]?)\s+)?(\w+)/gi;
-
-/**
- * Extracts hair color from a sentence, trying both
- * "COLOR hair" and "hair COLOR" orderings.
- */
-function extractHairColor(sentence: string): string | null {
-  COLOR_THEN_HAIR.lastIndex = 0;
-  HAIR_THEN_COLOR.lastIndex = 0;
-
-  const m1 = COLOR_THEN_HAIR.exec(sentence);
-  if (m1) return m1[1].toLowerCase();
-
-  const m2 = HAIR_THEN_COLOR.exec(sentence);
-  if (m2) {
-    const word = m2[1].toLowerCase();
-    if (HAIR_COLOR_SET.has(word)) return word;
-  }
-
-  return null;
-}
-
-/**
- * Returns the first capitalized word in a sentence that
- * looks like a character name (Title-case, length > 1).
- */
-function extractCharacterName(sentence: string): string | null {
-  const match = sentence.match(/\b([A-Z][a-z]{1,})\b/);
-  return match ? match[1] : null;
-}
+const hairColorPattern = HAIR_COLORS.join("|");
 
 export const checkCharacterConsistency = (
   chapters: { content: string }[]
 ): CharacterConflict[] => {
   const conflicts: CharacterConflict[] = [];
-
   const characterMemory: Record<string, { hair?: string }> = {};
 
   chapters.forEach((chapter) => {
-    // Split into sentences so name + color stay in the same context
-    const sentences = chapter.content.split(/(?<=[.!?])\s+|(?<=\n)/);
+    const chapterHair: Array<{ character: string; hairColor: string }> = [];
 
-    for (const sentence of sentences) {
-      const hairColor = extractHairColor(sentence);
-      if (!hairColor) continue;
+    // --- Pattern 1: "Character ... COLOR hair" ---
+    const colorHairRegex = new RegExp(
+      `([A-Z][a-z]+).*?(${hairColorPattern})\\s+hair`,
+      "gi"
+    );
+    let match = colorHairRegex.exec(chapter.content);
+    while (match) {
+      chapterHair.push({ character: match[1], hairColor: match[2].toLowerCase() });
+      match = colorHairRegex.exec(chapter.content);
+    }
 
-      const character = extractCharacterName(sentence);
-      if (!character) continue;
+    // --- Pattern 2: "[Character]'s hair was COLOR" ---
+    const possHairRegex = new RegExp(
+      `([A-Z][a-z]+)'s hair\\s+(?:was|became|turned|changed to|is|were)\\s+(${hairColorPattern})`,
+      "gi"
+    );
+    match = possHairRegex.exec(chapter.content);
+    while (match) {
+      chapterHair.push({ character: match[1], hairColor: match[2].toLowerCase() });
+      match = possHairRegex.exec(chapter.content);
+    }
+
+    const seen = new Set<string>();
+    chapterHair.forEach(({ character, hairColor }) => {
+      const key = `${character}:${hairColor}`;
+      if (seen.has(key)) return;
+      seen.add(key);
 
       if (!characterMemory[character]) {
         characterMemory[character] = {};
@@ -83,7 +65,7 @@ export const checkCharacterConsistency = (
       } else {
         characterMemory[character].hair = hairColor;
       }
-    }
+    });
   });
 
   return conflicts;
@@ -114,4 +96,4 @@ export const getConsistencyScore = (issues: CharacterIssue[] | unknown[]): numbe
   if (!issues || issues.length === 0) return 100;
   const score = 100 - issues.length * 15;
   return Math.max(0, score);
-};
+};

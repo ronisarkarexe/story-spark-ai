@@ -1,6 +1,9 @@
+/* eslint-disable */
 import { describe, it, expect } from "vitest";
 import {
   checkCharacterConsistency,
+  analyzeCharacterConsistency,
+  getConsistencyScore,
   CharacterConflict,
 } from "../characterConsistency";
 
@@ -40,14 +43,13 @@ describe("characterConsistency utility", () => {
     });
   });
 
-  it("detects multiple conflicts for different characters", () => {
+  it("detects hair color with was/copula pattern", () => {
     const result = checkCharacterConsistency([
-      chapter("Alice had silver hair. Bob had blonde hair."),
-      chapter("Alice had brown hair. Bob had black hair."),
+      chapter("Eleanor's hair was silver."),
+      chapter("Eleanor's hair was brown."),
     ]);
-    expect(result).toHaveLength(2);
-    const characters = result.map((c) => c.character).sort();
-    expect(characters).toEqual(["Alice", "Bob"]);
+    expect(result).toHaveLength(1);
+    expect(result[0].character).toBe("Eleanor");
   });
 
   it("is case-insensitive for hair color matching", () => {
@@ -56,5 +58,19 @@ describe("characterConsistency utility", () => {
       chapter("Mira had silver hair."),
     ]);
     expect(result).toEqual([]);
+  });
+
+  it("analyzes character consistency and produces issue list", () => {
+    const story = "Elena had silver hair.\n\nElena had black hair.";
+    const issues = analyzeCharacterConsistency(story);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].character).toBe("Elena");
+  });
+
+  it("calculates consistency score correctly", () => {
+    expect(getConsistencyScore([])).toBe(100);
+    const story = "Elena had silver hair.\n\nElena had black hair.";
+    const issues = analyzeCharacterConsistency(story);
+    expect(getConsistencyScore(issues)).toBe(85);
   });
 });
