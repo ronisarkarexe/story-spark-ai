@@ -49,7 +49,7 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-700">
-        {percentage}%
+        {Math.min(percentage, 100)}%
       </div>
     </div>
   );
@@ -74,8 +74,8 @@ const AnalyticsDashboard: React.FC = () => {
   const dailyGoal = user?.writingGoals?.dailyWordCount ?? 500;
   const weeklyGoal = user?.writingGoals?.weeklyWordCount ?? 2500;
 
-  const dailyPercentage = Math.round((wordsToday / dailyGoal) * 100) || 0;
-  const weeklyPercentage = Math.round((wordsThisWeek / weeklyGoal) * 100) || 0;
+  const dailyPercentage = dailyGoal > 0 ? Math.round((wordsToday / dailyGoal) * 100) : 0;
+  const weeklyPercentage = weeklyGoal > 0 ? Math.round((wordsThisWeek / weeklyGoal) * 100) : 0;
 
   // Sync internal state inputs when user data updates safely
   useEffect(() => {
