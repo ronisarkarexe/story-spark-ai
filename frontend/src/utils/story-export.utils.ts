@@ -16,6 +16,9 @@ export const getSafeFileName = (
 };
 
 export const downloadBlob = (blob: Blob, fileName: string): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 
