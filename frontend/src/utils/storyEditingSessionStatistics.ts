@@ -48,6 +48,10 @@ export function calculateEditingSession(
 }
 
 export function getSessionHistory(): EditingSessionHistory[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
   try {
     return JSON.parse(
       localStorage.getItem("editing-session-history") || "[]"
@@ -60,6 +64,10 @@ export function getSessionHistory(): EditingSessionHistory[] {
 export function saveSessionHistory(
   history: EditingSessionHistory[]
 ) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
   localStorage.setItem(
     "editing-session-history",
     JSON.stringify(history)
