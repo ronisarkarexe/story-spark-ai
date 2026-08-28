@@ -40,7 +40,7 @@ export function estimateSceneDurations(
   const totalReadingTime = scenes.reduce(
     (sum, scene) => sum + scene.readingTime,
     0
-  );
+  ) || 0;
 
   return {
     scenes,
