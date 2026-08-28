@@ -753,13 +753,14 @@ Rules:
       );
     }
 
-    const normalizedScenes = scenes.map((scene: any, index: number) => {
-      if (
-        !scene ||
-        typeof scene !== "object" ||
-        typeof scene.caption !== "string" ||
+    
+     const normalizedScenes = scenes.map((scene: any, index: number) => {
+  if (
+    !scene ||
+    typeof scene !== "object" ||
+    typeof scene.caption !== "string" ||
         typeof scene.imagePrompt !== "string"
-      ) {
+            ) {
         throw new ApiError(
           httpStatus.BAD_GATEWAY,
           "Invalid AI response: Storyboard scenes are malformed.",
@@ -770,8 +771,12 @@ Rules:
         sceneNumber: index + 1,
         caption: scene.caption.trim(),
         imagePrompt: scene.imagePrompt.trim(),
+
       };
     });
+    
+
+      
 
     if (typeof parsed?.styleGuide !== "string" || !parsed.styleGuide.trim()) {
       throw new ApiError(
