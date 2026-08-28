@@ -168,19 +168,21 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
 
   // ── Action 3: Save as Draft ──────────────────────────────────────────────
   const handleSaveAsDraft = () => {
+    // Save translated content as story content, not as a generation prompt.
+    // A prompt is a short AI instruction; translatedContent is the full story output.
     const draftData = {
-      prompt: translatedContent,
+      title: translatedTitle || story.title,
+      content: translatedContent,
       genre: story.tag || "",
-      length: "medium",
       language: selectedLanguage,
     };
     try {
       localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
-      toast.success("Saved as draft! Redirecting to story generator...");
+      toast.success("Saved as draft! Redirecting to story editor...");
       setTimeout(() => {
         onClose();
         navigate("/stories", {
-          state: { prompt: translatedContent },
+          state: { draftContent: translatedContent, draftTitle: translatedTitle },
         });
       }, 1200);
     } catch {
