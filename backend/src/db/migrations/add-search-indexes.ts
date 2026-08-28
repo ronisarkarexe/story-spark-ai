@@ -24,7 +24,7 @@ async function up() {
 
   const existingIndexes = await postCollection.indexes();
   const hasTextIndex = existingIndexes.some(
-    (idx) => idx.name === "title_text_content_text_tag_text"
+    (idx: { name?: string }) => idx.name === "title_text_content_text_tag_text"
   );
 
   if (!hasTextIndex) {
@@ -42,19 +42,34 @@ async function up() {
   }
 
   // ── Post createdAt index (date-sorted queries) ───────────────────────────
-  await postCollection.createIndex(
-    { createdAt: -1 },
-    { name: "post_createdAt_desc", background: true }
+  const hasCreatedAtIndex = existingIndexes.some(
+    (idx: { name?: string }) => idx.name === "post_createdAt_desc"
   );
-  console.log("✅ Post createdAt index ensured");
+  if (!hasCreatedAtIndex) {
+    await postCollection.createIndex(
+      { createdAt: -1 },
+      { name: "post_createdAt_desc", background: true }
+    );
+    console.log("✅ Post createdAt index created");
+  } else {
+    console.log("ℹ️  Post createdAt index already exists — skipping");
+  }
 
   // ── User.name index (author lookup) ──────────────────────────────────────
   const userCollection = db.collection("users");
-  await userCollection.createIndex(
-    { name: 1 },
-    { name: "user_name_asc", background: true }
+  const userIndexes = await userCollection.indexes();
+  const hasUserNameIndex = userIndexes.some(
+    (idx: { name?: string }) => idx.name === "user_name_asc"
   );
-  console.log("✅ User.name index ensured");
+  if (!hasUserNameIndex) {
+    await userCollection.createIndex(
+      { name: 1 },
+      { name: "user_name_asc", background: true }
+    );
+    console.log("✅ User.name index created");
+  } else {
+    console.log("ℹ️  User.name index already exists — skipping");
+  }
 
   await mongoose.disconnect();
   console.log("Migration complete.");
