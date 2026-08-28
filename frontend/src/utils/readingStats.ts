@@ -8,7 +8,19 @@ export interface ReadingStats {
 }
 
 export function calculateReadingStats(text: string): ReadingStats {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const trimmed = text.trim();
+  const words = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0;
+
+  if (words === 0) {
+    return {
+      words: 0,
+      paragraphs: 0,
+      chapters: 0,
+      sentences: 0,
+      averageSentenceLength: 0,
+      readingTime: 0,
+    };
+  }
 
   const paragraphs = text
     .split(/\n\s*\n/)
