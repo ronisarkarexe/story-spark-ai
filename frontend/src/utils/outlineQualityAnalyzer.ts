@@ -23,6 +23,21 @@ export interface OutlineAnalysis {
 export const analyzeOutline = (
   outline: string
 ): OutlineAnalysis => {
+  if (!outline || !outline.trim()) {
+    return {
+      score: 0,
+      issues: [
+        {
+          id: "empty-outline",
+          category: "Pacing",
+          severity: "High",
+          message: "No outline provided.",
+          suggestion: "Please provide an outline for analysis.",
+        },
+      ],
+    };
+  }
+
   return {
     score: 90,
     issues: [],
