@@ -42,7 +42,11 @@ export const analyzePrompt = async (
     request,
     { withCredentials: true }
   );
-  return response.data.data;
+  const data = response.data?.data;
+  if (!data || typeof data !== "object") {
+    throw new Error("analyzePrompt: invalid response shape from backend.");
+  }
+  return data as IPromptAnalysisResponse;
 };
 
 /**
@@ -61,7 +65,11 @@ export const enhancePrompt = async (
     request,
     { withCredentials: true }
   );
-  return response.data.data;
+  const data = response.data?.data;
+  if (!data || typeof data !== "object") {
+    throw new Error("enhancePrompt: invalid response shape from backend.");
+  }
+  return data;
 };
 
 /**
@@ -75,5 +83,9 @@ export const batchAnalyzePrompts = async (
     { prompts },
     { withCredentials: true }
   );
-  return response.data.data;
+  const data = response.data?.data;
+  if (!Array.isArray(data)) {
+    throw new Error("batchAnalyzePrompts: expected array from backend.");
+  }
+  return data as IPromptAnalysisResponse[];
 };
