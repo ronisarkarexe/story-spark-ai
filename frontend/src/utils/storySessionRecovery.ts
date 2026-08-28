@@ -11,15 +11,21 @@ export function saveDraft(content: string) {
     savedAt: new Date().toISOString(),
   };
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(draft)
-  );
+  if (typeof window !== "undefined") {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(draft)
+    );
+  }
 
   return draft;
 }
 
 export function getRecoveredDraft(): StoryRecoveryData | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   const data = localStorage.getItem(STORAGE_KEY);
 
   if (!data) return null;
@@ -32,6 +38,10 @@ export function getRecoveredDraft(): StoryRecoveryData | null {
 }
 
 export function discardRecoveredDraft() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
   localStorage.removeItem(STORAGE_KEY);
 }
 
