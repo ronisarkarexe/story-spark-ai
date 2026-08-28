@@ -72,6 +72,7 @@ export default function CharacterPlanner({ onContextUpdate }) {
               key={step}
               type="button"
               className={`cp-arc-node ${arcStep === step ? 'active' : ''}`}
+              aria-pressed={arcStep === step}
               onClick={() => handleArcChange(step)}
             >
               {step}
