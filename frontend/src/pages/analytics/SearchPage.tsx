@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useDebounce } from "../../hooks/useDebounce";
 import { searchApi, type SearchResults, type StoryResult, type UserResult } from "../../services/searchApi";
@@ -181,9 +181,9 @@ const SearchPage: React.FC = () => {
                     Stories ({results.stories.total})
                   </p>
                   {results.stories.data.map((story: StoryResult) => (
-                    <a
+                    <Link
                       key={story._id}
-                      href={`/post/${story._id}`}
+                      to={`/post/${story._id}`}
                       className="mb-3 flex items-start gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-slate-800/60"
                     >
                       <div className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-indigo-50 text-xl dark:bg-indigo-500/10">
@@ -203,7 +203,7 @@ const SearchPage: React.FC = () => {
                           <span>👁️ {story.viewsCount}</span>
                         </div>
                       </div>
-                    </a>
+                    </Link>
                   ))}
                   {results.stories.data.length === 0 && (
                     <p className="text-sm text-slate-500">No stories found.</p>
