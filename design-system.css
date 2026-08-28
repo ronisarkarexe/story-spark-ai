@@ -4,6 +4,46 @@
    Typography   : Professional scale, capped sizes
    ============================================================ */
 
+   /* ============================================================
+   DARK MODE THEME VARIABLES
+   Issue #2476 — Automatic Color Token Switching
+   ============================================================ */
+
+/* ===== LIGHT THEME (Default) ===== */
+:root {
+  --ease-bg-primary: #ffffff;
+  --ease-text-primary: #111111;
+  --ease-border-primary: #dddddd;
+  --ease-bg-secondary: #f5f5f5;
+  --ease-text-secondary: #444444;
+  --ease-surface: #f0f0f0;
+  --ease-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* ===== DARK THEME (Manual Toggle via .dark class) ===== */
+.dark {
+  --ease-bg-primary: #0f131d;
+  --ease-text-primary: #dfe2f1;
+  --ease-border-primary: #4d4354;
+  --ease-bg-secondary: #141925;
+  --ease-text-secondary: #9ea2b8;
+  --ease-surface: #1c1f2a;
+  --ease-shadow: rgba(0, 0, 0, 0.5);
+}
+
+/* ===== DARK THEME (Automatic — System Preference) ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ease-bg-primary: #0f131d;
+    --ease-text-primary: #dfe2f1;
+    --ease-border-primary: #4d4354;
+    --ease-bg-secondary: #141925;
+    --ease-text-secondary: #9ea2b8;
+    --ease-surface: #1c1f2a;
+    --ease-shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
 /* ---------- Custom Properties ---------- */
 :root {
   /* Palette — LOCKED */
