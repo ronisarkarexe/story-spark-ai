@@ -1,7 +1,17 @@
 import axios from "axios";
 import { getBaseUrl } from "../helpers/config";
 
-const API_BASE = getBaseUrl();
+// Resolved inside each function — avoids frozen 'undefined' if env
+// vars are not yet available at module import time
+const getApiBase = (): string => {
+  const base = getBaseUrl();
+  if (!base) {
+    throw new Error(
+      "[prompt_analysis.service] API base URL is not configured. Set VITE_BASE_URL in your environment."
+    );
+  }
+  return base;
+};
 
 export interface IPromptAnalysisRequest {
   prompt: string;
@@ -38,7 +48,7 @@ export const analyzePrompt = async (
   request: IPromptAnalysisRequest
 ): Promise<IPromptAnalysisResponse> => {
   const response = await axios.post(
-    `${API_BASE}/prompt-analysis/analyze`,
+    `${getApiBase()}/prompt-analysis/analyze`,
     request,
     { withCredentials: true }
   );
@@ -57,7 +67,7 @@ export const enhancePrompt = async (
   keywords: string[];
 }> => {
   const response = await axios.post(
-    `${API_BASE}/prompt-analysis/enhance`,
+    `${getApiBase()}/prompt-analysis/enhance`,
     request,
     { withCredentials: true }
   );
@@ -71,7 +81,7 @@ export const batchAnalyzePrompts = async (
   prompts: IPromptAnalysisRequest[]
 ): Promise<IPromptAnalysisResponse[]> => {
   const response = await axios.post(
-    `${API_BASE}/prompt-analysis/batch`,
+    `${getApiBase()}/prompt-analysis/batch`,
     { prompts },
     { withCredentials: true }
   );
