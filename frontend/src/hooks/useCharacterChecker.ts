@@ -15,7 +15,7 @@ export default function useCharacterChecker() {
     oldName: string,
     newName: string
   ) => {
-    return story.replaceAll(oldName, newName);
+    return story.replace(new RegExp(oldName, "g"), newName);
   };
 
   return {
