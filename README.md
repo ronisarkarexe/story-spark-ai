@@ -28,6 +28,7 @@
 
 ## 📚 Table of Contents
 - [About 🚀](#about-)
+- [Blog 📝](#blog-)
 - [Features 💪](#features-)
 - [Feature Documentation 📄](#feature-documentation-)
 - [Known Behavior & UX Notes](#known-behavior--ux-notes-)
