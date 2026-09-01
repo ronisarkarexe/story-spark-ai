@@ -1,4 +1,5 @@
 import baseApi from "../base_api/base.api";
+import { tagTypes } from "../tag-types";
 
 export const writerApplicationApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -8,14 +9,14 @@ export const writerApplicationApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: [tagTypes.user, tagTypes.WriterApplication],
     }),
     getAllWriterApplications: build.query({
       query: () => ({
         url: "/writer-applications",
         method: "GET",
       }),
-      providesTags: ["WriterApplication"],
+      providesTags: [tagTypes.WriterApplication],
     }),
     updateWriterApplicationStatus: build.mutation({
       query: ({ id, status }) => ({
@@ -23,7 +24,7 @@ export const writerApplicationApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: { status },
       }),
-      invalidatesTags: ["WriterApplication", "User"],
+      invalidatesTags: [tagTypes.WriterApplication, tagTypes.user],
     }),
   }),
 });
