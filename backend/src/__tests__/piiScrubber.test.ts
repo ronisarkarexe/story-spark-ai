@@ -382,5 +382,4 @@ describe("scrubPII — expanded test matrix", () => {
     expect(result).not.toContain("123456789");
     expect(result).toContain("[REDACTED_GOVERNMENT_ID]");
   });
-  });
 });
