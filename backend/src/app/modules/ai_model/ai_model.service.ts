@@ -42,6 +42,7 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   language: payload.language ?? "English",
   tone: payload.tone ?? undefined,
   genre: payload.genre ?? undefined,
+  targetAudience: payload.targetAudience ?? undefined,
   characters: payload.characters ?? undefined,
 });
 
@@ -64,7 +65,7 @@ const mapGenerationError = (error: unknown, message: string): never => {
 // Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
 // Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
 const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal?: AbortSignal) => {
-  const { prompt, wordLength, numStories, language, tone, genre, characters } =
+  const { prompt, wordLength, numStories, language, tone, genre, targetAudience, characters } =
     normalizeStoryPayload(payload);
 
   try {
@@ -78,6 +79,7 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal
           signal,
           tone,
           genre,
+          targetAudience,
           characters,
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
@@ -91,7 +93,7 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
-  const { prompt, wordLength, numStories, language, tone, genre, characters } =
+  const { prompt, wordLength, numStories, language, tone, genre, targetAudience, characters } =
     normalizeStoryPayload(payload);
 
   try {
@@ -105,6 +107,7 @@ const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
           signal,
           tone,
           genre,
+          targetAudience,
           characters,
         ),
       FREE_GENERATION_TIMEOUT_MS,

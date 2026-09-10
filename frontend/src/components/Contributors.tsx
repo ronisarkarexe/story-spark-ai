@@ -16,7 +16,7 @@ interface RepoStats {
   contributors: number;
 }
 
-export const Contributors: React.FC = () => {
+export const Contributors = () => {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [repoStats, setRepoStats] = useState<RepoStats | null>(null);
   const [loading, setLoading] = useState(true);

@@ -14,7 +14,7 @@ interface SSInputProps<T extends FieldValues> {
   placeholder?: string;
   required?: boolean;
   icon?: string;
-  register: UseFormRegister<T>;   // <-- fixed, properly typed instead of `any`
+  register: UseFormRegister<T>;
   validation?: RegisterOptions<T>;
   error?: FieldError;
   autoComplete?: string;
@@ -51,10 +51,11 @@ const SSInput = <T extends FieldValues>({
       >
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
-      
-      <div className="relative mt-2 flex items-center">
+
+
+      <div className="relative mt-2 flex items-center w-full min-w-0 max-w-full box-border">
         {icon && (
-          <span className="absolute left-3 text-gray-500 flex items-center pointer-events-none">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 flex items-center pointer-events-none">
             <i className={icon}></i>
           </span>
         )}
@@ -65,21 +66,38 @@ const SSInput = <T extends FieldValues>({
           placeholder={placeholder}
           autoComplete={autoComplete}
           autoFocus={autoFocus}
+          aria-invalid={error ? "true" : "false"}
           {...register(name, validation)}
-          className={`w-full min-w-0 max-w-full h-11 block box-border rounded-xl border text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
-            icon ? "pl-11" : "px-4"
-          } ${isPasswordType ? "pr-11" : "pr-4"} ${
+          className={`w-full box-border max-w-full h-11 block rounded-xl border bg-transparent text-sm transition-all duration-200 ${
+            icon ? "pl-10" : "px-4"
+          } ${type === "password" ? "pr-10" : "pr-4"} ${
             error
-              ? "border-rose-500/80 bg-white dark:bg-slate-900/40 text-rose-600 dark:text-rose-200 focus:ring-rose-500/20 focus:border-rose-500"
-              : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 text-slate-900 dark:text-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+              ? "border-rose-500 focus:ring-rose-500/20 focus:border-rose-500 text-rose-900 dark:text-rose-400 placeholder-rose-300 focus:outline-none"
+              : "border-slate-200 dark:border-slate-700 text-gray-900 dark:text-gray-200 focus:border-blue-500 focus:ring-blue-500/20 placeholder-slate-400 dark:placeholder-slate-500"
           }`}
+          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
+
+        className={`ss-input w-full box-border max-w-full min-w-0 h-11 block rounded-xl border text-sm transition-all duration-200 ${
+          icon ? "pl-10" : "px-4"
+        } ${isPasswordType ? "pr-10" : "pr-4"} ${
+          error
+            ? "border-rose-500 bg-rose-500/5 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-slate-900 dark:text-slate-100 placeholder-rose-300 focus:outline-none"
+            : "border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 placeholder-slate-400 dark:placeholder-slate-500"
+        }`}
+        style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
+          className={`block h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap box-border rounded-xl border text-sm transition-all duration-200 ${icon ? "pl-10" : "px-4"
+            } ${isPasswordType ? "pr-10" : "pr-4"} ${error
+              ? "border-rose-500 bg-rose-500/5 text-slate-900 placeholder-rose-300 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20 dark:text-slate-100"
+              : "border-slate-300 bg-slate-50/50 text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:placeholder-slate-500"
+            }`}
         />
 
+        {/* Right Password Eye Toggle */}
         {isPasswordType && (
           <button
             type="button"
             onClick={() => setShowLocalPassword(!showLocalPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center text-slate-400 hover:text-slate-200 dark:text-slate-500 dark:hover:text-slate-300 z-10 focus:outline-none transition-colors cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center text-slate-400 hover:text-slate-200 dark:text-slate-500 dark:hover:text-slate-300 z-10 focus:outline-none transition-colors cursor-pointer"
             aria-label={showLocalPassword ? "Hide password" : "Show password"}
             title={showLocalPassword ? "Hide password" : "Show password"}
           >

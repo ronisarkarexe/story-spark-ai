@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";
@@ -112,11 +112,11 @@ interface StoryTradingCardProps {
   onClose?: () => void;
 }
 
-const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
+const StoryTradingCard = ({
   story,
   compact = false,
   onClose,
-}) => {
+}: StoryTradingCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const rarity = getStoryCardRarity(story.content);
   const [isBookmarked, setIsBookmarked] = useState(() => isSessionBookmarked(story.uuid));
@@ -150,7 +150,8 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
       setIsCopied(true);
       toast.success("Story copied to clipboard!");
       setTimeout(() => setIsCopied(false), 2000);
-    } catch {
+    } catch (error) {
+      console.error("Failed to copy story text", error);
       toast.error("Could not copy story text.");
     }
   };

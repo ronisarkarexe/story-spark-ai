@@ -24,7 +24,7 @@ const FeatureComponent = () => {
     navigator.clipboard.writeText(postUrl).then(() => {
       setCopiedId(postId);
       setTimeout(() => setCopiedId(null), 2000);
-    });
+    }).catch(() => {});
   };
 
   const handleRetry = async () => {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 // --- Sample Generated Stories (Mock Data for demonstration) ---
 const MOCK_STORIES: string[] = [
@@ -7,7 +7,7 @@ const MOCK_STORIES: string[] = [
   "A gentle breeze rolled over the emerald hills of Aveloria, carrying the sweet scent of sun-warmed lavender. Master Elion watched his young apprentice try to conjure a simple spark. With a sudden crackle, the spark erupted into a harmless but magnificent fireworks display."
 ];
 
-export const StoryAnalyticsDashboard: React.FC = () => {
+export const StoryAnalyticsDashboard = () => {
   const [storyContent, setStoryContent] = useState<string>(
     "Type your story here or click 'Generate New Story' below to see the statistics update instantly!"
   );

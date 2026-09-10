@@ -1,6 +1,14 @@
+import { Request, Response } from "express";
+import { randomUUID } from "node:crypto";
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
 import { REQUEST_LIMITS } from "../../../interfaces/ai_model_request_limit";
+import {
+  getRequestClientIp,
+  guestQuotaKeyForIp,
+  readGuestUserIdCookie,
+  setGuestUserIdCookie,
+} from "../../../utils/cookie.util";
 import { User } from "../user/user.model";
 import { GuestUsage } from "./guest_usage.model";
 
@@ -108,8 +116,45 @@ export const refundUserQuota = async (email: string): Promise<void> => {
   );
 };
 
+
+/**
+ * Resolve the guest quota bucket for a free-generation request.
+ *
+ * Quota is bound to client IP so clearing/omitting the userId cookie cannot
+ * mint an unlimited fresh bucket. A signed guest cookie is still set for
+ * continuity, but reservation always uses the IP key and fails closed when
+ * the IP (or IP guest limit) cannot be satisfied.
+ */
+export const resolveGuestQuotaIdentity = (
+  req: Request,
+  res: Response
+): { quotaKey: string; cookieUserId: string } => {
+  const ip = getRequestClientIp(req);
+  if (!ip) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "Unable to identify guest client for quota enforcement."
+    );
+  }
+
+  let cookieUserId = readGuestUserIdCookie(req);
+  if (!cookieUserId) {
+    cookieUserId = randomUUID();
+    setGuestUserIdCookie(res, cookieUserId);
+  } else if (!String(req.cookies?.userId ?? "").startsWith("s:")) {
+    // Upgrade legacy unsigned cookies to signed ones.
+    setGuestUserIdCookie(res, cookieUserId);
+  }
+
+  return {
+    quotaKey: guestQuotaKeyForIp(ip),
+    cookieUserId,
+  };
+};
+
 /**
  * Atomically reserves one guest free-generation slot (persisted in MongoDB).
+ * `guestId` must be the IP-bound key from resolveGuestQuotaIdentity (not a raw cookie UUID).
  */
 export const reserveGuestQuota = async (guestId: string): Promise<void> => {
   try {

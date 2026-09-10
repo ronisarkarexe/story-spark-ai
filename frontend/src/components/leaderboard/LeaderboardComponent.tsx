@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 interface LeaderboardUser {
   rank: number;
@@ -12,6 +12,10 @@ interface LeaderboardUser {
 
 const LeaderboardComponent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<
+    "rank" | "stories" | "score" | "collaborations"
+  >("rank");
 
   const contributors: LeaderboardUser[] = [
     { rank: 1, name: "Aarav Sharma", storiesCount: 14, creativeScore: 98, collaborations: 6, type: "Writers" },
@@ -21,12 +25,38 @@ const LeaderboardComponent: React.FC = () => {
     { rank: 5, name: "Diya Patel", storiesCount: 7, creativeScore: 87, collaborations: 5, type: "Contributors" }
   ];
 
-  const filteredContributors = activeTab === "All" 
-    ? contributors 
-    : contributors.filter(c => c.type === activeTab);
+  const filteredContributors = useMemo(() => {
+    let data =
+      activeTab === "All"
+        ? [...contributors]
+        : contributors.filter((c) => c.type === activeTab);
 
+    if (searchTerm.trim()) {
+      data = data.filter((c) =>
+        c.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    switch (sortBy) {
+      case "stories":
+        data.sort((a, b) => b.storiesCount - a.storiesCount);
+        break;
+
+      case "score":
+        data.sort((a, b) => b.creativeScore - a.creativeScore);
+        break;
+
+      case "collaborations":
+        data.sort((a, b) => b.collaborations - a.collaborations);
+        break;
+
+      default:
+        data.sort((a, b) => a.rank - b.rank);
+    }
+
+    return data;
+  }, [contributors, activeTab, searchTerm, sortBy]);
   const topThree = contributors.slice(0, 3);
-
   return (
     <div className="w-full min-h-screen bg-[#070b12] text-slate-100 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 pb-16 relative overflow-hidden box-border">
       {/* Background Radial Premium Ambient Glow Effects */}
@@ -92,58 +122,107 @@ const LeaderboardComponent: React.FC = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-6 py-3 font-bold text-xs uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
-              activeTab === tab
+            className={`px-6 py-3 font-bold text-xs uppercase tracking-wider transition-all border-b-2 cursor-pointer ${activeTab === tab
                 ? "border-purple-500 text-purple-400 bg-white/5 rounded-t-xl"
                 : "border-transparent text-slate-500 hover:text-slate-300"
-            }`}
+              }`}
           >
             {tab}
           </button>
         ))}
       </div>
+      <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-4 justify-between mb-6">
 
+        <input
+          type="text"
+          placeholder="Search contributors..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 bg-[#0e131f] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+        />
+
+        <select
+          value={sortBy}
+          onChange={(e) =>
+            setSortBy(e.target.value as "rank" | "stories" | "score" | "collaborations")
+          }
+          className="bg-[#0e131f] border border-white/10 rounded-lg px-4 py-2 text-white"
+        >
+          <option value="rank">Sort by Rank</option>
+          <option value="stories">Sort by Stories</option>
+          <option value="score">Sort by Score</option>
+          <option value="collaborations">Sort by Collaborations</option>
+        </select>
+
+        <button
+          onClick={() => {
+            setActiveTab("All");
+            setSearchTerm("");
+            setSortBy("rank");
+          }}
+          className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-semibold"
+        >
+          Clear Filters
+        </button>
+
+      </div>
       {/* Ranking List View Group Row Cards */}
+      <p className="max-w-4xl mx-auto mb-4 text-sm text-slate-400">
+        Showing {filteredContributors.length} contributor
+        {filteredContributors.length !== 1 ? "s" : ""}
+      </p>
       <div className="space-y-3 max-w-4xl mx-auto w-full box-border">
-        {filteredContributors.map((user) => (
-          <div
-            key={user.rank}
-            className="group/row bg-[#0e131f]/80 backdrop-blur-xl border border-white/5 hover:border-purple-500/20 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(168,85,247,0.02)]"
-          >
-            <div className="flex items-center gap-4 text-left w-full sm:w-auto">
-              <span className="w-8 text-center font-black text-slate-500 text-sm group-hover/row:text-purple-400 transition-colors">
-                #{user.rank}
-              </span>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-white/10 flex items-center justify-center text-white font-black uppercase text-sm select-none">
-                {user.name.slice(0, 2)}
-              </div>
-              <div>
-                <h4 className="text-sm sm:text-base font-black text-white group-hover/row:text-purple-300 transition-colors">
-                  {user.name}
-                </h4>
-                <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">
-                  🛡️ {user.type}
-                </span>
-              </div>
-            </div>
-
-            {/* Metrics Snapshot Info Block */}
-            <div className="flex items-center gap-6 sm:gap-10 justify-between sm:justify-end w-full sm:w-auto border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 text-slate-400 text-xs uppercase font-bold tracking-wider select-none">
-              <div>
-                <span className="text-[10px] text-slate-500 block mb-0.5">Stories</span>
-                <span className="text-white font-black text-sm">{user.storiesCount}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-500 block mb-0.5">Score</span>
-                <span className="text-purple-400 font-black text-sm">{user.creativeScore}%</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-500 block mb-0.5">Collabs</span>
-                <span className="text-blue-400 font-black text-sm">{user.collaborations}</span>
-              </div>
-            </div>
+        {filteredContributors.length === 0 ? (
+          <div className="text-center py-16 text-slate-400">
+            <h3 className="text-xl font-bold mb-2">
+              No contributors found
+            </h3>
+            <p>
+              Try changing the search term or selected category.
+            </p>
           </div>
-        ))}
+        ) : (
+          filteredContributors.map((user) => (
+            <div
+              key={user.rank}
+              className="group/row bg-[#0e131f]/80 backdrop-blur-xl border border-white/5 hover:border-purple-500/20 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(168,85,247,0.02)]"
+            >
+              <div className="flex items-center gap-4 text-left w-full sm:w-auto">
+                <span className="w-8 text-center font-black text-slate-500 text-sm group-hover/row:text-purple-400 transition-colors">
+                  #{user.rank}
+                </span>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-white/10 flex items-center justify-center text-white font-black uppercase text-sm select-none">
+                  {user.name.slice(0, 2)}
+                </div>
+                <div>
+                  <h4 className="text-sm sm:text-base font-black text-white group-hover/row:text-purple-300 transition-colors">
+                    {user.name}
+                  </h4>
+                  <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">
+                    🛡️ {user.type}
+                  </span>
+                </div>
+              </div>
+          
+
+              {/* Metrics Snapshot Info Block */}
+              <div className="flex items-center gap-6 sm:gap-10 justify-between sm:justify-end w-full sm:w-auto border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 text-slate-400 text-xs uppercase font-bold tracking-wider select-none">
+                <div>
+                  <span className="text-[10px] text-slate-500 block mb-0.5">Stories</span>
+                  <span className="text-white font-black text-sm">{user.storiesCount}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 block mb-0.5">Score</span>
+                  <span className="text-purple-400 font-black text-sm">{user.creativeScore}%</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 block mb-0.5">Collabs</span>
+                  <span className="text-blue-400 font-black text-sm">{user.collaborations}</span>
+                </div>
+              </div>
+            </div>
+          ))
+          )}
       </div>
     </div>
   );

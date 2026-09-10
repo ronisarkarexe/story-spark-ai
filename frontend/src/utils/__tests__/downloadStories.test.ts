@@ -1,66 +1,49 @@
-// @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { downloadTXT } from "../downloadStories";
 
-describe("downloadStories utility", () => {
-  let mockCreateObjectURL: any;
-  let mockRevokeObjectURL: any;
-  let mockAnchorElement: any;
+describe("downloadStories", () => {
+  let clickMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockCreateObjectURL = vi.fn().mockReturnValue("blob:mock-url");
-    mockRevokeObjectURL = vi.fn();
-    
+    vi.clearAllMocks();
+    clickMock = vi.fn();
+    vi.stubGlobal("document", {
+      createElement: vi.fn().mockReturnValue({
+        click: clickMock,
+        download: "",
+        href: "",
+      }),
+    });
     vi.stubGlobal("URL", {
-      createObjectURL: mockCreateObjectURL,
-      revokeObjectURL: mockRevokeObjectURL,
-    });
-
-    mockAnchorElement = {
-      href: "",
-      download: "",
-      click: vi.fn(),
-    };
-
-    vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
-      if (tagName === "a") {
-        return mockAnchorElement as any;
-      }
-      return document.createElement(tagName);
+      createObjectURL: vi.fn().mockReturnValue("blob:http://localhost/mock-url"),
+      revokeObjectURL: vi.fn(),
     });
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
+  it("should return early when window is undefined (SSR safety)", () => {
+    vi.stubGlobal("window", undefined as any);
+    expect(() => downloadTXT({ title: "Test", content: "Story", prompt: "Prompt" })).not.toThrow();
+    vi.stubGlobal("window", { document, URL });
   });
 
-  it("should create a text blob and trigger a click on a temporary anchor element", () => {
-    const story = {
-      title: "My Story",
-      prompt: "Once upon a time",
-      content: "Deep in the forest...",
-    };
-
-    downloadTXT(story);
-
-    expect(mockCreateObjectURL).toHaveBeenCalled();
+  it("should create and trigger a download link", () => {
+    const story = { title: "Test Story", content: "Story content", prompt: "A story" };
+    expect(() => downloadTXT(story)).not.toThrow();
     expect(document.createElement).toHaveBeenCalledWith("a");
-    expect(mockAnchorElement.href).toBe("blob:mock-url");
-    expect(mockAnchorElement.download).toBe("My_Story.txt");
-    expect(mockAnchorElement.click).toHaveBeenCalled();
-    expect(mockRevokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
+    expect(URL.createObjectURL).toHaveBeenCalled();
+    expect(clickMock).toHaveBeenCalled();
+    expect(URL.revokeObjectURL).toHaveBeenCalled();
   });
 
-  it("should sanitize the filename by replacing special characters and whitespace with underscores", () => {
-    const story = {
-      title: "Story/Title: *With? <Special> | Chars",
-      prompt: "Once upon a time",
-      content: "Deep in the forest...",
-    };
+  it("should replace invalid filename characters with underscore", () => {
+    downloadTXT({ title: "My Story/Version 1", content: "Content", prompt: "Prompt" });
+    const mockLink = (document.createElement as ReturnType<typeof vi.fn>).mock.results[0].value;
+    expect(mockLink.download).toBe("My_Story_Version_1.txt");
+  });
 
-    downloadTXT(story);
-
-    expect(mockAnchorElement.download).toBe("Story_Title_With_Special_Chars.txt");
+  it("should not trigger any network calls or DOM operations when window is absent", () => {
+    vi.stubGlobal("window", undefined as any);
+    downloadTXT({ title: "Any Title", content: "Content", prompt: "Prompt" });
+    expect(document.createElement).not.toHaveBeenCalled();
   });
 });

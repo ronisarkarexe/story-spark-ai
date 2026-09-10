@@ -34,26 +34,6 @@ router.patch(
   CollectionController.updateCollection
 );
 
-router.post(
-  "/:id/stories",
-  collectionLimiter,
-  auth(...ALL_AUTH),
-  CollectionController.addStoryToCollection
-);
-
-router.delete(
-  "/:id/stories/:storyId",
-  collectionLimiter,
-  auth(...ALL_AUTH),
-  CollectionController.removeStoryFromCollection
-);
-
-router.delete(
-  "/:id",
-  collectionLimiter,
-  auth(...ALL_AUTH),
-  CollectionController.deleteCollection
-);
 
 router.get("/:id", CollectionController.getCollectionById);
 router.get("/user/:userId", CollectionController.getUserCollections);

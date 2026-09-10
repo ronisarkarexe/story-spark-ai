@@ -1,5 +1,3 @@
-import React from "react";
-
 interface WritingStatsPanelProps {
   totalStories: number;
   totalWords: number;
@@ -9,14 +7,14 @@ interface WritingStatsPanelProps {
   isLoading?: boolean;
 }
 
-const WritingStatsPanel: React.FC<WritingStatsPanelProps> = ({
+const WritingStatsPanel = ({
   totalStories,
   totalWords,
   activeDays,
   longestStreak,
   monthlyActivity = {},
   isLoading,
-}) => {
+}: WritingStatsPanelProps) => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5" aria-busy="true">

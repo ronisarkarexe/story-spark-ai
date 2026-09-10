@@ -5,8 +5,9 @@ import {
   useMarkNotificationReadMutation,
   useMarkAllNotificationsReadMutation,
 } from "../redux/apis/notification.api";
-import { connectSocket, disconnectSocket } from "../socket/socket.oi";
+import { getSocketIo } from "../socket/socket.oi";
 import type { NotificationItem, INotification } from "../models/notification";
+import logger from "../utils/logger.util";
 
 /**
  * Notification bell: REST + Socket.IO real-time updates.
@@ -15,7 +16,16 @@ import type { NotificationItem, INotification } from "../models/notification";
 export const useNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [realtimeNotifications, setRealtimeNotifications] = useState<INotification[]>([]);
-  const isAuthed = isLoggedIn();
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const [isAuthed, setIsAuthed] = useState(() => isLoggedIn());
+
+  // Keep isAuthed reactive to auth changes from this tab and other tabs
+  useEffect(() => {
+    const handleAuthChange = () => setIsAuthed(isLoggedIn());
+    window.addEventListener("story-spark-auth-change", handleAuthChange);
+    return () => window.removeEventListener("story-spark-auth-change", handleAuthChange);
+  }, []);
+
 
   const { data, isFetching, refetch } = useGetNotificationsQuery(undefined, {
     skip: !isAuthed,
@@ -29,7 +39,9 @@ export const useNotifications = () => {
     const baseNotifications = data ?? [];
     const merged = new Map<string, NotificationItem>();
 
-    for (const notification of [...realtimeNotifications, ...baseNotifications]) {
+    // REST data is added first — real-time data is added last and wins
+    // for duplicate IDs, since real-time state is always more up-to-date.
+    for (const notification of [...baseNotifications, ...realtimeNotifications]) {
       merged.set(notification._id, notification);
     }
 
@@ -42,26 +54,40 @@ export const useNotifications = () => {
 
   const unreadCount = notifications.filter((item) => !item.isRead).length;
 
-  const toggle = () => {
+  const toggle = useCallback(() => {
     setIsOpen((prev) => !prev);
     if (!data && isAuthed) {
       void refetch();
     }
-  };
+  }, [data, isAuthed, refetch]);
 
-  const close = () => setIsOpen(false);
+  const close = useCallback(() => setIsOpen(false), []);
 
   const markAsRead = async (notificationId: string) => {
-    await markNotificationRead(notificationId).unwrap();
+    try {
+      setMutationError(null);
+      await markNotificationRead(notificationId).unwrap();
+    } catch (error) {
+      const msg = "Failed to mark notification as read. Please try again.";
+      logger.error(msg, error);
+      setMutationError(msg);
+    }
   };
 
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
-    await markAllRead().unwrap();
-    // Optimistically clear realtime state so the badge drops immediately
-    setRealtimeNotifications((prev) =>
-      prev.map((n) => ({ ...n, isRead: true }))
-    );
+    try {
+      setMutationError(null);
+      await markAllRead().unwrap();
+      // Optimistically clear realtime state so the badge drops immediately
+      setRealtimeNotifications((prev) =>
+        prev.map((n) => ({ ...n, isRead: true }))
+      );
+    } catch (error) {
+      const msg = "Failed to mark all notifications as read. Please try again.";
+      logger.error(msg, error);
+      setMutationError(msg);
+    }
   };
 
   const refreshNotifications = useCallback(() => {
@@ -71,13 +97,10 @@ export const useNotifications = () => {
 
   // Set up Socket.IO listeners
   useEffect(() => {
-    if (!isAuthed) {
-      disconnectSocket();
-      return;
-    }
+    if (!isAuthed) return;
 
     try {
-      const socket = connectSocket();
+      const socket = getSocketIo();
       if (!socket) {
         return;
       }
@@ -118,7 +141,7 @@ export const useNotifications = () => {
         socket.off("notification:all-read", handleAllRead);
       };
     } catch (error) {
-      console.warn("[Story Spark] Failed to set up Socket.IO notifications:", error);
+      logger.warn("[Story Spark] Failed to set up Socket.IO notifications:", error);
     }
   }, [isAuthed, refreshNotifications, refetch]);
 
@@ -128,6 +151,7 @@ export const useNotifications = () => {
     isOpen,
     isFetching,
     isMarkingAllRead,
+    mutationError, 
     toggle,
     close,
     markAsRead,

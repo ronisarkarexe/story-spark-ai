@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import confetti from "canvas-confetti";
 import { WritingStreak } from "../types";
 
@@ -7,7 +7,7 @@ interface StreakCardProps {
   isLoading?: boolean;
 }
 
-const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
+const StreakCard = ({ streak, isLoading }: StreakCardProps) => {
   useEffect(() => {
     if (isLoading || !streak) return;
     const { currentStreak, totalWritingDays } = streak;

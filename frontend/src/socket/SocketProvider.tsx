@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { connectSocket, disconnectSocket } from "./socket.oi";
-import { isLoggedIn } from "../services/auth.service";
+import { isLoggedIn, authChangeEventName } from "../services/auth.service";
 
 /**
  * SocketContext provides a stable reference to the singleton Socket.IO client.
@@ -20,17 +20,24 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const authed = isLoggedIn();
-    if (!authed) {
-      disconnectSocket();
-      setSocket(null);
-      return;
-    }
+    const syncSocketWithAuth = () => {
+      if (!isLoggedIn()) {
+        disconnectSocket();
+        setSocket(null);
+        return;
+      }
+      const s = connectSocket();
+      setSocket(s);
+    };
 
-    const s = connectSocket();
-    setSocket(s);
+    // Initial connection state on mount
+    syncSocketWithAuth();
+
+    // Re-sync whenever login/logout happens elsewhere in the app
+    window.addEventListener(authChangeEventName, syncSocketWithAuth);
 
     return () => {
+      window.removeEventListener(authChangeEventName, syncSocketWithAuth);
       disconnectSocket();
       setSocket(null);
     };

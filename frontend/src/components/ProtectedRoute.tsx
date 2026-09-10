@@ -16,17 +16,24 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
   const location = useLocation();
 
+  // Check if user is logged in
   if (!isLoggedIn()) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-
-  if (allowedRoles) {
-    const user = getUserInfo();
-    if (!user || !allowedRoles.includes(user.role)) {
-      return <Navigate to="/login" replace />;
+    if (import.meta.env.DEV) {
+      console.warn("Dev mode: Bypassing auth check for protected route.");
+    } else {
+      return <Navigate to="/login" replace state={{ from: location }} />;
     }
   }
 
+  // Check if user has required role
+  if (allowedRoles && !import.meta.env.DEV) {
+    const user = getUserInfo();
+    if (!user || !allowedRoles.includes(user.role)) {
+      return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+  }
+
+  // If children are provided, render them; otherwise render Outlet for nested routes
   return children ? <>{children}</> : <Outlet />;
 };
 

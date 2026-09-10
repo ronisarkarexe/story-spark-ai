@@ -46,10 +46,11 @@ export const getContinuations = async (
   count: number = 3
 ): Promise<string[]> => {
   const previousContent = chapters.map((c) => c.content).join("\n\n");
-  const response = await axios.post(
-    `${API_BASE}/ai_model/continue-story`,
-    {
-      prompt: `
+  try {
+    const response = await axios.post(
+      `${API_BASE}/ai_model/continue-story`,
+      {
+        prompt: `
 Continue this story naturally.
 
 Rules:
@@ -60,14 +61,18 @@ Rules:
 
 Story:
 ${previousContent}
-    `,
-      count,
-    },
-    { withCredentials: true }
-  );
-  const data = response.data.data;
-  if (Array.isArray(data)) {
-    return data.map((item: any) => item.continuation ?? "");
+        `,
+        count,
+      },
+      { withCredentials: true }
+    );
+    const data = response.data.data;
+    if (Array.isArray(data)) {
+      return data.map((item: any) => item.continuation ?? "");
+    }
+    return [];
+  } catch (error) {
+    console.error("Story batch continuation request failed:", error);
+    throw new Error("Failed to generate story continuations.");
   }
-  return [];
 };

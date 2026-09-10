@@ -1,5 +1,5 @@
 // frontend/src/components/StoryGenerator.tsx
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import api from '../services/api';
 
 interface StoryGeneratorProps {
@@ -8,16 +8,32 @@ interface StoryGeneratorProps {
 
 const MIN_PROMPT_LENGTH = 10;
 const MAX_PROMPT_LENGTH = 1000;
+const STORAGE_KEY_VARIATION_COUNT = 'story_generator_variation_count';
 
-export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated }) => {
+export const StoryGenerator = ({ onStoryGenerated }: StoryGeneratorProps) => {
   const [prompt, setPrompt] = useState('');
-  const [variationCount, setVariationCount] = useState(3);
+  const [variationCount, setVariationCount] = useState<number>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_VARIATION_COUNT);
+    return saved ? Number(saved) : 3;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [stories, setStories] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const abortContollerRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_VARIATION_COUNT,variationCount.toString());
+  },[variationCount]);
+
+  // Derived values used both in JSX and inside handleGenerate
+  const trimmedPrompt = prompt.trim();
+  const promptLength = trimmedPrompt.length;
+  const isPromptInvalid =
+    promptLength < MIN_PROMPT_LENGTH || promptLength > MAX_PROMPT_LENGTH;
+
+  const abortControllerRef = useRef<AbortController | null>(null);
   const handleGenerate = async () => {
+
+    // trimmedPrompt and promptLength are already derived at component scope above
     if (!trimmedPrompt) {
       setError('Please enter a story prompt.');
       return;
@@ -37,7 +53,7 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
     setIsLoading(true);
 
     abortControllerRef.current = new AbortController();
-    const timeoutld = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       abortControllerRef.current?.abort();
       }, 15000);                                             //timeout after 15 seconds
 
@@ -46,9 +62,9 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
         prompt: trimmedPrompt,
         variations: variationCount,
       }, {
-        signal: abortControlerRef.current.signal,
+        signal: abortControllerRef.current.signal,
       });
-      clearTimeout(timeoutld);
+      clearTimeout(timeoutId);
 
       if (response?.data?.variations) {
         setStories(response.data.variations);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, MessageSquare, X, Minus, Trash2, Bot, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,7 +9,7 @@ import {
 import { getUserInfo } from "../../services/auth.service";
 import toast from "react-hot-toast";
 
-const ChatComponent: React.FC = () => {
+const ChatComponent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [message, setMessage] = useState("");
@@ -101,8 +101,83 @@ const ChatComponent: React.FC = () => {
     setIsConfirming(false);
   };
 
+  // Simple Markdown parser for Bold, Bullet Lists, and Line Breaks.
+  // Messages were previously rendered as raw text ({msg.parts}), so any
+  // markdown syntax from the AI response (e.g. **bold**, "- item" lists)
+  // showed up as literal characters instead of being formatted.
+  const parseInlineBold = (line: string, keyPrefix: string) => {
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = boldRegex.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(line.substring(lastIndex, match.index));
+      }
+      parts.push(
+        <strong key={`${keyPrefix}-${match.index}`}>{match[1]}</strong>
+      );
+      lastIndex = boldRegex.lastIndex;
+    }
+
+    if (lastIndex < line.length) {
+      parts.push(line.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : line;
+  };
+
+  // Matches a leading list marker: *, -, or + followed by a space
+  const listMarkerRegex = /^\s*[*\-+]\s+(.*)$/;
+
+  const renderMessageContent = (content: string) => {
+    const lines = content.split("\n");
+    const blocks: React.ReactNode[] = [];
+    let currentListItems: React.ReactNode[] = [];
+
+    const flushList = (key: string) => {
+      if (currentListItems.length > 0) {
+        blocks.push(
+          <ul key={`ul-${key}`} className="list-disc pl-4 space-y-0.5 mb-1">
+            {currentListItems}
+          </ul>
+        );
+        currentListItems = [];
+      }
+    };
+
+    lines.forEach((line, idx) => {
+      const listMatch = line.match(listMarkerRegex);
+
+      if (listMatch) {
+        currentListItems.push(
+          <li key={`li-${idx}`}>{parseInlineBold(listMatch[1], `li-${idx}`)}</li>
+        );
+        return;
+      }
+
+      flushList(String(idx));
+
+      if (line.trim().length === 0) {
+        blocks.push(<div key={`sp-${idx}`} className="h-1.5" />);
+        return;
+      }
+
+      blocks.push(
+        <p key={`p-${idx}`} className="mb-1 last:mb-0">
+          {parseInlineBold(line, `p-${idx}`)}
+        </p>
+      );
+    });
+
+    flushList("end");
+
+    return blocks;
+  };
+
   return (
-    <div className="fixed bottom-6 right-6 z-[9999]">
+    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -192,7 +267,7 @@ const ChatComponent: React.FC = () => {
                               : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-tl-none"
                           }`}
                         >
-                          {msg.parts}
+                          {renderMessageContent(msg.parts)}
                         </div>
                       </div>
                     </div>

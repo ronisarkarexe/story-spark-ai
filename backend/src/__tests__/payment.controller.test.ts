@@ -139,6 +139,45 @@ describe("payment.controller", () => {
       );
     });
 
+    it("rejects verification when the stored order amount does not match the selected plan", async () => {
+      jest
+        .spyOn(Order, "findOne")
+        .mockResolvedValueOnce({
+          userId,
+          razorpayOrderId,
+          plan: "monthly",
+          amount: 100,
+          status: "created",
+        } as any)
+        .mockResolvedValueOnce(null);
+
+      mockOrdersFetch.mockResolvedValue({
+        amount: 49900,
+        notes: { plan: "monthly" },
+      });
+
+      const req = {
+        user: { _id: userId },
+        body: {
+          razorpay_order_id: razorpayOrderId,
+          razorpay_payment_id: razorpayPaymentId,
+          razorpay_signature: buildSignature(razorpayOrderId, razorpayPaymentId),
+        },
+      } as unknown as Request;
+      const res = makeRes() as Response;
+      const next = jest.fn();
+
+      await verifyPayment(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: "Stored order amount does not match the selected plan.",
+        })
+      );
+    });
+
     it("upgrades the paying user when ownership and amount checks pass", async () => {
       jest
         .spyOn(Order, "findOne")
@@ -146,6 +185,7 @@ describe("payment.controller", () => {
           userId,
           razorpayOrderId,
           plan: "monthly",
+          amount: 49900,
           status: "created",
         } as any)
         .mockResolvedValueOnce(null);

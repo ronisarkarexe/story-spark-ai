@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Collection } from "../../models/collection";
@@ -13,7 +12,7 @@ interface Props {
   onDelete?: () => void;
 }
 
-const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }) => {
+const CollectionDetailCard = ({ collection, isOwner, onDelete }: Props) => {
   const navigate = useNavigate();
   const [deleteCollection, { isLoading: isDeleting }] = useDeleteCollectionMutation();
   const [removeStory] = useRemoveStoryFromCollectionMutation();
@@ -26,7 +25,8 @@ const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }
       toast.success("Collection deleted.");
       onDelete?.();
       navigate(-1);
-    } catch {
+    } catch (error) {
+      console.error("Failed to delete collection", error);
       toast.error("Failed to delete collection.");
     }
   };
@@ -35,7 +35,8 @@ const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }
     try {
       await removeStory({ collectionId: collection._id, storyId }).unwrap();
       toast.success("Story removed from collection.");
-    } catch {
+    } catch (error) {
+      console.error("Failed to remove story from collection", error);
       toast.error("Failed to remove story.");
     }
   };
@@ -48,7 +49,8 @@ const CollectionDetailCard: React.FC<Props> = ({ collection, isOwner, onDelete }
         data: { visibility: newVisibility },
       }).unwrap();
       toast.success(`Collection is now ${newVisibility}.`);
-    } catch {
+    } catch (error) {
+      console.error("Failed to update collection visibility", error);
       toast.error("Failed to update visibility.");
     }
   };

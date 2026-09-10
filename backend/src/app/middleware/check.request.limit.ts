@@ -24,7 +24,28 @@ const resolveAuthToken = (req: Request): string | null => {
     (req as any).cookies?.accessToken ||
     (req as any).cookies?.token;
 
-  return cookieToken ?? null;
+  if (!cookieToken) {
+    return null;
+  }
+
+  const allowCookieAuth = config.auth?.allow_cookie_auth === true;
+  if (!allowCookieAuth) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Cookie-based authentication is disabled. Use the Authorization header or enable secure cookie auth explicitly."
+    );
+  }
+
+  const forwardedProto = String(req.headers["x-forwarded-proto"] || "").toLowerCase();
+  const isSecureRequest = req.secure || req.protocol === "https" || forwardedProto === "https";
+  if (!isSecureRequest) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Cookie-based authentication requires a secure and trusted request context."
+    );
+  }
+
+  return cookieToken;
 };
 
 // Note: Actual quota/limit enforcement is handled by reserveUserQuota

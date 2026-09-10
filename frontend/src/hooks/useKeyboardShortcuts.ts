@@ -44,7 +44,9 @@ const useKeyboardShortcuts = ({
         active !== null &&
         ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName);
 
-      if (e.shiftKey && e.code === "Slash") {
+      // Use e.key ("?") instead of e.code ("Slash") so the shortcut works on
+      // non-US layouts (QWERTZ, AZERTY, ...) where ? is on a different key.
+      if (e.key === "?") {
         e.preventDefault();
         handlersRef.current.onOpenHelp();
         return;

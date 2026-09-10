@@ -81,6 +81,14 @@ export default function StoryConsistencyGuardian() {
   const [factLoading, setFactLoading] = useState(false);
   const [factError, setFactError] = useState("");
 
+  const handleStoryTextChange = (value: string) => {
+    setStoryText(value);
+    setResult(null);
+    setFactResult(null);
+    setError("");
+    setFactError("");
+  };
+
   const handleAnalyze = async () => {
     if (storyText.trim().length < 100) {
       setError("Please enter at least 100 characters of story text.");
@@ -160,7 +168,7 @@ export default function StoryConsistencyGuardian() {
           <label className="text-sm font-semibold text-white/70">Your Story Text</label>
           <textarea
             value={storyText}
-            onChange={(e) => setStoryText(e.target.value)}
+            onChange={(e) => handleStoryTextChange(e.target.value)}
             rows={10}
             placeholder="Paste your story here (chapters, scenes, full text)..."
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
@@ -325,4 +333,4 @@ export default function StoryConsistencyGuardian() {
       </div>
     </div>
   );
-}
+}

@@ -79,7 +79,16 @@ const StoryInspirationComponent: React.FC = () => {
 
           <h1 className="text-5xl md:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] mb-8">
             <span className="block text-slate-900 dark:text-white">Story</span>
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-600 dark:from-indigo-300 dark:via-blue-300 dark:to-purple-300">
+            <span
+  className="block
+  text-indigo-700
+  dark:text-transparent
+  dark:bg-clip-text
+  dark:bg-gradient-to-r
+  dark:from-indigo-300
+  dark:via-blue-300
+  dark:to-purple-300"
+>
               Inspiration Hub
             </span>
           </h1>

@@ -1,5 +1,6 @@
-import React, { useMemo } from "react";
-import { diffChars, Change } from "jsdiff";
+import React, { useMemo, useRef, useCallback, useState } from "react";
+import { diffChars, diffWords, Change } from "diff";
+
 import DiffHighlight from "./DiffHighlight";
 
 interface IStoryVersion {
@@ -21,10 +22,16 @@ interface DiffViewerProps {
   onBack: () => void;
 }
 
+type DiffMode = "char" | "word";
+
 const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) => {
+  const [diffMode, setDiffMode] = useState<DiffMode>("word");
+
+  const diffFn = diffMode === "word" ? diffWords : diffChars;
+
   const differences = useMemo(() => {
-    return diffChars(version1.content, version2.content);
-  }, [version1.content, version2.content]);
+    return diffFn(version1.content, version2.content);
+  }, [version1.content, version2.content, diffMode]);
 
   const stats = useMemo(() => {
     let added = 0;
@@ -37,12 +44,35 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
       total += diff.value.length;
     });
 
-    return { added, removed, total, similarity: total > 0 ? ((total - (added + removed)) / total * 100).toFixed(1) : 100 };
+    const unchangedChars = total - added - removed;
+    const similarityValue = total > 0
+      ? ((unchangedChars / total) * 100).toFixed(1)
+      : "100.0";
+    return { added, removed, total, similarity: similarityValue };
   }, [differences]);
 
   const titleDiff = useMemo(() => {
-    return diffChars(version1.title, version2.title);
-  }, [version1.title, version2.title]);
+    return diffFn(version1.title, version2.title);
+  }, [version1.title, version2.title, diffMode]);
+
+  // Synchronized scroll — mirrors scroll position across both content panels
+  const panel1Ref = useRef<HTMLDivElement>(null);
+  const panel2Ref = useRef<HTMLDivElement>(null);
+  const isSyncingRef = useRef(false);
+
+  const handlePanel1Scroll = useCallback(() => {
+    if (isSyncingRef.current || !panel1Ref.current || !panel2Ref.current) return;
+    isSyncingRef.current = true;
+    panel2Ref.current.scrollTop = panel1Ref.current.scrollTop;
+    isSyncingRef.current = false;
+  }, []);
+
+  const handlePanel2Scroll = useCallback(() => {
+    if (isSyncingRef.current || !panel1Ref.current || !panel2Ref.current) return;
+    isSyncingRef.current = true;
+    panel1Ref.current.scrollTop = panel2Ref.current.scrollTop;
+    isSyncingRef.current = false;
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -55,6 +85,37 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
         >
           ← Back to Selection
         </button>
+      </div>
+
+      {/* Diff Precision Toggle */}
+      <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Diff Precision</p>
+        <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-600 overflow-hidden" role="group" aria-label="Diff precision toggle">
+          <button
+            type="button"
+            onClick={() => setDiffMode("char")}
+            aria-pressed={diffMode === "char"}
+            className={`px-4 py-1.5 text-sm font-semibold transition-all ${
+              diffMode === "char"
+                ? "bg-indigo-600 text-white"
+                : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            }`}
+          >
+            Character Level
+          </button>
+          <button
+            type="button"
+            onClick={() => setDiffMode("word")}
+            aria-pressed={diffMode === "word"}
+            className={`px-4 py-1.5 text-sm font-semibold transition-all border-l border-slate-300 dark:border-slate-600 ${
+              diffMode === "word"
+                ? "bg-indigo-600 text-white"
+                : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            }`}
+          >
+            Word Level
+          </button>
+        </div>
       </div>
 
       {/* Comparison Stats */}
@@ -74,6 +135,10 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
         <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-700">
           <p className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase">Removed</p>
           <p className="text-lg font-bold text-red-900 dark:text-red-200">{stats.removed}</p>
+        </div>
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-600 col-span-2 md:col-span-4">
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Similarity</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-slate-200">{stats.similarity}%</p>
         </div>
       </div>
 
@@ -153,7 +218,7 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
                 {version1.generationType}
               </span>
             </div>
-            <div className="overflow-y-auto max-h-[500px] p-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
+            <div ref={panel1Ref} onScroll={handlePanel1Scroll} className="overflow-y-auto max-h-[500px] p-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
               <p className="text-sm text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap">
                 {differences.map((diff: Change, idx: number) => (
                   <span key={idx}>
@@ -182,7 +247,7 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
                 {version2.generationType}
               </span>
             </div>
-            <div className="overflow-y-auto max-h-[500px] p-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
+            <div ref={panel2Ref} onScroll={handlePanel2Scroll} className="overflow-y-auto max-h-[500px] p-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
               <p className="text-sm text-slate-900 dark:text-white leading-relaxed whitespace-pre-wrap">
                 {differences.map((diff: Change, idx: number) => (
                   <span key={idx}>

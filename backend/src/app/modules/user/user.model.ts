@@ -12,6 +12,7 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
     email: { type: String, required: true, unique: true, lowercase: true },
     name: { type: String, maxlength: 100, minlength: 1 },
     password: { type: String, required: false, default: "" },
+    passwordChangedAt: { type: Date },
     role: {
       type: String,
       required: true,
@@ -60,6 +61,9 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     isApplyForWriter: { type: Boolean, default: false },
     tokenVersion: { type: Number, default: 0 },
+    pendingEmail: { type: String, default: null },
+    pendingEmailToken: { type: String, default: null },
+    pendingEmailTokenExpires: { type: Date, default: null },
     gamification: {
       xp: { type: Number, default: 0 },
       level: { type: Number, default: 1 },
@@ -88,10 +92,23 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
       ],
     },
     readingHistory: [{ type: Schema.Types.ObjectId, ref: "Post" }],
-    writingGoals: {
-      dailyWordCount: { type: Number, default: 0 },
-      weeklyWordCount: { type: Number, default: 0 },
+   pushSubscriptions: [
+  {
+    endpoint: { type: String, required: true },
+    expirationTime: { type: Date, default: null },
+    keys: {
+      p256dh: { type: String, required: true },
+      auth: { type: String, required: true },
     },
+    createdAt: { type: Date, default: Date.now },
+  },
+],
+notificationPreferences: {
+  likes: { type: Boolean, default: true },
+  comments: { type: Boolean, default: true },
+  followers: { type: Boolean, default: true },
+  newStories: { type: Boolean, default: true },
+},
   },
   {
     timestamps: true,
@@ -100,18 +117,18 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
 
 UserSchema.pre("save", async function (next) {
   const user = this;
+
   if (!user.isModified("password")) {
     return next();
   }
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date(Date.now() - 1000);
+  }
 
-  // Only hash password if it exists, is not empty, and has been modified (for password-based auth)
-  // Skip for Google OAuth users who don't have passwords
-  if (user.isModified("password") && user.password && user.password.trim() !== "") {
     user.password = await bcrypt.hash(
       user.password,
       Number(config.bcrypt_salt_rounds)
     );
-  }
 
   next();
 });

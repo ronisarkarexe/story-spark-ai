@@ -3,7 +3,7 @@
    File: auth.js
    ═══════════════════════════════════════════════ */
 
-let currentMode = 'signin';
+const GOOGLE_CLIENT_ID = (typeof window !== 'undefined' && window.VITE_GOOGLE_CLIENT_ID) ? window.VITE_GOOGLE_CLIENT_ID : '';
 
 // ── Google Identity Services (GIS) Client ID ──
 const GOOGLE_CLIENT_ID = (typeof window !== 'undefined' && window.VITE_GOOGLE_CLIENT_ID) ? window.VITE_GOOGLE_CLIENT_ID : 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
@@ -54,6 +54,7 @@ function initInlineValidation() {
     const emailField = document.getElementById('email-field');
     const passwordField = document.getElementById('password-field');
     const confirmPasswordField = document.getElementById('confirm-password-field');
+    const signupCapsWarning = document.getElementById("signup-caps-lock-warning");
 
     if (nameField) {
         nameField.addEventListener('blur', () => validateName(true));
@@ -89,6 +90,25 @@ function initInlineValidation() {
             validateConfirmPassword(false);
         });
     }
+const inputs = document.querySelectorAll("#auth-form input");
+
+inputs.forEach(input => {
+    input.addEventListener("keydown", (event) => {
+        if (!signupCapsWarning) return;
+
+        signupCapsWarning.textContent = event.getModifierState("CapsLock")
+            ? "Caps Lock is ON"
+            : "Caps Lock is OFF";
+    });
+
+    input.addEventListener("keyup", (event) => {
+        if (!signupCapsWarning) return;
+
+        signupCapsWarning.textContent = event.getModifierState("CapsLock")
+            ? "Caps Lock is ON"
+            : "Caps Lock is OFF";
+    });
+});
 }
 
 function setAlert(variant, message) {
@@ -310,7 +330,7 @@ function initParticleSystem() {
     
     const ctx = canvas.getContext('2d');
     const section = canvas.parentElement;
-    const PARTICLE_COUNT = 120;
+    const PARTICLE_COUNT = 700;
     const MOUSE_RADIUS = 140;
     const REPEL_STRENGTH = 0.06;
     const COLORS = [
@@ -426,10 +446,24 @@ function toggleAuthMode(mode) {
         const navToggle = document.getElementById('nav-toggle');
         const googleBtnText = document.getElementById('google-btn-text');
 
+        // Signup-only fields elements
+        const confirmGroup = document.getElementById('confirm-password-group');
+        const meterGroup = document.getElementById('password-meter-bar')?.closest('.ds-meter');
+        const checklistGroup = document.getElementById('password-checklist');
+        const passwordHelp = document.getElementById('password-help');
+        const capsWarning = document.getElementById('signup-caps-lock-warning');
+        const confirmWarning = document.getElementById('confirm-caps-lock-warning');
+
         if (mode === 'signup') {
             if (signupFields) signupFields.classList.remove('hidden');
             if (nameField) nameField.required = true;
             if (forgotPass) forgotPass.classList.add('invisible');
+            
+            // Show signup-only fields
+            if (confirmGroup) confirmGroup.classList.remove('hidden');
+            if (meterGroup) meterGroup.classList.remove('hidden');
+            if (checklistGroup) checklistGroup.classList.remove('hidden');
+            if (passwordHelp) passwordHelp.classList.remove('hidden');
             
             // Safe Text Target updates to avoid destroying spinner nodes
             if (submitBtnText) submitBtnText.textContent = 'Sign Up Free';
@@ -455,6 +489,14 @@ function toggleAuthMode(mode) {
                 nameField.value = ''; // Clear out stale text data
             }
             if (forgotPass) forgotPass.classList.remove('invisible');
+            
+            // Hide signup-only fields
+            if (confirmGroup) confirmGroup.classList.add('hidden');
+            if (meterGroup) meterGroup.classList.add('hidden');
+            if (checklistGroup) checklistGroup.classList.add('hidden');
+            if (passwordHelp) passwordHelp.classList.add('hidden');
+            if (capsWarning) capsWarning.classList.add('hidden');
+            if (confirmWarning) confirmWarning.classList.add('hidden');
             
             // Safe Text Target updates to avoid destroying spinner nodes
             if (submitBtnText) submitBtnText.textContent = 'Log In to StorySparkAI';
@@ -548,7 +590,7 @@ function togglePasswordVisibility(event) {
     
     const field = document.getElementById('password-field');
     const button = event?.currentTarget || document.querySelector('[onclick*="togglePasswordVisibility"]');
-    const icon = document.getElementById('eye-icon');
+    const icon = document.getElementById('password-eye-icon');
     const tooltip = button?.querySelector('.password-tooltip');
     const tooltipText = button?.querySelector('#tooltip-text');
     
@@ -562,14 +604,15 @@ function togglePasswordVisibility(event) {
     // Update icon with better contrast
     if (isVisible) {
         // Password hidden
-        icon.className = 'fi fi-rr-eye-crossed text-[16px]';
+        
+         icon.className = "fi fi-rr-eye-crossed";
         button.setAttribute('aria-label', 'Show password. Press Space or Enter to toggle.');
         button.setAttribute('aria-pressed', 'false');
         button.setAttribute('title', 'Show password (Space/Enter)');
         if (tooltipText) tooltipText.textContent = 'Show password (Space/Enter)';
     } else {
         // Password visible
-        icon.className = 'fi fi-rr-eye text-[16px]';
+       icon.className = "fi fi-rr-eye";
         button.setAttribute('aria-label', 'Hide password. Press Space or Enter to toggle.');
         button.setAttribute('aria-pressed', 'true');
         button.setAttribute('title', 'Hide password (Space/Enter)');
@@ -630,7 +673,6 @@ function toggleConfirmPasswordVisibility(event) {
         }, 1500);
     }
 }
-
 // Add keyboard support and tooltip interactions
 document.addEventListener('DOMContentLoaded', () => {
     const passwordButtons = document.querySelectorAll('.password-toggle-btn');
@@ -676,29 +718,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-/* caps-lock-warning */
-const passwordField = document.getElementById("password-field");
-
-if (passwordField) {
-  passwordField.addEventListener("keyup", (event) => {
-    const loginCapsWarning = document.getElementById("login-caps-lock-warning");
-    const signupCapsWarning = document.getElementById("signup-caps-lock-warning");
-    const confirmCapsWarning = document.getElementById("confirm-caps-lock-warning");
-
-    const isCapsLockOn = event.getModifierState("CapsLock");
-
-    if (loginCapsWarning) {
-      loginCapsWarning.classList.toggle("hidden", !isCapsLockOn);
-    }
-
-    if (signupCapsWarning) {
-      signupCapsWarning.classList.toggle("hidden", !isCapsLockOn);
-    }
-    if (confirmCapsWarning) {
-      confirmCapsWarning.classList.toggle("hidden", !isCapsLockOn);
-    }
-  });
-}
 
 /* ── Form Submission handling ── */
 async function handleFormSubmit(e) {
@@ -790,11 +809,16 @@ function initGoogleAuth() {
         return;
     }
 
+    if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com') {
+        console.warn('Google Sign-In is not configured (VITE_GOOGLE_CLIENT_ID missing) — skipping initialization.');
+        return;
+    }
+
     google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
-auto_select: true,
-      cancel_on_tap_outside: true,
+        auto_select: true,
+        cancel_on_tap_outside: true,
     });
 }
 
@@ -810,35 +834,21 @@ function decodeJwt(token) {
 
         if (!decoded || typeof decoded !== 'object') return null;
 
-        // Required userId validation
-        if (typeof decoded.userId !== 'string' || decoded.userId.trim() === '') return null;
-
-        // Required email validation with format regex
-        if (typeof decoded.email !== 'string' || decoded.email.trim() === '') return null;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(decoded.email)) return null;
-
-        // Required role validation
-        if (typeof decoded.role !== 'string' || decoded.role.trim() === '') return null;
-        const validRoles = ['user', 'admin', 'guest'];
-        if (!validRoles.includes(decoded.role)) return null;
-
-        // Required subscriptionType validation
-        if (typeof decoded.subscriptionType !== 'string' || decoded.subscriptionType.trim() === '') return null;
-        const validSubscriptions = ['free', 'premium'];
-        if (!validSubscriptions.includes(decoded.subscriptionType)) return null;
-
         // Required exp (expiration) validation
         if (typeof decoded.exp !== 'number' || decoded.exp <= Math.floor(Date.now() / 1000)) return null;
 
         // Required iat validation
         if (typeof decoded.iat !== 'number') return null;
 
+        // Optional email validation if present
+        if (decoded.email !== undefined) {
+          if (typeof decoded.email !== 'string' || decoded.email.trim() === '') return null;
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(decoded.email)) return null;
+        }
+
         // Optional name validation
         if (decoded.name !== undefined && typeof decoded.name !== 'string') return null;
-
-        // Optional postsCount validation
-        if (decoded.postsCount !== undefined && typeof decoded.postsCount !== 'number') return null;
 
         return decoded;
     } catch (e) {

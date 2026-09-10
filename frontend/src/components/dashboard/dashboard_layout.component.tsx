@@ -4,6 +4,7 @@ import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo, removeUserInfo } from "../../services/auth.service";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import { useNotifications } from "../../hooks/useNotifications";
+import PageTransition from "../layout/PageTransition";
 
 const DashboardLayout: React.FC = () => {
   const { unreadCount } = useNotifications();
@@ -294,7 +295,9 @@ const DashboardLayout: React.FC = () => {
         </aside>
 
         <main className="min-w-0 flex-1 overflow-auto bg-white px-4 py-4 text-slate-900 dark:bg-[#070c18] dark:text-white sm:px-6 sm:py-6">
-          <Outlet />
+          <PageTransition className="h-full w-full">
+            <Outlet />
+          </PageTransition>
         </main>
       </div>
     </div>

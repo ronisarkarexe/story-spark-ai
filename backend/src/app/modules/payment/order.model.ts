@@ -11,9 +11,10 @@ const orderSchema = new Schema<IOrder>(
     currency: { type: String, default: "INR" },
     status: {
       type: String,
-      enum: ["created", "paid", "failed"],
+      enum: ["created", "paid_pending_entitlement", "paid", "failed"],
       default: "created",
     },
+    entitlementAttempts: { type: Number, default: 0 },
   },
   {
     timestamps: true,

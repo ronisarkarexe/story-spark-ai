@@ -7,6 +7,26 @@ import { sendVerificationEmail } from "../../../utils/email.util";
 const buildUnsubscribeUrl = (baseUrl: string | undefined, token: string) =>
   baseUrl ? `${baseUrl}/api/v1/newsletter/unsubscribe/${token}` : undefined;
 
+// Secret fields must never leave the service in a response body. Anyone who
+// learns unsubscribeToken can unsubscribe an address without email access, and
+// verificationToken lets a third party activate a subscription. Strip them.
+const SECRET_FIELDS = [
+  "unsubscribeToken",
+  "verificationToken",
+  "verificationTokenExpires",
+] as const;
+
+const toPublicSubscriber = (subscriber: any) => {
+  if (!subscriber) return subscriber;
+  const obj = typeof subscriber.toObject === "function"
+    ? subscriber.toObject({ virtuals: false })
+    : { ...subscriber };
+  for (const field of SECRET_FIELDS) {
+    delete obj[field];
+  }
+  return obj;
+};
+
 export const subscribeNewsletter = async (
   email: string,
   name?: string,
@@ -19,7 +39,7 @@ export const subscribeNewsletter = async (
 
   if (existing) {
     if (existing.status === "active") {
-      return { message: "Already subscribed", subscriber: existing };
+      return { message: "Already subscribed", subscriber: toPublicSubscriber(existing) };
     }
     if (existing.status === "unsubscribed") {
       existing.status = "pending";
@@ -37,7 +57,7 @@ export const subscribeNewsletter = async (
         buildUnsubscribeUrl(baseUrl, existing.unsubscribeToken)
       );
 
-      return { message: "Re-subscribed. Please verify your email.", subscriber: existing };
+      return { message: "Re-subscribed. Please verify your email.", subscriber: toPublicSubscriber(existing) };
     }
   }
 
@@ -62,7 +82,7 @@ export const subscribeNewsletter = async (
     buildUnsubscribeUrl(baseUrl, unsubscribeToken)
   );
 
-  return { message: "Subscribed! Please verify your email.", subscriber };
+  return { message: "Subscribed! Please verify your email.", subscriber: toPublicSubscriber(subscriber) };
 };
 
 export const verifyNewsletter = async (token: string) => {
@@ -80,7 +100,7 @@ export const verifyNewsletter = async (token: string) => {
   subscriber.verificationTokenExpires = undefined;
   await subscriber.save();
 
-  return { message: "Email verified successfully.", subscriber };
+  return { message: "Email verified successfully.", subscriber: toPublicSubscriber(subscriber) };
 };
 
 export const unsubscribeByToken = async (token: string) => {

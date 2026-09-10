@@ -2,6 +2,7 @@
 import { StoryMetaTags } from "./StoryMetaTags";
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import ReadingTime from "../ReadingTime";
 import {
   useDeletePostMutation,
   useGetPostByIdQuery,
@@ -28,6 +29,7 @@ import { formatReadingStats } from "../../utils/story-utils";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
+import SimilarStories from "../recommendations/SimilarStories";
 
 import {
   useToggleFollowMutation,
@@ -154,7 +156,8 @@ const PostDetailsComponent = () => {
 
     try {
       await toggleFollow(authorId).unwrap();
-    } catch {
+    } catch (error) {
+      console.error("Failed to update follow status", error);
       toast.error("Failed to update follow status");
     }
   };
@@ -275,7 +278,8 @@ const PostDetailsComponent = () => {
     await navigator.clipboard.writeText(window.location.href);
     toast.success("Link copied to clipboard!");
     setShowShareMenu(false);
-  } catch {
+  } catch (error) {
+    console.error("Failed to copy link", error);
     toast.error("Failed to copy link.");
   }
 };
@@ -306,7 +310,8 @@ const PostDetailsComponent = () => {
       await deletePost(id).unwrap();
       toast.success("Story removed successfully.");
       navigate("/explore");
-    } catch {
+    } catch (error) {
+      console.error("Failed to delete post", error);
       toast.error("Unable to remove this story. Please try again.");
     }
   };
@@ -377,8 +382,10 @@ const PostDetailsComponent = () => {
                     )}
                   </h3>
 
-                  <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-500 flex-wrap">
                     <span>{formatDateShort(post ? post?.createdAt : "")}</span>
+                    <span>•</span>
+                    <ReadingTime content={post?.content} className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-gray-500 font-medium" />
                   </div>
                 </div>
               </div>
@@ -494,11 +501,11 @@ const PostDetailsComponent = () => {
   {post?.content && (
     <>
       <span className="inline-flex items-center rounded-full bg-slate-700/60 text-slate-300 border border-slate-600/50 py-1 px-3 text-xs font-semibold gap-1 select-none">
-        ⏱️ {calculateReadingTime(post.content)} min read
+        <span aria-hidden="true" role="img" aria-label="reading time">&#x23F1;&#xFE0F;</span> {calculateReadingTime(post.content)} min read
       </span>
 
       <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-        📖 {formatReadingStats(post.content)}
+        {formatReadingStats(post.content)}
       </span>
     </>
   )}
@@ -625,6 +632,15 @@ const PostDetailsComponent = () => {
       <p>No related stories found.</p>
     </div>
   )}
+</div>
+<div className="mt-12">
+  <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
+    Similar Stories
+  </h3>
+
+  <SimilarStories
+    stories={(relatedPost || []).map((p: any) => ({ ...p, id: p._id || p.id || "", tags: p.tags || (p.tag ? [p.tag] : []) })) as any}
+  />
 </div>
           </div>
         </div>

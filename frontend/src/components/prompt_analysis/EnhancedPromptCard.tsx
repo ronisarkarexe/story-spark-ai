@@ -20,7 +20,7 @@ const EnhancedPromptCard: React.FC<EnhancedPromptCardProps> = ({
   const [showComparison, setShowComparison] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(enhancedPrompt);
+    navigator.clipboard.writeText(enhancedPrompt).catch(() => {});
     setCopied(true);
     toast.success("Prompt copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);

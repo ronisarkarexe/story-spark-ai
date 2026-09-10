@@ -1,109 +1,169 @@
+
 import express, {
   Application,
   NextFunction,
   Request,
   Response,
+  RequestHandler,
 } from "express";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import cors from "cors";
 import httpStatus from "http-status";
 import cookieParser from "cookie-parser";
+
 import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import leaderboardRoute from "./routes/leaderboard.route";
 import globalRateLimiter from "./app/middleware/global.rate-limiter";
+import { sanitizeAllMiddleware } from "./app/middleware/sanitize.middleware";
+import ApiError from "./errors/api_error";
 
 const app: Application = express();
-app.set("trust proxy", 1);
+
+// Trust the proxy only when the application is running in production.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(helmet());
 
-const defaultCorsOrigins =
-  process.env.NODE_ENV === "development"
-    ? ["http://localhost:4001", "http://localhost:4002"]
-    : ["https://storysparkai.vercel.app"];
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later.",
+});
 
-// Get raw origins from configuration or defaults
-const rawCorsOrigins =
-  config.cors_origins && config.cors_origins.length > 0
-    ? config.cors_origins.map((origin) => origin.replace(/\/$/, ""))
+app.use(limiter as unknown as RequestHandler);
+
+export const defaultCorsOrigins: string[] = [
+  "http://localhost:4001",
+  "http://localhost:4002",
+  "https://storysparkai-five.vercel.app",
+  "https://storysparkai.vercel.app",
+];
+
+const corsOrigins =
+  config.cors_origins?.length
+    ? config.cors_origins
     : defaultCorsOrigins;
-
-// Dynamically strip trailing slashes and clean up whitespaces from origins
-const corsOrigins = rawCorsOrigins.map((origin) =>
-  origin.trim().replace(/\/$/, "")
-);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) {
-        if (process.env.NODE_ENV === "production") {
-          const corsError: any = new Error("Origin header required");
-          corsError.statusCode = httpStatus.FORBIDDEN;
-          return callback(corsError);
-        }
+      const isMissingOrigin = !origin;
 
+      // Requests without an Origin header are allowed.
+      if (isMissingOrigin) {
         return callback(null, true);
       }
 
-      if (corsOrigins.includes(origin)) {
+      const isAllowedOrigin = corsOrigins.includes(origin);
+
+      if (isAllowedOrigin) {
         return callback(null, true);
       }
 
-      const corsError: any = new Error(
-        "Blocked by Cross-Origin Resource Sharing (CORS) Policy"
+      return callback(
+        new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy")
       );
-      corsError.statusCode = httpStatus.FORBIDDEN;
-      return callback(corsError);
     },
+
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Cookie",
+    ],
   })
 );
 
-// Rate limiter — placed after CORS so OPTIONS preflight requests are
-// never counted against the limit before CORS has a chance to respond.
+// Apply the global rate limiter after CORS handling.
 app.use(globalRateLimiter);
 
-// ─── 1. FIXED: ENFORCED HARDENED PAYLOAD LIMITS TO PREVENT DoS ───
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
-app.use(cookieParser());
+app.use(
+  express.json({
+    limit: "10mb",
+  })
+);
 
-// Legacy Route Rewrite Rewrite Rules
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  })
+);
+
+app.use(cookieParser() as unknown as RequestHandler);
+
+app.use(sanitizeAllMiddleware);
+
+// Global sanitization for request bodies and query parameters.
+app.use(sanitizeAllMiddleware);
+
 app.use((req, res, next) => {
-  if (
+  const isCharacterNetworkRequest =
     req.method === "GET" &&
-    /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path)
-  ) {
-    req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
+    /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path);
+
+  if (isCharacterNetworkRequest) {
+    req.url = req.url.replace(
+      /^\/api\/story\//,
+      "/api/v1/story/"
+    );
   }
 
   next();
 });
 
-// Primary API Router Matrix Engagement
-app.use("/api/v1/leaderboard", leaderboardRoute);
+// Allow larger payloads for story and character-network data.
+app.use(
+  express.json({
+    limit: "10mb",
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  })
+);
+
+app.use(cookieParser() as unknown as RequestHandler);
+
 app.use("/api/v1", Routers);
 
-// ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
-app.use((req: Request, res: Response, next: NextFunction) => {
-  // Constructing a standardized operational error structure
-  const error: any = new Error("API Not Found");
-  error.statusCode = httpStatus.NOT_FOUND;
-  error.errorMessages = [
-    {
-      path: req.originalUrl,
-      message: "The requested API endpoint route does not exist.",
-    },
-  ];
+app.use(
+  (
+    req: Request,
+    _res: Response,
+    next: NextFunction
+  ) => {
+    const errorMessage =
+      `The requested API endpoint route does not exist: ${req.originalUrl}`;
 
-  next(error);
-});
+    next(
+      new ApiError(
+        httpStatus.NOT_FOUND,
+        errorMessage
+      )
+    );
+  }
+);
 
-// ─── 3. FIXED: REORDERED PIPELINE CALL TO SIT AS ABSOLUTE TERMINATOR ───
 app.use(globalErrorHandler);
 
 export default app;

@@ -1,3 +1,36 @@
+/* Base variables / Light Mode */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --accent-color: #0d6efd;
+  --transition-speed: 0.3s;
+}
+
+/* Dark Mode Overrides */
+[data-theme='dark'] {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #f8f9fa;
+  --text-secondary: #a0a0a0;
+  --border-color: #333333;
+  --accent-color: #375a7f;
+}
+
+/* Global Styles */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
 @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/forms"; 
@@ -62,15 +95,32 @@
 /* ==========================================================================
    Login & Signup Form Overflow Fix
    Prevents inputs from exceeding their card container boundaries.
-   The @tailwindcss/forms plugin can inject min-width / width values that
-   override Tailwind utilities; these rules ensure containment.
+   The @tailwindcss/forms plugin injects styles via [type='email'],
+   [type='password'] etc. attribute selectors, which have higher specificity
+   than a bare `input` element selector and can win regardless of source
+   order. Targeting .ss-input directly, with !important, removes that
+   ambiguity. See issue #4756.
    ========================================================================== */
+.ss-input,
+.ds-input,
+.auth-field,
+.auth-form-card input,
+.auth-container input,
+.ds-input-group input,
+.input-icon-wrapper input {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 input,
 select,
 textarea,
 button {
   min-width: 0;
   max-width: 100%;
+  box-sizing: border-box;
 }
 
 body {
@@ -314,6 +364,41 @@ html, body {
   background: radial-gradient(circle, rgba(96, 165, 250, 0.18), rgba(129, 140, 248, 0.08) 45%, transparent 70%);
   filter: blur(1px);
   opacity: 0.82;
+}
+
+.magic-cursor-glow-premium {
+  width: 96px;
+  height: 96px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(147, 197, 253, 0.55) 22%,
+    rgba(99, 102, 241, 0.28) 48%,
+    rgba(168, 85, 247, 0.1) 72%,
+    transparent 85%
+  );
+  filter: blur(2px);
+  opacity: 0.95;
+}
+
+.magic-cursor-trail-particle {
+  position: fixed;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(147, 197, 253, 0.5) 55%, transparent 78%);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.7);
+  animation: magic-trail-fade 420ms ease-out forwards;
+}
+
+@keyframes magic-trail-fade {
+  0% {
+    opacity: 0.75;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
 }
 
 .magic-cursor-sparkle {
@@ -939,12 +1024,16 @@ html.dark body {
   .group:hover .motion-image,
   .magic-cursor-dot,
   .magic-cursor-glow,
-  .magic-cursor-sparkle {
+  .magic-cursor-glow-premium,
+  .magic-cursor-sparkle,
+  .magic-cursor-trail-particle {
     transform: none;
   }
   .magic-cursor-sparkle,
+  .magic-cursor-trail-particle,
   .magic-cursor-dot,
-  .magic-cursor-glow {
+  .magic-cursor-glow,
+  .magic-cursor-glow-premium {
     display: none;
   }
 }
@@ -1363,7 +1452,9 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   .group:hover .motion-image,
   .magic-cursor-dot,
   .magic-cursor-glow,
+  .magic-cursor-glow-premium,
   .magic-cursor-sparkle,
+  .magic-cursor-trail-particle,
   .contact-col-left,
   .contact-col-right,
   .contact-badge {
@@ -1373,8 +1464,10 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   }
   
   .magic-cursor-sparkle,
+  .magic-cursor-trail-particle,
   .magic-cursor-dot,
   .magic-cursor-glow,
+  .magic-cursor-glow-premium,
   .contact-form-glow-ring {
     display: none !important;
   }

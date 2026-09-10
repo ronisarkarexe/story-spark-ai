@@ -74,9 +74,9 @@ ${payload.email || "Not provided"}
         if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const parsed = JSON.parse(data);
-            console.log(`[GitHub Integration] Successfully created issue: ${parsed.html_url}`);
+            console.info(`[GitHub Integration] Successfully created issue: ${parsed.html_url}`);
           } catch {
-            console.log("[GitHub Integration] Successfully created issue, failed to parse response.");
+            console.info("[GitHub Integration] Successfully created issue, failed to parse response.");
           }
           resolve();
         } else {

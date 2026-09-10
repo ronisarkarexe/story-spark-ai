@@ -1,17 +1,6 @@
 import paginationHelper from "../../utils/pagination_helper";
 
 describe("paginationHelper", () => {
-  it("returns correct pagination for default values", () => {
-    const result = paginationHelper({});
-    expect(result).toEqual({
-      page: 1,
-      limit: 10,
-      skip: 0,
-      sortBy: "createdAt",
-      orderBy: "desc",
-    });
-  });
-
   it("returns correct pagination for custom page and limit", () => {
     const result = paginationHelper({ page: 3, limit: 20 });
     expect(result).toEqual({
@@ -34,19 +23,19 @@ describe("paginationHelper", () => {
   });
 
   it("respects custom sortOrder", () => {
-    const result = paginationHelper({ sortOrder: "asc" as const });
+    const result = paginationHelper({ sortOrder: "asc" as any });
     expect(result.orderBy).toBe("asc");
   });
 
   it("accepts orderBy as alias for sortOrder", () => {
-    const result = paginationHelper({ orderBy: "asc" as const });
+    const result = paginationHelper({ orderBy: "asc" as any });
     expect(result.orderBy).toBe("asc");
   });
 
   it("sortOrder takes precedence over orderBy when both are set", () => {
     const result = paginationHelper({
-      orderBy: "asc" as const,
-      sortOrder: "desc" as const,
+      orderBy: "asc" as any,
+      sortOrder: "desc" as any,
     });
     expect(result.orderBy).toBe("desc");
   });

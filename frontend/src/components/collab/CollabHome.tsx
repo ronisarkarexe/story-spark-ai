@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { connectSocket, getSocketIo } from "../../socket/socket.oi";
-import { getUserInfo, isLoggedIn } from "../../services/auth.service";
+import { io } from "socket.io-client";
+import { getUserInfo, isLoggedIn, getToken } from "../../services/auth.service";
+import { resolveSocketUrl } from "../../helpers/socket-url";
 
 interface CreateRoomResponse {
   roomId?: string;
@@ -27,12 +28,10 @@ export default function CollabHome() {
       setIsCreating(true);
       setError("");
 
-      let socket = getSocketIo();
-      if (!socket) {
-        socket = connectSocket();
-      }
+      const socketUrl = resolveSocketUrl();
+      const token = getToken();
 
-      if (!socket) {
+      if (!socketUrl || !token) {
         setError(
           "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
         );
@@ -40,18 +39,37 @@ export default function CollabHome() {
         return;
       }
 
-      socket.emit(
-        "collab:create_room",
-        { userId: user.userId, username: user.name },
-        (response: CreateRoomResponse) => {
-          if (response?.roomId) {
-            navigate(`/collab/${response.roomId}`);
-          } else {
-            setError(response?.message || "Failed to create room");
-            setIsCreating(false);
-          }
+      const socket = io(`${socketUrl}/collab`, {
+        transports: ["websocket", "polling"],
+        auth: { token },
+        withCredentials: true,
+      });
+
+      socket.on("connect", () => {
+        socket.emit("collab:create_room");
+      });
+
+      socket.on("collab:room_created", (response: CreateRoomResponse) => {
+        socket.disconnect();
+        if (response?.roomId) {
+          navigate(`/collab/${response.roomId}`);
+        } else {
+          setError(response?.message || "Failed to create room");
+          setIsCreating(false);
         }
-      );
+      });
+
+      socket.on("collab:error", (err: { message: string }) => {
+        socket.disconnect();
+        setError(err.message || "Failed to create room");
+        setIsCreating(false);
+      });
+
+      socket.on("connect_error", (err: any) => {
+        socket.disconnect();
+        setError("Connection error. Failed to create room.");
+        setIsCreating(false);
+      });
     } catch (err) {
       console.error("Create room error:", err);
       setError("Error creating room. Please try again.");

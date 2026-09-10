@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
@@ -31,6 +30,11 @@ const ContinueStoryButton = () => {
   const handleContinue = async () => {
     if (!currentStory) return;
 
+    if (!currentStory.chapters || currentStory.chapters.length === 0) {
+      toast.error("No chapters found. Generate the first chapter before continuing.");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -38,9 +42,12 @@ const ContinueStoryButton = () => {
 
       dispatch(addChapter(nextChapter));
       toast.success("New chapter generated successfully!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      const errorMsg = error?.message || "Failed to continue story. Please try again.";
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Failed to continue story. Please try again.";
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -73,8 +80,13 @@ const ContinueStoryButton = () => {
       </label>
       <button
         onClick={handleContinue}
-        disabled={loading}
-        className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 transition-all px-6 py-3 rounded-xl text-white font-semibold"
+        disabled={loading || !currentStory}
+        title={!currentStory ? "Generate a story first before continuing" : undefined}
+        className={`w-full sm:w-auto transition-all px-6 py-3 rounded-xl text-white font-semibold
+          ${loading || !currentStory
+            ? "bg-purple-600/40 cursor-not-allowed opacity-50"
+            : "bg-purple-600 hover:bg-purple-700 cursor-pointer"
+          }`}
       >
         {loading ? "Generating Chapter..." : buttonText}
       </button>

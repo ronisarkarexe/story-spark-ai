@@ -160,7 +160,7 @@ export default function AnalyticsDashboard() {
     Current Streak: ${overview?.currentStreak || 0}
     Likes: ${overview?.totalLikes || 0}
     Views: ${overview?.totalViews || 0}
-      `);
+      `).catch(() => {});
   alert("Analytics copied!");
 };
 
