@@ -7,7 +7,8 @@
 - [x] Add/extend unit tests to cover the new regexes/edge cases.
 - [x] Run backend tests (at least `piiScrubber.test.ts`) and ensure they pass.
 - [x] Commit changes on branch `blackboxai/#3651-pii-scrubber`.
-- [ ] Open PR on GitHub.
+- [x] Open PR on GitHub: https://github.com/sonusharma6-dsa/story-spark-ai/pull/new/blackboxai/%233651-pii-scrubber
+
 
 
 
