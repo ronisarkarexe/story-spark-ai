@@ -74,11 +74,49 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
     setQuery("");
   };
 
+  const allStories = results?.stories?.data?.slice(0, 4) ?? [];
+  const allUsers = results?.users?.data?.slice(0, 3) ?? [];
+
+  const totalItems = query.trim()
+    ? allStories.length + allUsers.length + 1
+    : recent.length;
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") { onClose(); return; }
-    if (e.key === "Enter") { handleSubmit(query); return; }
-    if (e.key === "ArrowDown") setActiveIdx((i) => i + 1);
-    if (e.key === "ArrowUp") setActiveIdx((i) => Math.max(0, i - 1));
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIdx((i) => Math.min(Math.max(0, totalItems - 1), i + 1));
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIdx((i) => Math.max(0, i - 1));
+      return;
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (!query.trim() && recent.length > 0 && activeIdx >= 0 && activeIdx < recent.length) {
+        handleSubmit(recent[activeIdx]);
+        return;
+      }
+      if (query.trim()) {
+        if (activeIdx >= 0 && activeIdx < allStories.length) {
+          const story = allStories[activeIdx];
+          saveRecent(query);
+          navigate(`/post/${story._id}`);
+          onClose();
+          setQuery("");
+          return;
+        }
+        if (activeIdx >= allStories.length && activeIdx < allStories.length + allUsers.length) {
+          const user = allUsers[activeIdx - allStories.length];
+          handleSubmit(user.name);
+          return;
+        }
+      }
+      handleSubmit(query);
+      return;
+    }
   };
 
   const handleDeleteRecent = (term: string) => {
@@ -88,8 +126,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
 
   if (!open) return null;
 
-  const allStories = results?.stories?.data ?? [];
-  const allUsers = results?.users?.data ?? [];
+  let currentIndex = 0;
 
   return (
     <div
@@ -133,31 +170,51 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
               {allStories.length > 0 && (
                 <section className="p-2">
                   <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Stories</p>
-                  {allStories.slice(0, 4).map((story) => (
-                    <Link
-                      key={story._id}
-                      to={`/post/${story._id}`}
-                      onClick={() => { saveRecent(query); onClose(); }}
-                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-white/5"
-                    >
-                      <span className="text-base">📖</span>
-                      <span className="truncate font-medium">{story.title}</span>
-                      {story.author && (
-                        <span className="ml-auto shrink-0 text-xs text-slate-400">{story.author.name}</span>
-                      )}
-                    </Link>
-                  ))}
+                  {allStories.map((story) => {
+                    const itemIdx = currentIndex++;
+                    const isActive = activeIdx === itemIdx;
+                    return (
+                      <Link
+                        key={story._id}
+                        to={`/post/${story._id}`}
+                        onClick={() => { saveRecent(query); onClose(); }}
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                          isActive
+                            ? "bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+                            : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        <span className="text-base">📖</span>
+                        <span className="truncate font-medium">{story.title}</span>
+                        {story.author && (
+                          <span className="ml-auto shrink-0 text-xs text-slate-400">{story.author.name}</span>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </section>
               )}
               {allUsers.length > 0 && (
                 <section className="border-t border-slate-100 p-2 dark:border-white/5">
                   <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Authors</p>
-                  {allUsers.slice(0, 3).map((user) => (
-                    <div key={user._id} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200">
-                      <span className="text-base">👤</span>
-                      <span className="font-medium">{user.name}</span>
-                    </div>
-                  ))}
+                  {allUsers.map((user) => {
+                    const itemIdx = currentIndex++;
+                    const isActive = activeIdx === itemIdx;
+                    return (
+                      <div
+                        key={user._id}
+                        onClick={() => handleSubmit(user.name)}
+                        className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+                            : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        <span className="text-base">👤</span>
+                        <span className="font-medium">{user.name}</span>
+                      </div>
+                    );
+                  })}
                 </section>
               )}
               {!allStories.length && !allUsers.length && (
@@ -170,42 +227,63 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
           {!query && recent.length > 0 && (
             <section className="p-2">
               <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Recent</p>
-              {recent.map((term) => (
-                <div key={term} className="group flex items-center gap-3 rounded-xl px-3 py-2.5">
-                  <Clock className="h-4 w-4 shrink-0 text-slate-400" />
-                  <button
-                    type="button"
-                    className="flex-1 text-left text-sm text-slate-700 dark:text-slate-200"
-                    onClick={() => handleSubmit(term)}
+              {recent.map((term) => {
+                const itemIdx = currentIndex++;
+                const isActive = activeIdx === itemIdx;
+                return (
+                  <div
+                    key={term}
+                    className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 ${
+                      isActive ? "bg-indigo-50 dark:bg-indigo-500/20" : ""
+                    }`}
                   >
-                    {term}
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Remove"
-                    onClick={() => handleDeleteRecent(term)}
-                    className="opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    <X className="h-3.5 w-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
-                  </button>
-                </div>
-              ))}
+                    <Clock className="h-4 w-4 shrink-0 text-slate-400" />
+                    <button
+                      type="button"
+                      className={`flex-1 text-left text-sm ${
+                        isActive
+                          ? "font-semibold text-indigo-700 dark:text-indigo-300"
+                          : "text-slate-700 dark:text-slate-200"
+                      }`}
+                      onClick={() => handleSubmit(term)}
+                    >
+                      {term}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Remove"
+                      onClick={() => handleDeleteRecent(term)}
+                      className="opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <X className="h-3.5 w-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
+                    </button>
+                  </div>
+                );
+              })}
             </section>
           )}
 
           {/* Footer: view all */}
-          {query.trim() && (
-            <div className="border-t border-slate-100 p-2 dark:border-white/5">
-              <button
-                type="button"
-                onClick={() => handleSubmit(query)}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
-              >
-                <ArrowRight className="h-4 w-4" />
-                Search all results for "{query}"
-              </button>
-            </div>
-          )}
+          {query.trim() && (() => {
+            const itemIdx = currentIndex++;
+            const isActive = activeIdx === itemIdx;
+            return (
+              <div className="border-t border-slate-100 p-2 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => handleSubmit(query)}
+                  className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                    isActive
+                      ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-500/30 dark:text-indigo-200"
+                      : "text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                  }`}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  Search all results for "{query}"
+                </button>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </div>
