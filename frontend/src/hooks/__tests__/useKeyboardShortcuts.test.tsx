@@ -290,4 +290,24 @@ describe("useKeyboardShortcuts", () => {
       currentHook = null;
     });
   });
+
+  describe("ctrl+enter shortcut", () => {
+    it("calls onGenerate and prevents default", async () => {
+      const { unmount } = await renderShortcuts();
+      const handler = getKeydownHandler();
+      expect(handler).toBeDefined();
+
+      const event = makeKeyboardEvent({
+        ctrlKey: true,
+        key: "Enter",
+        code: "Enter",
+      });
+
+      handler!(event);
+      expect(onGenerate).toHaveBeenCalledTimes(1);
+      expect(event.preventDefault).toHaveBeenCalled();
+      unmount();
+      currentHook = null;
+    });
+  });
 });

@@ -24,11 +24,11 @@ describe("useKeyboardShortcuts", () => {
   it("calls onOpenHelp when Shift+/ is pressed", () => {
     const onOpenHelp = vi.fn();
     const onCloseHelp = vi.fn();
-    const focusPrompt = vi.fn();
+    const onGenerate = vi.fn();
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, onGenerate, focusPrompt, onPublish, hasStory: false })
     );
 
     fireKeyDown({ shiftKey: true, code: "Slash" });
@@ -148,17 +148,18 @@ describe("useKeyboardShortcuts", () => {
     expect(onOpenHelp).not.toHaveBeenCalled();
   });
 
-  it("Escape does not trigger onOpenHelp", () => {
+  it("calls onGenerate when ctrl+enter is pressed", () => {
     const onOpenHelp = vi.fn();
     const onCloseHelp = vi.fn();
+    const onGenerate = vi.fn();
     const focusPrompt = vi.fn();
     const onPublish = vi.fn();
 
     renderHook(() =>
-      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, focusPrompt, onPublish, hasStory: false })
+      useKeyboardShortcuts({ onOpenHelp, onCloseHelp, onGenerate, focusPrompt, onPublish, hasStory: false })
     );
 
-    fireKeyDown({ key: "Escape" });
-    expect(onOpenHelp).not.toHaveBeenCalled();
+    fireKeyDown({ ctrlKey: true, key: "Enter" });
+    expect(onGenerate).toHaveBeenCalledTimes(1);
   });
 });

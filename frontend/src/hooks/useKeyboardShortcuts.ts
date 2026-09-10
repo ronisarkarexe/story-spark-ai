@@ -44,6 +44,12 @@ const useKeyboardShortcuts = ({
         active !== null &&
         ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName);
 
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        handlersRef.current.onGenerate();
+        return;
+      }
+
       // Use e.key ("?") instead of e.code ("Slash") so the shortcut works on
       // non-US layouts (QWERTZ, AZERTY, ...) where ? is on a different key.
       if (e.key === "?") {
