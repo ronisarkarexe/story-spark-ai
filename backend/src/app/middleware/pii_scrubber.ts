@@ -24,10 +24,13 @@ export const scrubPII = (text: string): string => {
   // 2. Phone numbers
   // Cover formats like:
   //   555-867-5309 | 555 867 5309 | (555) 867-5309 | +1 555.867.5309
-  // plus a fallback for 10-digit sequences with optional separators.
-  // UK/International Mobile formats
+  // plus fallbacks for international mobile formats (UK, India, EU: +91 98765 43210, +49 171 1234567, 09876543210).
   const phoneIntRegex = /(?<![\w/])(?:\+44\s?|0)7\d{3}[-.\s]?\d{6}\b/g;
   scrubbed = scrubbed.replace(phoneIntRegex, "[REDACTED_PHONE]");
+
+  // Global 10-digit mobile formats (5-5 split or continuous with country code like +91 98765 43210)
+  const phoneGlobalRegex = /(?<![\w/])(?:\+\d{1,3}[-.\s]?)?(?:[6-9]\d{4}[-.\s]?\d{5}|0[6-9]\d{9})\b/g;
+  scrubbed = scrubbed.replace(phoneGlobalRegex, "[REDACTED_PHONE]");
 
   const phoneRegex =
     /(?<![\w/])(?:\+\d{1,3}[-.\s]?|1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
@@ -88,29 +91,32 @@ export const scrubPII = (text: string): string => {
   return scrubbed;
 };
 
+export const scrubPayload = (val: unknown): unknown => {
+  if (typeof val === "string") {
+    return scrubPII(val);
+  }
+  if (Array.isArray(val)) {
+    return val.map((item) => scrubPayload(item));
+  }
+  if (val !== null && typeof val === "object") {
+    const scrubbedObj: Record<string, unknown> = {};
+    for (const key of Object.keys(val as Record<string, unknown>)) {
+      scrubbedObj[key] = scrubPayload((val as Record<string, unknown>)[key]);
+    }
+    return scrubbedObj;
+  }
+  return val;
+};
+
 export const piiScrubberMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.body && req.body.prompt && typeof req.body.prompt === "string") {
-      req.body.prompt = scrubPII(req.body.prompt);
-    }
-    
-    // Also scrub 'content' and 'title' if present (for alternate endings/remix)
-    if (req.body && req.body.content && typeof req.body.content === "string") {
-      req.body.content = scrubPII(req.body.content);
-    }
-    if (req.body && req.body.title && typeof req.body.title === "string") {
-      req.body.title = scrubPII(req.body.title);
-    }
-
-    // Also scrub chat 'message'
-    if (req.body && req.body.message && typeof req.body.message === "string") {
-      req.body.message = scrubPII(req.body.message);
+    if (req.body && typeof req.body === "object") {
+      req.body = scrubPayload(req.body) as Record<string, unknown>;
     }
 
     next();
   } catch (error) {
-    // Fail closed if PII scrubbing crashes? Or just continue unscrubbed?
-    // It's safer to fail the request to ensure no PII leaks.
+    // Fail closed to prevent any unscrubbed PII leakage
     next(error);
   }
 };

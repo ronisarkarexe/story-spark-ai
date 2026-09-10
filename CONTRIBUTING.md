@@ -211,6 +211,20 @@ If CI is failing on your PR, fix the reported errors before requesting a review.
 
 ---
 
+## Google Summer of Code (GSoC) & NumFOCUS Guidelines
+
+If you are applying for or participating in **Google Summer of Code (GSoC)** under **NumFOCUS**, please review our comprehensive guide:
+
+👉 **[NumFOCUS GSoC Contributing & Proposal Guide](./docs/NUMFOCUS_GSOC_GUIDE.md)**
+
+### Key Highlights for Applicants:
+- **Early Communication**: Reach out early to mentors and the community to discuss project ideas and get feedback.
+- **Evaluation Point System**: Applications are assessed based on communication (mentors & community), past code/repos, contact availability, project timeline, time commitment, and pre-selection PR contributions (`5 pts`).
+- **Proposal Format**: Proposals must be submitted in **PDF** format with naming `[sub-org-name]_Proposal_Title.pdf`.
+- **Summer Requirements**: Minimum 1 merged commit in the primary development branch by end of summer, bi-weekly blog updates, and daily mentor check-ins.
+
+---
+
 ## Code of Conduct
 
 Please read and follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
@@ -218,11 +232,6 @@ Please read and follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
 ---
 
 ## Frequently Asked Questions
-## Need Help?
-
-
-If you get stuck, open a [Discussion](https://github.com/ronisarkarexe/story-spark-ai/discussions) or comment on the relevant issue. We're happy to help!
-## **Frequently Asked Questions**
 
 1. **Do I need to get assigned before working on an issue?**
    - Yes. Please wait until a maintainer assigns the issue to you before starting work. Contributions made without assignment may not be accepted if another contributor is already working on the same issue.
@@ -244,3 +253,4 @@ If you get stuck, open a [Discussion](https://github.com/ronisarkarexe/story-spa
 ## 💗 Thank You for Contributing
 
 We appreciate your time and effort in helping improve StorySparkAI. Every contribution helps make the project better.
+

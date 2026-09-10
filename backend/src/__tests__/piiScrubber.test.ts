@@ -310,4 +310,29 @@ describe("scrubPII — expanded test matrix", () => {
     const result = scrubPII(input);
     expect(result).toBe("My address is [REDACTED_ADDRESS] or [REDACTED_ADDRESS]");
   });
+
+  it("scrubs international mobile phone formats (e.g. +91 98765 43210)", () => {
+    const input = "Contact India dev team at +91 98765 43210 or 09876543210";
+    const result = scrubPII(input);
+    expect(result).toBe("Contact India dev team at [REDACTED_PHONE] or [REDACTED_PHONE]");
+  });
+
+  it("recursively scrubs deep nested request body payloads and arrays", () => {
+    const { req, res, next } = buildMiddlewareMocks({
+      user: {
+        profile: {
+          bio: "Reach me at secret@domain.com or call 555-867-5309",
+        },
+      },
+      tags: ["story", "Contact alice@test.org"],
+    });
+
+    piiScrubberMiddleware(req, res, next);
+
+    const body = req.body as any;
+    expect(body.user.profile.bio).toContain("[REDACTED_EMAIL]");
+    expect(body.user.profile.bio).toContain("[REDACTED_PHONE]");
+    expect(body.tags[1]).toContain("[REDACTED_EMAIL]");
+    expect(next).toHaveBeenCalledWith();
+  });
 });
