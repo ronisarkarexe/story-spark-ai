@@ -6,7 +6,8 @@
 - [x] Update the scrubber implementation to improve detection reliability and avoid edge-case misses.
 - [x] Add/extend unit tests to cover the new regexes/edge cases.
 - [x] Run backend tests (at least `piiScrubber.test.ts`) and ensure they pass.
-- [ ] Commit changes on branch `blackboxai/#3651-pii-scrubber`.
+- [x] Commit changes on branch `blackboxai/#3651-pii-scrubber`.
 - [ ] Open PR on GitHub.
+
 
 
