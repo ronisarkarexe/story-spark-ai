@@ -61,6 +61,12 @@ const useKeyboardShortcuts = ({
 
       if (isTyping) return;
 
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        handlersRef.current.onGenerate();
+        return;
+      }
+
       if (e.key === "/") {
         e.preventDefault();
         handlersRef.current.focusPrompt();

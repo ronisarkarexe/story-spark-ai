@@ -290,4 +290,110 @@ describe("useKeyboardShortcuts", () => {
       currentHook = null;
     });
   });
+
+  describe("ctrl+enter shortcut", () => {
+    it("calls onGenerate and prevents default on Ctrl+Enter", async () => {
+      const { unmount } = await renderShortcuts();
+      const handler = getKeydownHandler();
+      expect(handler).toBeDefined();
+
+      const event = makeKeyboardEvent({
+        ctrlKey: true,
+        key: "Enter",
+        code: "Enter",
+      });
+
+      handler!(event);
+      expect(onGenerate).toHaveBeenCalledTimes(1);
+      expect(event.preventDefault).toHaveBeenCalled();
+      unmount();
+      currentHook = null;
+    });
+
+    it("calls onGenerate and prevents default on Meta+Enter (Cmd+Enter on macOS)", async () => {
+      const { unmount } = await renderShortcuts();
+      const handler = getKeydownHandler();
+      expect(handler).toBeDefined();
+
+      const event = makeKeyboardEvent({
+        metaKey: true,
+        key: "Enter",
+        code: "Enter",
+      });
+
+      handler!(event);
+      expect(onGenerate).toHaveBeenCalledTimes(1);
+      expect(event.preventDefault).toHaveBeenCalled();
+      unmount();
+      currentHook = null;
+    });
+
+    it("does not call onGenerate when typing in an INPUT element", async () => {
+      const { unmount } = await renderShortcuts();
+      const handler = getKeydownHandler();
+      expect(handler).toBeDefined();
+
+      const input = document.createElement("input");
+      Object.defineProperty(document, "activeElement", {
+        value: input,
+        writable: true,
+        configurable: true,
+      });
+
+      const event = makeKeyboardEvent({
+        ctrlKey: true,
+        key: "Enter",
+        code: "Enter",
+      });
+
+      handler!(event);
+      expect(onGenerate).not.toHaveBeenCalled();
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      unmount();
+      currentHook = null;
+    });
+
+    it("does not call onGenerate when typing in a TEXTAREA element", async () => {
+      const { unmount } = await renderShortcuts();
+      const handler = getKeydownHandler();
+      expect(handler).toBeDefined();
+
+      const textarea = document.createElement("textarea");
+      Object.defineProperty(document, "activeElement", {
+        value: textarea,
+        writable: true,
+        configurable: true,
+      });
+
+      const event = makeKeyboardEvent({
+        ctrlKey: true,
+        key: "Enter",
+        code: "Enter",
+      });
+
+      handler!(event);
+      expect(onGenerate).not.toHaveBeenCalled();
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      unmount();
+      currentHook = null;
+    });
+
+    it("does not call onGenerate on plain Enter without Ctrl/Meta", async () => {
+      const { unmount } = await renderShortcuts();
+      const handler = getKeydownHandler();
+      expect(handler).toBeDefined();
+
+      const event = makeKeyboardEvent({
+        key: "Enter",
+        code: "Enter",
+      });
+
+      handler!(event);
+      expect(onGenerate).not.toHaveBeenCalled();
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      unmount();
+      currentHook = null;
+    });
+  });
 });
+
