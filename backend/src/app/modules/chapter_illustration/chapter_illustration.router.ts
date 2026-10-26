@@ -50,6 +50,7 @@ router.post(
 
 // Clear expired cache (admin only)
 const adminCacheLimiter = rateLimit({
+  validate: { keyGeneratorIpFallback: false },
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // 10 requests per hour for admin
   keyGenerator: (req: any) => req.user?.id ?? req.ip ?? "unknown",

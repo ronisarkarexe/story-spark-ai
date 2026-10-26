@@ -43,11 +43,6 @@ const validatePromptLength = (prompt: string): void => {
 const generateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 15,
-  keyGenerator: (req: Request & { user?: any }) => req.user?.id ?? req.ip ?? "unknown",
-  standardHeaders: true,
-  handler: (req: Request, res: Response) => {
-    res.status(429).json({ error: "Generation limit reached. Please try again in an hour." });
-  },
 });
 
 /** STORY CONTINUATION - single */

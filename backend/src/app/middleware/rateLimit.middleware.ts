@@ -27,8 +27,4 @@ export const apiRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many requests from this IP. Please try again after 15 minutes.",
-  keyGenerator: (req: Request, _res: Response): string => {
-    const forwarded = (req.headers["x-forwarded-for"] as string) ?? "";
-    return forwarded.split(",")[0]?.trim() || req.ip || "unknown";
-  },
 });
