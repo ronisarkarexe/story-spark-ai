@@ -115,6 +115,14 @@ const aiModelApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.model],
     }),
+    getUsage: build.query<{ plan: string; usage: Record<string, { used: number; limit: number }>; resetsAt: string }, void>({
+      query: () => ({
+        url: `/usage/me`,
+        method: "GET",
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+      providesTags: [tagTypes.user, tagTypes.model],
+    }),
   }),
 });
 
@@ -129,5 +137,6 @@ export const {
   useTranslateFreeStoryMutation,
   useContinueStoryMutation,
   useContinueFreeStoryMutation,
+  useGetUsageQuery,
 } = aiModelApi;
 

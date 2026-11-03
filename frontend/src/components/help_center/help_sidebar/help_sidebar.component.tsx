@@ -106,20 +106,29 @@ const HelpSidebar = () => {
                       ? "border-blue-300 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-indigo-500/10"
                       : "border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.03] hover:border-blue-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
                       }`}
-                  >
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      <i className={`fa-solid ${section.icon} text-sm ${isActive ? "text-blue-600" : "text-slate-500"}`} aria-hidden="true" />
-                      <p className={`font-bold text-xs sm:text-sm tracking-tight text-left transition-colors duration-200 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"}`}>
-                        {section.label}
-                      </p>
-                    </div>
-                    <div className="shrink-0 ml-2">
-                      <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-slate-300 dark:bg-slate-700"}`} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                    >
+                      {/* ✅ FIXED: Removed duplicate code, kept only one button structure */}
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-active-pill"
+                          className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20"
+                          transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                        />
+                      )}
+                      <i className={`fa-solid ${section.icon} text-sm relative z-10 ${isActive ? "text-blue-500" : "text-slate-400"}`} aria-hidden="true" />
+                      <div className="relative z-10 flex-1 text-left">
+                        <p className={`font-semibold text-sm transition-colors duration-300 ${isActive ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
+                          {section.label}
+                        </p>
+                      </div>
+                      <div className="relative z-10">
+                        <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_12px_rgba(59,130,246,0.7)]" : "bg-slate-300 dark:bg-slate-700"}`} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
 
             {/* Support Box */}
             <motion.div

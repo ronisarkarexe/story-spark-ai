@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import  { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
 
 interface AudioNarrationProps {
@@ -7,11 +7,11 @@ interface AudioNarrationProps {
   enabled?: boolean;
 }
 
-const AudioNarration: React.FC<AudioNarrationProps> = ({
+const AudioNarration = ({
   text,
   title = "Story Narration",
   enabled = true,
-}) => {
+}: AudioNarrationProps) => {
   const {
     isSupported,
     isSpeaking,

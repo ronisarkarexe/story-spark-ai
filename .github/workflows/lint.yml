@@ -20,7 +20,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")"
+            files="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
           else
             files="$(git diff --name-only HEAD~1 HEAD || true)"
           fi

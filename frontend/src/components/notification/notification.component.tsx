@@ -22,6 +22,16 @@ const NotificationComponent: React.FC<INotificationComponentProps> = ({
   onMarkAllAsRead,
   isMarkingAllRead = false,
 }) => {
+  const [filter, setFilter] = React.useState<"all" | "unread" | "read">("all");
+
+  const filteredNotifications = notifications.filter((notify) => {
+    if (filter === "unread") return !notify.isRead;
+    if (filter === "read") return notify.isRead;
+    return true;
+  });
+
+  const readCount = notifications.filter((n) => n.isRead).length;
+
   if (!showNotification) {
     return null;
   }
@@ -35,7 +45,6 @@ const NotificationComponent: React.FC<INotificationComponentProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Mark all as read — only shown when there are unread notifications */}
           {unreadCount > 0 && (
             <button
               type="button"
@@ -58,11 +67,47 @@ const NotificationComponent: React.FC<INotificationComponentProps> = ({
         </div>
       </div>
 
+      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
+        <button
+          onClick={() => setFilter("all")}
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            filter === "all"
+              ? "bg-blue-500 text-white"
+              : "bg-white/5 text-slate-400"
+          }`}
+        >
+          All ({notifications.length})
+        </button>
+
+        <button
+          onClick={() => setFilter("unread")}
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            filter === "unread"
+              ? "bg-blue-500 text-white"
+              : "bg-white/5 text-slate-400"
+          }`}
+        >
+          Unread ({unreadCount})
+        </button>
+
+        <button
+          onClick={() => setFilter("read")}
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            filter === "read"
+              ? "bg-blue-500 text-white"
+              : "bg-white/5 text-slate-400"
+          }`}
+        >
+          Read ({readCount})
+        </button>
+      </div>
+
       <div className="max-h-[26rem] overflow-y-auto p-2">
-        {notifications.length > 0 ? (
+        {filteredNotifications.length > 0 ? (
           <div className="space-y-2">
-            {notifications.map((notify) => {
+            {filteredNotifications.map((notify) => {
               const { icon, textColor } = getNotificationIcon(notify.type);
+
               return (
                 <button
                   key={notify._id}
@@ -79,6 +124,7 @@ const NotificationComponent: React.FC<INotificationComponentProps> = ({
                   >
                     <i className={`fa-solid ${icon}`}></i>
                   </span>
+
                   <span className="min-w-0 flex-1">
                     <span
                       className={`block text-sm font-semibold ${
@@ -87,9 +133,11 @@ const NotificationComponent: React.FC<INotificationComponentProps> = ({
                     >
                       {notify.title}
                     </span>
+
                     <span className="mt-1 block text-sm leading-5 text-slate-400">
                       {notify.body}
                     </span>
+
                     <span className="mt-2 block text-xs text-slate-500">
                       {timeAgo(notify.createdAt)}
                     </span>
@@ -100,7 +148,7 @@ const NotificationComponent: React.FC<INotificationComponentProps> = ({
           </div>
         ) : (
           <div className="px-3 py-10 text-center text-sm text-slate-400">
-            No notifications yet.
+            No notifications found.
           </div>
         )}
       </div>

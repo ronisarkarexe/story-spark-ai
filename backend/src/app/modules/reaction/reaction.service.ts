@@ -9,11 +9,20 @@ import { verifyPostAccess } from "../post/post.utils";
 
 type ReactionType = "like" | "love" | "laugh" | "angry" | "sad";
 
+const VALID_REACTION_TYPES: ReactionType[] = ["like", "love", "laugh", "angry", "sad"];
+
 const toggleReaction = async (
   postId: string,
   type: ReactionType = "like",
   token: ITokenPayload
 ) => {
+  if (!VALID_REACTION_TYPES.includes(type)) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Invalid reaction type '${type}'. Allowed types: ${VALID_REACTION_TYPES.join(", ")}`
+    );
+  }
+
   const { email } = token;
 
   if (!Types.ObjectId.isValid(postId)) {
@@ -37,6 +46,7 @@ const toggleReaction = async (
     userId: user._id,
     type: type,
   });
+
 
   if (existingReaction) {
     // Remove reaction atomically
@@ -77,15 +87,8 @@ const toggleReaction = async (
       likesCount: updatedPost?.likesCount ?? 0,
     };
   }
-
-  const likesCount = await Reaction.countDocuments({ postId });
-
-  return {
-    message: "Reaction updated successfully",
-    likesCount,
-  };
 };
 
 export const ReactionService = {
   toggleReaction,
-};
+} as const;

@@ -30,6 +30,7 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
+     // Fix #2926: Removed duplicate "Published Stories" entry; unified roles to include all four roles
     name: "Published Stories",
     icon: "fas fa-book-open",
     path: "/dashboard/published-stories",

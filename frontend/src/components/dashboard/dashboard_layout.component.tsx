@@ -3,8 +3,11 @@ import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router-d
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo, removeUserInfo } from "../../services/auth.service";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
+import { useNotifications } from "../../hooks/useNotifications";
+import PageTransition from "../layout/PageTransition";
 
 const DashboardLayout: React.FC = () => {
+  const { unreadCount } = useNotifications();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
@@ -114,9 +117,11 @@ const DashboardLayout: React.FC = () => {
               aria-label="View notifications"
             >
               <i className="fas fa-bell text-lg"></i>
-              <span className="absolute -top-1 -right-2 rounded-full bg-red-500 px-1 text-[10px] text-white">
-                5
-              </span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-2 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </button>
 
             <div className="relative">
@@ -290,7 +295,9 @@ const DashboardLayout: React.FC = () => {
         </aside>
 
         <main className="min-w-0 flex-1 overflow-auto bg-white px-4 py-4 text-slate-900 dark:bg-[#070c18] dark:text-white sm:px-6 sm:py-6">
-          <Outlet />
+          <PageTransition className="h-full w-full">
+            <Outlet />
+          </PageTransition>
         </main>
       </div>
     </div>

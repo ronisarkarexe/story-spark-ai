@@ -21,7 +21,7 @@ const Blog = () => {
 
   return (
     <div className="relative min-h-screen bg-white text-slate-900 px-6 py-16 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white overflow-hidden">
-      <div className="absolute top-10 left-16 w-3 h-3 rounded-full bg-yellow-400 opacity-70" />
+      <div className="absolute top-10 left-16 w-3 h-3 rounded-full bg-yellow-400 opacity-70" aria-hidden="true" />
       <div className="absolute top-24 right-24 w-2 h-2 rounded-full bg-pink-400 opacity-60" />
       <div className="absolute bottom-32 right-16 w-3 h-3 rounded-full bg-purple-400 opacity-60" />
 
@@ -42,9 +42,9 @@ const Blog = () => {
             Latest Topics
           </h2>
           <ul className="space-y-2 text-slate-600 dark:text-gray-300">
-            <li>📖 AI-powered storytelling</li>
-            <li>✍️ Creative writing tips</li>
-            <li>🚀 Open-source updates</li>
+            <li><span aria-hidden="true">📖</span> AI-powered storytelling</li>
+            <li><span aria-hidden="true">✍️</span> Creative writing tips</li>
+            <li><span aria-hidden="true">🚀</span> Open-source updates</li>
           </ul>
         </div>
 
@@ -77,7 +77,7 @@ const Blog = () => {
         <div className="mt-8">
           <Link
             to="/"
-            className="px-6 py-3 bg-blue-500 text-white font-semibold text-lg rounded-full shadow-md hover:bg-blue-600 transition"
+            className="px-6 py-3 bg-blue-500 text-white font-semibold text-lg rounded-full shadow-md hover:bg-blue-600 active:scale-95 transition-all duration-150"
           >
             ⬅ Back to Home
           </Link>

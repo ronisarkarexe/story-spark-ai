@@ -34,6 +34,15 @@ const getUser = catchAsync(async (req: Request, res: Response) => {
 const updateUser = catchAsync(async (req: Request, res: Response) => {
   const token = await getToken(req);
   const result = await UserService.updateUser(token, req.body);
+  if (result && "pendingEmail" in result) {
+    sendResponse(res, {
+      statusCode: httpStatus.ACCEPTED,
+      success: true,
+      message: (result as any).message,
+      data: { pendingEmail: (result as any).pendingEmail },
+    });
+    return;
+  }
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -156,6 +165,29 @@ const getFollowStatus = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getFollowers = catchAsync(async (req: Request, res: Response) => {
+  const userId = routeParam(req.params.id);
+  const result = await UserService.getFollowers(userId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Followers fetched successfully!",
+    data: result,
+  });
+});
+
+const getFollowing = catchAsync(async (req: Request, res: Response) => {
+  const userId = routeParam(req.params.id);
+  const result = await UserService.getFollowing(userId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Following fetched successfully!",
+    data: result,
+  });
+});
 
 const getWritingStreak = catchAsync(async (req: Request, res: Response) => {
   const token = await getToken(req);
@@ -198,6 +230,8 @@ export const UserController = {
   getAllWriterApplicationUsers,
   toggleFollow,
   getFollowStatus,
+  getFollowers,
+  getFollowing,
   getWritingStreak,
   getAchievements,
 };

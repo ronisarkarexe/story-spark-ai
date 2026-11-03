@@ -3,10 +3,10 @@ import { Link, useParams } from "react-router-dom";
 const BlogPost = () => {
   const { id } = useParams();
 
-  let title = "Blog Post";
-  let content =
-    "This is a placeholder for the full blog post content. Coming soon!";
+  let title = "Blog Post Not Found";
+  let content = "The blog post you're looking for doesn't exist or may have been removed. Please check the URL or explore other articles.";
 
+  
   if (id === "1") {
     title = "Introducing StorySparkAI v2.0";
     content =
@@ -40,7 +40,8 @@ const BlogPost = () => {
 
         {/* META */}
         <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-          5 min read • StorySpark AI Editorial Team
+          5 min read - StorySpark AI Editorial Team
+
         </div>
 
         {/* CONTENT CARD */}
@@ -48,6 +49,14 @@ const BlogPost = () => {
           <p className="text-lg leading-relaxed text-slate-700 dark:text-gray-300 whitespace-pre-line">
             {content}
           </p>
+          {id !== "1" && id !== "2" && id !== "3" && (
+            <Link
+              to="/blog"
+              className="mt-6 inline-block rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Browse All Posts
+            </Link>
+          )}
         </div>
 
         {/* SHARE SECTION */}

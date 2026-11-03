@@ -8,6 +8,7 @@ export type ChoiceButtonsProps = {
 };
 
 const ChoiceButtons = ({ choices, onSelect, disabled }: ChoiceButtonsProps) => {
+  const MAX_CHOICE_LENGTH = 200;
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,6 +18,10 @@ const ChoiceButtons = ({ choices, onSelect, disabled }: ChoiceButtonsProps) => {
   const handleSelect = (choice: string) => {
     if (disabled || selectedChoice) {
       return;
+    }
+
+    if (choice && choice.length > MAX_CHOICE_LENGTH) {
+      choice = choice.slice(0, MAX_CHOICE_LENGTH);
     }
 
     setSelectedChoice(choice);
@@ -47,8 +52,8 @@ const ChoiceButtons = ({ choices, onSelect, disabled }: ChoiceButtonsProps) => {
                 <span className="mb-3 inline-flex rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/40 dark:border-transparent px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none">
                   Choice {index + 1}
                 </span>
-                <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-medium m-0">
-                  {choice}
+                <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-medium m-0 break-words">
+                  {choice.length > MAX_CHOICE_LENGTH ? `${choice.slice(0, MAX_CHOICE_LENGTH)}...` : choice}
                 </p>
               </div>
               

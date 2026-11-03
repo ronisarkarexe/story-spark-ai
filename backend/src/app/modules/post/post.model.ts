@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
 import { IPost, PostModel } from "./post.interface";
 
-export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
+export const PostSchema: Schema<IPost, PostModel> = new Schema<IPost, PostModel>(
   {
     title: { type: String, required: true, maxlength: 200 },
     content: { type: String, required: true, maxlength: 50000 },
@@ -35,6 +35,8 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     reactions: [{ type: Schema.Types.ObjectId, ref: "Reaction" }],
     bookmarks: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    parentStoryId: { type: Schema.Types.ObjectId, ref: "Post", default: null },
+    rootStoryId: { type: Schema.Types.ObjectId, ref: "Post", default: null },
   },
   {
     timestamps: true,
@@ -75,5 +77,33 @@ PostSchema.index(
   }
 );
 PostSchema.index({ createdAt: -1 });
+
+/**
+ * Fetches engagement statistics for a given post in a single optimized query.
+ * Returns null if the post does not exist.
+ */
+PostSchema.statics.getEngagementStats = async function (postId) {
+  const result = await this.findById(postId, {
+    likesCount: 1,
+    commentsCount: 1,
+    bookmarksCount: 1,
+    viewsCount: 1,
+    averageRating: 1,
+    totalRatings: 1,
+  }).lean();
+
+  if (!result) {
+    return null;
+  }
+
+  return {
+    likesCount: result.likesCount,
+    commentsCount: result.commentsCount,
+    bookmarksCount: result.bookmarksCount,
+    viewsCount: result.viewsCount,
+    averageRating: result.averageRating,
+    totalRatings: result.totalRatings,
+  };
+};
 
 export const Post = model<IPost, PostModel>("Post", PostSchema);

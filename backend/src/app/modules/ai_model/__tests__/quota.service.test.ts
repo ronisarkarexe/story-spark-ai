@@ -12,6 +12,7 @@ import {
   refundUserQuota,
   reserveGuestQuota,
   reserveUserQuota,
+  resolveGuestQuotaIdentity,
   subscriptionLimitExpression,
 } from "../quota.service";
 
@@ -160,5 +161,47 @@ describe("concurrency semantics", () => {
     const updateCall = mockedUser.findOneAndUpdate.mock.calls[0];
     expect(updateCall[0]).toHaveProperty("$expr");
     expect(Array.isArray(updateCall[1])).toBe(true);
+  });
+});
+
+
+describe("resolveGuestQuotaIdentity", () => {
+  it("binds quota to IP even when the userId cookie is missing", () => {
+    const req = {
+      headers: { "x-forwarded-for": "203.0.113.50" },
+      cookies: {},
+      ip: "203.0.113.50",
+    } as any;
+    const cookie = jest.fn();
+    const res = { cookie } as any;
+
+    const identity = resolveGuestQuotaIdentity(req, res);
+    expect(identity.quotaKey).toBe("ip:203.0.113.50");
+    expect(identity.cookieUserId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    );
+    expect(cookie).toHaveBeenCalled();
+  });
+
+  it("fails closed when client IP cannot be determined", () => {
+    const req = { headers: {}, cookies: {}, ip: "", socket: {} } as any;
+    const res = { cookie: jest.fn() } as any;
+    expect(() => resolveGuestQuotaIdentity(req, res)).toThrow(ApiError);
+  });
+
+  it("keeps the same IP quota key after cookie clear / new UUID", () => {
+    const req = {
+      headers: {},
+      cookies: {},
+      ip: "198.51.100.9",
+    } as any;
+    const res = { cookie: jest.fn() } as any;
+    const first = resolveGuestQuotaIdentity(req, res);
+    const second = resolveGuestQuotaIdentity(
+      { ...req, cookies: {} } as any,
+      { cookie: jest.fn() } as any
+    );
+    expect(first.quotaKey).toBe(second.quotaKey);
+    expect(first.cookieUserId).not.toBe(second.cookieUserId);
   });
 });

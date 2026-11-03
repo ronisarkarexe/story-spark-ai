@@ -6,7 +6,7 @@ const handleZodError = (err: ZodError) => {
   const errors: IGenericErrorMessage[] = err.issues.map(
     (issue: ZodIssue): IGenericErrorMessage => {
       return {
-        path: issue.path[issue.path.length - 1],
+        path: issue.path.length > 0 ? issue.path[issue.path.length - 1] : "",
         message: issue.message,
       };
     }

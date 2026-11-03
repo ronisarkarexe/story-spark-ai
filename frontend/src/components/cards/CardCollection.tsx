@@ -1,4 +1,3 @@
-import React from "react";
 import type { IStories } from "../stories/stories.view.component";
 import StoryTradingCard, {
   getStoryCardRank,
@@ -11,11 +10,11 @@ interface CardCollectionProps {
   onSelectStory: (story: IStories) => void;
 }
 
-const CardCollection: React.FC<CardCollectionProps> = ({
+const CardCollection = ({
   stories,
   selectedStoryId,
   onSelectStory,
-}) => {
+}: CardCollectionProps) => {
   const sortedStories = [...stories].sort(
     (a, b) =>
       getStoryCardRank(getStoryCardRarity(b.content)) -

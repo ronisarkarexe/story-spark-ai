@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import Typewriter from "./typewriter.component";
 
 gsap.registerPlugin(useGSAP);
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -19,13 +19,13 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } as const 
-  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", }
+  }
 };
 
 const features = [
@@ -135,10 +135,13 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 bg-white/10 shadow-md group-hover:scale-105 transition-transform duration-300 shrink-0">
             {feature.icon}
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-white mb-2.5 sm:mb-3 tracking-tight group-hover:text-blue-100 transition-colors duration-300 truncate max-w-full">{feature.title}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-2.5 sm:mb-3 tracking-tight group-hover:text-blue-100 transition-colors duration-300 break-words max-w-full">
+            {feature.title}
+          </h3>
           <p className="text-xs sm:text-sm text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300 font-medium">{feature.description}</p>
         </div>
       </div>
+
     </div>
   );
 };
@@ -286,6 +289,7 @@ const HeroSectionComponent = () => {
 
       <HeroParticles />
 
+
       <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
         <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
           <div
@@ -316,7 +320,7 @@ const HeroSectionComponent = () => {
             Create, edit, and generate engaging multiple story variations from a single prompt.
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
-          
+
           <div className="w-full box-border flex flex-col items-center justify-center">
             <div className="relative max-w-3xl w-full box-border">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
@@ -332,6 +336,7 @@ const HeroSectionComponent = () => {
                     <span>Collab Mode</span>
                   </button>
                 </Link>
+
               </div>
             </div>
           </div>
@@ -349,14 +354,6 @@ const HeroSectionComponent = () => {
           </div>
         </div>
       </div>
-
-      <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
-          {features.map((feature, index) => (
-            <FeatureCard feature={feature} key={index} />
-          ))}
-        </div>
-      </motion.div>
     </motion.div>
   );
 };

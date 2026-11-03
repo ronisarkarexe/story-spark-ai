@@ -45,6 +45,7 @@ pnpm dev
 git clone <REPO_URL>
 cd story-spark-ai
 npm install
+important*-- If you are using **pnpm**, run `pnpm install` instead of `npm install`.
 ```
 
 2. Configure environment variables.

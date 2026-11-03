@@ -19,7 +19,8 @@ import {
   LogOut,
   LogIn,
   UserPlus,
-  X
+  X,
+  Search
 } from "lucide-react";
 
 const FloatingNavComponent: React.FC = () => {
@@ -115,6 +116,17 @@ const FloatingNavComponent: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
+                <Link
+                  to="/search"
+                  onClick={() => setIsMoreOpen(false)}
+                  className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-all text-xs sm:text-sm group min-w-0"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition-transform shrink-0">
+                    <Search size={16} />
+                  </div>
+                  <span className="font-medium truncate">Search</span>
+                </Link>
+
                 <Link
                   to="/story-inspiration"
                   onClick={() => setIsMoreOpen(false)}

@@ -126,10 +126,24 @@ const postIdParam = z.object({
   }),
 });
 
+const bulkDelete = z.object({
+  body: z.object({
+    ids: z.array(
+      z.string({
+        required_error: "ID must be a string",
+      }),
+      {
+        required_error: "ids is required",
+      }
+    ),
+  }),
+});
+
 export const PostValidator = {
   createPost,
   updatePost,
   remixStory,
   translateStory,
   postIdParam,
+  bulkDelete,
 };

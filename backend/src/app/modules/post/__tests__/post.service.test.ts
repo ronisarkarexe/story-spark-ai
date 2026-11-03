@@ -8,6 +8,7 @@ jest.mock("../post.model", () => ({
   Post: {
     find: jest.fn().mockReturnThis(),
     findOne: jest.fn(),
+    updateMany: jest.fn(),
     sort: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     populate: jest.fn().mockReturnThis(),
@@ -138,6 +139,50 @@ describe("PostService", () => {
         isFeaturedPost: true,
         isDeleted: { $ne: true },
         isPublished: true,
+      });
+    });
+  });
+
+  describe("bulkDeletePosts", () => {
+    it("should throw error if user is not found", async () => {
+      mockedUser.findOne.mockResolvedValue(null as any);
+      await expect(
+        PostService.bulkDeletePosts(["507f1f77bcf86cd799439011"], { email: "a@a.com" } as any)
+      ).rejects.toThrow("User not found!");
+    });
+
+    it("should throw error if more than 50 IDs are provided", async () => {
+      mockedUser.findOne.mockResolvedValue({ _id: "admin123" } as any);
+      const ids = Array(51).fill("507f1f77bcf86cd799439011");
+      await expect(
+        PostService.bulkDeletePosts(ids, { email: "admin@a.com" } as any)
+      ).rejects.toThrow("Maximum 50 story IDs allowed.");
+    });
+
+    it("should successfully soft-delete valid posts and return deleted count & failed IDs", async () => {
+      const adminUser = { _id: "adminId123" };
+      mockedUser.findOne.mockResolvedValue(adminUser as any);
+
+      const existingPosts = [
+        { _id: "507f1f77bcf86cd799439011", author: "author1", isPublished: true },
+        { _id: "507f1f77bcf86cd799439012", author: "author2", isPublished: false },
+      ];
+
+      mockedPost.find.mockResolvedValue(existingPosts as any);
+      mockedPost.updateMany = jest.fn().mockResolvedValue({} as any);
+
+      const ids = [
+        "507f1f77bcf86cd799439011",
+        "507f1f77bcf86cd799439012",
+        "507f1f77bcf86cd799439013",
+        "invalid-id",
+      ];
+
+      const result = await PostService.bulkDeletePosts(ids, { email: "admin@a.com" } as any);
+
+      expect(result).toEqual({
+        deleted: 2,
+        failed: ["invalid-id", "507f1f77bcf86cd799439013"],
       });
     });
   });

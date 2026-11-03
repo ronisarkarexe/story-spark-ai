@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 interface ErrorToastProps {
   message: string;
@@ -6,11 +6,11 @@ interface ErrorToastProps {
   autoCloseDuration?: number;
 }
 
-export const ErrorToast: React.FC<ErrorToastProps> = ({
+export const ErrorToast = ({
   message,
   onClose,
   autoCloseDuration,
-}) => {
+}: ErrorToastProps) => {
   useEffect(() => {
     if (!autoCloseDuration) return;
     const timer = setTimeout(onClose, autoCloseDuration);

@@ -152,4 +152,4 @@ export const matchesSearch = (query: string, fields: string[]): boolean => {
   const lowerQuery = query.toLowerCase();
   return fields.some(field => field?.toLowerCase().includes(lowerQuery));
 };
-};
+

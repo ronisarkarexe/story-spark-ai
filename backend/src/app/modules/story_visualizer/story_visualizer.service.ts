@@ -10,7 +10,7 @@ import {
   IStoryVisualizerResult,
   IStoryboardScene,
 } from "./story_visualizer.interface";
-import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
+import { generateStoryboardImage } from "../../../utils/storyboard_image";
 
 const STORY_VISUALIZER_TIMEOUT_MS = 90000;
 

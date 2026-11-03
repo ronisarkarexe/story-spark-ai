@@ -132,9 +132,9 @@ const getBranchPath = catchAsync(async (req: Request, res: Response) => {
 
 const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
   const { prompt, storyId } = req.body as {
-  prompt?: string;
-  storyId?: string;
-};
+    prompt?: string;
+    storyId?: string;
+  };
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
     throw new ApiError(

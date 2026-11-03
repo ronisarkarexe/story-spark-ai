@@ -206,10 +206,19 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
       "You are not authorized to delete this comment!"
     );
   }
+  // Count replies before deleting parent
+  const replyCount = await Comment.countDocuments({ parentCommentId: commentId });
+
   await Comment.findByIdAndDelete(commentId);
-  // Decrement commentsCount on the post atomically
+
+  // Delete all replies to this comment
+  if (replyCount > 0) {
+    await Comment.deleteMany({ parentCommentId: commentId });
+  }
+
+  // Decrement by 1 (parent) + reply count
   await Post.findByIdAndUpdate(comment.postId, {
-    $inc: { commentsCount: -1 },
+    $inc: { commentsCount: -(1 + replyCount) },
   });
   return { message: "Comment deleted successfully!" };
 };
