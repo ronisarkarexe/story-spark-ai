@@ -1,7 +1,9 @@
 import useCallbackDetector from "../../hooks/useCallbackDetector";
 
 export default function CallbackDetector() {
-  const { callbacks, rerunAnalysis } = useCallbackDetector();
+  const { callbacks, rerunAnalysis } = useCallbackDetector({
+    onComplete: () => window.alert("Callback analysis completed."),
+  });
 
   return (
     <div className="max-w-5xl mx-auto bg-white shadow rounded-lg p-6">

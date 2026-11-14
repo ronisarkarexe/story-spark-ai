@@ -1,12 +1,25 @@
-import { useMemo } from "react";
-import { getCallbacks } from "../utils/callbackDetector";
+import { useCallback, useMemo } from "react";
+import { getCallbacks, type CallbackItem } from "../utils/callbackDetector";
 
-export default function useCallbackDetector() {
+export interface UseCallbackDetectorOptions {
+  onComplete?: () => void;
+}
+
+export interface UseCallbackDetectorReturn {
+  callbacks: CallbackItem[];
+  rerunAnalysis: () => void;
+}
+
+export default function useCallbackDetector(
+  options: UseCallbackDetectorOptions = {}
+): UseCallbackDetectorReturn {
+  const { onComplete } = options;
+
   const callbacks = useMemo(() => getCallbacks(), []);
 
-  const rerunAnalysis = () => {
-    alert("Callback analysis completed.");
-  };
+  const rerunAnalysis = useCallback(() => {
+    onComplete?.();
+  }, [onComplete]);
 
   return {
     callbacks,
