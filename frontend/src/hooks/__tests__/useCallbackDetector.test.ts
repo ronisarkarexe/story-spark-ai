@@ -33,6 +33,22 @@ describe("useCallbackDetector", () => {
     expect(typeof result.current.rerunAnalysis).toBe("function");
   });
 
+  it("keeps rerunAnalysis stable until onComplete changes", () => {
+    const firstCallback = vi.fn();
+    const secondCallback = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ onComplete }) => useCallbackDetector({ onComplete }),
+      { initialProps: { onComplete: firstCallback } }
+    );
+    const first = result.current.rerunAnalysis;
+
+    rerender({ onComplete: firstCallback });
+    expect(result.current.rerunAnalysis).toBe(first);
+
+    rerender({ onComplete: secondCallback });
+    expect(result.current.rerunAnalysis).not.toBe(first);
+  });
+
   it("memoizes callbacks — returns the same array on re-render", () => {
     const { result, rerender } = renderHook(() => useCallbackDetector());
     const first = result.current.callbacks;
